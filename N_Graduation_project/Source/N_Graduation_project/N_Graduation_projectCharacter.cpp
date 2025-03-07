@@ -65,6 +65,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 
 void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -131,4 +132,12 @@ void AN_Graduation_projectCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+#include "N_Graduation_projectCharacter.h"
+
+void AN_Graduation_projectCharacter::Dash(const FInputActionValue& Value)
+{
+	// Dash 동작 구현
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Dash Activated!"));
 }
