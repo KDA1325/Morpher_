@@ -14,20 +14,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void UpdateHealthBar(int32 NewHealth);
 
-	// 이름 업데이트
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	void SetEntityName(FText NewName);
-
+	
 	UPROPERTY(BlueprintReadWrite, Category = "UI", meta = (BindWidget))
 	class UProgressBar* HealthBar;
-
-	UPROPERTY(BlueprintReadWrite, Category = "UI", meta = (BindWidget))
-	class UTextBlock* EntityName;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Entity")
 	float HP;
 
-	UFUNCTION(BlueprintCallable, Category = "Entity")
-	float GetHP() const { return HP; }
+	// 타이머 핸들
+	FTimerHandle HealthTimerHandle;
 
+	// HP를 감소시키는 함수
+	void DecreaseHealth();
+
+	UFUNCTION(BlueprintCallable, Category = "Entity")
+	float GetCurrentHP() const { return HP; }
+
+	// NativeConstruct 함수 추가
+	virtual void NativeConstruct() override;
+
+	// NativeTick 함수 추가
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 };

@@ -101,8 +101,8 @@ void ATester::SpawnEntityPreset()
 				if (WidgetComponent)
 				{
 					// WidgetComponent를 부모에 첨부하고 등록
-					WidgetComponent->SetupAttachment(SpawnedEntityPreset->GetRootComponent()); // 부모 컴포넌트에 첨부
-					WidgetComponent->RegisterComponent();  // 컴포넌트를 월드에 등록
+					WidgetComponent->SetupAttachment(SpawnedEntityPreset->GetRootComponent()); // 부모 컴포넌트에 넣고
+					WidgetComponent->RegisterComponent();  // 컴포넌트를 월드에
 				}
 			}
 
@@ -115,11 +115,6 @@ void ATester::SpawnEntityPreset()
 				{
 					// 위젯에서 정보를 갱신
 					MyEntityWidget->UpdateHealthBar(EntityData.HP);
-					MyEntityWidget->SetEntityName(FText::FromString(EntityData.EntityName));
-				}
-				else
-				{
-					// UEntityWidget으로 캐스팅 실패 시, 로그를 사용하지 않고 처리를 진행.
 				}
 			}
 			else
@@ -227,5 +222,3 @@ void ATester::SetPreset(FString PresetReference)
 		}
 	}
 }
-
-
