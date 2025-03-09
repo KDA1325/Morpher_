@@ -115,21 +115,12 @@ void ATester::SpawnEntityPreset()
 				{
 					// 위젯에서 정보를 갱신
 					MyEntityWidget->UpdateHealthBar(EntityData.HP);
+					// 이름과 속도 값을 EntityWidget에 전달
+					MyEntityWidget->ReceiveEntityName(FText::FromString(EntityData.EntityName));
+					MyEntityWidget->ReceiveEntitySpeed(EntityData.MoveSpeed);
 				}
 			}
-			else
-			{
-				// WidgetComponent가 null인 경우
-			}
 		}
-		else
-		{
-			// Spawn된 EntityPreset이 유효하지 않음 (null인 경우)
-		}
-	}
-	else
-	{
-		// EntityPresetClass가 null인 경우
 	}
 }
 

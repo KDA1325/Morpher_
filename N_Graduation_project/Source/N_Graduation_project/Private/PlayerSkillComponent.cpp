@@ -1,17 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "PlayerSkillComponent.h"
 #include "GameFramework/Actor.h"
 #include "TimerManager.h"
 
-// Sets default values for this component's properties
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	IsDefending = false;
 	
 }
+
 void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
 {
     if (Count > 0)
@@ -20,30 +17,31 @@ void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
     }
 }
 
-// Called when the game starts
 void UPlayerSkillComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
 	
 }
+
 void UPlayerSkillComponent::OnDefenseSkill()
 {
     if (IsDefending) return; // 중복X
 
     IsDefending = true;
-    UE_LOG(LogTemp, Warning, TEXT("방어 스킬 활성화!"));
-
+    
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill on"));
+    }
     // 3초 후 방어 해제
     FTimerDelegate DefenseEnd;
-    DefenseEnd.BindUObject(this, &UPlayerSkillComponent::OffDefenseSkill);
+    DefenseEnd.BindUObject(this, &UPlayerSkillComponent::OffDefenseSkill); //3초 후 OffDefenseSkill호출
     SetSkillTimer(3.0f, DefenseEnd);
 }
 
 void UPlayerSkillComponent::OffDefenseSkill()
 {
     IsDefending = false;
-//    UE_LOG(LogTemp, Warning, TEXT("방어 스킬 종료"));
+    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("DefenseSkill off")));
 }
 
