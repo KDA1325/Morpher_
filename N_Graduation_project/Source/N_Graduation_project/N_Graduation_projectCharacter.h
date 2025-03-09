@@ -9,6 +9,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class UTimelineComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -59,7 +60,11 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	/** Called for Dash input */
-	void Dash(const FInputActionValue& Value);
+	// 대시를 시전하면 도착하는 위치로 이동할 수 있는지 확인
+	void DashCheck(const FInputActionValue& Value);
+
+	// 대시 기능 수행 
+	void Dash(const FVector DashDir, const FVector DashVel);
 			
 
 protected:
@@ -74,5 +79,27 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+private:
+	// Dash 거리
+	UPROPERTY(EditAnywhere, Category = "Dash", meta = (AllowPrivateAccess = "true"))
+	float DashDistance;
+
+	// Dash를 수행할 타임라인
+	UPROPERTY()
+	UTimelineComponent* DashTimeline;
+
+	// 타임라인에 사용할 커브
+	UPROPERTY()
+	UCurveFloat* DashCurve;
+
+	// 타임라인에 있는 커브가 수행되면서 실행될 함수 
+	UFUNCTION()
+	void DashInterpReturn(float value);
+
+	// Dash를 수행하는 방향
+	FVector DashDirection;
+	// Dash를 수행할 때의 속력 
+	FVector DashVelocity;
 };
 

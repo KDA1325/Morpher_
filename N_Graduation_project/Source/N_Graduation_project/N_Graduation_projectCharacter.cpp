@@ -4,6 +4,7 @@
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
@@ -52,12 +53,45 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	// IA를 직접 지정하지 않으면 Dash 기능이 수행되지 않음 
+	static ConstructorHelpers::FObjectFinder<UInputAction> DashInput = TEXT("/Script/EnhancedInput.InputAction'/Game/ThirdPerson/Input/Actions/IA_Dash.IA_Dash'");
+	if (DashInput.Object)
+	{
+		DashAction = DashInput.Object;
+	}
+
+	// Dash Curve가 존재하면 변수에 오브젝트 넣기
+	const ConstructorHelpers::FObjectFinder<UCurveFloat> Curve(TEXT("/Script/Engine.CurveFloat'/Game/ThirdPerson/CV_Dash.CV_Dash'"));
+	if (Curve.Succeeded())
+	{
+		DashCurve = Curve.Object;
+	}
+
+	// DashTimeline이 존재하면 변수에 오브젝트 넣기
+	DashTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DashTimeline"));
+	DashDistance = 300.0f;
+	DashDirection = FVector::ZeroVector;
+	DashVelocity = FVector::ZeroVector;
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	FOnTimelineFloat DashCallback;
+
+	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
+	DashCallback.BindUFunction(this, FName("DashInterpReturn"));
+	
+	// 타임라인 반복 false 설정 
+	DashTimeline->SetLooping(false);
+	// DashCurve에 따라 타임라인/Callback 수행
+	DashTimeline->AddInterpFloat(DashCurve, DashCallback);
+	// 타임라인 길이 설정
+	DashTimeline->SetTimelineLength(0.2f);
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -88,7 +122,7 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::Look);
 
 		// Dash
-		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::Dash);
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::DashCheck);
 
 	}
 	else
@@ -133,7 +167,40 @@ void AN_Graduation_projectCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void AN_Graduation_projectCharacter::Dash(const FInputActionValue& Value)
+void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
 {
+	UE_LOG(LogTemplateCharacter, Error, TEXT("Dash 바인딩"));
 
+	// 마지막 입력이 ZeroVector(중립)가 아니면 실행 -> 캐릭터가 정지 중엔 실행되지 않음(반드시 대시로 이동하고 싶은 방향쪽 방향키를 눌러야 대시 발동(기획서대로 수정 필요))
+	if (GetCharacterMovement()->GetLastInputVector() != FVector::ZeroVector)
+	{
+		FHitResult HitResult;
+
+		// LineTracer를 이용해 현재 액터의 위치와 마지막 입력이 가해졌던 방향(마지막 움직임의 이동방향)에 DashDistance를 곱해 나온 위치로 Dash 
+		bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult,
+			GetActorLocation(),
+			GetActorLocation() + (GetCharacterMovement()->GetLastInputVector() * DashDistance),
+			ECollisionChannel::ECC_Visibility);
+
+		// Dash가 발동되어 최종적으로 이동할 위치에 액터 또는 충돌 가능한 무언가가 존재한다면
+		if (IsHit)
+			// 충돌한 객체의 위치값에 캐릭터의 몸 값(55.0f)을 빼서 이동
+			Dash(HitResult.Location + (GetCharacterMovement()->GetLastInputVector() * -55.0f), GetActorForwardVector());
+		// 존재하지 않는다면 DashDistance만큼 이동 
+		else
+			Dash(GetActorLocation() + (GetCharacterMovement()->GetLastInputVector() * DashDistance), GetActorForwardVector());
+	}
+}
+
+void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector DashVel)
+{
+	DashDirection = DashDir;
+	DashVelocity = DashVel;
+	DashTimeline->PlayFromStart();
+}
+
+void AN_Graduation_projectCharacter::DashInterpReturn(float value)
+{
+	// Dash 키 입력 -> DeshCheck 바인딩 -> Dash 수행 -> 타임라인 실행 -> DashCurve에 따라 Callback 함수 DashInterpReturn 바인딩 -> 로케이션 
+	SetActorLocation(FMath::Lerp(GetActorLocation(), DashDirection, value));
 }
