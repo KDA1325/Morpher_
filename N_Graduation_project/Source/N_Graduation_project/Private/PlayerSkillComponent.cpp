@@ -20,10 +20,9 @@ void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
 void UPlayerSkillComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
-void UPlayerSkillComponent::OnDefenseSkill()
+void UPlayerSkillComponent::OnDefenseSkill(float Count)
 {
     if (IsDefending) return; // 중복X
 
@@ -33,10 +32,10 @@ void UPlayerSkillComponent::OnDefenseSkill()
     {
         GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill on"));
     }
-    // 3초 후 방어 해제
+    // Count초 후 방어 해제
     FTimerDelegate DefenseEnd;
-    DefenseEnd.BindUObject(this, &UPlayerSkillComponent::OffDefenseSkill); //3초 후 OffDefenseSkill호출
-    SetSkillTimer(3.0f, DefenseEnd);
+    DefenseEnd.BindUObject(this, &UPlayerSkillComponent::OffDefenseSkill); //Count초 후 OffDefenseSkill호출
+    SetSkillTimer(Count, DefenseEnd);
 }
 
 void UPlayerSkillComponent::OffDefenseSkill()

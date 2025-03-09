@@ -19,10 +19,16 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	// 무적 상태 활성화
+	void On_invincibility();
+
+private:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-private:
+	// 무적 상태 확인
+	bool IsInvincible;
+
 	// PlayerSkillComponent를 액터에 추가
 	UPROPERTY(VisibleAnywhere)
 	UPlayerSkillComponent* PlayerSkillComponent;

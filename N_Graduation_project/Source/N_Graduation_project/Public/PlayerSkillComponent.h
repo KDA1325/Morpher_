@@ -16,7 +16,7 @@ public:
 	// Sets default values for this component's properties
 	UPlayerSkillComponent();
 
-	void OnDefenseSkill(); // 방어 스킬 활성화 함수
+	void OnDefenseSkill(float Count); // 방어 스킬 활성화 함수
 	void SetSkillTimer(float Count, FTimerDelegate Call); 	// 재사용가능하게
 
 protected:
