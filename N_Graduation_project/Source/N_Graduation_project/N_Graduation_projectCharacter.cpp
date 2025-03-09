@@ -132,3 +132,8 @@ void AN_Graduation_projectCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+
+void AN_Graduation_projectCharacter::Dash(const FInputActionValue& Value)
+{
+
+}
