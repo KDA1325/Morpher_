@@ -64,8 +64,10 @@ public:
 
 	// 메시 변경 테스트를 위해 
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* m_pMeshCom;
+	USkeletalMeshComponent* m_pMeshCom;
 
+	UPROPERTY(VisibleAnywhere)
+	USkeletalMeshComponent* Skel_MeshCom;
 	// EntityPreset 블루프린트에서 사용할 위젯 클래스
 	UPROPERTY()
 	class UEntityWidget* EntityWidget; // EntityWidget은 UUserWidget을 상속한 클래스
