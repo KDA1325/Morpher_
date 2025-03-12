@@ -13,8 +13,9 @@
 #include "InputActionValue.h"
 #include "MyPlayerStatComponent.h"
 #include "PlayerSkillComponent.h"
-#include "Blueprint/UserWidget.h"
-#include "UObject/ConstructorHelpers.h"
+//#include "Blueprint/UserWidget.h"
+//#include "UObject/ConstructorHelpers.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -83,12 +84,24 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	PlayerSkillComponent = CreateDefaultSubobject<UPlayerSkillComponent>(TEXT("PlayerSkillComponent"));
 
 	//위젯 블루프린트 클래스 찾기
-	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetFinder(TEXT("WidgetBlueprint'/Game/Entity/BP/Character_HealthBar.Character_HealthBar_C'"));
+	//static ConstructorHelpers::FClassFinder<UUserWidget> WidgetFinder(TEXT("WidgetBlueprint'/Game/Entity/BP/Character_HealthBar.Character_HealthBar_C'"));
 
-	if (WidgetFinder.Succeeded())
+	//if (WidgetFinder.Succeeded())
+	//{
+	//	CharacterHealthBarWidgetClass = WidgetFinder.Class; // 위젯 클래스 설정
+	//}
+
+
+	m_pMeshCom = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
+
+	// RootComponent 설정 -> 안 하면 m_pMeshCom nullptr 오류 발생
+	if (!m_pMeshCom)
 	{
-		CharacterHealthBarWidgetClass = WidgetFinder.Class; // 위젯 클래스 설정
+		m_pMeshCom = NewObject<USkeletalMeshComponent>(this, TEXT("MeshComponent"));
+		m_pMeshCom->RegisterComponent();
+		RootComponent = m_pMeshCom;
 	}
+
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -96,10 +109,11 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	SpawnWidget();
+	//SpawnWidget();
 
 	FOnTimelineFloat DashCallback;
-
+	//	currentPreset = "PlayerCharacter";
+	currentPreset = "WildBoar";
 	//On_invincibility();//피격 테스트용
 
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
@@ -112,8 +126,9 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	// 타임라인 길이 설정
 	DashTimeline->SetTimelineLength(0.2f);
 
+	UpdateEntityData();
 }
-
+/*
 void AN_Graduation_projectCharacter::SpawnWidget()
 {
 	if (IsValid(CharacterHealthBarWidgetClass))
@@ -135,6 +150,7 @@ void AN_Graduation_projectCharacter::SpawnWidget()
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("CharacterHealthBarWidgetClass Not Set"));
 	}
 }
+*/
 
 //////////////////////////////////////////////////////////////////////////
 // Input
@@ -239,6 +255,10 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	DashDirection = DashDir;
 	DashVelocity = DashVel;
 	DashTimeline->PlayFromStart();
+	/*currentPreset = "Inpermon";
+	UpdateEntityData();
+	//속도 변하는지 체크하려고
+	*/
 }
 
 void AN_Graduation_projectCharacter::DashInterpReturn(float value)
@@ -251,23 +271,18 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	if (PlayerSkillComponent->IsDefending) return 0.0f;//무적상태라면 리턴.
+	CurrentHealth -= DamageAmount;
+	On_invincibility();
+
+	if (PlayerSkillComponent->IsDefending) {
+	
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
+		
+		return 0.0f;//무적상태라면 리턴.
+	} 
 
 	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	//MyStat->SetDamage(FinalDamage); //데미지 설정.
-
-	On_invincibility();
-	if (PlayerSkillComponent && PlayerSkillComponent->IsDefending)
-	{
-		DamageAmount = 0.0f; // 방어 중이라면 데미지 0
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
-		}
-	}
-	//bDoingSomething = true;
-//	MyAnim->PlayDamagedMontage();
 
 	return FinalDamage;
 }
@@ -284,5 +299,99 @@ void AN_Graduation_projectCharacter::On_invincibility()
 
 		// 깜박이기구현..해야함
 
+	}
+}
+
+void AN_Graduation_projectCharacter::UpdateEntityData()
+{
+	if (UABGameSingleton::Get().GetEntityDataByGroupID(currentPreset, EntityData))
+	{
+		SetActorLabel(EntityData.EntityName);
+		SetMaxHp(EntityData.HP);
+		SetMoveSpeed(EntityData.MoveSpeed);
+		SetPreset(EntityData.PresetReference);
+
+		UE_LOG(LogABGameSingleton, Error, TEXT("!Entity Name: %s, HP: %d, Move Speed: %d"),
+			*EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed);
+	}
+
+}
+
+void AN_Graduation_projectCharacter::SetMaxHp(int32 MaxHp)
+{
+	currentHp = MaxHp; // EntityData.HP 값을 currentHp에 할당
+	UE_LOG(LogABGameSingleton, Error, TEXT("!currentHp: %d"), currentHp)
+
+}
+
+void AN_Graduation_projectCharacter::SetMoveSpeed(int32 MoveSpeed)
+{
+	currentSpeed = MoveSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
+	UE_LOG(LogABGameSingleton, Error, TEXT("!currentSpeed: %d"), currentSpeed)
+
+}
+void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
+{
+	currentPreset = PresetReference;
+
+	// 프리셋 이름마다 메시 에셋 파일 할당
+	if (currentPreset == "PCPreset.uasset")
+	{
+		// 에디터 실행 시 문제없이 메시를 로드하기 위해 FSoftObjectPath를 사용해 비동기 로딩 
+		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2.Boar_idle_test3s_2"));
+
+		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+		if (LoadedMesh)
+		{
+			// 스켈레탈 메시를 사용할 경우 SetSkeletalMesh() 사용
+			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
+		}
+	}
+
+	if (currentPreset == "WildBoarPreset.uasset")
+	{
+		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2.Boar_idle_test3s_2"));
+
+		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+
+		if (LoadedMesh)
+		{
+			m_pMeshCom->SetSkeletalMesh(LoadedMesh);  // SkeletalMesh는 Skel_MeshCom을 사용
+			//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("I'm Here")));
+		}
+	}
+
+	if (currentPreset == "InpermonPreset.uasset")
+	{
+		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_TableRound.SM_TableRound'"));
+
+		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+		if (LoadedMesh)
+		{
+			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
+		}
+	}
+
+	if (currentPreset == "FreezardPreset.uasset")
+	{
+		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_Statue.SM_Statue'"));
+
+		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+		if (LoadedMesh)
+		{
+			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
+		}
+	}
+
+	if (currentPreset == "StoneGolemPreset.uasset")
+	{
+		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_Lamp_Ceiling.SM_Lamp_Ceiling'"));
+
+		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+		if (LoadedMesh)
+		{
+			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
+		}
 	}
 }

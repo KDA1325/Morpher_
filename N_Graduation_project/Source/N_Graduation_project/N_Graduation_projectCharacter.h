@@ -3,6 +3,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "ABEntityData.h" // Entity Data 구조체
+#include "ABGameSingleton.h"
+
 #include "N_Graduation_projectCharacter.generated.h"
 
 class UPlayerSkillComponent;
@@ -126,9 +129,53 @@ public:
 
 
 	// 실제 위젯 인스턴스
-	private:
+	/*private:
 		TSubclassOf<UUserWidget> CharacterHealthBarWidgetClass;
 		UUserWidget* CharacterHealthBarWidget;
-	void SpawnWidget();
+	void SpawnWidget();*/
+
+	// 캐릭터 변신 메소드
+	/*UFUNCTION(EditAnywhere, BlueprintCallable, Category = "Stat")
+	void TransformToEntity(int32 EntityID);*/
+
+	// 설정한 GroupID를 키 값으로 가져온 데이터를 적용하는 함수
+	UFUNCTION(BlueprintCallable, Category = "Stat")
+	void UpdateEntityData();
+	//// 변신 후 현재 체력 업데이트
+	//UFUNCTION(EditAnywhere, BlueprintCallable, Category = "Stat")
+	//void UpdateHealth(float NewHealth);
+
+	// 현재 캐릭터 데이터 저장
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	FABEntityData EntityData;
+
+	// 캐릭터의 현재 체력
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	float CurrentHealth;
+
+	// 메시 변경 테스트를 위해 
+	UPROPERTY(VisibleAnywhere)
+	USkeletalMeshComponent* m_pMeshCom;
+
+	int32 maxHp;
+	int32 moveSpeed;
+	FString normalSkill;
+	FString specialSkill;
+	FString presetReference;
+
+	int32 currentHp;
+	int32 currentSpeed;
+	FString currentPreset;
+
+	// MaxHP를 설정하는 함수
+	void SetMaxHp(int32 MaxHp);
+	// MoveSpeed를 설정하는 함수
+	void SetMoveSpeed(int32 MoveSpeed);
+	// Preset을 설정하는 함수
+	void SetPreset(FString PresetReference);
+
+
+
+
 };
 
