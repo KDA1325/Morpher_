@@ -18,13 +18,12 @@ public:
 
 	void OnDefenseSkill(float Count); // 방어 스킬 활성화 함수
 	void SetSkillTimer(float Count, FTimerDelegate Call); 	// 재사용가능하게
-
+	bool IsDefending; // 방어중?
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 private:	
-	bool IsDefending; // 방어중?
 	FTimerHandle TimerHandle; // 타이머
 
 	void OffDefenseSkill(); // 방어 스킬 비활성화

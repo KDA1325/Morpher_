@@ -11,6 +11,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "MyPlayerStatComponent.h"
+#include "PlayerSkillComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "UObject/ConstructorHelpers.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -21,7 +25,7 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -73,6 +77,18 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	DashDistance = 300.0f;
 	DashDirection = FVector::ZeroVector;
 	DashVelocity = FVector::ZeroVector;
+
+	// 체력 컴포넌트 추가
+	PlayerStatComponent = CreateDefaultSubobject<UMyPlayerStatComponent>(TEXT("PlayerStatComponent"));
+	PlayerSkillComponent = CreateDefaultSubobject<UPlayerSkillComponent>(TEXT("PlayerSkillComponent"));
+
+	//위젯 블루프린트 클래스 찾기
+	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetFinder(TEXT("WidgetBlueprint'/Game/Entity/BP/Character_HealthBar.Character_HealthBar_C'"));
+
+	if (WidgetFinder.Succeeded())
+	{
+		CharacterHealthBarWidgetClass = WidgetFinder.Class; // 위젯 클래스 설정
+	}
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -80,18 +96,44 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	SpawnWidget();
+
 	FOnTimelineFloat DashCallback;
+
+	//On_invincibility();//피격 테스트용
 
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
 	DashCallback.BindUFunction(this, FName("DashInterpReturn"));
-	
+
 	// 타임라인 반복 false 설정 
 	DashTimeline->SetLooping(false);
 	// DashCurve에 따라 타임라인/Callback 수행
 	DashTimeline->AddInterpFloat(DashCurve, DashCallback);
 	// 타임라인 길이 설정
 	DashTimeline->SetTimelineLength(0.2f);
-	
+
+}
+
+void AN_Graduation_projectCharacter::SpawnWidget()
+{
+	if (IsValid(CharacterHealthBarWidgetClass))
+	{
+		CharacterHealthBarWidget = CreateWidget<UUserWidget>(GetWorld(), CharacterHealthBarWidgetClass);
+
+		if (IsValid(CharacterHealthBarWidget))
+		{
+			CharacterHealthBarWidget->AddToViewport();
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Character HealthBar Widget Added!"));
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Failed to Create Character HealthBar Widget!"));
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("CharacterHealthBarWidgetClass Not Set"));
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -107,10 +149,10 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-	
+
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
@@ -144,7 +186,7 @@ void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
+
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
@@ -203,4 +245,44 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 {
 	// Dash 키 입력 -> DeshCheck 바인딩 -> Dash 수행 -> 타임라인 실행 -> DashCurve에 따라 Callback 함수 DashInterpReturn 바인딩 -> 로케이션 
 	SetActorLocation(FMath::Lerp(GetActorLocation(), DashDirection, value));
+}
+
+
+// 데미지를 받았을 때 호출하는 함수
+float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (PlayerSkillComponent->IsDefending) return 0.0f;//무적상태라면 리턴.
+
+	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	//MyStat->SetDamage(FinalDamage); //데미지 설정.
+
+	On_invincibility();
+	if (PlayerSkillComponent && PlayerSkillComponent->IsDefending)
+	{
+		DamageAmount = 0.0f; // 방어 중이라면 데미지 0
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
+		}
+	}
+	//bDoingSomething = true;
+//	MyAnim->PlayDamagedMontage();
+
+	return FinalDamage;
+}
+
+void AN_Graduation_projectCharacter::On_invincibility()
+{
+	if (PlayerSkillComponent && !IsInvincible)
+	{
+		// 무적 상태 활성화
+		IsInvincible = true;
+
+		// PlayerSkillComponent에서 방어 스킬을 실행
+		PlayerSkillComponent->OnDefenseSkill(1.0f);
+
+		// 깜박이기구현..해야함
+
+	}
 }
