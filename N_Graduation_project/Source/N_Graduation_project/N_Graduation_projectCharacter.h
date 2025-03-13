@@ -19,7 +19,8 @@ struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
-UCLASS(config = Game)
+UCLASS(config = Game, Blueprintable)
+
 class AN_Graduation_projectCharacter : public ACharacter
 {
 	GENERATED_BODY()
@@ -124,8 +125,12 @@ public:
 	//DamageCauser//데미지를 준 액터 자체
 	
 	// 무적 상태 활성화
-	void On_invincibility();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsInvincible;
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void On_invincibility();
 
 
 	// 실제 위젯 인스턴스

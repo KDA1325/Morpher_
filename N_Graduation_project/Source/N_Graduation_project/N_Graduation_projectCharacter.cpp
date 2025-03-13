@@ -114,7 +114,6 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	FOnTimelineFloat DashCallback;
 	//	currentPreset = "PlayerCharacter";
 	currentPreset = "WildBoar";
-	//On_invincibility();//피격 테스트용
 
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
 	DashCallback.BindUFunction(this, FName("DashInterpReturn"));
@@ -259,6 +258,8 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	UpdateEntityData();
 	//속도 변하는지 체크하려고
 	*/
+	On_invincibility();//피격 테스트용
+
 }
 
 void AN_Graduation_projectCharacter::DashInterpReturn(float value)
@@ -273,7 +274,6 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 {
 	CurrentHealth -= DamageAmount;
 	On_invincibility();
-
 	if (PlayerSkillComponent->IsDefending) {
 	
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
@@ -287,8 +287,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 	return FinalDamage;
 }
 
-void AN_Graduation_projectCharacter::On_invincibility()
-{
+void AN_Graduation_projectCharacter::On_invincibility_Implementation() {
 	if (PlayerSkillComponent && !IsInvincible)
 	{
 		// 무적 상태 활성화
@@ -297,7 +296,7 @@ void AN_Graduation_projectCharacter::On_invincibility()
 		// PlayerSkillComponent에서 방어 스킬을 실행
 		PlayerSkillComponent->OnDefenseSkill(1.0f);
 
-		// 깜박이기구현..해야함
+		// 깜박이기구현->BP
 
 	}
 }
@@ -395,3 +394,4 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		}
 	}
 }
+
