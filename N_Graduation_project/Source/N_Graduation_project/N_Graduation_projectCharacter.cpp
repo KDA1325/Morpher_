@@ -15,7 +15,8 @@
 #include "PlayerSkillComponent.h"
 //#include "Blueprint/UserWidget.h"
 //#include "UObject/ConstructorHelpers.h"
-
+#include "Kismet/GameplayStatics.h"//ApplyDamage테스트
+#include "GameFramework/Character.h"//ApplyDamage테스트
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -259,6 +260,8 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	//속도 변하는지 체크하려고
 	*/
 	On_invincibility();//피격 테스트용
+	UE_LOG(LogABGameSingleton, Error, TEXT("HP: %d"), currentHp);
+	DealDamageToPlayer();
 
 }
 
@@ -272,8 +275,11 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	CurrentHealth -= DamageAmount;
+	currentHp -= DamageAmount;
 	On_invincibility();
+	// 데미지 로그 출력
+	UE_LOG(LogTemp, Warning, TEXT("Get Damage NowHP: %d"), currentHp);
+	
 	if (PlayerSkillComponent->IsDefending) {
 	
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
@@ -309,7 +315,7 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 		SetMaxHp(EntityData.HP);
 		SetMoveSpeed(EntityData.MoveSpeed);
 		SetPreset(EntityData.PresetReference);
-
+		
 		UE_LOG(LogABGameSingleton, Error, TEXT("!Entity Name: %s, HP: %d, Move Speed: %d"),
 			*EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed);
 	}
@@ -395,3 +401,19 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	}
 }
 
+void AN_Graduation_projectCharacter::DealDamageToPlayer()
+{
+	UE_LOG(LogTemp, Error, TEXT("50 Damage"));
+
+	//0번 플레이어를 가져온다
+	ACharacter* TargetCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	float DamageAmount = 50.0f;
+	// TargetCharacter에서 GetController를 호출
+	AController* InstigatorController = TargetCharacter->GetController();
+	AActor* DamageCauser = this; // 데미지를 주는 액터 (이 예에서는 적)
+	TSubclassOf<UDamageType> DamageType = UDamageType::StaticClass(); // 기본 데미지 타입
+
+	// 데미지 적용
+	UGameplayStatics::ApplyDamage(TargetCharacter, DamageAmount, InstigatorController, DamageCauser, DamageType);
+
+}

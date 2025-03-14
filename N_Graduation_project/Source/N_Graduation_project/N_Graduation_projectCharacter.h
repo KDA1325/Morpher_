@@ -154,9 +154,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	FABEntityData EntityData;
 
-	// 캐릭터의 현재 체력
+	/* 캐릭터의 현재 체력
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
-	float CurrentHealth;
+	float CurrentHealth;*/
 
 	// 메시 변경 테스트를 위해 
 	UPROPERTY(VisibleAnywhere)
@@ -179,7 +179,8 @@ public:
 	// Preset을 설정하는 함수
 	void SetPreset(FString PresetReference);
 
-
+	//데미지 테스트
+	void DealDamageToPlayer();
 
 
 };
