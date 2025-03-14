@@ -17,11 +17,11 @@ ASkillTestActor::ASkillTestActor()
 void ASkillTestActor::BeginPlay()
 {
 	Super::BeginPlay();
-	DealDamageToPlayer();
-	// 规绢 on
-	//PlayerSkillComponent->OnDefenseSkill(3.0f);
+	//DealDamageToPlayer();
+	//规绢 on
+	PlayerSkillComponent->OnDefenseSkill(3.0f);
 	//公利 on
-	On_invincibility();
+	//On_invincibility();
 }
 
 // Called every frame

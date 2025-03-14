@@ -259,7 +259,6 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	UpdateEntityData();
 	//속도 변하는지 체크하려고
 	*/
-	On_invincibility();//피격 테스트용
 	UE_LOG(LogABGameSingleton, Error, TEXT("HP: %d"), currentHp);
 	DealDamageToPlayer();
 
@@ -275,22 +274,27 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	currentHp -= DamageAmount;
-	On_invincibility();
-	// 데미지 로그 출력
-	UE_LOG(LogTemp, Warning, TEXT("Get Damage NowHP: %d"), currentHp);
-	
-	if (PlayerSkillComponent->IsDefending) {
-	
+	UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
+	if (PlayerSkillComponent->IsDefending ==true) {
+
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
-		
+		UE_LOG(LogTemp, Warning, TEXT("Get Damage NowHP: %d"), currentHp);
+
 		return 0.0f;//무적상태라면 리턴.
-	} 
+	}
+	else {
+		currentHp -= DamageAmount;
+		On_invincibility();
+		// 데미지 로그 출력	
+		float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+		UE_LOG(LogTemp, Warning, TEXT("Get Damage NowHP: %d"), currentHp);
+	PlayerSkillComponent->OnDefenseSkill(3.0);
 
-	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+		return FinalDamage;
+
+	}
 
 
-	return FinalDamage;
 }
 
 void AN_Graduation_projectCharacter::On_invincibility_Implementation() {
@@ -315,7 +319,7 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 		SetMaxHp(EntityData.HP);
 		SetMoveSpeed(EntityData.MoveSpeed);
 		SetPreset(EntityData.PresetReference);
-		
+
 		UE_LOG(LogABGameSingleton, Error, TEXT("!Entity Name: %s, HP: %d, Move Speed: %d"),
 			*EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed);
 	}
@@ -410,7 +414,7 @@ void AN_Graduation_projectCharacter::DealDamageToPlayer()
 	float DamageAmount = 50.0f;
 	// TargetCharacter에서 GetController를 호출
 	AController* InstigatorController = TargetCharacter->GetController();
-	AActor* DamageCauser = this; // 데미지를 주는 액터 (이 예에서는 적)
+	AActor* DamageCauser = this; // 데미지를 주는 액터 
 	TSubclassOf<UDamageType> DamageType = UDamageType::StaticClass(); // 기본 데미지 타입
 
 	// 데미지 적용
