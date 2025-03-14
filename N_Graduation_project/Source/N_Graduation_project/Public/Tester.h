@@ -42,6 +42,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	TSubclassOf<AActor> EntityPresetClass;
 
+	UFUNCTION(BlueprintCallable, Category = "Spawn")
 	void SpawnEntityPreset();
 
 	int32 maxHp;

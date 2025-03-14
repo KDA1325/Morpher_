@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Tester.h"
 #include "GameFramework/Actor.h"
 #include "AEntitySpawnerTrigger.generated.h"
 

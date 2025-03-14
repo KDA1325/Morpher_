@@ -39,7 +39,7 @@ void ATester::BeginPlay()
 	}
 
 	UpdateEntityData();
-	SpawnEntityPreset();
+	//SpawnEntityPreset();
 }
 
 // Called every frame
@@ -55,7 +55,7 @@ void ATester::UpdateEntityData()
 		SetActorLabel(EntityData.EntityName);
 		SetMaxHp(EntityData.HP);
 		SetMoveSpeed(EntityData.MoveSpeed);
-		SetPreset(EntityData.PresetReference);
+		//SetPreset(EntityData.PresetReference);
 
 		UE_LOG(LogABGameSingleton, Error, TEXT("Entity Name: %s, HP: %d, Move Speed: %d"),
 			*EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed);
@@ -86,6 +86,8 @@ void ATester::UpdateEntityData()
 /**/
 void ATester::SpawnEntityPreset()
 {
+	SetPreset(EntityData.PresetReference);
+
 	if (EntityPresetClass)
 	{
 		AActor* SpawnedEntityPreset = GetWorld()->SpawnActor<AActor>(EntityPresetClass, GetActorLocation(), GetActorRotation());
