@@ -23,7 +23,6 @@ ATester::ATester()
 		m_pMeshCom->RegisterComponent();
 		RootComponent = m_pMeshCom;
 	}
-
 }
 
 // Called when the game starts or when spawned
@@ -86,6 +85,7 @@ void ATester::UpdateEntityData()
 /**/
 void ATester::SpawnEntityPreset()
 {
+	// Entity별 메시 세팅 
 	SetPreset(EntityData.PresetReference);
 
 	if (EntityPresetClass)
