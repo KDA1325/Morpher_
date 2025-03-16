@@ -6,7 +6,14 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	IsDefending = false;
-	bHitBoxInitialized = false;
+	OnceHitBox = false;
+	CanUseHitBoxSkill = true;
+	CanUseDefenseSkill = true;
+}
+
+void UPlayerSkillComponent::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
@@ -17,43 +24,71 @@ void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
 	}
 }
 
-void UPlayerSkillComponent::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void UPlayerSkillComponent::OnDefenseSkill(float Count)
 {
-	if (IsDefending) return; // 중복X
-
 	IsDefending = true;
-
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill on"));
 	}
-	// Count초 후 방어 해제
+
+	// 방어 해제 타이머 설정
 	FTimerDelegate DefenseEnd;
-	DefenseEnd.BindUObject(this, &UPlayerSkillComponent::OffDefenseSkill); //Count초 후 OffDefenseSkill호출
+	DefenseEnd.BindUObject(this, &UPlayerSkillComponent::OffDefenseSkill);
 	SetSkillTimer(Count, DefenseEnd);
 }
 
 void UPlayerSkillComponent::OffDefenseSkill()
 {
 	IsDefending = false;
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("DefenseSkill off")));
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill off"));
 }
 
+void UPlayerSkillComponent::ResetDefenseSkillCooldown()
+{
+	CanUseDefenseSkill = true;
+	UE_LOG(LogTemp, Log, TEXT("Defense skill is ready to use again!"));
+}
 
+void UPlayerSkillComponent::SettingHitBox(const FSkillData& SkillData)
+{
+	if (!OnceHitBox && HitBox)
+	{
+		// 히트박스 크기 및 위치 설정
+		FVector NewBoxExtent = FVector(SkillData.SkillTypeSizeX, SkillData.SkillTypeSizeY, 100);
+		HitBox->SetBoxExtent(NewBoxExtent);
 
-/*
-		머지 하고 주석풀기
-			*/
+		FVector NewLocation = HitBox->GetRelativeLocation();
+		NewLocation.X += SkillData.SkillTypeSizeX;
+		HitBox->SetRelativeLocation(NewLocation);
+
+		OnceHitBox = true;
+	}
+}
+
+void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
+{
+	if (HitBox && Arrow)
+	{
+		HitBox->SetVisibility(true);
+		Arrow->SetVisibility(true);
+
+		// 로그 추가: 활성화된 히트박스와 화살의 상태 확인
+		UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow"));
+		// 일정 시간이 지나면 히트박스 숨기기
+		FTimerDelegate HitboxEnd;
+		HitboxEnd.BindUObject(this, &UPlayerSkillComponent::HideHitBox);
+		SetSkillTimer(SkillData.SkillDuration, HitboxEnd);
+	}
+	else
+	{
+		// HitBox나 Arrow가 없는 경우 로그 추가
+		UE_LOG(LogTemp, Error, TEXT("Failed to find HitBox or Arrow!"));
+	}
+}
 
 void UPlayerSkillComponent::SkillType(const FString& SkillID)
 {
-	CurrentSkillID = SkillID;
-
 	// 스킬 데이터 가져오기
 	FSkillData SkillData;
 	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
@@ -69,70 +104,53 @@ void UPlayerSkillComponent::SkillType(const FString& SkillID)
 	if (!PlayerPawn) return;
 
 	distance = GetDistanceTo(PlayerPawn);
-	//UE_LOG(LogTemp, Error, TEXT("Distance: %f"), distance);
 
+	// 히트박스 처리 (범위 내 스킬)
 	if (distance <= SkillData.SkillRange)
 	{
-		// 스킬 타입이 "Box"라면 HitBox와 Arrow를 활성화
+		UE_LOG(LogTemp, Error, TEXT("distance: %f"), distance);
+
 		if (SkillData.SkillTypeShape == "Box")
 		{
-			//UE_LOG(LogTemp, Error, TEXT("Box"));
-			// 처음 한 번만 크기 변경
-			if (!bHitBoxInitialized)
-			{
-				FVector NewBoxExtent = FVector(SkillData.SkillTypeSizeX, SkillData.SkillTypeSizeY, 100);
-				HitBox->SetBoxExtent(NewBoxExtent);
-				bHitBoxInitialized = true; // 한 번만 실행되도록 플래그 설정
-
-				// HitBox 위치도 처음 한 번만 변경
-				FVector NewLocation = HitBox->GetRelativeLocation();
-				NewLocation.X += SkillData.SkillTypeSizeX;
-				HitBox->SetRelativeLocation(NewLocation);
-			}
+			SettingHitBox(SkillData);  // 히트박스 초기화
+			OnHitBox(SkillData);    // 히트박스 활성화
 		}
-		if (SkillData.SkillType == "HitBox")
+		else if (SkillData.SkillTypeShape == "Sphere")
 		{
-			UE_LOG(LogTemp, Error, TEXT("HitBox"));
-
-			if (HitBox && Arrow) // Null 체크
-			{
-				HitBox->SetVisibility(true);
-				Arrow->SetVisibility(true);
-
-			}
-			// 일정 시간이 지나면 히트박스 숨기기
-			FTimerDelegate HitboxEnd;
-			HitboxEnd.BindUObject(this, &UPlayerSkillComponent::HideHitBox);
-			//UE_LOG(LogTemp, Error, TEXT(" X: %d, Y: %d, SkillData.SkillDuration _ %f"),  SkillData.SkillTypeSizeX,SkillData.SkillTypeSizeY,SkillData.SkillDuration);
-			SetSkillTimer(SkillData.SkillDuration, HitboxEnd);
-		}
-
-		// 스킬 타입이 "Projectile"이면 다른 로직 실행
-		else if (SkillData.SkillType == "Projectile")
-		{
+			// Sphere 관련 처리 추가
 		}
 	}
-	else if (SkillData.SkillTypeShape == "Sphere")
-	{
-		//
-	}
+	if (SkillData.SkillID=="Skill_ShieldGuard") {
+		// 방어 스킬 처리 (범위 밖 스킬)
+		if (!CanUseDefenseSkill)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Defense skill is on cooldown!"));
+			return;  // 쿨타임 중이면 방어 스킬 실행하지 않음
+		}
 
-	else
-	{
-		//	
+		OnDefenseSkill(3.0);  // 방어 스킬 실행
+
+		// 쿨타임 후 방어 스킬 사용 가능하게 설정
+		FTimerDelegate DefenseCooldownEnd;
+		DefenseCooldownEnd.BindUObject(this, &UPlayerSkillComponent::ResetDefenseSkillCooldown);
+		SetSkillTimer(SkillData.SkillCoolTime, DefenseCooldownEnd);  // 쿨타임 설정
+		CanUseDefenseSkill = false;  // 방어 스킬 쿨타임 시작
 	}
 }
-// 히트박스 숨기는 함수
+
 void UPlayerSkillComponent::HideHitBox()
 {
 	if (HitBox && Arrow)
 	{
 		HitBox->SetVisibility(false);
 		Arrow->SetVisibility(false);
+		// 로그 추가: 히트박스와 화살이 숨겨졌는지 확인
+		UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow hidden."));
 	}
 }
+
 float UPlayerSkillComponent::GetDistanceTo(const AActor* OtherActor) const
 {
-	// 현 액터와 플레이어이 거리
+	// 현재 액터와 플레이어 간 거리 계산
 	return OtherActor ? (GetOwner()->GetActorLocation() - OtherActor->GetActorLocation()).Size() : 0.f;
 }

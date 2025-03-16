@@ -274,8 +274,8 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
-	if (PlayerSkillComponent->IsDefending ==true) {
+	//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
+	if (PlayerSkillComponent->IsDefending) {
 
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 		UE_LOG(LogTemp, Warning, TEXT("Get Damage NowHP: %d"), currentHp);
@@ -286,12 +286,12 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 		currentHp -= DamageAmount;
 		On_invincibility();
 		// 데미지 로그 출력	
-		float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 		UE_LOG(LogTemp, Warning, TEXT("Get Damage NowHP: %d"), currentHp);
-	PlayerSkillComponent->OnDefenseSkill(3.0);
+		PlayerSkillComponent->OnDefenseSkill(3.0);
 
+		// 부모 클래스의 TakeDamage 호출하여 데미지 적용
+		float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 		return FinalDamage;
-
 	}
 
 
