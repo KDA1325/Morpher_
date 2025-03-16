@@ -40,7 +40,7 @@ UABGameSingleton::UABGameSingleton()
 		}
 	}
 
-	/*	
+	/*
 	for (const FABEntityData& EntityData : EntityDataTable)
 		{
 			UE_LOG(LogABGameSingleton, Error, TEXT("Entity Name: %s, HP: %d, Move Speed: %d, Normal Skill: %s, Special Skill: %s"),
@@ -53,7 +53,7 @@ UABGameSingleton::UABGameSingleton()
 	ensure(HowManyEntity > 0);
 	//UE_LOG(LogABGameSingleton, Error, TEXT("HowManyEntity: %d"), HowManyEntity);
 	//-> LogABGameSingleton: Error: HowManyEntity: 7
-	
+
 
 	// DataTable, DataMap에 데이터 저장
 	if (SkillDataTableRef.Succeeded())
@@ -65,7 +65,7 @@ UABGameSingleton::UABGameSingleton()
 		for (FSkillData* Row : Rows)
 		{
 			SkillDataTable.Add(*Row);
-			//FSkillDataMap.Add(Row->EntityGroupID, *Row);
+			SkillDataMap.Add(Row->SkillID, *Row);
 		}
 	}
 
@@ -75,7 +75,7 @@ UABGameSingleton::UABGameSingleton()
 	//	UE_LOG(LogABGameSingleton, Error, TEXT("SkillID: %s, SkillName: %s, SkillType: %s, SkillRange: %d, SkillDuration: %.1f, SkillCoolTime: %.1f, SkillTypeShape: %s, SkillTypeSizeX: %d, SkillTypeSizeY: %d, ProjectileSpeed: %d"),
 	//		*SkillData.SkillID, *SkillData.SkillName, *SkillData.SkillType, SkillData.SkillRange, SkillData.SkillDuration, SkillData.SkillCoolTime, *SkillData.SkillTypeShape, SkillData.SkillTypeSizeX, SkillData.SkillTypeSizeY, SkillData.ProjectileSpeed);
 	//}
-	
+
 	// 배열의 갯수가 0보다 큰지 확인
 	HowManySkill = SkillDataTable.Num();
 	// SkillDataTable에 저장된 데이터를 콘솔에 출력
@@ -133,5 +133,53 @@ bool UABGameSingleton::GetEntityDataByGroupID(const FString& GroupID, FABEntityD
 		OutEntityData = *FoundData;
 		return true;
 	}
+	return false;
+}
+
+// SkillID를 기준으로 SkillData 검색
+//bool UABGameSingleton::GetSkillDataBySkillID(const FString& SkillID, FSkillData& SkillData) const
+//{
+//	// SkillID가 정확히 어떤 값이 전달되었는지 로그로 확인
+//	UE_LOG(LogABGameSingleton, Warning, TEXT("Searching for SkillID: %s"), *SkillID);
+//	if (const FSkillData* FoundData = SkillDataMap.Find(SkillID))
+//	{
+//		SkillData = *FoundData;
+//		UE_LOG(LogABGameSingleton, Warning, TEXT("Skill Found! SkillID: %s, SkillName: %s, SkillType: %s"),
+//			*SkillData.SkillID, *SkillData.SkillName, *SkillData.SkillType);
+//		return true;
+//	}
+//	else
+//	{
+//		// SkillData를 찾지 못했다면 로그 출력
+//		UE_LOG(LogABGameSingleton, Warning, TEXT("Skill Not Found for SkillID: %s"), *SkillID);
+//	}
+//
+//	return false;
+//}
+// SkillID를 기준으로 SkillData 검색
+bool UABGameSingleton::GetSkillDataBySkillID(const FString& SkillID, FSkillData& SkillData) const
+{
+	// SkillID가 정확히 어떤 값이 전달되었는지 로그로 확인
+	UE_LOG(LogABGameSingleton, Warning, TEXT("Searching for SkillID: %s"), *SkillID);
+
+	// SkillDataMap에 SkillID가 존재하는지 확인
+	for (const auto& Elem : SkillDataMap)
+	{
+		UE_LOG(LogABGameSingleton, Warning, TEXT("SkillDataMap contains SkillID: %s"), *Elem.Key);
+	}
+
+	if (const FSkillData* FoundData = SkillDataMap.Find(SkillID))
+	{
+		SkillData = *FoundData;
+		UE_LOG(LogABGameSingleton, Warning, TEXT("Skill Found! SkillID: %s, SkillName: %s, SkillType: %s"),
+			*SkillData.SkillID, *SkillData.SkillName, *SkillData.SkillType);
+		return true;
+	}
+	else
+	{
+		// SkillData를 찾지 못했다면 로그 출력
+		UE_LOG(LogABGameSingleton, Warning, TEXT("Skill Not Found for SkillID: %s"), *SkillID);
+	}
+
 	return false;
 }

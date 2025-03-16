@@ -320,7 +320,7 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 		SetMoveSpeed(EntityData.MoveSpeed);
 		SetPreset(EntityData.PresetReference);
 
-		UE_LOG(LogABGameSingleton, Error, TEXT("!Entity Name: %s, HP: %d, Move Speed: %d"),
+		UE_LOG(LogTemp, Error, TEXT("!Entity Name: %s, HP: %d, Move Speed: %d"),
 			*EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed);
 	}
 
@@ -329,7 +329,7 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 void AN_Graduation_projectCharacter::SetMaxHp(int32 MaxHp)
 {
 	currentHp = MaxHp; // EntityData.HP 값을 currentHp에 할당
-	UE_LOG(LogABGameSingleton, Error, TEXT("!currentHp: %d"), currentHp)
+	UE_LOG(LogTemp, Error, TEXT("!currentHp: %d"), currentHp)
 
 }
 
@@ -337,7 +337,7 @@ void AN_Graduation_projectCharacter::SetMoveSpeed(int32 MoveSpeed)
 {
 	currentSpeed = MoveSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
-	UE_LOG(LogABGameSingleton, Error, TEXT("!currentSpeed: %d"), currentSpeed)
+	UE_LOG(LogTemp, Error, TEXT("!currentSpeed: %d"), currentSpeed)
 
 }
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)

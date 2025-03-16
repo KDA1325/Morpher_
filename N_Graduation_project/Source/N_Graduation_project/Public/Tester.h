@@ -7,7 +7,9 @@
 #include "GameFramework/Actor.h"
 #include "ABEntityData.h" // Entity Data 구조체
 #include "ABGameSingleton.h"
+#include "PlayerSkillComponent.h"
 #include "Tester.generated.h"
+
 
 UCLASS()
 class N_GRADUATION_PROJECT_API ATester : public AActor
@@ -71,5 +73,5 @@ public:
 	// EntityPreset 블루프린트에서 사용할 위젯 클래스
 	UPROPERTY()
 	class UEntityWidget* EntityWidget; // EntityWidget은 UUserWidget을 상속한 클래스
-
+	UPlayerSkillComponent* PlayerSkillComponent;  // PlayerSkillComponent 멤버 변수 선언
 };
