@@ -5,6 +5,7 @@
 // #include "CoreMinimal.h"
 #include "EngineMinimal.h" // UStaticMeshComponent를 사용하기 위해 변경
 #include "GameFramework/Actor.h"
+//#include "GameFramework/Character.h" // GetMesh()를 사용하기 위해 변경 
 #include "ABEntityData.h" // Entity Data 구조체
 #include "ABGameSingleton.h"
 #include "Tester.generated.h"
@@ -66,9 +67,15 @@ public:
 	// 메시 변경 테스트를 위해 
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* m_pMeshCom;
+	
+	//// 애니메이션 변경 테스트를 위해 
+	//UPROPERTY(VisibleAnywhere)
+	//UClass* m_AnimMontage;
 
-	UPROPERTY(VisibleAnywhere)
-	USkeletalMeshComponent* Skel_MeshCom;
+
+	/*UPROPERTY(VisibleAnywhere)
+	USkeletalMeshComponent* Skel_MeshCom;*/
+
 	// EntityPreset 블루프린트에서 사용할 위젯 클래스
 	UPROPERTY()
 	class UEntityWidget* EntityWidget; // EntityWidget은 UUserWidget을 상속한 클래스

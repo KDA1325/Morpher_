@@ -161,26 +161,61 @@ void ATester::SetPreset(FString PresetReference)
 		//UStaticMesh* LoadedMesh = LoadObject<UStaticMesh>(nullptr, *MeshPath);
 
 		// 에디터 실행 시 문제없이 메시를 로드하기 위해 FSoftObjectPath를 사용해 비동기 로딩 
-		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2.Boar_idle_test3s_2"));
+		FSoftObjectPath MeshPath(TEXT("/Script/Engine.SkeletalMesh'/Game/Animation/Boar/Boar_idle_test3s_3.Boar_idle_test3s_3'"));
+		FSoftObjectPath AnimPath(TEXT("/Script/Engine.AnimSequence'/Game/Animation/Boar/Boar_idle_test3s_2_Anim.Boar_idle_test3s_2_Anim'"));
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+		UAnimSequence* LoadedAnim = Cast<UAnimSequence>(AnimPath.TryLoad());
+
 		if (LoadedMesh)
 		{
 			// 스켈레탈 메시를 사용할 경우 SetSkeletalMesh() 사용
-			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
+			m_pMeshCom->SetSkeletalMesh(LoadedMesh); 
+			if (LoadedAnim)
+			{
+				m_pMeshCom->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+				m_pMeshCom->SetAnimation(LoadedAnim);
+				m_pMeshCom->Play(true);
+
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load")));
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load Failed ")));
+			}
 		}
 	}
 
 	if(currentPreset == "WildBoarPreset.uasset")
 	{
 		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2.Boar_idle_test3s_2"));
+		FSoftObjectPath AnimPath(TEXT("/Script/Engine.AnimSequence'/Game/Animation/Boar/Boar_idle_test3s_2_Anim.Boar_idle_test3s_2_Anim'"));
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+		UAnimSequence* LoadedAnim = Cast<UAnimSequence>(AnimPath.TryLoad());
 
 		if (LoadedMesh)
 		{
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);  // SkeletalMesh는 Skel_MeshCom을 사용
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Mesh Load")));
+
+			if (LoadedAnim)
+			{
+				m_pMeshCom->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+				m_pMeshCom->SetAnimation(LoadedAnim);
+				m_pMeshCom->Play(true);
+				
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load")));
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load Failed ")));
+			}
+		//	
 		//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("I'm Here")));
+		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Mesh Load Failed ")));
 		}
 	}
 	
@@ -197,12 +232,27 @@ void ATester::SetPreset(FString PresetReference)
 	
 	if (currentPreset == "FreezardPreset.uasset")
 	{
-		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_Statue.SM_Statue'"));
+		FSoftObjectPath MeshPath(TEXT("/Script/Engine.SkeletalMesh'/Game/Animation/Boar/Boar_idle_test3s_4.Boar_idle_test3s_4'"));
+		FSoftObjectPath AnimPath(TEXT("/Script/Engine.AnimSequence'/Game/Animation/Boar/Boar_idle_test3s_2_Anim.Boar_idle_test3s_2_Anim'"));
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+		UAnimSequence* LoadedAnim = Cast<UAnimSequence>(AnimPath.TryLoad());
+
 		if (LoadedMesh)
 		{
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
+			if (LoadedAnim)
+			{
+				m_pMeshCom->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+				m_pMeshCom->SetAnimation(LoadedAnim);
+				m_pMeshCom->Play(true);
+
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load")));
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load Failed ")));
+			}
 		}
 	}
 	
