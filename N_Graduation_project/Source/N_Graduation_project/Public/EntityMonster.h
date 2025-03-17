@@ -71,9 +71,6 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* m_pMeshCom;
 
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	//UWidgetComponent* WidgetComponent;
-
 	// EntityPreset 블루프린트에서 사용할 위젯 클래스
 	UPROPERTY()
 	class UEntityWidget* EntityWidget; // EntityWidget은 UUserWidget을 상속한 클래스

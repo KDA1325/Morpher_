@@ -12,20 +12,6 @@ AEntityMonster::AEntityMonster()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// 위젯 컴포넌트 초기화
-	//WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComponent"));
-	//if (WidgetComponent)
-	//{
-	//	// RootComponent에 붙이거나 Mesh에 붙이기
-	//	WidgetComponent->SetupAttachment(RootComponent);
-	//	WidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
-	//	WidgetComponent->SetVisibility(false);  // 처음엔 안 보이게
-	//}
-	// GetMesh()로 기본 스켈레탈 메시 컴포넌트를 가져옴
-	//GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, 90.0f));
-	//GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-
-	// UStaticMeshComponent을 생성자에서 CreateDefaultSubobject로 생성
 	// 생성자에서 미리 생성해줘야 nullptr 오류가 뜨지 않음 
 	//m_pMeshCom = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
 	//m_pMeshCom = GetMesh();
@@ -49,21 +35,6 @@ void AEntityMonster::BeginPlay()
 {
 	Super::BeginPlay();
 	isSpawned = false;
-	//
-	//if (!m_pMeshCom)
-	//{
-	//	/*m_pMeshCom = NewObject<USkeletalMeshComponent>(this, TEXT("MeshComponent"));
-	//	m_pMeshCom->RegisterComponent();
-	//	RootComponent = m_pMeshCom;*/
-
-	//	m_pMeshCom = GetMesh();
-
-	//	if (!m_pMeshCom)
-	//	{
-	//		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("failed to get mesh")));
-	//		return;
-	//	}
-	//}
 
 	UpdateEntityData();
 }
@@ -106,18 +77,9 @@ void AEntityMonster::SpawnEntityPreset()
 
 	if (EntityPresetClass)
 	{
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("1")));
+
 		AActor* SpawnedEntityPreset = GetWorld()->SpawnActor<AActor>(EntityPresetClass, GetActorLocation(), GetActorRotation());
-
-		//if (EntityPresetClass)
-		//{
-		//	AActor* SpawnedEntityPreset = GetWorld()->SpawnActor<AActor>(EntityPresetClass, GetActorLocation(), GetActorRotation());
-
-		//	if (SpawnedEntityPreset && WidgetComponent)
-		//	{
-		//		WidgetComponent->SetVisibility(true);       // 위젯 활성화
-		//		WidgetComponent->SetComponentTickEnabled(true); // Tick 활성화
-		//	}
-		//}
 
 		if (SpawnedEntityPreset)
 		{
