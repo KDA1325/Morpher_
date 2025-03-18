@@ -3,6 +3,7 @@
 
 #include "EntityMonster.h"
 #include "Engine/World.h"
+#include "MyAIController.h"
 // #include "Components/WidgetComponent.h"
 #include "EntityWidget.h"
 
@@ -11,6 +12,10 @@ AEntityMonster::AEntityMonster()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	AIControllerClass = AMyAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
 
 	// 생성자에서 미리 생성해줘야 nullptr 오류가 뜨지 않음 
 	//m_pMeshCom = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
@@ -79,41 +84,75 @@ void AEntityMonster::SpawnEntityPreset()
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("1")));
 
-		AActor* SpawnedEntityPreset = GetWorld()->SpawnActor<AActor>(EntityPresetClass, GetActorLocation(), GetActorRotation());
+		AEntityMonster* SpawnedEntityPreset = Cast<AEntityMonster>(GetWorld()->SpawnActor<AActor>(EntityPresetClass, GetActorLocation(), GetActorRotation()));
+		//AActor* SpawnedEntityPreset = GetWorld()->SpawnActor<AActor>(EntityPresetClass, GetActorLocation(), GetActorRotation());
 
 		if (SpawnedEntityPreset)
 		{
-			// UWidgetComponent가 null이면 수동으로 초기화
+			// 위젯 설정 및 업데이트
 			UWidgetComponent* WidgetComponent = SpawnedEntityPreset->FindComponentByClass<UWidgetComponent>();
-
-			if (!WidgetComponent)
-			{
-				// UWidgetComponent가 없으면 새로운 컴포넌트를 추가
-				WidgetComponent = NewObject<UWidgetComponent>(SpawnedEntityPreset);
-				if (WidgetComponent)
-				{
-					// WidgetComponent를 부모에 첨부하고 등록
-					WidgetComponent->SetupAttachment(SpawnedEntityPreset->GetRootComponent()); // 부모 컴포넌트에 넣고
-					WidgetComponent->RegisterComponent();  // 컴포넌트를 월드에
-				}
-			}
-
-			// WidgetComponent가 제대로 초기화되었는지 확인
 			if (WidgetComponent)
 			{
-				// 위젯을 가져와서 업데이트
 				UUserWidget* UserWidget = WidgetComponent->GetWidget();
 				if (UEntityWidget* MyEntityWidget = Cast<UEntityWidget>(UserWidget))
 				{
-					// 위젯에서 정보를 갱신
 					MyEntityWidget->UpdateHealthBar(EntityData.HP);
-					// 이름과 속도 값을 EntityWidget에 전달
 					MyEntityWidget->ReceiveEntityName(FText::FromString(EntityData.EntityName));
 					MyEntityWidget->ReceiveEntitySpeed(EntityData.MoveSpeed);
+					UE_LOG(LogTemp, Warning, TEXT("Widget updated successfully"));
 				}
 			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("WidgetComponent not found"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("SpawnEntityPreset failed"));
 		}
 	}
+
+
+	//if (EntityPresetClass)
+	//{
+	//	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("1")));
+
+	//	AActor* SpawnedEntityPreset = GetWorld()->SpawnActor<AActor>(EntityPresetClass, GetActorLocation(), GetActorRotation());
+
+	//	if (SpawnedEntityPreset)
+	//	{
+	//		// UWidgetComponent가 null이면 수동으로 초기화
+	//		UWidgetComponent* WidgetComponent = SpawnedEntityPreset->FindComponentByClass<UWidgetComponent>();
+
+	//		if (!WidgetComponent)
+	//		{
+	//			// UWidgetComponent가 없으면 새로운 컴포넌트를 추가
+	//			WidgetComponent = NewObject<UWidgetComponent>(SpawnedEntityPreset);
+	//			if (WidgetComponent)
+	//			{
+	//				// WidgetComponent를 부모에 첨부하고 등록
+	//				WidgetComponent->SetupAttachment(SpawnedEntityPreset->GetRootComponent()); // 부모 컴포넌트에 넣고
+	//				WidgetComponent->RegisterComponent();  // 컴포넌트를 월드에
+	//			}
+	//		}
+
+	//		// WidgetComponent가 제대로 초기화되었는지 확인
+	//		if (WidgetComponent)
+	//		{
+	//			// 위젯을 가져와서 업데이트
+	//			UUserWidget* UserWidget = WidgetComponent->GetWidget();
+	//			if (UEntityWidget* MyEntityWidget = Cast<UEntityWidget>(UserWidget))
+	//			{
+	//				// 위젯에서 정보를 갱신
+	//				MyEntityWidget->UpdateHealthBar(EntityData.HP);
+	//				// 이름과 속도 값을 EntityWidget에 전달
+	//				MyEntityWidget->ReceiveEntityName(FText::FromString(EntityData.EntityName));
+	//				MyEntityWidget->ReceiveEntitySpeed(EntityData.MoveSpeed);
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 

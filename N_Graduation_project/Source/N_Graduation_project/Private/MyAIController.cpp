@@ -25,6 +25,40 @@ AMyAIController::AMyAIController()
     //    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Failed")));
 
     //}
+
+    static ConstructorHelpers::FObjectFinder<UBlackboardData> BBMonsterRef(TEXT("/Script/AIModule.BlackboardData'/Game/Entity/BB_Monster.BB_Monster'"));
+    if (nullptr != BBMonsterRef.Object)
+    {
+        BBMonster = BBMonsterRef.Object;
+    }
+
+    static ConstructorHelpers::FObjectFinder<UBehaviorTree> BTMonsterRef(TEXT("/Script/AIModule.BehaviorTree'/Game/Entity/BT_Monster.BT_Monster'"));
+    if (nullptr != BTMonsterRef.Object)
+    {
+        BTMonster = BTMonsterRef.Object;
+    }
+}
+
+void AMyAIController::RunAI()
+{
+    UBlackboardComponent* BlackboardPtr = Blackboard.Get();
+
+    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Run AI")));
+    if (UseBlackboard(BBMonster, BlackboardPtr))
+    {
+        bool RunResult = RunBehaviorTree(BTMonster);
+        ensure(RunResult);
+    }
+}
+
+void AMyAIController::StopAI()
+{
+    UBehaviorTreeComponent* BTComponent = Cast<UBehaviorTreeComponent>(BrainComponent);
+
+    if (BTComponent)
+    {
+        BTComponent->StopTree();
+    }
 }
 
 // Called when the game starts or when spawned
@@ -69,6 +103,18 @@ void AMyAIController::BeginPlay()
     //    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("behaviortree not found")));
 
     //}
+}
+
+void AMyAIController::OnPossess(APawn* InPawn)
+{
+    Super::OnPossess(InPawn);
+
+    if (InPawn)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s"), *InPawn->GetName());
+    }
+
+    RunAI();
 }
 
 // Called every frame

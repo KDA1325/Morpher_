@@ -16,15 +16,27 @@ public:
     // Sets default values for this actor's properties
     AMyAIController();
 
+    void RunAI();
+    void StopAI();
+
 protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
+
+    virtual void OnPossess(APawn* InPawn) override;
 
 public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
 private:
-    UPROPERTY(EditAnywhere)
-    class UBehaviorTree* MonsterBehaviorTree;
+    UPROPERTY()
+    TObjectPtr<class UBlackboardData> BBMonster;
+
+    UPROPERTY()
+    TObjectPtr<class UBehaviorTree> BTMonster;
+
+
+    //UPROPERTY(EditAnywhere)
+    //class UBehaviorTree* MonsterBehaviorTree;
 };

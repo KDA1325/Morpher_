@@ -53,6 +53,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void UpdateEntityData();
 
+	void UpdateEntityWidget();
+
 	// EntityPreset 블루프린트 클래스를 참조하는 변수
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	TSubclassOf<AActor> EntityPresetClass;
@@ -72,8 +74,8 @@ public:
 	USkeletalMeshComponent* m_pMeshCom;
 
 	// EntityPreset 블루프린트에서 사용할 위젯 클래스
-	UPROPERTY()
-	class UEntityWidget* EntityWidget; // EntityWidget은 UUserWidget을 상속한 클래스
+	//UPROPERTY()
+	//class UEntityWidget* EntityWidget; // EntityWidget은 UUserWidget을 상속한 클래스
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool isSpawned;
