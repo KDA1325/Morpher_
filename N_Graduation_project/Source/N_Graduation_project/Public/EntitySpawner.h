@@ -27,7 +27,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	AEntityCharacter* EntityCharacter;
 
-	// 블루프린트에서 설정할 GroupID
+	// EntityCharacterClass 클래스를 참조하는 변수 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	TSubclassOf<AEntityCharacter> EntityCharacterClass;
+
+	// ABEntityData 구조체 사용
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
+	FABEntityData EntityData;
+
+	// 에디터에서 설정할 GroupID
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	FString EntityGroupID;
+	
+	UFUNCTION(BlueprintCallable, Category = "Spawn")
+	void SpawnEntityCharacter();
 };

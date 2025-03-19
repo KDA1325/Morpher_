@@ -41,42 +41,42 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// 블루프린트에서 설정할 GroupID
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	FString EntityGroupID;
+	//// 블루프린트에서 설정할 GroupID
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	//FString EntityGroupID;
 
-	// ABEntityData 구조체 사용
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
-	FABEntityData EntityData;
+	//// ABEntityData 구조체 사용
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
+	//FABEntityData EntityData;
 
-	// 설정한 GroupID를 키 값으로 가져온 데이터를 적용하는 함수
-	UFUNCTION(BlueprintCallable, Category = "Data")
-	void UpdateEntityData();
+	//// 설정한 GroupID를 키 값으로 가져온 데이터를 적용하는 함수
+	//UFUNCTION(BlueprintCallable, Category = "Data")
+	//void UpdateEntityData();
 
-	void UpdateEntityWidget();
+	//void UpdateEntityWidget();
 
-	// EntityPreset 블루프린트 클래스를 참조하는 변수
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	TSubclassOf<AActor> EntityPresetClass;
+	//// EntityPreset 블루프린트 클래스를 참조하는 변수
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	//TSubclassOf<AActor> EntityPresetClass;
 
-	UFUNCTION(BlueprintCallable, Category = "Spawn")
-	void SpawnEntityPreset();
+	//UFUNCTION(BlueprintCallable, Category = "Spawn")
+	//void SpawnEntityPreset();
 
-	// MaxHP를 설정하는 함수
-	void SetMaxHp(int32 MaxHp);
-	// MoveSpeed를 설정하는 함수
-	void SetMoveSpeed(int32 MoveSpeed);
-	// Preset을 설정하는 함수
-	void SetPreset(FString PresetReference);
+	//// MaxHP를 설정하는 함수
+	//void SetMaxHp(int32 MaxHp);
+	//// MoveSpeed를 설정하는 함수
+	//void SetMoveSpeed(int32 MoveSpeed);
+	//// Preset을 설정하는 함수
+	//void SetPreset(FString PresetReference);
 
-	// 메시 변경을 위해 
-	UPROPERTY(VisibleAnywhere)
-	USkeletalMeshComponent* m_pMeshCom;
+	//// 메시 변경을 위해 
+	//UPROPERTY(VisibleAnywhere)
+	//USkeletalMeshComponent* m_pMeshCom;
 
-	// EntityPreset 블루프린트에서 사용할 위젯 클래스
-	//UPROPERTY()
-	//class UEntityWidget* EntityWidget; // EntityWidget은 UUserWidget을 상속한 클래스
+	//// EntityPreset 블루프린트에서 사용할 위젯 클래스
+	////UPROPERTY()
+	////class UEntityWidget* EntityWidget; // EntityWidget은 UUserWidget을 상속한 클래스
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool isSpawned;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	//bool isSpawned;
 };

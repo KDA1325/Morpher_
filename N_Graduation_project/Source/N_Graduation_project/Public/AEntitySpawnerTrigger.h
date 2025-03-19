@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Tester.h"
+#include "EntitySpawner.h"
 #include "GameFramework/Actor.h"
 #include "AEntitySpawnerTrigger.generated.h"
 
