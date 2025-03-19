@@ -28,7 +28,7 @@ public:
 	AEntityCharacter* EntityCharacter;
 
 	// EntityCharacterClass 클래스를 참조하는 변수 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Entity")
 	TSubclassOf<AEntityCharacter> EntityCharacterClass;
 
 	// ABEntityData 구조체 사용

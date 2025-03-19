@@ -119,12 +119,14 @@ void AEntityCharacter::InitializeEntity(FABEntityData& InEntityData)
 
 	// 메시와 애니메이션 세팅
 	SetPreset(InEntityData.PresetReference);
-
+	
+	SetWidget();
 }
 
 void AEntityCharacter::SetPreset(FString PresetReference)
 {
 	currentPreset = PresetReference;
+
 	// 프리셋 이름과 경로를 매핑하는 맵 선언
 	TMap<FString, FSoftObjectPath> SkeletalMeshPaths = {
 		{"PCPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_3.Boar_idle_test3s_3"))},
@@ -281,4 +283,31 @@ void AEntityCharacter::SetPreset(FString PresetReference)
 	//		GetMesh()->SetSkeletalMesh(LoadedMesh);
 	//	}
 	//}
+}
+
+void AEntityCharacter::SetWidget()
+{
+	// 위젯 컴포넌트 불러오기 
+	UWidgetComponent* WidgetComponent = FindComponentByClass<UWidgetComponent>();
+
+	if (WidgetComponent)
+	{
+		UUserWidget* UserWidget = WidgetComponent->GetWidget();
+
+		if (UEntityWidget* MyEntityWidget = Cast<UEntityWidget>(UserWidget))
+		{
+			MyEntityWidget->UpdateHealthBar(currentHp);
+			//MyEntityWidget->ReceiveEntityName(FText::FromString(EntityData.EntityName));
+			//MyEntityWidget->ReceiveEntitySpeed(currentSpeed);
+			UE_LOG(LogTemp, Warning, TEXT("Widget updated successfully"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to cast UserWidget to UEntityWidget"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("WidgetComponent not found"));
+	}
 }

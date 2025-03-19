@@ -84,4 +84,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void SetPreset(FString PresetReference);
 
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	void SetWidget();
+
 };
