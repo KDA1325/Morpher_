@@ -311,3 +311,23 @@ void AEntityCharacter::SetWidget()
 		UE_LOG(LogTemp, Error, TEXT("WidgetComponent not found"));
 	}
 }
+
+float AEntityCharacter::GetAIPatrolRadius()
+{
+	return 800.0f; // 8미터
+}
+
+float AEntityCharacter::GetAIDetectRange()
+{
+	return 400.0f; // 4미터
+}
+
+float AEntityCharacter::GetAIAttackRange()
+{
+	return 0.0f;
+}
+
+float AEntityCharacter::GetAITurnSpeed()
+{
+	return 0.0f;
+}

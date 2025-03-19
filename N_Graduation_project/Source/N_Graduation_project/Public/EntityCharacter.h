@@ -8,10 +8,11 @@
 #include "ABGameSingleton.h"
 #include "GameFramework/Character.h"
 #include "Components/WidgetComponent.h"
+#include "CharacterAllInterface.h"
 #include "EntityCharacter.generated.h"
 
 UCLASS()
-class N_GRADUATION_PROJECT_API AEntityCharacter : public ACharacter
+class N_GRADUATION_PROJECT_API AEntityCharacter : public ACharacter, public ICharacterAllInterface
 {
 	GENERATED_BODY()
 
@@ -41,14 +42,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	//// 블루프린트에서 설정할 GroupID
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	//FString EntityGroupID;
-
-	// ABEntityData 구조체 사용
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
-	//FABEntityData EntityData;
-
 	// 메시 변경을 위한 변수 선언 
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* m_pMeshCom;
@@ -56,18 +49,6 @@ public:
 	// EntitySpawner 클래스를 참조하는 변수 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	TSubclassOf<AActor> EntitySpawnerClass;
-	
-	// EntitySpawer의 EnttityGroupID를 받아오는 함수
-	//UFUNCTION(BlueprintCallable, Category = "Data")
-	//void GetEntityGroupID(const FString& EntityGroupID);
-
-	// 받아온 GroupID를 키 값으로 가져온 데이터를 적용하는 함수
-	//UFUNCTION(BlueprintCallable, Category = "Data")
-	//void UpdateEntityData();
-
-	//UFUNCTION(BlueprintCallable, Category = "Data")
-	//void SpawnEntityCharacter();
-
 
 	UFUNCTION(BlueprintCallable, Category = "Spawn")
 	void InitializeEntity(FABEntityData& InEntityData);
@@ -87,4 +68,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void SetWidget();
 
+// AI Section
+protected:
+	virtual float GetAIPatrolRadius() override;
+	virtual float GetAIDetectRange() override;
+	virtual float GetAIAttackRange() override;
+	virtual float GetAITurnSpeed() override;
 };

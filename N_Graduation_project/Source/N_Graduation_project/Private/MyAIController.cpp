@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "MyAI.h"
 
 // Sets default values
 AMyAIController::AMyAIController()
@@ -46,6 +47,8 @@ void AMyAIController::RunAI()
     GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Run AI")));
     if (UseBlackboard(BBMonster, BlackboardPtr))
     {
+        Blackboard->SetValueAsVector(BBKEY_HOMEPOS, GetPawn()->GetActorLocation());
+
         bool RunResult = RunBehaviorTree(BTMonster);
         ensure(RunResult);
     }
