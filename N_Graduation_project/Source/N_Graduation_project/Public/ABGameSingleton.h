@@ -34,6 +34,7 @@ public:
 	// SkillID를 기준으로 SkillData를 반환하는 함수 추가
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	bool GetSkillDataBySkillID(const FString& SkillID, FSkillData& SkillData) const;
+	bool GetSkillEffectDataTBySkillID(const FString& SkillID, FSkillData& SkillData) const;
 
 
 	UPROPERTY()
@@ -52,4 +53,5 @@ private:
 
 	// Skill Effect 데이터 저장
 	TArray<FSkillEffectData> SkillEffectDataTable;
+	TMap<FString, FSkillEffectData> SkillEffectDataMap;
 };

@@ -93,7 +93,7 @@ UABGameSingleton::UABGameSingleton()
 		for (FSkillEffectData* Row : Rows)
 		{
 			SkillEffectDataTable.Add(*Row);
-			//SkillEffectDataMap.Add(Row->EntityGroupID, *Row);
+			SkillEffectDataMap.Add(Row->EffectID, *Row);
 		}
 	}
 
@@ -136,50 +136,27 @@ bool UABGameSingleton::GetEntityDataByGroupID(const FString& GroupID, FABEntityD
 	return false;
 }
 
-// SkillID를 기준으로 SkillData 검색
-//bool UABGameSingleton::GetSkillDataBySkillID(const FString& SkillID, FSkillData& SkillData) const
-//{
-//	// SkillID가 정확히 어떤 값이 전달되었는지 로그로 확인
-//	UE_LOG(LogABGameSingleton, Warning, TEXT("Searching for SkillID: %s"), *SkillID);
-//	if (const FSkillData* FoundData = SkillDataMap.Find(SkillID))
-//	{
-//		SkillData = *FoundData;
-//		UE_LOG(LogABGameSingleton, Warning, TEXT("Skill Found! SkillID: %s, SkillName: %s, SkillType: %s"),
-//			*SkillData.SkillID, *SkillData.SkillName, *SkillData.SkillType);
-//		return true;
-//	}
-//	else
-//	{
-//		// SkillData를 찾지 못했다면 로그 출력
-//		UE_LOG(LogABGameSingleton, Warning, TEXT("Skill Not Found for SkillID: %s"), *SkillID);
-//	}
-//
-//	return false;
-//}
-// SkillID를 기준으로 SkillData 검색
+ //SkillID를 기준으로 SkillData 검색
 bool UABGameSingleton::GetSkillDataBySkillID(const FString& SkillID, FSkillData& SkillData) const
 {
 	// SkillID가 정확히 어떤 값이 전달되었는지 로그로 확인
 	UE_LOG(LogABGameSingleton, Warning, TEXT("Searching for SkillID: %s"), *SkillID);
-
-	// SkillDataMap에 SkillID가 존재하는지 확인
-	for (const auto& Elem : SkillDataMap)
-	{
-		UE_LOG(LogABGameSingleton, Warning, TEXT("SkillDataMap contains SkillID: %s"), *Elem.Key);
-	}
-
 	if (const FSkillData* FoundData = SkillDataMap.Find(SkillID))
 	{
 		SkillData = *FoundData;
-		UE_LOG(LogABGameSingleton, Warning, TEXT("Skill Found! SkillID: %s, SkillName: %s, SkillType: %s"),
-			*SkillData.SkillID, *SkillData.SkillName, *SkillData.SkillType);
 		return true;
 	}
-	else
-	{
-		// SkillData를 찾지 못했다면 로그 출력
-		UE_LOG(LogABGameSingleton, Warning, TEXT("Skill Not Found for SkillID: %s"), *SkillID);
-	}
+	return false;
+}
 
+bool UABGameSingleton::GetSkillEffectDataTBySkillID(const FString& EffectID, FSkillData& EffectData) const
+{
+	// SkillID가 정확히 어떤 값이 전달되었는지 로그로 확인
+	UE_LOG(LogABGameSingleton, Warning, TEXT("Searching for EffectID: %s"), *EffectID);
+	if (const FSkillData* FoundData = SkillDataMap.Find(EffectID))
+	{
+		EffectData = *FoundData;
+		return true;
+	}
 	return false;
 }

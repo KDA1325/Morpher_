@@ -16,6 +16,7 @@ class UInputMappingContext;
 class UInputAction;
 class UTimelineComponent;
 struct FInputActionValue;
+class UCharacterStateComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -58,7 +59,6 @@ public:
 
 
 protected:
-
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
@@ -78,6 +78,8 @@ protected:
 
 	// To add mapping context
 	virtual void BeginPlay();
+	virtual void Tick(float DeltaTime);
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -106,15 +108,18 @@ private:
 	// Dash를 수행할 때의 속력 
 	FVector DashVelocity;
 
+	void OnPlayerDead();
 	UPROPERTY(VisibleAnywhere)
 	UPlayerSkillComponent* PlayerSkillComponent;
 
+	UPROPERTY(VisibleAnywhere)
+	UCharacterStateComponent* CharacterStateComponent;
+	/** 체력 컴포넌트 */
+	UPROPERTY(VisibleAnywhere)
+	UMyPlayerStatComponent* PlayerStatComponent;
 
 public:
-	/** 체력 컴포넌트 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player Stats")
-	class UMyPlayerStatComponent* PlayerStatComponent;
-
+	
 	/** 데미지 받는 함수 */
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
@@ -123,12 +128,12 @@ public:
 	//FDamageEvent const& DamageEvent 데미지 종류
 	//EventInstigator,//데미지를 준 컨트롤러
 	//DamageCauser//데미지를 준 액터 자체
-	
+
 	// 무적 상태 활성화
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsInvincible;
-	
+
 	UFUNCTION(BlueprintNativeEvent)
 	void On_invincibility();
 
@@ -168,20 +173,20 @@ public:
 	FString specialSkill;
 	FString presetReference;
 
-	int32 currentHp;
 	int32 currentSpeed;
 	FString currentPreset;
-
-	// MaxHP를 설정하는 함수
-	void SetMaxHp(int32 MaxHp);
+	FString pastPreset;
+	
+	
 	// MoveSpeed를 설정하는 함수
 	void SetMoveSpeed(int32 MoveSpeed);
 	// Preset을 설정하는 함수
 	void SetPreset(FString PresetReference);
 
 	//데미지 테스트
-	void DealDamageToPlayer();
+//	void DealDamageToPlayer();
 
+	bool bIsMoving;
 
 };
 

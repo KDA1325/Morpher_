@@ -15,8 +15,9 @@
 #include "PlayerSkillComponent.h"
 //#include "Blueprint/UserWidget.h"
 //#include "UObject/ConstructorHelpers.h"
-#include "Kismet/GameplayStatics.h"//ApplyDamage테스트
-#include "GameFramework/Character.h"//ApplyDamage테스트
+#include "Kismet/GameplayStatics.h"//ApplyDamage
+#include "GameFramework/Character.h"//ApplyDamage
+#include "CharacterStateComponent.h" //state
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -83,6 +84,7 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	// 체력 컴포넌트 추가
 	PlayerStatComponent = CreateDefaultSubobject<UMyPlayerStatComponent>(TEXT("PlayerStatComponent"));
 	PlayerSkillComponent = CreateDefaultSubobject<UPlayerSkillComponent>(TEXT("PlayerSkillComponent"));
+	CharacterStateComponent = CreateDefaultSubobject<UCharacterStateComponent>(TEXT("CharacterStateComponent"));
 
 	//위젯 블루프린트 클래스 찾기
 	//static ConstructorHelpers::FClassFinder<UUserWidget> WidgetFinder(TEXT("WidgetBlueprint'/Game/Entity/BP/Character_HealthBar.Character_HealthBar_C'"));
@@ -103,6 +105,8 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 		RootComponent = m_pMeshCom;
 	}
 
+	bIsMoving = true;
+	pastPreset = "PlayerCharacter";
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -113,8 +117,10 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	//SpawnWidget();
 
 	FOnTimelineFloat DashCallback;
-	//	currentPreset = "PlayerCharacter";
-	currentPreset = "WildBoar";
+	currentPreset = "PlayerCharacter";
+	UpdateEntityData();
+
+	//currentPreset = "WildBoar";
 
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
 	DashCallback.BindUFunction(this, FName("DashInterpReturn"));
@@ -126,8 +132,39 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	// 타임라인 길이 설정
 	DashTimeline->SetTimelineLength(0.2f);
 
-	UpdateEntityData();
+	//if (PlayerStatComponent)
+	//{
+	//	PlayerStatComponent->OnHPIsZero.AddDynamic(this, &AN_Graduation_projectCharacter::OnPlayerDead);
+	//}
 }
+
+void AN_Graduation_projectCharacter::Tick(float DeltaTime) {
+	FVector Velocity = GetVelocity();
+	float Speed = Velocity.Size(); // 현재 속도
+
+	if (Speed > 0.1f) // 일정 속도 이상이면 이동 중
+	{
+		bIsMoving = true;
+	}
+	else // 속도가 0이면 이동 중이 아님
+	{
+		bIsMoving = false;
+	}
+	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
+
+	if (bIsMoving)
+	{
+
+		StateComp->ChangeState(ECharacterState::Move);
+	}
+	else
+	{
+		StateComp->ChangeState(ECharacterState::Idle);
+	}
+
+}
+
+
 /*
 void AN_Graduation_projectCharacter::SpawnWidget()
 {
@@ -191,6 +228,8 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 
 void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
 {
+	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
+
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -203,12 +242,19 @@ void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-		// get right vector 
+		// get right vector
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
+
+		if (StateComp)
+		{
+			FString StateString = UEnum::GetValueAsString(StateComp->CurrentState);
+			StateComp->ChangeState(ECharacterState::Move);
+		}
+
 	}
 }
 
@@ -252,6 +298,13 @@ void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
 
 void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector DashVel)
 {
+	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
+	if (StateComp)
+	{
+		FString StateString = UEnum::GetValueAsString(StateComp->CurrentState);
+		StateComp->ChangeState(ECharacterState::Dash);
+	}
+
 	DashDirection = DashDir;
 	DashVelocity = DashVel;
 	DashTimeline->PlayFromStart();
@@ -259,8 +312,12 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	UpdateEntityData();
 	//속도 변하는지 체크하려고
 	*/
-	UE_LOG(LogABGameSingleton, Error, TEXT("HP: %d"), currentHp);
-	DealDamageToPlayer();
+	currentPreset = "WildBoar"; //임시로	
+	SetPreset(currentPreset);
+
+	UpdateEntityData();
+	/*FString HPText = FString::Printf(TEXT("HP: %f"), PlayerStatComponent->CurrentHP);
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, HPText);*/
 
 }
 
@@ -274,30 +331,26 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
-	if (PlayerSkillComponent->IsDefending) {
+	UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
+	if (PlayerSkillComponent->IsDefending == true) {
 
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
-		UE_LOG(LogTemp, Warning, TEXT("Get Damage NowHP: %d"), currentHp);
-
 		return 0.0f;//무적상태라면 리턴.
 	}
-	else {
-		currentHp -= DamageAmount;
+	else
+	{
+		PlayerStatComponent->ApplyDamage(DamageAmount);
 		On_invincibility();
 		// 데미지 로그 출력	
-		UE_LOG(LogTemp, Warning, TEXT("Get Damage NowHP: %d"), currentHp);
+		float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 		PlayerSkillComponent->OnDefenseSkill(3.0);
 
-		// 부모 클래스의 TakeDamage 호출하여 데미지 적용
-		float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 		return FinalDamage;
 	}
-
-
 }
 
-void AN_Graduation_projectCharacter::On_invincibility_Implementation() {
+void AN_Graduation_projectCharacter::On_invincibility_Implementation()
+{
 	if (PlayerSkillComponent && !IsInvincible)
 	{
 		// 무적 상태 활성화
@@ -305,9 +358,7 @@ void AN_Graduation_projectCharacter::On_invincibility_Implementation() {
 
 		// PlayerSkillComponent에서 방어 스킬을 실행
 		PlayerSkillComponent->OnDefenseSkill(1.0f);
-
 		// 깜박이기구현->BP
-
 	}
 }
 
@@ -316,30 +367,38 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 	if (UABGameSingleton::Get().GetEntityDataByGroupID(currentPreset, EntityData))
 	{
 		SetActorLabel(EntityData.EntityName);
-		SetMaxHp(EntityData.HP);
 		SetMoveSpeed(EntityData.MoveSpeed);
 		SetPreset(EntityData.PresetReference);
-
 		UE_LOG(LogTemp, Error, TEXT("!Entity Name: %s, HP: %d, Move Speed: %d"),
 			*EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed);
 	}
-
-}
-
-void AN_Graduation_projectCharacter::SetMaxHp(int32 MaxHp)
-{
-	currentHp = MaxHp; // EntityData.HP 값을 currentHp에 할당
-	UE_LOG(LogTemp, Error, TEXT("!currentHp: %d"), currentHp)
-
+	// currentPreset!=클릭한 버튼의 캐릭터이름 이면..
+	if (pastPreset != currentPreset) {
+		UE_LOG(LogTemp, Error, TEXT("= pastPreset != currentPreset"));
+		PlayerStatComponent->TransformToEntity(EntityData.HP, 10);
+		pastPreset = currentPreset;
+	}
 }
 
 void AN_Graduation_projectCharacter::SetMoveSpeed(int32 MoveSpeed)
 {
 	currentSpeed = MoveSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
-	UE_LOG(LogTemp, Error, TEXT("!currentSpeed: %d"), currentSpeed)
-
+	UE_LOG(LogTemp, Error, TEXT("!currentSpeed: %d"), currentSpeed);
 }
+void AN_Graduation_projectCharacter::OnPlayerDead()
+{
+	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
+	if (StateComp)
+	{
+		FString StateString = UEnum::GetValueAsString(StateComp->CurrentState);
+		StateComp->ChangeState(ECharacterState::Dead);
+	}
+	// HP가 0이 되었을 때 처리할 로직
+	UE_LOG(LogTemp, Warning, TEXT("Player is dead!"));
+	// 여기서 플레이어 죽음 처리 (예: 애니메이션, UI 변경 등)
+}
+
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 {
 	currentPreset = PresetReference;
@@ -348,9 +407,11 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	if (currentPreset == "PCPreset.uasset")
 	{
 		// 에디터 실행 시 문제없이 메시를 로드하기 위해 FSoftObjectPath를 사용해 비동기 로딩 
-		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2.Boar_idle_test3s_2"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny"));
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+		GetMesh()->SetSkeletalMesh(LoadedMesh);
+
 		if (LoadedMesh)
 		{
 			// 스켈레탈 메시를 사용할 경우 SetSkeletalMesh() 사용
@@ -361,13 +422,13 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	if (currentPreset == "WildBoarPreset.uasset")
 	{
 		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2.Boar_idle_test3s_2"));
-
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+		GetMesh()->SetSkeletalMesh(LoadedMesh);
 
 		if (LoadedMesh)
 		{
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);  // SkeletalMesh는 Skel_MeshCom을 사용
-			//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("I'm Here")));
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("I'm Here")));
 		}
 	}
 
@@ -405,6 +466,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	}
 }
 
+
+/* //나중에 테스터에
 void AN_Graduation_projectCharacter::DealDamageToPlayer()
 {
 	UE_LOG(LogTemp, Error, TEXT("50 Damage"));
@@ -414,10 +477,11 @@ void AN_Graduation_projectCharacter::DealDamageToPlayer()
 	float DamageAmount = 50.0f;
 	// TargetCharacter에서 GetController를 호출
 	AController* InstigatorController = TargetCharacter->GetController();
-	AActor* DamageCauser = this; // 데미지를 주는 액터 
+	AActor* DamageCauser = this; // 데미지를 주는 액터
 	TSubclassOf<UDamageType> DamageType = UDamageType::StaticClass(); // 기본 데미지 타입
 
 	// 데미지 적용
 	UGameplayStatics::ApplyDamage(TargetCharacter, DamageAmount, InstigatorController, DamageCauser, DamageType);
 
 }
+*/

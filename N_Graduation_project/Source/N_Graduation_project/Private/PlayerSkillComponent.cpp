@@ -1,6 +1,7 @@
 #include "PlayerSkillComponent.h"
 #include "GameFramework/Actor.h"
 #include "TimerManager.h"
+#include "CharacterStateComponent.h" //state
 
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
@@ -153,4 +154,9 @@ float UPlayerSkillComponent::GetDistanceTo(const AActor* OtherActor) const
 {
 	// 현재 액터와 플레이어 간 거리 계산
 	return OtherActor ? (GetOwner()->GetActorLocation() - OtherActor->GetActorLocation()).Size() : 0.f;
+}
+
+void UPlayerSkillComponent::SkillAnimation(const FString& EffectID) {
+	//if(CurrentSkillID==Skill_Slash)
+	
 }

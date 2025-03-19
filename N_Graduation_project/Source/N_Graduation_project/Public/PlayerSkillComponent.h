@@ -6,10 +6,9 @@
 #include "SkillData.h"
 #include "Components/BoxComponent.h"  // UBoxComponent
 #include "Components/ArrowComponent.h"  // UArrowComponent
-
 #include "PlayerSkillComponent.generated.h"
 
-// Forward declarations
+//class Forward declarations;
 class AActor;
 class UBoxComponent;
 class UArrowComponent;
@@ -44,11 +43,13 @@ public:
 	void SetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
 	void SkillType(const FString& SkillID);    // 스킬 타입 설정 함수
 	float GetDistanceTo(const AActor* OtherActor) const;    // 거리 계산 함수
-
+	//void ActivateShieldEffect(const FString& EffectID); //이펙트값 넣을 함수
 	// 히트박스 초기화 및 활성화 함수
 	void SettingHitBox(const FSkillData& SkillData); // 히트박스 초기화
 	void OnHitBox(const FSkillData& SkillData);                            // 히트박스 활성화
 	void HideHitBox();                               // 히트박스 비활성화
+
+	void SkillAnimation(const FString& EffectID);
 
 protected:
 	virtual void BeginPlay() override; // 게임 시작 시 호출되는 함수

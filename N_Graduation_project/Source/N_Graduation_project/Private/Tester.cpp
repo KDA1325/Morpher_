@@ -5,7 +5,8 @@
 #include "Engine/World.h"
 #include "Components/WidgetComponent.h"
 #include "EntityWidget.h"
-
+#include "Components/BoxComponent.h"  // UBoxComponent
+#include "Components/ArrowComponent.h"  // UArrowComponent
 // Sets default values
 ATester::ATester()
 {
@@ -23,6 +24,7 @@ ATester::ATester()
 		m_pMeshCom->RegisterComponent();
 		RootComponent = m_pMeshCom;
 	}
+	PlayerSkillComponent = CreateDefaultSubobject<UPlayerSkillComponent>(TEXT("PlayerSkillComponent"));
 
 }
 
@@ -46,6 +48,7 @@ void ATester::BeginPlay()
 void ATester::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	//PlayerSkillComponent->SkillType("Skill_ShieldGuard");
 }
 
 void ATester::UpdateEntityData()
@@ -94,6 +97,17 @@ void ATester::SpawnEntityPreset()
 		{
 			// UWidgetComponent가 null이면 수동으로 초기화
 			UWidgetComponent* WidgetComponent = SpawnedEntityPreset->FindComponentByClass<UWidgetComponent>();
+			PlayerSkillComponent->HitBox = SpawnedEntityPreset->FindComponentByClass<UBoxComponent>();
+			PlayerSkillComponent->Arrow = SpawnedEntityPreset->FindComponentByClass<UArrowComponent>();
+
+			if (PlayerSkillComponent->HitBox)
+			{
+				UE_LOG(LogABGameSingleton, Error, TEXT("Yes HitBox"));
+			}
+			if (PlayerSkillComponent->Arrow)
+			{
+				UE_LOG(LogABGameSingleton, Error, TEXT("Yes Arrow"));
+			}
 
 			if (!WidgetComponent)
 			{

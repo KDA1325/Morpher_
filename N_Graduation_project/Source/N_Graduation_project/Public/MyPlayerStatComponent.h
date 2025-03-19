@@ -2,43 +2,66 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "ABGameSingleton.h" // 싱글톤 클래스 포함
+#include "ABEntityData.h" // Entity Data 구조체
+#include "ABGameSingleton.h"
+#include <N_Graduation_project/N_Graduation_projectCharacter.h>
+
 #include "MyPlayerStatComponent.generated.h"
+
+//델리게이트 못쓰겠음. 
+//DECLARE_MULTICAST_DELEGATE(FOnHpIsZeroDelegate);
+//DECLARE_MULTICAST_DELEGATE(FOnHpChangedDelegate);
+//DECLARE_MULTICAST_DELEGATE(FOnManaChangedDelegate);
 
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class N_GRADUATION_PROJECT_API UMyPlayerStatComponent : public UActorComponent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	UMyPlayerStatComponent();
+    UMyPlayerStatComponent();
 
 protected:
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
+    virtual void InitializeComponent() override;
 
 public:
-	// 체력과 관련된 변수들
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
-	float MaxHealth;
+    void SetHP(int NewHP);
+    void SetMaxHp(int MaxHp);
 
-	UPROPERTY(BlueprintReadOnly, Category = "Player Stats")
-	float CurrentHealth;
+    void SetMana(int NewMana);
+    void UseMana(int ManaAmount);
+    void ApplyDamage(float DamageAmount);
 
-	// 체력 감소 함수
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-	void TakeDamage(float DamageAmount);
+    void TransformToEntity(int HP, int Mana);
+    bool CanTransform(int TransManaCost) const;
 
-	// 체력 회복 함수
-	//UFUNCTION(BlueprintCallable, Category = "Player Stats")
-	//void Heal(float HealAmount);
+   // ECharacterState GetCurrentState() const { return CurrentState; }
+   // void SetCurrentState(ECharacterState NewState);
+   
+    //UPROPERTY(BlueprintAssignable)
+   // FOnHpIsZeroDelegate OnHPIsZero;
 
-	// 데미지 받을 때 이벤트 발생
-	//UFUNCTION(BlueprintImplementableEvent, Category = "Player Stats")
-	//void OnHealthChanged(float Health);
+    int TransManaCost;
+    int NewMaxHP;
+    float PastMaxHP;
+    float PastHP;
 
-	// 죽었을 때 이벤트
-	UFUNCTION(BlueprintImplementableEvent, Category = "Player Stats")
-	void OnDeath();
+    AN_Graduation_projectCharacter* OwnerPlayer;
+  
+    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
+    float CurrentHP;
 
+    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
+    int CurrentMana;
+
+  
+
+    //UPROPERTY(BlueprintAssignable)
+    //FOnHpChangedDelegate OnHPChanged;
+
+    //UPROPERTY(BlueprintAssignable)
+    //FOnManaChangedDelegate OnManaChangedDelegate;
+    
 };
