@@ -5,6 +5,7 @@
 #include "MyAI.h"
 #include "AIController.h"
 #include "CharacterAllInterface.h"
+#include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/OverlapResult.h"
@@ -20,6 +21,8 @@ UBTService_Detect::UBTService_Detect()
 void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
+	
+	APawn* playerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 
 	// 지금 제어하고 있는 폰 정보 가져옴
 	APawn* ControllingPawn = OwnerComp.GetAIOwner()->GetPawn();
@@ -43,6 +46,8 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		return;
 	}
 
+	OwnerComp.GetBlackboardComponent()->SetValueAsVector(BBKEY_PLAYERLOCATION, playerPawn->GetActorLocation());
+
 	// 인터페이스로부터 감지할 영역에 대한 값 가져옴 
 	float DetectRadius = AIPawn->GetAIDetectRange();
 
@@ -55,7 +60,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		OverlapResults,
 		Center,
 		FQuat::Identity,
-		ECC_GameTraceChannel1, //ECC_GameTraceChannel1,
+		ECC_GameTraceChannel1, // ECC_Visibility, //ECC_GameTraceChannel1,
 		FCollisionShape::MakeSphere(DetectRadius),
 		CollisionQueryParam
 	);
