@@ -4,18 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BTTask_UseSkill.generated.h"
+#include "BTTask_MoveToPlayer.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class N_GRADUATION_PROJECT_API UBTTask_UseSkill : public UBTTaskNode
+class N_GRADUATION_PROJECT_API UBTTask_MoveToPlayer : public UBTTaskNode
 {
 	GENERATED_BODY()
-
 public:
-	UBTTask_UseSkill();
-	
+	UBTTask_MoveToPlayer();
+
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };

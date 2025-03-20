@@ -96,6 +96,10 @@ private:
 	// 타임라인에 있는 커브가 수행되면서 실행될 함수 
 	UFUNCTION()
 	void DashInterpReturn(float value);
+	
+	// 대시 종료 시 호출되는 함수(타임라인 종료 콜백)
+	/*UFUNCTION()
+	void OnDashFinished();*/
 
 	// Dash를 수행하는 방향
 	FVector DashDirection;
