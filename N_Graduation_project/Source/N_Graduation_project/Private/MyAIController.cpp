@@ -43,6 +43,7 @@ AMyAIController::AMyAIController()
 void AMyAIController::RunAI()
 {
     UBlackboardComponent* BlackboardPtr = Blackboard.Get();
+    
 
     GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Run AI")));
     if (UseBlackboard(BBMonster, BlackboardPtr))
@@ -83,29 +84,6 @@ void AMyAIController::BeginPlay()
 
     //}
 
-    //if (MonsterBehaviorTree != nullptr)
-    //{
-    //    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("behaviortree found")));
-    //    RunBehaviorTree(MonsterBehaviorTree);
-
-    //    APawn* playerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-
-    //    if (playerPawn != nullptr)
-    //    {
-    //        GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Get Player Pawn")));
-    //        //GetBlackboardComponent()->SetValueAsVector(TEXT("PlayerLocation"), playerPawn->GetActorLocation());
-    //    }
-    //    else
-    //    {
-    //        GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Failed")));
-
-    //    }
-    //}
-    //else
-    //{
-    //    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("behaviortree not found")));
-
-    //}
 }
 
 void AMyAIController::OnPossess(APawn* InPawn)
