@@ -104,14 +104,37 @@ void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 		// 로그 추가: 활성화된 히트박스와 화살의 상태 확인
 		UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow"));
 		// 일정 시간이 지나면 히트박스 숨기기
-		FTimerDelegate HitboxEnd;
-		HitboxEnd.BindUObject(this, &UPlayerSkillComponent::HideHitBox);
+//		FTimerHandle  HitboxEnd;
+		
+		//FTimerDelegate HitboxEnd;
+		/*HitboxEnd.BindUObject(this, &UPlayerSkillComponent::HideHitBox);
 		SetSkillTimer(SkillData.SkillDuration, HitboxEnd);
+		UE_LOG(LogTemp, Warning, TEXT("SkillDuration: %f"), SkillData.SkillDuration);*/
+
+		// 타이머 시작: 일정 시간이 지나면 HideHitBox 호출
+		//GetWorld()->GetTimerManager().SetTimer(HitboxEnd, this, &UPlayerSkillComponent::HideHitBox, SkillData.SkillDuration, false);
+		//UE_LOG(LogTemp, Warning, TEXT("SkillDuration: %f"), SkillData.SkillDuration);
 	}
 	else
 	{
 		// HitBox나 Arrow가 없는 경우 로그 추가
 		UE_LOG(LogTemp, Error, TEXT("Failed to find HitBox or Arrow!"));
+	}
+}
+void UPlayerSkillComponent::HideHitBox()
+{
+	UE_LOG(LogTemp, Error, TEXT("HideHitBox() called!"));
+
+	if (HitBox && Arrow)
+	{
+		HitBox->SetVisibility(false);
+		Arrow->SetVisibility(false);
+		// 로그 추가: 히트박스와 화살이 숨겨졌는지 확인
+		UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow hidden."));
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("No HitBox and Arrow hidden."));
+
 	}
 }
 
@@ -173,7 +196,7 @@ AActor* UPlayerSkillComponent::FindMonsterTarget()
 		return nullptr;
 	}
 	else {
-		UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
+	//	UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
 
 		AActor* ClosestMonster = nullptr;
 		float MinDistance = FLT_MAX;
@@ -211,7 +234,7 @@ void UPlayerSkillComponent::NomalSkillType(const FString& SkillID)
 	}
 
 	distance = GetDistanceTo(MonsterTarget);  // 몬스터와 거리 계산
-	UE_LOG(LogTemp, Warning, TEXT("Distance to Monster: %f"), distance);
+	//UE_LOG(LogTemp, Warning, TEXT("Distance to Monster: %f"), distance);
 
 
 	//	히트박스 처리 (범위 내 스킬)
@@ -235,8 +258,10 @@ void UPlayerSkillComponent::NomalSkillType(const FString& SkillID)
 		{
 			//	 Sphere 관련 처리 추가
 		}
-		//}
-
+	}
+	else {
+		FTimerHandle  HitboxEnd;
+		GetWorld()->GetTimerManager().SetTimer(HitboxEnd, this, &UPlayerSkillComponent::HideHitBox, SkillData.SkillDuration, false);
 
 	}
 }
@@ -298,15 +323,9 @@ void UPlayerSkillComponent::SpecialSkillType(const FString& SkillID)
 			SetSkillTimer(SkillData.SkillCoolTime, SpecialCooldownEnd);  // 쿨타임 설정
 		}
 	}
-}
-void UPlayerSkillComponent::HideHitBox()
-{
-	if (HitBox && Arrow)
-	{
-		HitBox->SetVisibility(false);
-		Arrow->SetVisibility(false);
-		// 로그 추가: 히트박스와 화살이 숨겨졌는지 확인
-		UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow hidden."));
+	else {
+		FTimerHandle  HitboxEnd;
+		GetWorld()->GetTimerManager().SetTimer(HitboxEnd, this, &UPlayerSkillComponent::HideHitBox, SkillData.SkillDuration, false);
 	}
 }
 
@@ -318,5 +337,5 @@ float UPlayerSkillComponent::GetDistanceTo(const AActor* OtherActor) const
 
 //void UPlayerSkillComponent::SkillAnimation(const FString& EffectID) {
 //	if(CurrentSkillID==Skill_Slash)
-//	
+//
 //}
