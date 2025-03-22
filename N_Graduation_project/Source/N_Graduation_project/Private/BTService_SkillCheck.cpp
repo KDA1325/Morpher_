@@ -38,17 +38,17 @@ void UBTService_SkillCheck::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 	}
 
 	// 플레이어 가져오기
-	ACharacter* PlayerCharacter = Cast<ACharacter>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(BBKEY_TARGET));
+	/*ACharacter* PlayerCharacter = Cast<ACharacter>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(BBKEY_TARGET));
 	if (nullptr == PlayerCharacter)
 	{
 		return;
-	}
+	}*/
 
 	// ControllingPawn과 플레이어 사이의 거리 저장 
 	// 플레이어 위치 벡터 저장 
 	//FVector PlayerLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector(BBKEY_PLAYERLOCATION);
 	//float DistanceToPlayer = FVector::Dist(ControllingPawn->GetActorLocation(), PlayerLocation);
-	float DistanceToPlayer = FVector::Dist(ControllingPawn->GetActorLocation(), PlayerCharacter->GetActorLocation());
+	//float DistanceToPlayer = FVector::Dist(ControllingPawn->GetActorLocation(), PlayerCharacter->GetActorLocation());
 
 	// NormalSkill과 SpecialSkill의 Skilldata - SkillRange값을 비교
 	// SkillData 데이터 테이블에 있는 SkillRange 불러와서 A/B스킬 정의 함수 구현  

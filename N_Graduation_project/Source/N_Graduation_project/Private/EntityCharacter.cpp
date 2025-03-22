@@ -319,7 +319,7 @@ float AEntityCharacter::GetAIPatrolRadius()
 
 float AEntityCharacter::GetAIDetectRange()
 {
-	return 400.0f; // 4미터
+	return 900.0f; // 8미터
 }
 
 float AEntityCharacter::GetAIAttackRange()
