@@ -6,7 +6,7 @@
 #include "SkillData.h"
 #include "Components/BoxComponent.h"  // UBoxComponent
 #include "Components/ArrowComponent.h"  // UArrowComponent
-#include "MyAnimInstance.h"
+//#include "MyAnimInstance.h"
 
 #include "PlayerSkillComponent.generated.h"
 
@@ -47,25 +47,28 @@ public:
 
 	AActor* FindMonsterTarget();
 
+	//UFUNCTION(BlueprintNativeEvent) // 시간있음 재정의로 해보기
+	void NomalSkillType(const FString& SkillID);    // 노말스킬 타입 설정 함수
+	void SpecialSkillType(const FString& SkillID);    // 스페셜스킬 타입 설정 함수
+
 	// 함수들
 	void OnDefenseSkill(float Count);          // 방어 스킬 활성화 함수
 	void OffDefenseSkill();                    // 방어 스킬 비활성화 함수
 	void NomalCooldown();          // 스킬 쿨타임 초기화
 	void SpecialCooldown();          // 스킬 쿨타임 초기화
 	void SetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
-	void SkillType(const FString& SkillID);    // 스킬 타입 설정 함수
 	float GetDistanceTo(const AActor* OtherActor) const;    // 거리 계산 함수
 	//void ActivateShieldEffect(const FString& EffectID); //이펙트값 넣을 함수
 	// 히트박스 초기화 및 활성화 함수
 	void SettingHitBox(const FSkillData& SkillData); // 히트박스 초기화
 	void OnHitBox(const FSkillData& SkillData);                            // 히트박스 활성화
 	void HideHitBox();     // 히트박스 비활성화
-	void SkillAnimation(const FString& EffectID);
+	//void SkillAnimation(const FString& EffectID);
 
 	// 애니메이션 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
 	//UMyAnimInstance* MyAnimInstance;
-
+	//AActor* FindMonsterTarget();
 
 protected:
 	virtual void BeginPlay() override; 

@@ -141,6 +141,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 void AN_Graduation_projectCharacter::Tick(float DeltaTime) {
 	FVector Velocity = GetVelocity();
 	float Speed = Velocity.Size(); // 현재 속도
+	PlayerSkillComponent->NomalSkillType("Skill_Slash");
 
 	if (Speed > 0.1f) // 일정 속도 이상이면 이동 중
 	{
