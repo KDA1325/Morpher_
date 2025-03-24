@@ -54,6 +54,11 @@ class AN_Graduation_projectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* DashAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* MouseLeftClickAction;
+
+	void NomalSkillAction(const FInputActionValue& Value);
+
 public:
 	AN_Graduation_projectCharacter();
 
@@ -174,12 +179,15 @@ public:
 	FString presetReference;
 
 	int32 currentSpeed;
+	int32 OriginalSpeed;
 	FString currentPreset;
 	FString pastPreset;
 	
 	
 	// MoveSpeed를 설정하는 함수
 	void SetMoveSpeed(int32 MoveSpeed);
+	void StartAction();
+	void EndAction();
 	// Preset을 설정하는 함수
 	void SetPreset(FString PresetReference);
 

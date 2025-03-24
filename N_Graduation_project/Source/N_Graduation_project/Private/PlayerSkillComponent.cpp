@@ -362,6 +362,12 @@ void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 		{
 			ActionAnimInstance->PlayAnimation(EffectID);
 
+			UCharacterStateComponent* StateComp = OwnerActor->FindComponentByClass<UCharacterStateComponent>();
+			if (StateComp)
+			{
+				FString StateString = UEnum::GetValueAsString(StateComp->CurrentState);
+				StateComp->ChangeState(ECharacterState::Action);
+			}
 		}
 
 	}

@@ -25,20 +25,15 @@ class UCharacterStateComponent : public UActorComponent
 public:
     UCharacterStateComponent();
 
-    //virtual void Enter(AN_Graduation_projectCharacter* Character) {}
-    //virtual void Update(AN_Graduation_projectCharacter* Character, float DeltaTime) {}
-    //virtual void Exit(AN_Graduation_projectCharacter* Character) {}
-
     // 현재 상태
     ECharacterState CurrentState;
 
     // 상태 변경 함수
     void ChangeState(ECharacterState NewState);
 
-protected:
-    // 상태에 맞는 애니메이션 업데이트
-    void UpdateAnimation();
-
     // 상태 변경 시 필요한 행동 제약 적용
     void ApplyActionRestrictions();
+
+
+
 };

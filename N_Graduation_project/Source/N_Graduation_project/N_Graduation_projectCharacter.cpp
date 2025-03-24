@@ -60,6 +60,12 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	
+	static ConstructorHelpers::FObjectFinder<UInputAction> MouseLeftClick = TEXT("/Script/EnhancedInput.InputAction'/Game/ThirdPerson/Input/Actions/Nomal_Skill.Nomal_Skill'");
+	if (MouseLeftClick.Object)
+	{
+		MouseLeftClickAction = MouseLeftClick.Object;
+	}
 
 	// IA를 직접 지정하지 않으면 Dash 기능이 수행되지 않음 
 	static ConstructorHelpers::FObjectFinder<UInputAction> DashInput = TEXT("/Script/EnhancedInput.InputAction'/Game/ThirdPerson/Input/Actions/IA_Dash.IA_Dash'");
@@ -157,10 +163,12 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime) {
 	{
 
 		StateComp->ChangeState(ECharacterState::Move);
+		CharacterStateComponent->ApplyActionRestrictions();
 	}
 	else
 	{
 		StateComp->ChangeState(ECharacterState::Idle);
+		CharacterStateComponent->ApplyActionRestrictions();
 	}
 
 }
@@ -220,11 +228,20 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 		// Dash
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::DashCheck);
 
+		// NomalSkill
+		EnhancedInputComponent->BindAction(MouseLeftClickAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::NomalSkillAction);
 	}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
+{
+	// 왼쪽 마우스 클릭이 실행되었을 때 처리할 로직을 여기에 작성
+	UE_LOG(LogTemp, Warning, TEXT("NomalSkillAction"));
+	PlayerSkillComponent->SkillAnimation("Skill_Slash");
+
 }
 
 void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
@@ -317,7 +334,6 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	//SetPreset(currentPreset);
 
 	//UpdateEntityData();
-	PlayerSkillComponent->SkillAnimation("Skill_Slash");
 	/*FString HPText = FString::Printf(TEXT("HP: %f"), PlayerStatComponent->CurrentHP);
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, HPText);*/
 
@@ -383,10 +399,32 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 }
 
 void AN_Graduation_projectCharacter::SetMoveSpeed(int32 MoveSpeed)
-{
+{	UE_LOG(LogTemp, Error, TEXT("!currentSpeed: %d"), currentSpeed);
+
 	currentSpeed = MoveSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
-	UE_LOG(LogTemp, Error, TEXT("!currentSpeed: %d"), currentSpeed);
+	if (currentSpeed == 0)
+	{
+		GetCharacterMovement()->StopMovementImmediately();
+	}
+}
+void AN_Graduation_projectCharacter::StartAction()
+{
+	// 현재 속도를 저장
+	OriginalSpeed = currentSpeed;
+	UE_LOG(LogTemp, Error, TEXT("!OriginalSpeed: %d"), OriginalSpeed);
+
+	// 속도를 0으로 설정하여 이동 정지
+	currentSpeed = 0;
+	SetMoveSpeed(currentSpeed);
+	// 추가적인 액션 시작 로직...
+}
+void AN_Graduation_projectCharacter::EndAction()
+{
+	// 저장된 원래 속도로 이동 재개
+	currentSpeed = OriginalSpeed;
+	SetMoveSpeed(OriginalSpeed);
+	// 추가적인 액션 종료 로직...
 }
 void AN_Graduation_projectCharacter::OnPlayerDead()
 {
