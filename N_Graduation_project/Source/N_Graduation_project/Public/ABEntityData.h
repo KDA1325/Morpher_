@@ -13,33 +13,33 @@ struct FABEntityData : public FTableRowBase
 public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString EntityGroupID;
+    FString EntityGroupID = "";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString EntityName;
+    FString EntityName = "";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    int32 HP;
+    int32 HP = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    int32 MoveSpeed;
+    int32 MoveSpeed = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString NormalSkill;
+    FString NormalSkill = "";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString SpecialSkill;
+    FString SpecialSkill = "";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    int32 TransManaCost;
+    int32 TransManaCost = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString PresetReference;
+    FString PresetReference = "";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    int32 CapsuleRadius;
+    int32 CapsuleRadius = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    EnumAttackType AttackType;
+    EnumAttackType AttackType = EnumAttackType::Melee;
 };
 
