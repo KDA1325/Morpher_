@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 #include "ActionAnimInstance.generated.h"
 
 /**
  * 
  */
-UCLASS(Blueprintable)
+UCLASS()
 class N_GRADUATION_PROJECT_API UActionAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
@@ -17,11 +18,11 @@ class N_GRADUATION_PROJECT_API UActionAnimInstance : public UAnimInstance
 public:
 	UActionAnimInstance();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
-	TObjectPtr<class UAnimMontage> SlashMontage;
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = Montage, Meta = (AllowPrivateAccess = true))
-	UAnimMontage* M_Slash;
-
+	UFUNCTION(BlueprintCallable)
 	void PlayAnimation(const FString& EffectID);
+
+private:
+	/** 애니메이션 몽타주 변수 */
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	UAnimMontage* M_Slash;
 };

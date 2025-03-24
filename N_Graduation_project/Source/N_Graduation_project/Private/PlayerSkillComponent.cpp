@@ -1,5 +1,7 @@
 #include "PlayerSkillComponent.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
+
 #include "TimerManager.h"
 #include "CharacterStateComponent.h" //state
 #include "EngineUtils.h"
@@ -105,7 +107,7 @@ void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 		UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow"));
 		// 일정 시간이 지나면 히트박스 숨기기
 //		FTimerHandle  HitboxEnd;
-		
+
 		//FTimerDelegate HitboxEnd;
 		/*HitboxEnd.BindUObject(this, &UPlayerSkillComponent::HideHitBox);
 		SetSkillTimer(SkillData.SkillDuration, HitboxEnd);
@@ -196,7 +198,7 @@ AActor* UPlayerSkillComponent::FindMonsterTarget()
 		return nullptr;
 	}
 	else {
-	//	UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
+		//	UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
 
 		AActor* ClosestMonster = nullptr;
 		float MinDistance = FLT_MAX;
@@ -333,6 +335,52 @@ float UPlayerSkillComponent::GetDistanceTo(const AActor* OtherActor) const
 {
 	// 현재 액터와 플레이어 간 거리 계산
 	return OtherActor ? (GetOwner()->GetActorLocation() - OtherActor->GetActorLocation()).Size() : 0.f;
+}
+
+void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
+{
+	UE_LOG(LogTemp, Warning, TEXT("On SkillAnimation"));
+
+
+	// GetOwner()로 AActor(혹은 ACharacter) 가져오기
+	AActor* OwnerActor = GetOwner();
+	if (OwnerActor && OwnerActor->IsA<ACharacter>())
+	{
+		// ACharacter에서 AnimInstance 가져오기
+		ACharacter* CharacterOwner = Cast<ACharacter>(OwnerActor);
+		UAnimInstance* AnimInstance = CharacterOwner->GetMesh()->GetAnimInstance();
+		UE_LOG(LogTemp, Log, TEXT("Get CharacterOwner"));
+
+		//if (AnimInstance)
+		//{
+		//	// AnimInstance의 실제 클래스 출력
+		//	UE_LOG(LogTemp, Warning, TEXT("AnimInstance Class: %s"), *AnimInstance->GetClass()->GetName());
+		//}
+
+		UActionAnimInstance* ActionAnimInstance = Cast<UActionAnimInstance>(AnimInstance);
+		if (ActionAnimInstance)
+		{
+			ActionAnimInstance->PlayAnimation(EffectID);
+
+		}
+
+	}
+}
+void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
+{
+	FSkillEffectData EffectData;
+	if (!UABGameSingleton::Get().GetSkillEffectDataTBySkillID(SkillNameID, EffectData))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("no Effect: %s"), *SkillNameID);
+		return;
+	}
+
+	float DamageAmount = EffectData.EffectValue01;
+	UE_LOG(LogTemp, Warning, TEXT("SkillEffect 실행됨! DamageAmount: %f"), DamageAmount);
+
+
+
+
 }
 
 //void UPlayerSkillComponent::SkillAnimation(const FString& EffectID) {

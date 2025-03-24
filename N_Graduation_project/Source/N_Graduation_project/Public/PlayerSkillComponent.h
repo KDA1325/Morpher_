@@ -4,9 +4,10 @@
 #include "Components/ActorComponent.h"
 #include "ABGameSingleton.h"
 #include "SkillData.h"
+#include "SkillEffectData.h"
 #include "Components/BoxComponent.h"  // UBoxComponent
 #include "Components/ArrowComponent.h"  // UArrowComponent
-//#include "MyAnimInstance.h"
+#include "ActionAnimInstance.h"
 
 #include "PlayerSkillComponent.generated.h"
 
@@ -63,8 +64,8 @@ public:
 	void SettingHitBox(const FSkillData& SkillData); // 히트박스 초기화
 	void OnHitBox(const FSkillData& SkillData);                            // 히트박스 활성화
 	void HideHitBox();     // 히트박스 비활성화
-	//void SkillAnimation(const FString& EffectID);
-
+	void SkillAnimation(const FString& EffectID);
+	void SkillEffect(const FString& SkillNameID);
 	// 애니메이션 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
 	//UMyAnimInstance* MyAnimInstance;
