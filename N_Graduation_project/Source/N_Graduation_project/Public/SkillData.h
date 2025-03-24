@@ -17,41 +17,41 @@ public:
 
     // 스킬 이름 ID
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-    FString SkillNameID = "";
+    FString SkillNameID;
 
     // 스킬 이름
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-    FString SkillName = "";
+    FString SkillName;
 
     // 스킬 타입 (Enum)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-    EnumSkillType SkillType = EnumSkillType::Buff;
+    EnumSkillType SkillType;
 
     // 스킬 사정거리
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-    float SkillRange = 0;
+    float SkillRange;
 
     // 스킬 지속 시간
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-    float SkillDuration = 0;
+    float SkillDuration;
 
     // 스킬 쿨타임
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-    float SkillCoolTime = 0;
+    float SkillCoolTime;
 
     // 스킬 타입 모양 (Enum)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-    EnumSkillTypeShape SkillTypeShape = EnumSkillTypeShape::Box;
+    EnumSkillTypeShape SkillTypeShape;
 
     // 모양의 X 크기
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-    float SkillTypeSizeX = 0;
+    float SkillTypeSizeX;
 
     // 모양의 Y 크기
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-    float SkillTypeSizeY = 0;
+    float SkillTypeSizeY;
 
     // 투사체 속도
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
-    float ProjectileSpeed = 0;
+    float ProjectileSpeed;
 };
