@@ -55,19 +55,19 @@ UABGameSingleton::UABGameSingleton()
 	}
 
 	// 로그 	
-	///*for (const FABEntityData& EntityData : EntityDataTable)
-	//{
-	//	UE_LOG(LogABGameSingleton, Error, TEXT("Entity Name: %s, HP: %d, Move Speed: %d, Normal Skill: %s, Special Skill: %s"), *EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed, *EntityData.NormalSkill, *EntityData.SpecialSkill);
-	//}*/
+	for (const FABEntityData& EntityData : EntityDataTable)
+	{
+		UE_LOG(LogABGameSingleton, Error, TEXT("Entity Name: %s, HP: %d, Move Speed: %d, Normal Skill: %s, Special Skill: %s"), *EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed, *EntityData.NormalSkill, *EntityData.SpecialSkill);
+	}
 
-	////잘 출력됨
-	//// 배열의 갯수가 0보다 큰지 확인
-	////HowManyEntity = EntityDataTable.Num();
+	//잘 출력됨
+	// 배열의 갯수가 0보다 큰지 확인
+	HowManyEntity = EntityDataTable.Num();
 
-	//// EntityDataTable에 저장된 데이터를 콘솔에 출력
-	////ensure(HowManyEntity > 0);
-	////UE_LOG(LogABGameSingleton, Error, TEXT("HowManyEntity: %d"), HowManyEntity);
-	////-> LogABGameSingleton: Error: HowManyEntity: 7
+	// EntityDataTable에 저장된 데이터를 콘솔에 출력
+	ensure(HowManyEntity > 0);
+	UE_LOG(LogABGameSingleton, Error, TEXT("HowManyEntity: %d"), HowManyEntity);
+	//-> LogABGameSingleton: Error: HowManyEntity: 7
 	
 
 	// Skill - DataTable, DataMap에 데이터 저장
@@ -86,17 +86,24 @@ UABGameSingleton::UABGameSingleton()
 
 	// 로그 
 	//// 확인 완료 
-	////for (const FSkillData& SkillData : SkillDataTable)
-	////{
-	////	UE_LOG(LogABGameSingleton, Error, TEXT("SkillID: %s, SkillName: %s, SkillType: %s, SkillRange: %d, SkillDuration: %.1f, SkillCoolTime: %.1f, SkillTypeShape: %s, SkillTypeSizeX: %d, SkillTypeSizeY: %d, ProjectileSpeed: %d"),
-	////		*SkillData.SkillID, *SkillData.SkillName, *SkillData.SkillType, SkillData.SkillRange, SkillData.SkillDuration, SkillData.SkillCoolTime, *SkillData.SkillTypeShape, SkillData.SkillTypeSizeX, SkillData.SkillTypeSizeY, SkillData.ProjectileSpeed);
-	////}
-	//
-	//// 배열의 갯수가 0보다 큰지 확인
-	////HowManySkill = SkillDataTable.Num();
-	//// SkillDataTable에 저장된 데이터를 콘솔에 출력
-	////ensure(HowManySkill > 0);
-	////UE_LOG(LogABGameSingleton, Error, TEXT("HowManySkill: %d"), HowManySkill);
+	for (const FSkillData& SkillData : SkillDataTable)
+	{
+		const UEnum* SkillTypeEnum = FindObject<UEnum>(ANY_PACKAGE, TEXT("EnumSkillType"), true);
+		const FString SkillTypeName = SkillTypeEnum ? SkillTypeEnum->GetNameStringByValue((int64)SkillData.SkillType) : TEXT("Invalid");
+
+		const UEnum* ShapeEnum = FindObject<UEnum>(ANY_PACKAGE, TEXT("EnumSkillTypeShape"), true);
+		const FString SkillTypeShapeName = ShapeEnum ? ShapeEnum->GetNameStringByValue((int64)SkillData.SkillTypeShape) : TEXT("Invalid");
+
+
+		UE_LOG(LogABGameSingleton, Error, TEXT("SkillID: %s, SkillName: %s, SkillType: %s, SkillRange: %.1f, SkillDuration: %.1f, SkillCoolTime: %.1f, SkillTypeShape: %s, SkillTypeSizeX: %.1f, SkillTypeSizeY: %.1f, ProjectileSpeed: %.1f"),
+			*SkillData.SkillNameID, *SkillData.SkillName, *SkillTypeName, SkillData.SkillRange, SkillData.SkillDuration, SkillData.SkillCoolTime, *SkillTypeShapeName, SkillData.SkillTypeSizeX, SkillData.SkillTypeSizeY, SkillData.ProjectileSpeed);
+	}
+	
+	// 배열의 갯수가 0보다 큰지 확인
+	HowManySkill = SkillDataTable.Num();
+	// SkillDataTable에 저장된 데이터를 콘솔에 출력
+	ensure(HowManySkill > 0);
+	UE_LOG(LogABGameSingleton, Error, TEXT("HowManySkill: %d"), HowManySkill);
 
 
 	// Skill Effect - DataTable, DataMap에 데이터 저장
@@ -115,16 +122,19 @@ UABGameSingleton::UABGameSingleton()
 
 	// 로그
 	//// 확인 완료 
-	////for (const FSkillEffectData& SkillEffectData : SkillEffectDataTable)
-	////{
-	////	UE_LOG(LogABGameSingleton, Error, TEXT("SkillNameID: %s, EffectID: %s, EffectType: %s, EffectValue01: %.1f, EffectValue02: %.1f"),
-	////		*SkillEffectData.SkillNameID, *SkillEffectData.EffectID, *SkillEffectData.EffectType, SkillEffectData.EffectValue01, SkillEffectData.EffectValue02);
-	////}
-	//// 배열의 갯수가 0보다 큰지 확인
-	////HowManySkillEffect = SkillEffectDataTable.Num();
-	//// SkillDataTable에 저장된 데이터를 콘솔에 출력
-	////ensure(HowManySkillEffect > 0);
-	////UE_LOG(LogABGameSingleton, Error, TEXT("HowManySkillEffect: %d"), HowManySkillEffect);
+	for (const FSkillEffectData& SkillEffectData : SkillEffectDataTable)
+	{
+		const UEnum* EffectTypeEnum = FindObject<UEnum>(ANY_PACKAGE, TEXT("EnumEffectType"), true);
+		const FString EffectTypeName = EffectTypeEnum ? EffectTypeEnum->GetNameStringByValue((int64)SkillEffectData.EffectType) : TEXT("Invalid");
+
+		UE_LOG(LogABGameSingleton, Error, TEXT("SkillNameID: %s, EffectID: %s, EffectType: %s, EffectValue01: %.1f, EffectValue02: %.1f"),
+			*SkillEffectData.SkillNameID, *SkillEffectData.EffectID, *EffectTypeName, SkillEffectData.EffectValue01, SkillEffectData.EffectValue02);
+	}
+	// 배열의 갯수가 0보다 큰지 확인
+	HowManySkillEffect = SkillEffectDataTable.Num();
+	// SkillDataTable에 저장된 데이터를 콘솔에 출력
+	ensure(HowManySkillEffect > 0);
+	UE_LOG(LogABGameSingleton, Error, TEXT("HowManySkillEffect: %d"), HowManySkillEffect);
 }
 
 // 프로젝트 세팅에서 설정한 Singleton을 가져오는 Get() 함수
