@@ -60,7 +60,7 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
-	
+
 	static ConstructorHelpers::FObjectFinder<UInputAction> MouseLeftClick = TEXT("/Script/EnhancedInput.InputAction'/Game/ThirdPerson/Input/Actions/Nomal_Skill.Nomal_Skill'");
 	if (MouseLeftClick.Object)
 	{
@@ -143,34 +143,35 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	//	PlayerStatComponent->OnHPIsZero.AddDynamic(this, &AN_Graduation_projectCharacter::OnPlayerDead);
 	//}
 }
-
-void AN_Graduation_projectCharacter::Tick(float DeltaTime) {
+void AN_Graduation_projectCharacter::Tick(float DeltaTime)
+{
 	FVector Velocity = GetVelocity();
 	float Speed = Velocity.Size(); // 현재 속도
 	PlayerSkillComponent->NomalSkillType("Skill_Slash");
 
-	if (Speed > 0.1f) // 일정 속도 이상이면 이동 중
-	{
-		bIsMoving = true;
-	}
-	else // 속도가 0이면 이동 중이 아님
-	{
-		bIsMoving = false;
-	}
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
-
-	if (bIsMoving)
+	if (!StateComp)
 	{
-
-		StateComp->ChangeState(ECharacterState::Move);
-		CharacterStateComponent->ApplyActionRestrictions();
-	}
-	else
-	{
-		StateComp->ChangeState(ECharacterState::Idle);
-		CharacterStateComponent->ApplyActionRestrictions();
+		return; // StateComp가 없으면 함수 종료
 	}
 
+	// Speed가 일정 임계값보다 크면 이동 중
+	if (Speed > 0.1f)
+	{
+		if (StateComp->GetCurrentState() != ECharacterState::Move)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Changing state to Move"));
+			StateComp->ChangeState(ECharacterState::Move);  // Move 상태로 변경
+		}
+	}
+	else  // 속도가 0이면 Idle 상태
+	{
+		if (StateComp->GetCurrentState() != ECharacterState::Idle)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Changing state to Idle"));
+			StateComp->ChangeState(ECharacterState::Idle);  // Idle 상태로 변경
+		}
+	}
 }
 
 
@@ -238,8 +239,8 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
 {
-	// 왼쪽 마우스 클릭이 실행되었을 때 처리할 로직을 여기에 작성
-	UE_LOG(LogTemp, Warning, TEXT("NomalSkillAction"));
+	StartAction();
+	UE_LOG(LogTemp, Error, TEXT("NomalSkillAction"));
 	PlayerSkillComponent->SkillAnimation("Skill_Slash");
 
 }
@@ -272,7 +273,6 @@ void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
 			FString StateString = UEnum::GetValueAsString(StateComp->CurrentState);
 			StateComp->ChangeState(ECharacterState::Move);
 		}
-
 	}
 }
 
@@ -292,6 +292,13 @@ void AN_Graduation_projectCharacter::Look(const FInputActionValue& Value)
 void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemplateCharacter, Error, TEXT("Dash 바인딩"));
+	// 대시 상태로 변경
+	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
+	StateComp->ChangeState(ECharacterState::Dash);
+	CharacterStateComponent->ApplyActionRestrictions();
+	// 상태 업데이트
+	StartAction();
+	CharacterStateComponent->isDash = true;
 
 	// 마지막 입력이 ZeroVector(중립)가 아니면 실행 -> 캐릭터가 정지 중엔 실행되지 않음(반드시 대시로 이동하고 싶은 방향쪽 방향키를 눌러야 대시 발동(기획서대로 수정 필요))
 	if (GetCharacterMovement()->GetLastInputVector() != FVector::ZeroVector)
@@ -305,27 +312,29 @@ void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
 			ECollisionChannel::ECC_Visibility);
 
 		// Dash가 발동되어 최종적으로 이동할 위치에 액터 또는 충돌 가능한 무언가가 존재한다면
-		if (IsHit)
+		if (IsHit) {
 			// 충돌한 객체의 위치값에 캐릭터의 몸 값(55.0f)을 빼서 이동
 			Dash(HitResult.Location + (GetCharacterMovement()->GetLastInputVector() * -55.0f), GetActorForwardVector());
+			EndDash();
+		}
 		// 존재하지 않는다면 DashDistance만큼 이동 
-		else
+		else {
 			Dash(GetActorLocation() + (GetCharacterMovement()->GetLastInputVector() * DashDistance), GetActorForwardVector());
+			EndDash();
+
+		}
+		
 	}
 }
 
 void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector DashVel)
 {
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
-	if (StateComp)
-	{
-		FString StateString = UEnum::GetValueAsString(StateComp->CurrentState);
-		StateComp->ChangeState(ECharacterState::Dash);
-	}
 
 	DashDirection = DashDir;
 	DashVelocity = DashVel;
 	DashTimeline->PlayFromStart();
+
 	/*currentPreset = "Inpermon";
 	UpdateEntityData();
 	//속도 변하는지 체크하려고
@@ -343,25 +352,32 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 {
 	// Dash 키 입력 -> DeshCheck 바인딩 -> Dash 수행 -> 타임라인 실행 -> DashCurve에 따라 Callback 함수 DashInterpReturn 바인딩 -> 로케이션 
 	SetActorLocation(FMath::Lerp(GetActorLocation(), DashDirection, value));
+
 }
 
+void AN_Graduation_projectCharacter::EndDash()
+{
+	// 대시가 끝났을 때 호출되는 함수
+	EndAction();
+	CharacterStateComponent->isDash = false;
+}
 
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
 	if (PlayerSkillComponent->IsDefending == true) {
-
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 		return 0.0f;//무적상태라면 리턴.
 	}
 	else
 	{
 		PlayerStatComponent->ApplyDamage(DamageAmount);
-		On_invincibility();
+		On_invincibility_Implementation();
+		IsInvincible = false;
 		// 데미지 로그 출력	
 		float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-		PlayerSkillComponent->OnDefenseSkill(3.0);
+		//PlayerSkillComponent->OnDefenseSkill(3.0);
 
 		return FinalDamage;
 	}
@@ -399,7 +415,8 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 }
 
 void AN_Graduation_projectCharacter::SetMoveSpeed(int32 MoveSpeed)
-{	UE_LOG(LogTemp, Error, TEXT("!currentSpeed: %d"), currentSpeed);
+{
+	UE_LOG(LogTemp, Error, TEXT("!currentSpeed: %d"), currentSpeed);
 
 	currentSpeed = MoveSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
@@ -410,21 +427,38 @@ void AN_Graduation_projectCharacter::SetMoveSpeed(int32 MoveSpeed)
 }
 void AN_Graduation_projectCharacter::StartAction()
 {
-	// 현재 속도를 저장
-	OriginalSpeed = currentSpeed;
-	UE_LOG(LogTemp, Error, TEXT("!OriginalSpeed: %d"), OriginalSpeed);
+	UE_LOG(LogTemp, Error, TEXT("!StartAction"));
 
-	// 속도를 0으로 설정하여 이동 정지
-	currentSpeed = 0;
-	SetMoveSpeed(currentSpeed);
-	// 추가적인 액션 시작 로직...
+	// 플레이어 컨트롤러 가져오기
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+
+	if (PlayerController)
+	{
+		//PlayerController->DisableInput(PlayerController); // 입력 비활성화
+		GetCharacterMovement()->MaxWalkSpeed = 0;
+		UE_LOG(LogTemp, Error, TEXT("Yes PlayerController!"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("No PlayerController"));
+	}
 }
 void AN_Graduation_projectCharacter::EndAction()
 {
-	// 저장된 원래 속도로 이동 재개
-	currentSpeed = OriginalSpeed;
-	SetMoveSpeed(OriginalSpeed);
-	// 추가적인 액션 종료 로직...
+	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
+	StateComp->ChangeState(ECharacterState::Idle);
+	CharacterStateComponent->isAction = false;
+
+	// 기존 속도로 이동 
+	UE_LOG(LogTemp, Error, TEXT("!EndAction"));
+	// Action 상태 종료 시 입력 활성화
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (PlayerController)
+	{
+		//PlayerController->EnableInput(PlayerController); // 입력 활성화
+		GetCharacterMovement()->MaxWalkSpeed = currentSpeed;
+	}
+	CharacterStateComponent->ChangeState(ECharacterState::Idle);
 }
 void AN_Graduation_projectCharacter::OnPlayerDead()
 {
@@ -468,7 +502,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		if (LoadedMesh)
 		{
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);  // SkeletalMesh는 Skel_MeshCom을 사용
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("I'm Here")));
+			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("I'm Here")));
 		}
 	}
 

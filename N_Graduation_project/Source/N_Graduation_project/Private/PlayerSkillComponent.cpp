@@ -41,6 +41,11 @@ void UPlayerSkillComponent::BeginPlay()
 	}
 
 }
+void UPlayerSkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
 void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
 {
 	if (Count > 0)
@@ -120,12 +125,12 @@ void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 	else
 	{
 		// HitBox나 Arrow가 없는 경우 로그 추가
-		UE_LOG(LogTemp, Error, TEXT("Failed to find HitBox or Arrow!"));
+		//UE_LOG(LogTemp, Error, TEXT("Failed to find HitBox or Arrow!"));
 	}
 }
 void UPlayerSkillComponent::HideHitBox()
 {
-	UE_LOG(LogTemp, Error, TEXT("HideHitBox() called!"));
+	//UE_LOG(LogTemp, Error, TEXT("HideHitBox() called!"));
 
 	if (HitBox && Arrow)
 	{
@@ -194,7 +199,7 @@ void UPlayerSkillComponent::HideHitBox()
 AActor* UPlayerSkillComponent::FindMonsterTarget()
 {
 	if (!GetWorld()) {
-		UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
+		//UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
 		return nullptr;
 	}
 	else {
@@ -341,37 +346,43 @@ void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 {
 	UE_LOG(LogTemp, Warning, TEXT("On SkillAnimation"));
 
-
-	// GetOwner()로 AActor(혹은 ACharacter) 가져오기
 	AActor* OwnerActor = GetOwner();
 	if (OwnerActor && OwnerActor->IsA<ACharacter>())
 	{
-		// ACharacter에서 AnimInstance 가져오기
 		ACharacter* CharacterOwner = Cast<ACharacter>(OwnerActor);
 		UAnimInstance* AnimInstance = CharacterOwner->GetMesh()->GetAnimInstance();
 		UE_LOG(LogTemp, Log, TEXT("Get CharacterOwner"));
-
-		//if (AnimInstance)
-		//{
-		//	// AnimInstance의 실제 클래스 출력
-		//	UE_LOG(LogTemp, Warning, TEXT("AnimInstance Class: %s"), *AnimInstance->GetClass()->GetName());
-		//}
 
 		UActionAnimInstance* ActionAnimInstance = Cast<UActionAnimInstance>(AnimInstance);
 		if (ActionAnimInstance)
 		{
 			ActionAnimInstance->PlayAnimation(EffectID);
 
+			// 델리게이트 바인딩 추가
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this, &UPlayerSkillComponent::EndSkillAnimation);
+			ActionAnimInstance->Montage_SetEndDelegate(EndDelegate);
+
 			UCharacterStateComponent* StateComp = OwnerActor->FindComponentByClass<UCharacterStateComponent>();
 			if (StateComp)
 			{
-				FString StateString = UEnum::GetValueAsString(StateComp->CurrentState);
 				StateComp->ChangeState(ECharacterState::Action);
 			}
 		}
-
 	}
 }
+
+void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Skill Animation Ended: %s"), *Montage->GetName());
+
+	AActor* OwnerActor = GetOwner();
+	if (OwnerActor)
+	{
+		
+	}
+}
+
 void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 {
 	FSkillEffectData EffectData;
@@ -380,12 +391,8 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 		UE_LOG(LogTemp, Warning, TEXT("no Effect: %s"), *SkillNameID);
 		return;
 	}
-
 	float DamageAmount = EffectData.EffectValue01;
 	UE_LOG(LogTemp, Warning, TEXT("SkillEffect 실행됨! DamageAmount: %f"), DamageAmount);
-
-
-
 
 }
 

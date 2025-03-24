@@ -65,6 +65,7 @@ public:
 	void OnHitBox(const FSkillData& SkillData);                            // 히트박스 활성화
 	void HideHitBox();     // 히트박스 비활성화
 	void SkillAnimation(const FString& EffectID);
+	void EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted);
 	void SkillEffect(const FString& SkillNameID);
 	// 애니메이션 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
@@ -73,6 +74,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override; 
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
 	// 타이머 핸들

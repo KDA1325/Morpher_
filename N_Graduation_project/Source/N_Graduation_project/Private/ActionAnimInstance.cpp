@@ -1,5 +1,6 @@
 #include "ActionAnimInstance.h"
-
+#include "CharacterStateComponent.h"
+#include <N_Graduation_project/N_Graduation_projectCharacter.h>
 
 UActionAnimInstance::UActionAnimInstance()
 {
@@ -25,16 +26,34 @@ UActionAnimInstance::UActionAnimInstance()
 }
 void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 {
-
-	if (EffectID=="Skill_Slash")
+	if (EffectID == "Skill_Slash")
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *M_Slash->GetName());
-		Montage_Play(M_Slash);  
+		Montage_Play(M_Slash);
+		// 애니메이션 종료 이벤트 바인딩
+		OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 	}
+	//AActor* OwnerActor = GetOwningActor();
+	//UCharacterStateComponent* StateComp = OwnerActor->FindComponentByClass<UCharacterStateComponent>();
+	//if (StateComp)
+	//{
+	//	StateComp->ChangeState(ECharacterState::Action);
+	//}
 }
-//FSoftObjectPath MeshPath(TEXT("/Script/Engine.SkeletalMesh'/Game/Animation/Boar/Boar_idle_test3s_3.Boar_idle_test3s_3'"));
-//    FSoftObjectPath AnimPath(TEXT("/Script/Engine.AnimSequence'/Game/Animation/Boar/Boar_idle_test3s_2_Anim.Boar_idle_test3s_2_Anim'"));
 
-//    USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
-//    UAnimSequence* LoadedAnim = Cast<UAnimSequence>(AnimPath.TryLoad());
-//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Animation/Sample/retarget_Stable_Sword_Outward_Slash_Anim_mixamo_com_Montage.uasset
+void UActionAnimInstance::OnMontageEndCallback(UAnimMontage* Montage, bool bInterrupted)
+{
+	// 애니메이션 종료 후 상태 변경
+	UE_LOG(LogTemp, Error, TEXT("Animation Ended"));
+
+	AActor* OwnerActor = GetOwningActor();
+	// 애니메이션 종료 후 바인딩 연결
+	AN_Graduation_projectCharacter* MyCharacter = Cast<AN_Graduation_projectCharacter>(OwnerActor);
+	if (MyCharacter)
+	{
+		MyCharacter->EndAction(); // EndAction 호출하여 속도 복구
+	}
+
+	// 델리게이트에서 호출된 후, 다음 호출을 막기 위해 델리게이트에서 바인딩 해제
+	OnMontageEnded.RemoveDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
+}

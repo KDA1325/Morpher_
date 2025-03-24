@@ -76,6 +76,7 @@ protected:
 
 	// 대시 기능 수행 
 	void Dash(const FVector DashDir, const FVector DashVel);
+	void EndDash();
 
 protected:
 	// APawn interface

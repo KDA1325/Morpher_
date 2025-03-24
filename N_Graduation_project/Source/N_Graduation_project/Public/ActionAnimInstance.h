@@ -7,6 +7,7 @@
 #include "Animation/AnimMontage.h"
 #include "ActionAnimInstance.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMontageEndDelegate, UAnimMontage*, Montage, bool, bInterrupted);
 /**
  * 
  */
@@ -21,8 +22,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PlayAnimation(const FString& EffectID);
 
+
+protected:
+	// 애니메이션 종료 콜백 함수
+	UFUNCTION()
+	void OnMontageEndCallback(UAnimMontage* Montage, bool bInterrupted);
+
 private:
-	/** 애니메이션 몽타주 변수 */
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	UAnimMontage* M_Slash;
 };

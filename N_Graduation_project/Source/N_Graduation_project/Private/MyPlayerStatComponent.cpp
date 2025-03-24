@@ -43,7 +43,9 @@ void UMyPlayerStatComponent::SetHP(int NewHP)
 	else
 	{
 		CurrentHP = NewHP;
-		UE_LOG(LogTemp, Log, TEXT("== CurrentHP: %f"), CurrentHP);
+		UE_LOG(LogTemp, Log, TEXT("== CurrentHP: %f"), CurrentHP);	
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Current HP: %f"), CurrentHP));
+
 	}
 //	OnHPChanged.Broadcast();
 }

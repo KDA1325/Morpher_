@@ -25,7 +25,6 @@ class UCharacterStateComponent : public UActorComponent
 public:
     UCharacterStateComponent();
 
-    // 현재 상태
     ECharacterState CurrentState;
 
     // 상태 변경 함수
@@ -34,6 +33,10 @@ public:
     // 상태 변경 시 필요한 행동 제약 적용
     void ApplyActionRestrictions();
 
+    // 현재 상태를 반환하는 함수
+    ECharacterState GetCurrentState() const { return CurrentState; }
 
+    bool isAction;
+    bool isDash;
 
 };
