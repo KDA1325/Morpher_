@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"  // FTableRowBase 사용을 위한 헤더 추가 
 #include "Engine/GameInstance.h"
+#include "SkillEnum.h"
 #include "SkillData.generated.h"
 
 USTRUCT(BlueprintType)
@@ -13,38 +14,44 @@ struct FSkillData : public FTableRowBase
     GENERATED_BODY()
 
 public:
-    FSkillData()
-        : SkillID(TEXT("ID")), SkillName(TEXT("SkillName")), SkillType(TEXT("SkillType")), SkillRange(0), SkillDuration(0), SkillCoolTime(0), SkillTypeShape(TEXT("SkillTypeShape")), SkillTypeSizeX(0), SkillTypeSizeY(0), ProjectileSpeed(0) {
-    }
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString SkillID;
+    // 스킬 이름 ID
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+    FString SkillNameID;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+    // 스킬 이름
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
     FString SkillName;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString SkillType;
+    // 스킬 타입 (Enum)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+    EnumSkillType SkillType;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    int32 SkillRange;
+    // 스킬 사정거리
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+    float SkillRange;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+    // 스킬 지속 시간
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
     float SkillDuration;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+    // 스킬 쿨타임
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
     float SkillCoolTime;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString SkillTypeShape;
-    
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    int32 SkillTypeSizeX;
+    // 스킬 타입 모양 (Enum)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+    EnumSkillTypeShape SkillTypeShape;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    int32 SkillTypeSizeY;
+    // 모양의 X 크기
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+    float SkillTypeSizeX;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    int32 ProjectileSpeed;
+    // 모양의 Y 크기
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+    float SkillTypeSizeY;
+
+    // 투사체 속도
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+    float ProjectileSpeed;
 };
-
