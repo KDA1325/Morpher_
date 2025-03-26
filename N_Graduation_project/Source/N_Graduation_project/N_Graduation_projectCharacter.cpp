@@ -239,9 +239,14 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
 {
-	StartAction();
-	UE_LOG(LogTemp, Error, TEXT("NomalSkillAction"));
-	PlayerSkillComponent->SkillAnimation("Skill_Slash");
+	if (CharacterStateComponent->CurrentState == ECharacterState::Action|| CharacterStateComponent->CurrentState == ECharacterState::Dash) {
+		return;
+	}
+	else {
+		StartAction();
+		UE_LOG(LogTemp, Error, TEXT("NomalSkillAction"));
+		PlayerSkillComponent->SkillAnimation("Skill_Slash");
+	}
 
 }
 
@@ -315,13 +320,10 @@ void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
 		if (IsHit) {
 			// 충돌한 객체의 위치값에 캐릭터의 몸 값(55.0f)을 빼서 이동
 			Dash(HitResult.Location + (GetCharacterMovement()->GetLastInputVector() * -55.0f), GetActorForwardVector());
-			EndDash();
 		}
 		// 존재하지 않는다면 DashDistance만큼 이동 
 		else {
 			Dash(GetActorLocation() + (GetCharacterMovement()->GetLastInputVector() * DashDistance), GetActorForwardVector());
-			EndDash();
-
 		}
 		
 	}
@@ -334,7 +336,6 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	DashDirection = DashDir;
 	DashVelocity = DashVel;
 	DashTimeline->PlayFromStart();
-
 	/*currentPreset = "Inpermon";
 	UpdateEntityData();
 	//속도 변하는지 체크하려고
@@ -345,20 +346,31 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	//UpdateEntityData();
 	/*FString HPText = FString::Printf(TEXT("HP: %f"), PlayerStatComponent->CurrentHP);
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, HPText);*/
-
+	EndDash();
 }
 
 void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 {
 	// Dash 키 입력 -> DeshCheck 바인딩 -> Dash 수행 -> 타임라인 실행 -> DashCurve에 따라 Callback 함수 DashInterpReturn 바인딩 -> 로케이션 
 	SetActorLocation(FMath::Lerp(GetActorLocation(), DashDirection, value));
-
+	EndDash();
 }
 
 void AN_Graduation_projectCharacter::EndDash()
 {
 	// 대시가 끝났을 때 호출되는 함수
-	EndAction();
+	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
+	StateComp->ChangeState(ECharacterState::Idle);
+	UE_LOG(LogTemp, Error, TEXT("!EndAction"));
+	// Action 상태 종료 시 입력 활성화
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (PlayerController)
+	{
+		//PlayerController->EnableInput(PlayerController); // 입력 활성화
+		GetCharacterMovement()->MaxWalkSpeed = currentSpeed;
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("EndDash"));
 	CharacterStateComponent->isDash = false;
 }
 
@@ -458,7 +470,7 @@ void AN_Graduation_projectCharacter::EndAction()
 		//PlayerController->EnableInput(PlayerController); // 입력 활성화
 		GetCharacterMovement()->MaxWalkSpeed = currentSpeed;
 	}
-	CharacterStateComponent->ChangeState(ECharacterState::Idle);
+//	CharacterStateComponent->ChangeState(ECharacterState::Idle);
 }
 void AN_Graduation_projectCharacter::OnPlayerDead()
 {
