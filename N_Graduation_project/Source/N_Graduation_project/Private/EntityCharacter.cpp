@@ -13,6 +13,10 @@ AEntityCharacter::AEntityCharacter()
 
 	AIControllerClass = AMyAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	// 몽타주 포인터 초기화
+	NormalSkillMontage = nullptr;
+	SpecialSkillMontage = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -108,17 +112,16 @@ void AEntityCharacter::InitializeEntity(FABEntityData& InEntityData)
 {
 	//currentEntityGroupID = InEntityData.EntityGroupID;
 
+	// Entity 데이터에 따라 초기화 
 	SetActorLabel(InEntityData.EntityName);
 	SetMaxHp(InEntityData.HP);
 	SetMoveSpeed(InEntityData.MoveSpeed);
+
+	// 메시 및 애니메이션 설정 
 	SetPreset(InEntityData.PresetReference);
 
-	// 로깅
 	UE_LOG(LogTemp, Warning, TEXT("Initialized Entity with Name: %s, HP: %d, Move Speed: %d"),
 		*InEntityData.EntityName, InEntityData.HP, InEntityData.MoveSpeed);
-
-	// 메시와 애니메이션 세팅
-	SetPreset(InEntityData.PresetReference);
 	
 	SetWidget();
 }
@@ -128,19 +131,52 @@ void AEntityCharacter::SetPreset(FString PresetReference)
 	currentPreset = PresetReference;
 
 	// 프리셋 이름과 경로를 매핑하는 맵 선언
+
+	// SkeletalMesh 경로 
 	TMap<FString, FSoftObjectPath> SkeletalMeshPaths = {
 		{"PCPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_3.Boar_idle_test3s_3"))},
 		{"WildBoarPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2.Boar_idle_test3s_2"))},
-		{"FreezardPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_4.Boar_idle_test3s_4"))}
+		{"InpermonPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2.Boar_idle_test3s_2"))},
+		{"FreezardPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_4.Boar_idle_test3s_4"))},
+		{"StoneGolemPreset.uasset", FSoftObjectPath(TEXT("/Game/SyntyAsset/PolygonFantasyRivals/Meshes/New_Characters/SK_BR_Character_ElementalGolem_01.SK_BR_Character_ElementalGolem_01"))},
+		{"SkeletonWarriorPreset.uasset", FSoftObjectPath(TEXT("/Game/SyntyAsset/PolygonDarkFantasy/Meshes/Characters/SK_Chr_Skeleton_LightArmor_01.SK_Chr_Skeleton_LightArmor_01"))},
+		{"SkeletonArcherPreset.uasset", FSoftObjectPath(TEXT("/Game/SyntyAsset/PolygonDarkFantasy/Meshes/Characters/SK_Chr_Skeleton_Ranger_01.SK_Chr_Skeleton_Ranger_01"))}
 	};
 
-	TMap<FString, FSoftObjectPath> AnimPaths = {
-		{"PCPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2_Anim.Boar_idle_test3s_2_Anim"))},
-		{"WildBoarPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2_Anim.Boar_idle_test3s_2_Anim"))},
-		{"FreezardPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2_Anim.Boar_idle_test3s_2_Anim"))}
+	// AnimBP 경로 (Idle, Move 기본 루프 애니메이션은 AnimBP 적용)
+	TMap<FString, FSoftObjectPath> AnimBPPaths = {
+		{"PCPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/WildBoar_AnimBP.WildBoar_AnimBP"))},
+		{"WildBoarPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/WildBoar_AnimBP.WildBoar_AnimBP"))},
+		{"FreezardPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/WildBoar_AnimBP.WildBoar_AnimBP"))},
+		{"InpermonPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/WildBoar_AnimBP.WildBoar_AnimBP"))},
+		{"StoneGolemPreset.uasset", FSoftObjectPath(TEXT("/Game/SyntyAsset/PolygonFantasyRivals/EpicContent/Mannequin/Animations/ThirdPerson_AnimBP.ThirdPerson_AnimBP"))},
+		{"SkeletonWarriorPreset.uasset", FSoftObjectPath(TEXT("/Game/SyntyAsset/PolygonFantasyRivals/EpicContent/Mannequin/Animations/ThirdPerson_AnimBP.ThirdPerson_AnimBP"))},
+		{"SkeletonArcherPreset.uasset", FSoftObjectPath(TEXT("/Game/SyntyAsset/PolygonFantasyRivals/EpicContent/Mannequin/Animations/ThirdPerson_AnimBP.ThirdPerson_AnimBP"))}
+	};
+	
+	// NormalSkillMontage 경로 (일반 스킬 애니메이션)
+	TMap<FString, FSoftObjectPath> NormalSkillMontagePaths = {
+		{"PCPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/WildBoar_Montage.WildBoar_Montage"))},
+		{"WildBoarPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/WildBoar_Montage.WildBoar_Montage"))},
+		{"FreezardPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/WildBoar_Montage.WildBoar_Montage"))},
+		{"InpermonPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/WildBoar_Montage.WildBoar_Montage"))},
+		{"StoneGolemPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/StoneGolem_Montage.StoneGolem_Montage"))},
+		{"SkeletonWarriorPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/SkeletonWarrior_Montage.SkeletonWarrior_Montage"))},
+		{"SkeletonArcherPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/SkeletonArcher_Montage.SkeletonArcher_Montage"))}
+	};
+	
+	// SpecialSkillMontage 경로 (특수 스킬 애니메이션)
+	TMap<FString, FSoftObjectPath> SpecialSkillMontagePaths = {
+		{"PCPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/WildBoar_Montage.WildBoar_Montage"))},
+		{"WildBoarPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/WildBoar_Montage.WildBoar_Montage"))},
+		{"FreezardPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/WildBoar_Montage.WildBoar_Montage"))},
+		{"InpermonPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/WildBoar_Montage.WildBoar_Montage"))},
+		{"StoneGolemPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/StoneGolem_Montage.StoneGolem_Montage"))},
+		{"SkeletonWarriorPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/SkeletonWarrior_Montage.SkeletonWarrior_Montage"))},
+		{"SkeletonArcherPreset.uasset", FSoftObjectPath(TEXT("/Game/Animation/SkeletonArcher_Montage.SkeletonArcher_Montage"))}
 	};
 
-	// Skeletal Mesh 처리
+	// Skeletal Mesh 설정
 	if (SkeletalMeshPaths.Contains(currentPreset))
 	{
 		FSoftObjectPath MeshPath = SkeletalMeshPaths[currentPreset];
@@ -149,30 +185,97 @@ void AEntityCharacter::SetPreset(FString PresetReference)
 		{
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
 			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("Skeletal Mesh Loaded Successfully"));
-
-			// 애니메이션 처리
-			if (AnimPaths.Contains(currentPreset))
-			{
-				FSoftObjectPath AnimPath = AnimPaths[currentPreset];
-				UAnimSequence* LoadedAnim = Cast<UAnimSequence>(AnimPath.TryLoad());
-				if (LoadedAnim)
-				{
-					GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
-					GetMesh()->SetAnimation(LoadedAnim);
-					GetMesh()->Play(true);
-					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("Animation Loaded Successfully"));
-				}
-				else
-				{
-					UE_LOG(LogTemp, Error, TEXT("Animation Load Failed: %s"), *AnimPath.ToString());
-				}
-			}
 		}
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("Skeletal Mesh Load Failed: %s"), *MeshPath.ToString());
 		}
 	}
+	
+	// AnimBP 설정
+	if (AnimBPPaths.Contains(currentPreset))
+	{
+		FSoftObjectPath AnimBPPath = AnimBPPaths[currentPreset];
+		UObject* LoadedObj = AnimBPPath.TryLoad();
+		if (LoadedObj)
+		{
+			UAnimBlueprint* AnimBP = Cast<UAnimBlueprint>(LoadedObj);
+			UClass* AnimInstanceClass = nullptr;
+			if (AnimBP)
+			{
+				AnimInstanceClass = AnimBP->GeneratedClass;
+			}
+			else
+			{
+				AnimInstanceClass = Cast<UClass>(LoadedObj);
+			}
+			if (AnimInstanceClass)
+			{
+				GetMesh()->SetAnimInstanceClass(AnimInstanceClass);
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("Animation Loaded Successfully"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Animation Load Failed: %s"), *AnimBPPath.ToString());
+			}
+		}
+	}
+	
+	// NormalSkillMontage 설정 
+	if (NormalSkillMontagePaths.Contains(currentPreset))
+	{
+		FSoftObjectPath MontagePath = NormalSkillMontagePaths[currentPreset];
+		NormalSkillMontage = Cast<UAnimMontage>(MontagePath.TryLoad());
+		if (!NormalSkillMontage)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Animation Load Failed: %s"), *MontagePath.ToString());
+		}
+	}
+	
+	// SpecialSkillMontage 설정 
+	if (SpecialSkillMontagePaths.Contains(currentPreset))
+	{
+		FSoftObjectPath MontagePath = SpecialSkillMontagePaths[currentPreset];
+		SpecialSkillMontage = Cast<UAnimMontage>(MontagePath.TryLoad());
+		if (!SpecialSkillMontage)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Animation Load Failed: %s"), *MontagePath.ToString());
+		}
+	}
+
+	//if (SkeletalMeshPaths.Contains(currentPreset))
+	//{
+	//	FSoftObjectPath MeshPath = SkeletalMeshPaths[currentPreset];
+	//	USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+	//	if (LoadedMesh)
+	//	{
+	//		GetMesh()->SetSkeletalMesh(LoadedMesh);
+	//		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("Skeletal Mesh Loaded Successfully"));
+
+	//		// 애니메이션 처리
+	//		if (AnimBPPaths.Contains(currentPreset))
+	//		{
+	//			FSoftObjectPath AnimPath = AnimBPPaths[currentPreset];
+	//			UAnimSequence* LoadedAnim = Cast<UAnimSequence>(AnimPath.TryLoad());
+	//			if (LoadedAnim)
+	//			{
+	//				GetMesh()->SetAnimationMode(EAnimationMode::AnimationCustomMode);
+	//				//GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+	//				GetMesh()->SetAnimation(LoadedAnim);
+	//				GetMesh()->Play(true);
+	//				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("Animation Loaded Successfully"));
+	//			}
+	//			else
+	//			{
+	//				UE_LOG(LogTemp, Error, TEXT("Animation Load Failed: %s"), *AnimPath.ToString());
+	//			}
+	//		}
+	//	}
+	//	else
+	//	{
+	//		UE_LOG(LogTemp, Error, TEXT("Skeletal Mesh Load Failed: %s"), *MeshPath.ToString());
+	//	}
+	//}
 
 	//// 프리셋 이름마다 메시 에셋 파일 할당
 	//if (currentPreset == "PCPreset.uasset")

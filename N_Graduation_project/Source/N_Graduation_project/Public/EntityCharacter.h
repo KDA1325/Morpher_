@@ -9,6 +9,9 @@
 #include "GameFramework/Character.h"
 #include "Components/WidgetComponent.h"
 #include "CharacterAllInterface.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "Animation/AnimBlueprint.h"
 #include "EntityCharacter.generated.h"
 
 UCLASS()
@@ -45,6 +48,11 @@ public:
 	// 메시 변경을 위한 변수 선언 
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* m_pMeshCom;
+	// 
+	UPROPERTY(VisibleAnywhere)
+	UAnimMontage* NormalSkillMontage;
+	UPROPERTY(VisibleAnywhere)
+	UAnimMontage* SpecialSkillMontage;
 
 	// EntitySpawner 클래스를 참조하는 변수 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
