@@ -7,9 +7,6 @@
 
 UMyPlayerStatComponent::UMyPlayerStatComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
-	bWantsInitializeComponent = true;
-
 	TransManaCost = 0; //데이터테이블 머지 후 뺴기
 	NewMaxHP = 150;
 	PastMaxHP = 0;
