@@ -54,11 +54,13 @@ EBTNodeResult::Type UBTTask_AdjustDistance::ExecuteTask(UBehaviorTreeComponent& 
     }
     else if (DistanceToPlayer > CalculatedMinDistance)
     {
+        OwnerComp.GetAIOwner()->SetFocus(playerPawn);
         OwnerComp.GetAIOwner()->MoveToActor(playerPawn, CalculatedMinDistance, false);
         return EBTNodeResult::Succeeded;
     }
     else if (DistanceToPlayer < CalculatedMinDistance)
     {
+        OwnerComp.GetAIOwner()->SetFocus(playerPawn);
         // (몬스터 - 플레이어) 방향 → 플레이어의 반대 방향
         FVector FleeDirection = (MonsterLocation - PlayerLocation).GetSafeNormal();
 

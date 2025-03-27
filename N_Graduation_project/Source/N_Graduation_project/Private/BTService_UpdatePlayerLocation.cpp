@@ -72,37 +72,37 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	UWorld* World = ControllingPawn->GetWorld();
 
 	// 최소 거리 원 시각화 (몬스터 기준)
-	DrawDebugSphere(
-		World,
-		ControllingPawn->GetActorLocation(),
-		CalculatedMinDistance,
-		8,
-		FColor::Blue,
-		false,
-		0.5f
-	);
+	//DrawDebugSphere(
+	//	World,
+	//	ControllingPawn->GetActorLocation(),
+	//	CalculatedMinDistance,
+	//	8,
+	//	FColor::Blue,
+	//	false,
+	//	0.5f
+	//);
 
-	// PC와 몬스터 사이의 거리 시각화
-	DrawDebugLine(
-		World,
-		ControllingPawn->GetActorLocation(),
-		PlayerLocation,
-		(DistanceToPlayer >= CalculatedMinDistance) ? FColor::Green : FColor::Red,
-		false,
-		0.1f,
-		0,
-		3.0f
-	);
+	//// PC와 몬스터 사이의 거리 시각화
+	//DrawDebugLine(
+	//	World,
+	//	ControllingPawn->GetActorLocation(),
+	//	PlayerLocation,
+	//	(DistanceToPlayer >= CalculatedMinDistance) ? FColor::Green : FColor::Red,
+	//	false,
+	//	0.1f,
+	//	0,
+	//	3.0f
+	//);
 
-	// 거리 값 시각화
-	FVector MidPoint = (ControllingPawn->GetActorLocation() + PlayerLocation) * 0.5f;
-	DrawDebugString(
-		World,
-		MidPoint,
-		FString::Printf(TEXT("Distance: %.1f / Min: %.1f"), DistanceToPlayer, CalculatedMinDistance),
-		nullptr,
-		FColor::White,
-		0.1f,
-		false
-	);
+	//// 거리 값 시각화
+	//FVector MidPoint = (ControllingPawn->GetActorLocation() + PlayerLocation) * 0.5f;
+	//DrawDebugString(
+	//	World,
+	//	MidPoint,
+	//	FString::Printf(TEXT("Distance: %.1f / Min: %.1f"), DistanceToPlayer, CalculatedMinDistance),
+	//	nullptr,
+	//	FColor::White,
+	//	0.1f,
+	//	false
+	//);
 }

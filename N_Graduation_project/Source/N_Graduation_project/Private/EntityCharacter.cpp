@@ -184,6 +184,10 @@ void AEntityCharacter::SetPreset(FString PresetReference)
 		if (LoadedMesh)
 		{
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
+			
+			// 예: 메시가 +Y를 전방으로 보고 있다면 -90도 돌려 +X를 앞방향으로 맞춤
+			GetMesh()->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
+
 			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("Skeletal Mesh Loaded Successfully"));
 		}
 		else

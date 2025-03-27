@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
 #include "MyAIController.generated.h"
 
 UCLASS()

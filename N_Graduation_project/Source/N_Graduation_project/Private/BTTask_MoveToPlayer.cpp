@@ -48,6 +48,7 @@ EBTNodeResult::Type UBTTask_MoveToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
     if (DistanceToPlayer >= CalculatedMinDistance)
     {
         FVector PlayerLocation = BlackboardComp->GetValueAsVector(BBKEY_PLAYERLOCATION);
+        OwnerComp.GetAIOwner()->SetFocus(playerPawn);
         OwnerComp.GetAIOwner()->MoveToActor(playerPawn, CalculatedMinDistance, false);
         return EBTNodeResult::Succeeded;
     }

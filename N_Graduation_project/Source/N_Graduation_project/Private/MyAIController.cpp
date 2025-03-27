@@ -12,7 +12,6 @@ AMyAIController::AMyAIController()
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-
     //ConstructorHelpers::FObjectFinder<UBehaviorTree>aiBehavior(TEXT("/Script/AIModule.BehaviorTree'/Game/Entity/BT_Monster.BT_Monster'"));
     //GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("aiBehavior called")));
 
@@ -92,6 +91,10 @@ void AMyAIController::OnPossess(APawn* InPawn)
 
     if (InPawn)
     {
+        if (ACharacter* PossessedCharacter = Cast<ACharacter>(InPawn))
+        {
+            PossessedCharacter->bUseControllerRotationYaw = true;
+        }
         UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s"), *InPawn->GetName());
     }
 
