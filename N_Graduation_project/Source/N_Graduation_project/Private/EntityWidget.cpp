@@ -32,7 +32,6 @@ void UEntityWidget::DecreaseHealth()
 {
 	if (MaxHP > 0)
 	{
-		MaxHP -=10;
 		UpdateHealthBar(MaxHP); // HP를 감소시키고 UI 갱신		
 	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Health updated: %d"), MaxHP));
 
@@ -50,7 +49,7 @@ void UEntityWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	// 타이머 설정 (1초마다 HP 감소)
-	GetWorld()->GetTimerManager().SetTimer(HealthTimerHandle, this, &UEntityWidget::DecreaseHealth, 1.0f, true);
+	//GetWorld()->GetTimerManager().SetTimer(HealthTimerHandle, this, &UEntityWidget::DecreaseHealth, 1.0f, true);
 }
 
 // NativeTick 함수에서 HP 감소 확인

@@ -13,6 +13,7 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	OnceHitBox = false;
 	CanUseNomalSkill = true;
 	CanUseSpecialSkill = true;
+	DamageAmount = 50;
 }
 
 void UPlayerSkillComponent::BeginPlay()
@@ -145,57 +146,7 @@ void UPlayerSkillComponent::HideHitBox()
 	}
 }
 
-//void UPlayerSkillComponent::SkillType(const FString& SkillID)
-//{
-//	// 스킬 데이터 가져오기
-//	FSkillData SkillData;
-//	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
-//	{
-//		return;
-//	}
-//
-//	// 플레이어와의 거리 계산
-//	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-//	if (!PlayerController) return;
-//
-//	APawn* PlayerPawn = PlayerController->GetPawn();
-//	if (!PlayerPawn) return;
-//
-//	distance = GetDistanceTo(PlayerPawn);
-//
-//	// 히트박스 처리 (범위 내 스킬)
-//	if (distance <= SkillData.SkillRange)
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("distance: %f"), distance);
-//
-//		if (SkillData.SkillTypeShape == "Box")
-//		{
-//			SettingHitBox(SkillData);  // 히트박스 초기화
-//			OnHitBox(SkillData);    // 히트박스 활성화
-//		}
-//		else if (SkillData.SkillTypeShape == "Sphere")
-//		{
-//			// Sphere 관련 처리 추가
-//		}
-//	}
-//	if (SkillData.SkillID=="Skill_ShieldGuard") {
-//		// 방어 스킬 처리 (범위 밖 스킬)
-//		if (!CanUseDefenseSkill)
-//		{
-//			UE_LOG(LogTemp, Warning, TEXT("Defense skill is on cooldown!"));
-//			return;  // 쿨타임 중이면 방어 스킬 실행하지 않음
-//		}
-//
-//		OnDefenseSkill(3.0);  // 방어 스킬 실행
-//
-//		// 쿨타임 후 방어 스킬 사용 가능하게 설정
-//		FTimerDelegate DefenseCooldownEnd;
-//		DefenseCooldownEnd.BindUObject(this, &UPlayerSkillComponent::ResetDefenseSkillCooldown);
-//		SetSkillTimer(SkillData.SkillCoolTime, DefenseCooldownEnd);  // 쿨타임 설정
-//		CanUseDefenseSkill = false;  // 방어 스킬 쿨타임 시작
-//	}
-//}
-
+ 
 AActor* UPlayerSkillComponent::FindMonsterTarget()
 {
 	if (!GetWorld()) {
@@ -391,11 +342,14 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 		UE_LOG(LogTemp, Warning, TEXT("no Effect: %s"), *SkillNameID);
 		return;
 	}
-	float DamageAmount = EffectData.EffectValue01;
+	DamageAmount = EffectData.EffectValue01;
 	UE_LOG(LogTemp, Warning, TEXT("SkillEffect 실행됨! DamageAmount: %f"), DamageAmount);
 
 }
-
+//void UPlayerSkillComponent::OnHitboxOverlap_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+//{
+//	UE_LOG(LogTemp, Log, TEXT("%s"), *(OverlappedComponent->GetName()));
+//}
 //void UPlayerSkillComponent::SkillAnimation(const FString& EffectID) {
 //	if(CurrentSkillID==Skill_Slash)
 //

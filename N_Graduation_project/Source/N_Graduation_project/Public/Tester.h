@@ -74,4 +74,9 @@ public:
 	UPROPERTY()
 	class UEntityWidget* EntityWidget; // EntityWidget은 UUserWidget을 상속한 클래스
 	UPlayerSkillComponent* PlayerSkillComponent;  // PlayerSkillComponent 멤버 변수 선언
+
+	// 데미지를 받는 함수
+	UFUNCTION(BlueprintCallable, Category = "Monster Combat")
+	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
+
 };

@@ -39,16 +39,13 @@ void ATester::BeginPlay()
 		m_pMeshCom->RegisterComponent();
 		RootComponent = m_pMeshCom;
 	}
-
 	UpdateEntityData();
 	SpawnEntityPreset();
 }
 
-// Called every frame
 void ATester::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//PlayerSkillComponent->SkillType("Skill_ShieldGuard");
 }
 
 void ATester::UpdateEntityData()
@@ -67,26 +64,7 @@ void ATester::UpdateEntityData()
 	}
 
 }
-/*void ATester::SpawnEntityPreset()
-{
-	//null오류 잦음 null 확인 코드 필요(내일꼭하기)
-	//두번째 실행부터 문제생김
-	if (EntityPresetClass)
-	{
-		AActor* SpawnedEntityPreset = GetWorld()->SpawnActor<AActor>(EntityPresetClass, GetActorLocation(), GetActorRotation());
-		// EntityPreset에서 WidgetComponent에 접근
-		if (UWidgetComponent* WidgetComponent = SpawnedEntityPreset->FindComponentByClass<UWidgetComponent>())
-		{
-			if (UEntityWidget* MyEntityWidget = Cast<UEntityWidget>(WidgetComponent->GetWidget()))
-			{
-				MyEntityWidget->UpdateHealthBar(EntityData.HP);
-				MyEntityWidget->SetEntityName(FText::FromString(EntityData.EntityName));
-			}
-		}
-	}
-}
-*/
-/**/
+
 void ATester::SpawnEntityPreset()
 {
 	if (EntityPresetClass)
@@ -139,8 +117,6 @@ void ATester::SpawnEntityPreset()
 	}
 }
 
-
-
 void ATester::SetMaxHp(int32 MaxHp)
 {
 	currentHp = MaxHp;
@@ -183,7 +159,7 @@ void ATester::SetPreset(FString PresetReference)
 		}
 	}
 
-	if(currentPreset == "WildBoarPreset.uasset")
+	if (currentPreset == "WildBoarPreset.uasset")
 	{
 		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2.Boar_idle_test3s_2"));
 
@@ -192,10 +168,10 @@ void ATester::SetPreset(FString PresetReference)
 		if (LoadedMesh)
 		{
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);  // SkeletalMesh는 Skel_MeshCom을 사용
-		//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("I'm Here")));
+			//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("I'm Here")));
 		}
 	}
-	
+
 	if (currentPreset == "InpermonPreset.uasset")
 	{
 		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_TableRound.SM_TableRound'"));
@@ -206,7 +182,7 @@ void ATester::SetPreset(FString PresetReference)
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 		}
 	}
-	
+
 	if (currentPreset == "FreezardPreset.uasset")
 	{
 		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_Statue.SM_Statue'"));
@@ -217,7 +193,7 @@ void ATester::SetPreset(FString PresetReference)
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 		}
 	}
-	
+
 	if (currentPreset == "StoneGolemPreset.uasset")
 	{
 		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_Lamp_Ceiling.SM_Lamp_Ceiling'"));
@@ -228,4 +204,17 @@ void ATester::SetPreset(FString PresetReference)
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 		}
 	}
+}
+float ATester::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	UE_LOG(LogTemp, Warning, TEXT("ATester::TakeDamage 실행됨! Damage: %f"), DamageAmount);
+
+	currentHp -= DamageAmount;
+	if (currentHp <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("몬스터 사망!"));
+		Destroy();
+	}
+
+	return DamageAmount;
 }

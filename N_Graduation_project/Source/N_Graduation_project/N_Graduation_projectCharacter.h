@@ -115,14 +115,15 @@ private:
 	FVector DashVelocity;
 
 	void OnPlayerDead();
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UPlayerSkillComponent* PlayerSkillComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	UCharacterStateComponent* CharacterStateComponent;
 	/** 체력 컴포넌트 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UMyPlayerStatComponent* PlayerStatComponent;
+
 
 public:
 	

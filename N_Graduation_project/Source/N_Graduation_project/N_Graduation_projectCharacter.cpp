@@ -336,6 +336,7 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	DashDirection = DashDir;
 	DashVelocity = DashVel;
 	DashTimeline->PlayFromStart();
+	EndDash();
 	/*currentPreset = "Inpermon";
 	UpdateEntityData();
 	//속도 변하는지 체크하려고
@@ -346,7 +347,6 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	//UpdateEntityData();
 	/*FString HPText = FString::Printf(TEXT("HP: %f"), PlayerStatComponent->CurrentHP);
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, HPText);*/
-	EndDash();
 }
 
 void AN_Graduation_projectCharacter::DashInterpReturn(float value)
