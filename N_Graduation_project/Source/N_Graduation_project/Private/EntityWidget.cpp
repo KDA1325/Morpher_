@@ -3,13 +3,11 @@
 #include "Components/TextBlock.h"
 
 // HP 업데이트
-void UEntityWidget::UpdateHealthBar(int32 NewHealth)
+void UEntityWidget::UpdateHealthBar(float NewHealth)
 {
 	if (HealthBar)
 	{
-		this->MaxHP = NewHealth;
-		float MaxHealth = 100.0f; // 여기를 동적으로 처리하도록 개선 가능
-		HealthBar->SetPercent(FMath::Clamp(NewHealth / MaxHealth, 0.0f, 1.0f));
+		HealthBar->SetPercent(FMath::Clamp(NewHealth / MaxHP, 0.0f, 1.0f));
 	}
 }
 

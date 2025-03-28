@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 
 #include "Tester.h"
 #include "Engine/World.h"
@@ -7,10 +5,12 @@
 #include "EntityWidget.h"
 #include "Components/BoxComponent.h"  // UBoxComponent
 #include "Components/ArrowComponent.h"  // UArrowComponent
+#include "MyMonsterStatComponent.h"
+
 // Sets default values
 ATester::ATester()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	CurrentHP = 100.0f;
 	PrimaryActorTick.bCanEverTick = true;
 
 	// UStaticMeshComponent을 생성자에서 CreateDefaultSubobject로 생성
@@ -24,23 +24,27 @@ ATester::ATester()
 		m_pMeshCom->RegisterComponent();
 		RootComponent = m_pMeshCom;
 	}
-	PlayerSkillComponent = CreateDefaultSubobject<UPlayerSkillComponent>(TEXT("PlayerSkillComponent"));
-
+	MyMonsterStatComponent = CreateDefaultSubobject<UMyMonsterStatComponent>(TEXT("MyMonsterStatComponent"));
+	EntityGroupID = TEXT("DefaultUniqueID");
 }
+
 
 // Called when the game starts or when spawned
 void ATester::BeginPlay()
 {
 	Super::BeginPlay();
-
 	if (!m_pMeshCom)
 	{
 		m_pMeshCom = NewObject<USkeletalMeshComponent>(this, TEXT("MeshComponent"));
 		m_pMeshCom->RegisterComponent();
 		RootComponent = m_pMeshCom;
 	}
-	UpdateEntityData();
+//	UE_LOG(LogTemp, Warning, TEXT("banana BeginPlay: EntityGroupID BEFORE UpdateEntityData: %s"), *EntityGroupID);
 	SpawnEntityPreset();
+	UpdateEntityData();
+	// EntityData 값 확인용 로그 추가
+//	UE_LOG(LogTemp, Warning, TEXT("banana BeginPlay: EntityGroupID %s, HP: %f"), *EntityGroupID, EntityData.HP);
+
 }
 
 void ATester::Tick(float DeltaTime)
@@ -50,19 +54,26 @@ void ATester::Tick(float DeltaTime)
 
 void ATester::UpdateEntityData()
 {
-	if (UABGameSingleton::Get().GetEntityDataByGroupID(EntityGroupID, EntityData))
+	static int32 CallCount = 0;
+	CallCount++;
+
+	// 데이터 갱신 시, HP 값이 올바르게 세팅되는지 확인
+	UABGameSingleton::Get().GetEntityDataByGroupID(EntityGroupID, EntityData);
+	SetActorLabel(EntityData.EntityName);
+
+	// HP 값이 0 이하로 설정되지 않도록 방어 코드 추가
+	if (EntityData.HP <= 0)
 	{
-		SetActorLabel(EntityData.EntityName);
-		SetMaxHp(EntityData.HP);
-		SetMoveSpeed(EntityData.MoveSpeed);
-		SetPreset(EntityData.PresetReference);
-
-		UE_LOG(LogABGameSingleton, Error, TEXT("Entity Name: %s, HP: %d, Move Speed: %d"),
-			*EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed);
-
-		//SpawnEntityPreset();
+		EntityData.HP = 100.0f; // 기본 HP 값으로 초기화
 	}
 
+	CurrentHP = EntityData.HP;
+	SetHP(EntityData.HP);
+	moveSpeed = EntityData.MoveSpeed;
+	SetPreset(EntityData.PresetReference);
+
+	UE_LOG(LogABGameSingleton, Error, TEXT("banana CallCount: %d Entity Name: %s, HP: %f, Move Speed: %d"),
+		CallCount, *EntityData.EntityName, CurrentHP, EntityData.MoveSpeed);
 }
 
 void ATester::SpawnEntityPreset()
@@ -75,17 +86,6 @@ void ATester::SpawnEntityPreset()
 		{
 			// UWidgetComponent가 null이면 수동으로 초기화
 			UWidgetComponent* WidgetComponent = SpawnedEntityPreset->FindComponentByClass<UWidgetComponent>();
-			PlayerSkillComponent->HitBox = SpawnedEntityPreset->FindComponentByClass<UBoxComponent>();
-			PlayerSkillComponent->Arrow = SpawnedEntityPreset->FindComponentByClass<UArrowComponent>();
-
-			if (PlayerSkillComponent->HitBox)
-			{
-				UE_LOG(LogABGameSingleton, Error, TEXT("Yes HitBox"));
-			}
-			if (PlayerSkillComponent->Arrow)
-			{
-				UE_LOG(LogABGameSingleton, Error, TEXT("Yes Arrow"));
-			}
 
 			if (!WidgetComponent)
 			{
@@ -100,26 +100,22 @@ void ATester::SpawnEntityPreset()
 			}
 
 			// WidgetComponent가 제대로 초기화되었는지 확인
-			if (WidgetComponent)
-			{
-				// 위젯을 가져와서 업데이트
-				UUserWidget* UserWidget = WidgetComponent->GetWidget();
-				if (UEntityWidget* MyEntityWidget = Cast<UEntityWidget>(UserWidget))
-				{
-					// 위젯에서 정보를 갱신
-					MyEntityWidget->UpdateHealthBar(EntityData.HP);
-					// 이름과 속도 값을 EntityWidget에 전달
-					MyEntityWidget->ReceiveEntityName(FText::FromString(EntityData.EntityName));
-					MyEntityWidget->ReceiveEntitySpeed(EntityData.MoveSpeed);
-				}
-			}
+			//if (WidgetComponent)
+			//{
+			//	// 위젯을 가져와서 업데이트
+			//	UUserWidget* UserWidget = WidgetComponent->GetWidget();
+			//	if (UEntityWidget* MyEntityWidget = Cast<UEntityWidget>(UserWidget))
+			//	{
+			//		// 위젯에서 초기 정보를 갱신
+			//		MyEntityWidget->UpdateHealthBar(EntityData.HP);
+			//		MyEntityWidget->MaxHP = EntityData.HP;
+			//		MyEntityWidget->ReceiveEntityName(FText::FromString(EntityData.EntityName));
+			//		MyEntityWidget->ReceiveEntitySpeed(EntityData.MoveSpeed);
+			//		CurrentHP= EntityData.HP;
+			//	}
+			//}
 		}
 	}
-}
-
-void ATester::SetMaxHp(int32 MaxHp)
-{
-	currentHp = MaxHp;
 }
 
 void ATester::SetMoveSpeed(int32 MoveSpeed)
@@ -207,14 +203,70 @@ void ATester::SetPreset(FString PresetReference)
 }
 float ATester::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ATester::TakeDamage 실행됨! Damage: %f"), DamageAmount);
+	UE_LOG(LogTemp, Warning, TEXT("banana ATester::TakeDamage! Damage: %f"), DamageAmount);
+	UE_LOG(LogTemp, Log, TEXT("banana (TakeDamage)CurrentHP: %f, DamageAmount: %f, CurrentHP - DamageAmount: %f"), CurrentHP, DamageAmount, CurrentHP - DamageAmount);
 
-	currentHp -= DamageAmount;
-	if (currentHp <= 0)
+	if (CurrentHP > 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("몬스터 사망!"));
-		Destroy();
+		ApplyDamage(DamageAmount);
+		WidgetUpdate();
+		//UE_LOG(LogTemp, Log, TEXT("banana Tester Monster get currentHp: %f Damage: %f"), CurrentHP, DamageAmount);
+		UE_LOG(LogTemp, Log, TEXT("banana (CurrentHP>0)CurrentHP: %f, DamageAmount: %f, CurrentHP - DamageAmount: %f"), CurrentHP, DamageAmount, CurrentHP - DamageAmount);
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Monster Dead!"));
+		UE_LOG(LogTemp, Log, TEXT("banana Tester Monster get currentHp: %f Damage: %f"), CurrentHP, DamageAmount);
+
+		//Destroy();
+	}
+	return DamageAmount;
+
+}
+
+void ATester::SetHP(float NewHP)
+{
+	CurrentHP = NewHP;
+	UE_LOG(LogTemp, Warning, TEXT("SetHP NewHP: %f"), NewHP);
+	/*if (NewHP <= 0)
+	{
+		CurrentHP = 0;
+		UE_LOG(LogTemp, Log, TEXT("banana CurrentHP=0"));
+
+	}
+	else
+	{
+		CurrentHP = NewHP;
+		UE_LOG(LogTemp, Log, TEXT("banana Monster CurrentHP: %f"), CurrentHP);
+	}*/
+}
+
+void ATester::ApplyDamage(float DamageAmount)
+{
+	SetHP(CurrentHP - DamageAmount);
+
+}
+
+void ATester::WidgetUpdate()
+{
+	AActor* SpawnedEntityPreset = GetWorld()->SpawnActor<AActor>(EntityPresetClass, GetActorLocation(), GetActorRotation());
+
+	// nullptr 체크 추가
+	if (!SpawnedEntityPreset)
+	{
+		UE_LOG(LogTemp, Error, TEXT("SpawnEntityPreset failed!"));
+		return;
 	}
 
-	return DamageAmount;
+	UWidgetComponent* WidgetComponent = SpawnedEntityPreset->FindComponentByClass<UWidgetComponent>();
+
+	if (WidgetComponent)
+	{
+		UUserWidget* UserWidget = WidgetComponent->GetWidget();
+		if (UEntityWidget* MyEntityWidget = Cast<UEntityWidget>(UserWidget))
+		{
+			MyEntityWidget->UpdateHealthBar(CurrentHP);
+		}
+	}
 }

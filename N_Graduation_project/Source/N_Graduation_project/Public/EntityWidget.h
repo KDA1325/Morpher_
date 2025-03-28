@@ -12,7 +12,7 @@ class N_GRADUATION_PROJECT_API UEntityWidget : public UUserWidget
 public:
 	// HP 업데이트
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	void UpdateHealthBar(int32 NewHealth);
+	void UpdateHealthBar(float NewHealth);
 
 	// 이름 받기
 	UFUNCTION(BlueprintCallable, Category = "Entity")

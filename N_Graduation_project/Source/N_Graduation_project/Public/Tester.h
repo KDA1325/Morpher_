@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -8,6 +7,7 @@
 #include "ABEntityData.h" // Entity Data 구조체
 #include "ABGameSingleton.h"
 #include "PlayerSkillComponent.h"
+#include "MyMonsterStatComponent.h"
 #include "Tester.generated.h"
 
 
@@ -46,23 +46,26 @@ public:
 
 	void SpawnEntityPreset();
 
+	UMyMonsterStatComponent* MyMonsterStatComponent;
+
 	int32 maxHp;
 	int32 moveSpeed;
 	FString normalSkill;
 	FString specialSkill;
 	FString presetReference;
 
-
-	int32 currentHp;
+	float CurrentHP;
 	int32 currentSpeed;
 	FString currentPreset;
 	
-	// MaxHP를 설정하는 함수
-	void SetMaxHp(int32 MaxHp);
+	void SetHP(float NewHP);
+	void ApplyDamage(float DamageAmount);
 	// MoveSpeed를 설정하는 함수
 	void SetMoveSpeed(int32 MoveSpeed);
 	// Preset을 설정하는 함수
 	void SetPreset(FString PresetReference);
+
+	void WidgetUpdate();
 
 	// 메시 변경 테스트를 위해 
 	UPROPERTY(VisibleAnywhere)
@@ -73,7 +76,6 @@ public:
 	// EntityPreset 블루프린트에서 사용할 위젯 클래스
 	UPROPERTY()
 	class UEntityWidget* EntityWidget; // EntityWidget은 UUserWidget을 상속한 클래스
-	UPlayerSkillComponent* PlayerSkillComponent;  // PlayerSkillComponent 멤버 변수 선언
 
 	// 데미지를 받는 함수
 	UFUNCTION(BlueprintCallable, Category = "Monster Combat")
