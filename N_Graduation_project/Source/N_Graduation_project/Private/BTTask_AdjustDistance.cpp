@@ -40,7 +40,7 @@ EBTNodeResult::Type UBTTask_AdjustDistance::ExecuteTask(UBehaviorTreeComponent& 
     float MonsterCapsuleRadius = BlackboardComp->GetValueAsFloat(BBKEY_MONSTERRADIUS);
     float PlayerCapsuleRadius = BlackboardComp->GetValueAsFloat(BBKEY_PLAYERRADIUS);
 
-    float MinDistance = 300.0f;
+    float MinDistance = BlackboardComp->GetValueAsFloat(BBKEY_ADJUSTMINDISTANCE);
 
     // 실제 최소 거리 계산
     float CalculatedMinDistance = MinDistance + PlayerCapsuleRadius + MonsterCapsuleRadius;

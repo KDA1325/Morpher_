@@ -37,6 +37,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	int32 currentHp;
 	int32 currentSpeed;
+	EnumAttackType attackType;
 
 public:	
 	// Called every frame
@@ -60,6 +61,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void SetMoveSpeed(int32 MoveSpeed);
 
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	void SetAttackType(EnumAttackType AttackType);
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	EnumAttackType GetAttackType();
 // AI Section
 protected:
 	virtual float GetAIPatrolRadius() override;

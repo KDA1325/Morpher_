@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "MyAI.h"
 #include "AIController.h"
+#include "ABEntityData.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/CapsuleComponent.h"
 
@@ -63,13 +64,21 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 		BlackboardComp->SetValueAsFloat(BBKEY_DISTANCE, DistanceToPlayer);
 	}
 
-	// 최소 거리
-	float MinDistance = BlackboardComp->GetValueAsFloat(BBKEY_MINDISTANCE);
+	//// AttackType에 따라 최소 거리 값 설정
+	//uint8 AttackType = BlackboardComp->GetValueAsInt(BBKEY_ATTACKTYPE);
 
-	// 실제 최소 거리 계산
-	float CalculatedMinDistance = MinDistance + PlayerCapsuleRadius + MonsterCapsuleRadius;
+	//if (AttackType == (uint8)EnumAttackType::Melee)
+	//{
 
-	UWorld* World = ControllingPawn->GetWorld();
+	//}
+
+	//// 최소 거리
+	//float MinDistance = BlackboardComp->GetValueAsFloat(BBKEY_MINDISTANCE);
+
+	//// 실제 최소 거리 계산
+	//float CalculatedMinDistance = MinDistance + PlayerCapsuleRadius + MonsterCapsuleRadius;
+
+	//UWorld* World = ControllingPawn->GetWorld();
 
 	// 최소 거리 원 시각화 (몬스터 기준)
 	//DrawDebugSphere(

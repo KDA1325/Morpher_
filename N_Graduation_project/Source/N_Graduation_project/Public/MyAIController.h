@@ -36,6 +36,9 @@ private:
     UPROPERTY()
     TObjectPtr<class UBehaviorTree> BTMonster;
 
+    UPROPERTY()
+    UBlackboardComponent* BlackboardComp;
+
 
     //UPROPERTY(EditAnywhere)
     //class UBehaviorTree* MonsterBehaviorTree;

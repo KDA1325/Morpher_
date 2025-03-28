@@ -49,15 +49,21 @@ void AEntityPreset::SetMoveSpeed(int32 MoveSpeed)
 	currentSpeed = MoveSpeed;
 }
 
+void AEntityPreset::SetAttackType(EnumAttackType AttackType)
+{
+	attackType = AttackType;
+}
+
 void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 {
 	// Entity 데이터에 따라 초기화 
 	SetActorLabel(InEntityData.EntityName);
 	SetMaxHp(InEntityData.HP);
 	SetMoveSpeed(InEntityData.MoveSpeed);
+	SetAttackType(InEntityData.AttackType);
 
-	UE_LOG(LogTemp, Warning, TEXT("Initialized Entity with Name: %s, HP: %d, Move Speed: %d"),
-		*InEntityData.EntityName, InEntityData.HP, InEntityData.MoveSpeed);
+	UE_LOG(LogTemp, Warning, TEXT("Initialized Entity with Name: %s, HP: %d, Move Speed: %d, AttackType: %d"),
+		*InEntityData.EntityName, InEntityData.HP, InEntityData.MoveSpeed, InEntityData.AttackType);
 }
 
 float AEntityPreset::GetAIPatrolRadius()
@@ -78,4 +84,9 @@ float AEntityPreset::GetAIAttackRange()
 float AEntityPreset::GetAITurnSpeed()
 {
 	return 0.0f;
+}
+
+EnumAttackType AEntityPreset::GetAttackType()
+{
+	return attackType;
 }

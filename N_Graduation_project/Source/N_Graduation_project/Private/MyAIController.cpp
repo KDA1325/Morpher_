@@ -6,6 +6,7 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "MyAI.h"
+#include "EntityPreset.h"
 
 // Sets default values
 AMyAIController::AMyAIController()
@@ -37,15 +38,15 @@ AMyAIController::AMyAIController()
     {
         BTMonster = BTMonsterRef.Object;
     }
+    
 }
 
 void AMyAIController::RunAI()
 {
-    UBlackboardComponent* BlackboardPtr = Blackboard.Get();
-    
+    BlackboardComp = Blackboard.Get();
 
     GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Run AI")));
-    if (UseBlackboard(BBMonster, BlackboardPtr))
+    if (UseBlackboard(BBMonster, BlackboardComp))
     {
         Blackboard->SetValueAsVector(BBKEY_HOMEPOS, GetPawn()->GetActorLocation());
 
@@ -91,11 +92,25 @@ void AMyAIController::OnPossess(APawn* InPawn)
 
     if (InPawn)
     {
-        if (ACharacter* PossessedCharacter = Cast<ACharacter>(InPawn))
+        // Blackboard 초기화 후 AttackType 설정
+        if (UseBlackboard(BBMonster, BlackboardComp) && BlackboardComp)
         {
-            PossessedCharacter->bUseControllerRotationYaw = true;
+            // 캐스팅 실패 시 널 체크
+            AEntityPreset* PossessedCharacter = Cast<AEntityPreset>(InPawn);
+            if (PossessedCharacter)
+            {
+                // EnumAttackType 값을 uint8로 캐스팅하여 Blackboard에 저장
+                BlackboardComp->SetValueAsEnum(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
+            }
         }
-        UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s"), *InPawn->GetName());
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("UseBlackboard failed in OnPossess"));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("OnPossess received a null Pawn"));
     }
 
     RunAI();
