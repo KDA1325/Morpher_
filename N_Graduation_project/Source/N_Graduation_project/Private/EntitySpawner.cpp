@@ -32,33 +32,36 @@ void AEntitySpawner::SpawnEntityCharacter()
     FVector SpawnLocation = GetActorLocation();
     FRotator SpawnRotation = GetActorRotation();
 
+
     // 그룹 ID를 이용해 엔티티 데이터를 먼저 불러오기
-    if (UABGameSingleton::Get().GetEntityDataByGroupID(EntityGroupID, EntityData))
+    if (!UABGameSingleton::Get().GetEntityDataByGroupID(EntityGroupID, EntityData))
     {
-        if (EntityCharacterClass)
-        {
-            // 엔티티를 스폰하면서 데이터를 넘겨줌
-            AEntityCharacter* SpawnedEntity = GetWorld()->SpawnActor<AEntityCharacter>(EntityCharacterClass, SpawnLocation, SpawnRotation);
-            
-            if (SpawnedEntity)
-            {
-                // 스폰 직후 데이터 세팅
-                SpawnedEntity->InitializeEntity(EntityData);
-                UE_LOG(LogTemp, Warning, TEXT("Entity spawned with Group ID: %s"), *EntityGroupID);
-            }
-            else
-            {
-                UE_LOG(LogTemp, Error, TEXT("Failed to spawn entity character"));
-            }
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("EntityCharacterClass is not set"));
-        }
+        UE_LOG(LogTemp, Error, TEXT("Failed to find entity data for Group ID: %s"), *EntityGroupID);
+        return;
+    }
+
+    // EntityGroupID에 해당하는 EntityPreset 찾기 
+    TSubclassOf<AEntityPreset>* MatchBPClass = EntityPresetPaths.Find(EntityGroupID);
+    if (MatchBPClass == nullptr)
+    {
+        UE_LOG(LogTemp, Error, TEXT("EntityPreset Class is not set"));
+        return;
+    }
+
+    // EntityPreset 스폰 
+    AEntityPreset* SpawnedEntity = GetWorld()->SpawnActor<AEntityPreset>(*MatchBPClass, SpawnLocation, SpawnRotation);
+    if (SpawnedEntity)
+    {
+        // 스폰 직후 데이터 세팅
+        SpawnedEntity->InitializeEntity(EntityData);
+        UE_LOG(LogTemp, Warning, TEXT("Entity spawned with Group ID: %s"), *EntityGroupID);
+
+        // 스포너 액터 삭제 -> 블루프린트 노드로 처리 
+        //Destroy();
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("Failed to find entity data for Group ID: %s"), *EntityGroupID);
+        UE_LOG(LogTemp, Error, TEXT("Failed to spawn entity character"));
     }
 }
 

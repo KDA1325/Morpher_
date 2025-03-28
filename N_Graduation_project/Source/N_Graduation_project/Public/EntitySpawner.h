@@ -3,7 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ABEntityData.h" // Entity Data ±¸Á¶Ã¼
+#include "ABGameSingleton.h"
 #include "EntityCharacter.h"
+#include "EntityPreset.h"
 #include "GameFramework/Actor.h"
 #include "EntitySpawner.generated.h"
 
@@ -41,4 +44,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Spawn")
 	void SpawnEntityCharacter();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
+	TMap<FString, TSubclassOf<AEntityPreset>> EntityPresetPaths;
 };
