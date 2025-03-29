@@ -41,11 +41,46 @@ void AEntityCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 }
 
-void AEntityCharacter::SetMaxHp(int32 MaxHp)
+void AEntityCharacter::SetHp(float NewHP)
 {
-	currentHp = MaxHp;
+	CurrentHP = NewHP;
+	UE_LOG(LogTemp, Warning, TEXT("SetHP NewHP: %f"), NewHP);
+	/*if (NewHP <= 0)
+	{
+		CurrentHP = 0;
+		UE_LOG(LogTemp, Log, TEXT("banana CurrentHP=0"));
+	}
+	else
+	{
+		CurrentHP = NewHP;
+		UE_LOG(LogTemp, Log, TEXT("banana Monster CurrentHP: %f"), CurrentHP);
+	}*/
 }
-
+//void AEntityCharacter::ApplayDamage(float DamageAmount) 
+//{
+//	SetHp(CurrentHP - DamageAmount);
+//}
+//float AEntityCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("banana ATester::TakeDamage! Damage: %f"), DamageAmount);
+//	UE_LOG(LogTemp, Log, TEXT("banana (TakeDamage)CurrentHP: %f, DamageAmount: %f, CurrentHP - DamageAmount: %f"), CurrentHP, DamageAmount, CurrentHP - DamageAmount);
+//
+//	if (CurrentHP > 0)
+//	{
+//		ApplayDamage(DamageAmount);
+//		//WidgetUpdate();
+//		//UE_LOG(LogTemp, Log, TEXT("banana Tester Monster get currentHp: %f Damage: %f"), CurrentHP, DamageAmount);
+//		UE_LOG(LogTemp, Log, TEXT("banana (CurrentHP>0)CurrentHP: %f, DamageAmount: %f, CurrentHP - DamageAmount: %f"), CurrentHP, DamageAmount, CurrentHP - DamageAmount);
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("Monster Dead!"));
+//		UE_LOG(LogTemp, Log, TEXT("banana Tester Monster get currentHp: %f Damage: %f"), CurrentHP, DamageAmount);
+//
+//		//Destroy();
+//	}
+//	return DamageAmount;
+//}
 void AEntityCharacter::SetMoveSpeed(int32 MoveSpeed)
 {
 	currentSpeed = MoveSpeed;
@@ -114,7 +149,7 @@ void AEntityCharacter::InitializeEntity(FABEntityData& InEntityData)
 
 	// Entity 데이터에 따라 초기화 
 	SetActorLabel(InEntityData.EntityName);
-	SetMaxHp(InEntityData.HP);
+	SetHp(InEntityData.HP);
 	SetMoveSpeed(InEntityData.MoveSpeed);
 
 	// 메시 및 애니메이션 설정 
@@ -403,7 +438,7 @@ void AEntityCharacter::SetWidget()
 
 		if (UEntityWidget* MyEntityWidget = Cast<UEntityWidget>(UserWidget))
 		{
-			MyEntityWidget->UpdateHealthBar(currentHp);
+			MyEntityWidget->UpdateHealthBar(CurrentHP);
 			//MyEntityWidget->ReceiveEntityName(FText::FromString(EntityData.EntityName));
 			//MyEntityWidget->ReceiveEntitySpeed(currentSpeed);
 			UE_LOG(LogTemp, Warning, TEXT("Widget updated successfully"));

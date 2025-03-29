@@ -78,12 +78,12 @@ void UPlayerSkillComponent::OffDefenseSkill()
 void UPlayerSkillComponent::NomalCooldown()
 {
 	CanUseNomalSkill = true;
-	UE_LOG(LogTemp, Log, TEXT("Defense skill is ready to use again!"));
+//	UE_LOG(LogTemp, Log, TEXT("Defense skill is ready to use again!"));
 }
 void UPlayerSkillComponent::SpecialCooldown()
 {
 	CanUseSpecialSkill = true;
-	UE_LOG(LogTemp, Log, TEXT("Defense skill is ready to use again!"));
+//	UE_LOG(LogTemp, Log, TEXT("Defense skill is ready to use again!"));
 }
 
 void UPlayerSkillComponent::SettingHitBox(const FSkillData& SkillData)
@@ -110,7 +110,7 @@ void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 		Arrow->SetVisibility(true);
 
 		// 로그 추가: 활성화된 히트박스와 화살의 상태 확인
-		UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow"));
+	//	UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow"));
 	}
 	else
 	{
@@ -127,10 +127,10 @@ void UPlayerSkillComponent::HideHitBox()
 		HitBox->SetVisibility(false);
 		Arrow->SetVisibility(false);
 		// 로그 추가: 히트박스와 화살이 숨겨졌는지 확인
-		UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow hidden."));
+		//UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow hidden."));
 	}
 	else {
-		UE_LOG(LogTemp, Warning, TEXT("No HitBox and Arrow hidden."));
+	//	UE_LOG(LogTemp, Warning, TEXT("No HitBox and Arrow hidden."));
 
 	}
 }
@@ -139,11 +139,11 @@ void UPlayerSkillComponent::HideHitBox()
 AActor* UPlayerSkillComponent::FindMonsterTarget()
 {
 	if (!GetWorld()) {
-		UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
+	//	UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
 		return nullptr;
 	}
 	else {
-			UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
+//			UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
 
 		AActor* ClosestMonster = nullptr;
 		float MinDistance = FLT_MAX;
@@ -167,12 +167,12 @@ AActor* UPlayerSkillComponent::FindMonsterTarget()
 
 void UPlayerSkillComponent::NomalSkillType(const FString& SkillID)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Yes NomalSkillType"));
+	//UE_LOG(LogTemp, Warning, TEXT("Yes NomalSkillType"));
 
 	FSkillData SkillData;
 	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No UABGameSingleton"));
+	//	UE_LOG(LogTemp, Warning, TEXT("No UABGameSingleton"));
 
 		return;
 	}
@@ -180,7 +180,7 @@ void UPlayerSkillComponent::NomalSkillType(const FString& SkillID)
 	AActor* MonsterTarget = FindMonsterTarget();  // 몬스터 찾기
 	if (!MonsterTarget)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No Monster found!"));
+		//UE_LOG(LogTemp, Warning, TEXT("No Monster found!"));
 		return;
 	}
 
@@ -288,14 +288,14 @@ float UPlayerSkillComponent::GetDistanceTo(const AActor* OtherActor) const
 
 void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 {
-	UE_LOG(LogTemp, Warning, TEXT("On SkillAnimation"));
+	//UE_LOG(LogTemp, Warning, TEXT("On SkillAnimation"));
 
 	AActor* OwnerActor = GetOwner();
 	if (OwnerActor && OwnerActor->IsA<ACharacter>())
 	{
 		ACharacter* CharacterOwner = Cast<ACharacter>(OwnerActor);
 		UAnimInstance* AnimInstance = CharacterOwner->GetMesh()->GetAnimInstance();
-		UE_LOG(LogTemp, Log, TEXT("Get CharacterOwner"));
+		//UE_LOG(LogTemp, Log, TEXT("Get CharacterOwner"));
 
 		UActionAnimInstance* ActionAnimInstance = Cast<UActionAnimInstance>(AnimInstance);
 		if (ActionAnimInstance)
