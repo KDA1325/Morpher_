@@ -306,7 +306,7 @@ void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this, &UPlayerSkillComponent::EndSkillAnimation);
 			ActionAnimInstance->Montage_SetEndDelegate(EndDelegate);
-
+			SkillEffect(EffectID);
 			UCharacterStateComponent* StateComp = OwnerActor->FindComponentByClass<UCharacterStateComponent>();
 			if (StateComp)
 			{

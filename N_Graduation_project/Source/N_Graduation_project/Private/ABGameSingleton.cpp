@@ -7,8 +7,8 @@ UABGameSingleton::UABGameSingleton()
 	// 만든 DataTable 주소를 가져온다.
 	// DataTable은 맵 형태로 Key,Value 값으로 들어온다.
 	static ConstructorHelpers::FObjectFinder<UDataTable> EntityDataTableRef(TEXT("/Game/DataTable/EntityDataTable.EntityDataTable"));
-	static ConstructorHelpers::FObjectFinder<UDataTable> SkillDataTableRef(TEXT("/Game/DataTable/SkillData.SkillData"));
-	static ConstructorHelpers::FObjectFinder<UDataTable> SkillEffectDataTableRef(TEXT("/Game/DataTable/SkillEffectData.SkillEffectData"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> SkillDataTableRef(TEXT("/Game/DataTable/SkillDataTable.SkillDataTable"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> SkillEffectDataTableRef(TEXT("/Game/DataTable/SkillEffectDataTable.SkillEffectDataTable"));
 
 	//if (nullptr != DataTableRef.Object)
 	//{
