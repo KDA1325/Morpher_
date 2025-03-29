@@ -51,7 +51,7 @@ UABGameSingleton::UABGameSingleton()
 	HowManyEntity = EntityDataTable.Num();
 	// EntityDataTable에 저장된 데이터를 콘솔에 출력
 	ensure(HowManyEntity > 0);
-	//UE_LOG(LogABGameSingleton, Error, TEXT("HowManyEntity: %d"), HowManyEntity);
+	UE_LOG(LogABGameSingleton, Error, TEXT("HowManyEntity: %d"), HowManyEntity);
 	//-> LogABGameSingleton: Error: HowManyEntity: 7
 
 
@@ -72,8 +72,8 @@ UABGameSingleton::UABGameSingleton()
 	// 확인 완료 
 	//for (const FSkillData& SkillData : SkillDataTable)
 	//{
-	//	UE_LOG(LogABGameSingleton, Error, TEXT("SkillID: %s, SkillName: %s, SkillType: %s, SkillRange: %d, SkillDuration: %.1f, SkillCoolTime: %.1f, SkillTypeShape: %s, SkillTypeSizeX: %d, SkillTypeSizeY: %d, ProjectileSpeed: %d"),
-	//		*SkillData.SkillID, *SkillData.SkillName, *SkillData.SkillType, SkillData.SkillRange, SkillData.SkillDuration, SkillData.SkillCoolTime, *SkillData.SkillTypeShape, SkillData.SkillTypeSizeX, SkillData.SkillTypeSizeY, SkillData.ProjectileSpeed);
+	//	UE_LOG(LogABGameSingleton, Error, TEXT("SkilNamelID: %s, SkillName: %s, SkillType: %s, SkillRange: %.1f, SkillDuration: %.1f, SkillCoolTime: %.1f, SkillTypeShape: %s, SkillTypeSizeX: %.1f, SkillTypeSizeY: %.1f, ProjectileSpeed: %.1f"),
+	//		*SkillData.SkillNameID, *SkillData.SkillName, *SkillData.SkillType, SkillData.SkillRange, SkillData.SkillDuration, SkillData.SkillCoolTime, *SkillData.SkillTypeShape, SkillData.SkillTypeSizeX, SkillData.SkillTypeSizeY, SkillData.ProjectileSpeed);
 	//}
 
 	// 배열의 갯수가 0보다 큰지 확인
@@ -98,11 +98,11 @@ UABGameSingleton::UABGameSingleton()
 	}
 
 	// 확인 완료 
-	//for (const FSkillEffectData& SkillEffectData : SkillEffectDataTable)
-	//{
-	//	UE_LOG(LogABGameSingleton, Error, TEXT("SkillNameID: %s, EffectID: %s, EffectType: %s, EffectValue01: %.1f, EffectValue02: %.1f"),
-	//		*SkillEffectData.SkillNameID, *SkillEffectData.EffectID, *SkillEffectData.EffectType, SkillEffectData.EffectValue01, SkillEffectData.EffectValue02);
-	//}
+	/*for (const FSkillEffectData& SkillEffectData : SkillEffectDataTable)
+	{
+		UE_LOG(LogABGameSingleton, Error, TEXT("SkillNameID: %s, EffectID: %s, EffectType: %s, EffectValue01: %.1f, EffectValue02: %.1f"),
+			*SkillEffectData.SkillNameID, *SkillEffectData.EffectID, *SkillEffectData.EffectType, SkillEffectData.EffectValue01, SkillEffectData.EffectValue02);
+	}*/
 	// 배열의 갯수가 0보다 큰지 확인
 	HowManySkillEffect = SkillEffectDataTable.Num();
 	// SkillDataTable에 저장된 데이터를 콘솔에 출력

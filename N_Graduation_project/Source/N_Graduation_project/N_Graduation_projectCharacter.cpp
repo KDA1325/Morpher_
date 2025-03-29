@@ -147,7 +147,9 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
 	FVector Velocity = GetVelocity();
 	float Speed = Velocity.Size(); // 현재 속도
+	//PlayerSkillComponent->FindMonsterTarget();
 	PlayerSkillComponent->NomalSkillType("Skill_Slash");
+
 
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	if (!StateComp)
@@ -160,7 +162,6 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 	{
 		if (StateComp->GetCurrentState() != ECharacterState::Move)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Changing state to Move"));
 			StateComp->ChangeState(ECharacterState::Move);  // Move 상태로 변경
 		}
 	}
@@ -168,7 +169,6 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 	{
 		if (StateComp->GetCurrentState() != ECharacterState::Idle)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Changing state to Idle"));
 			StateComp->ChangeState(ECharacterState::Idle);  // Idle 상태로 변경
 		}
 	}
@@ -246,6 +246,7 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 		StartAction();
 		UE_LOG(LogTemp, Error, TEXT("NomalSkillAction"));
 		PlayerSkillComponent->SkillAnimation("Skill_Slash");
+
 	}
 
 }

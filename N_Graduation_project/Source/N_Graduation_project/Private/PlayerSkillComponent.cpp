@@ -111,17 +111,6 @@ void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 
 		// 로그 추가: 활성화된 히트박스와 화살의 상태 확인
 		UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow"));
-		// 일정 시간이 지나면 히트박스 숨기기
-//		FTimerHandle  HitboxEnd;
-
-		//FTimerDelegate HitboxEnd;
-		/*HitboxEnd.BindUObject(this, &UPlayerSkillComponent::HideHitBox);
-		SetSkillTimer(SkillData.SkillDuration, HitboxEnd);
-		UE_LOG(LogTemp, Warning, TEXT("SkillDuration: %f"), SkillData.SkillDuration);*/
-
-		// 타이머 시작: 일정 시간이 지나면 HideHitBox 호출
-		//GetWorld()->GetTimerManager().SetTimer(HitboxEnd, this, &UPlayerSkillComponent::HideHitBox, SkillData.SkillDuration, false);
-		//UE_LOG(LogTemp, Warning, TEXT("SkillDuration: %f"), SkillData.SkillDuration);
 	}
 	else
 	{
@@ -150,11 +139,11 @@ void UPlayerSkillComponent::HideHitBox()
 AActor* UPlayerSkillComponent::FindMonsterTarget()
 {
 	if (!GetWorld()) {
-		//UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
+		UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
 		return nullptr;
 	}
 	else {
-		//	UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
+			UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
 
 		AActor* ClosestMonster = nullptr;
 		float MinDistance = FLT_MAX;
@@ -178,9 +167,13 @@ AActor* UPlayerSkillComponent::FindMonsterTarget()
 
 void UPlayerSkillComponent::NomalSkillType(const FString& SkillID)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Yes NomalSkillType"));
+
 	FSkillData SkillData;
 	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("No UABGameSingleton"));
+
 		return;
 	}
 
