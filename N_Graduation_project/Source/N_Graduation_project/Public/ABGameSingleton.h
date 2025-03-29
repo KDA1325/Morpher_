@@ -31,6 +31,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	bool GetEntityDataByGroupID(const FString& GroupID, FABEntityData& OutEntityData) const;
 
+	// SkillID를 기준으로 SkillData를 반환하는 함수 추가
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	bool GetSkillDataBySkillID(const FString& SkillID, FSkillData& SkillData) const;
+	bool GetSkillEffectDataTBySkillID(const FString& SkillNameID, FSkillEffectData& EffectData) const;
+
+
 	UPROPERTY()
 	// 총 몇개의 Entity?
 	int32 HowManyEntity;
@@ -40,10 +46,12 @@ public:
 private:
 	TArray<FABEntityData> EntityDataTable; // 테이블들을 내부적으로 보관해서 필요한 게임 객체들에게 제공하기 위한 Talbe Array
 	TMap<FString, FABEntityData> EntityDataMap; // EntityGroupID를 키 값으로 데이터를 저장하는 Map
-	
-	TArray<FSkillData> SkillDataTable; // 테이블들을 내부적으로 보관해서 필요한 게임 객체들에게 제공하기 위한 Talbe Array
-	//TMap<FString, FSkillData> FSkillDataMap;
 
-	TArray<FSkillEffectData> SkillEffectDataTable; // 테이블들을 내부적으로 보관해서 필요한 게임 객체들에게 제공하기 위한 Talbe Array
-	//TMap<FString, FSkillEffectData> FSkillEffectDataMap;
+
+	TArray<FSkillData> SkillDataTable; // 테이블들을 내부적으로 보관해서 필요한 게임 객체들에게 제공하기 위한 Talbe Array
+	TMap<FString, FSkillData> SkillDataMap; //EntityGroupID를 키 값으로 데이터를 저장하는 Map
+
+	// Skill Effect 데이터 저장
+	TArray<FSkillEffectData> SkillEffectDataTable;
+	TMap<FString, FSkillEffectData> SkillEffectDataMap;
 };
