@@ -13,19 +13,6 @@ AMyAIController::AMyAIController()
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-    //ConstructorHelpers::FObjectFinder<UBehaviorTree>aiBehavior(TEXT("/Script/AIModule.BehaviorTree'/Game/Entity/BT_Monster.BT_Monster'"));
-    //GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("aiBehavior called")));
-
-    //if (aiBehavior.Succeeded())
-    //{
-    //    MonsterBehaviorTree = aiBehavior.Object;
-    //    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("aiBehavior.Succeeded")));
-    //}
-    //else
-    //{
-    //    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Failed")));
-
-    //}
 
     static ConstructorHelpers::FObjectFinder<UBlackboardData> BBMonsterRef(TEXT("/Script/AIModule.BlackboardData'/Game/Entity/BB_Monster.BB_Monster'"));
     if (nullptr != BBMonsterRef.Object)
@@ -67,21 +54,6 @@ void AMyAIController::StopAI()
 void AMyAIController::BeginPlay()
 {
     Super::BeginPlay();
-    //
-    //ConstructorHelpers::FObjectFinder<UBehaviorTree>aiBehavior(TEXT("/Script/AIModule.BehaviorTree'/Game/Entity/BT_Monster.BT_Monster'"));
-    //GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("aiBehavior called")));
-
-    //if (aiBehavior.Succeeded())
-    //{
-    //    MonsterBehaviorTree = aiBehavior.Object;
-    //    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("aiBehavior.Succeeded")));
-    //}
-    //else
-    //{
-    //    GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Failed")));
-
-    //}
-
 }
 
 void AMyAIController::OnPossess(APawn* InPawn)
@@ -91,12 +63,15 @@ void AMyAIController::OnPossess(APawn* InPawn)
     if (InPawn)
     {
         AEntityPreset* PossessedCharacter = Cast<AEntityPreset>(InPawn);
+       
+        // 캐스팅 실패 시 널 체크
         if (PossessedCharacter)
         {
+            // Blackboard 초기화 후 AttackType 설정
             if (UseBlackboard(BBMonster, BlackboardComp) && BlackboardComp)
             {
+                // EnumAttackType 값을 uint8로 캐스팅하여 Blackboard에 저장
                 BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
-                //UE_LOG(LogTemp, Warning, TEXT("Updated Blackboard AttackType to: %d"), (uint8)PossessedCharacter->GetAttackType());
             }
             else
             {
@@ -108,26 +83,6 @@ void AMyAIController::OnPossess(APawn* InPawn)
             UE_LOG(LogTemp, Error, TEXT("Casting to AEntityPreset failed in OnPossess"));
         }
         UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s"), *InPawn->GetName());
-        //// Blackboard 초기화 후 AttackType 설정
-        //if (UseBlackboard(BBMonster, BlackboardComp) && BlackboardComp)
-        //{
-        //    AEntityPreset* PossessedCharacter = Cast<AEntityPreset>(InPawn);
-        //    // 캐스팅 실패 시 널 체크
-        //    if (PossessedCharacter)
-        //    {
-        //        // EnumAttackType 값을 uint8로 캐스팅하여 Blackboard에 저장
-        //        BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
-        //        UE_LOG(LogTemp, Error, TEXT("SetValueAsInt: %d"), (uint8)PossessedCharacter->GetAttackType());
-        //    }
-        //    else
-        //    {
-        //        UE_LOG(LogTemp, Error, TEXT("casting failed"));
-        //    }
-        //}
-        //else
-        //{
-        //    UE_LOG(LogTemp, Error, TEXT("UseBlackboard failed in OnPossess"));
-        //}
     }
     else
     {

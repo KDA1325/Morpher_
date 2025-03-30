@@ -38,8 +38,4 @@ private:
 
     UPROPERTY()
     UBlackboardComponent* BlackboardComp;
-
-
-    //UPROPERTY(EditAnywhere)
-    //class UBehaviorTree* MonsterBehaviorTree;
 };

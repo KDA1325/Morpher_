@@ -51,42 +51,15 @@ void AEntityPreset::SetMoveSpeed(int32 MoveSpeed)
 	currentSpeed = MoveSpeed;
 }
 
-//void AEntityPreset::SetAttackType(EnumAttackType AttackType)
-//{
-//	currentAttackType = AttackType;
-//}
-
 void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 {
 	// Entity 데이터에 따라 초기화 
 	SetActorLabel(InEntityData.EntityName);
 	SetMaxHp(InEntityData.HP);
 	SetMoveSpeed(InEntityData.MoveSpeed);
-	//SetAttackType(InEntityData.AttackType);
 
 	UE_LOG(LogTemp, Warning, TEXT("Initialized Entity with Name: %s, HP: %d, Move Speed: %d"),
 		*InEntityData.EntityName, currentHp, currentSpeed);
-	/*UE_LOG(LogTemp, Warning, TEXT("Initialized Entity with Name: %s, HP: %d, Move Speed: %d, AttackType: %d"),
-		*InEntityData.EntityName, currentHp, currentSpeed, currentAttackType);*/
-
-	/*if (AAIController* AIController = Cast<AAIController>(GetController()))
-	{
-		if (UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent())
-		{
-			BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)AttackType);
-			UE_LOG(LogTemp, Warning, TEXT("SetValueAsInt: %d"), (uint8)AttackType);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("BlackboardComponent is null in InitializeEntity"));
-
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Controller is null or not an AIController in InitializeEntity"));
-
-	}*/
 }
 
 float AEntityPreset::GetAIPatrolRadius()

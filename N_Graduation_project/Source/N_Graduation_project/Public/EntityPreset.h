@@ -63,9 +63,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void SetMoveSpeed(int32 MoveSpeed);
 
-	//UFUNCTION(BlueprintCallable, Category = "Data")
-	//void SetAttackType(EnumAttackType AttackType);
-
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	EnumAttackType GetAttackType();
 // AI Section
