@@ -35,7 +35,7 @@ private:
 	FString currentPreset;
 
 	UPROPERTY(EditAnywhere)
-	int32 currentHp;
+	float CurrentHP;	
 	int32 currentSpeed;
 
 public:	
@@ -54,11 +54,17 @@ public:
 
 	// MaxHP를 설정하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Data")
-	void SetMaxHp(int32 MaxHp);
+	void SetHP(float NewHP);
 
 	// MoveSpeed를 설정하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void SetMoveSpeed(int32 MoveSpeed);
+
+	void ApplyDamage(float DamageAmount);
+	//void  WidgetUpdate();
+
+	// AEntityCharacter.h
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 // AI Section
 protected:
