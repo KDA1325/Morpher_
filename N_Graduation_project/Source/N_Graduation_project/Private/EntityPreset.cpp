@@ -4,6 +4,8 @@
 #include "EntityPreset.h"
 #include "MyAIController.h"
 #include "EntityWidget.h"
+#include "MyAI.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 // Sets default values
 AEntityPreset::AEntityPreset()
@@ -49,10 +51,10 @@ void AEntityPreset::SetMoveSpeed(int32 MoveSpeed)
 	currentSpeed = MoveSpeed;
 }
 
-void AEntityPreset::SetAttackType(EnumAttackType AttackType)
-{
-	attackType = AttackType;
-}
+//void AEntityPreset::SetAttackType(EnumAttackType AttackType)
+//{
+//	currentAttackType = AttackType;
+//}
 
 void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 {
@@ -60,10 +62,31 @@ void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 	SetActorLabel(InEntityData.EntityName);
 	SetMaxHp(InEntityData.HP);
 	SetMoveSpeed(InEntityData.MoveSpeed);
-	SetAttackType(InEntityData.AttackType);
+	//SetAttackType(InEntityData.AttackType);
 
-	UE_LOG(LogTemp, Warning, TEXT("Initialized Entity with Name: %s, HP: %d, Move Speed: %d, AttackType: %d"),
-		*InEntityData.EntityName, InEntityData.HP, InEntityData.MoveSpeed, InEntityData.AttackType);
+	UE_LOG(LogTemp, Warning, TEXT("Initialized Entity with Name: %s, HP: %d, Move Speed: %d"),
+		*InEntityData.EntityName, currentHp, currentSpeed);
+	/*UE_LOG(LogTemp, Warning, TEXT("Initialized Entity with Name: %s, HP: %d, Move Speed: %d, AttackType: %d"),
+		*InEntityData.EntityName, currentHp, currentSpeed, currentAttackType);*/
+
+	/*if (AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if (UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent())
+		{
+			BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)AttackType);
+			UE_LOG(LogTemp, Warning, TEXT("SetValueAsInt: %d"), (uint8)AttackType);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("BlackboardComponent is null in InitializeEntity"));
+
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Controller is null or not an AIController in InitializeEntity"));
+
+	}*/
 }
 
 float AEntityPreset::GetAIPatrolRadius()
@@ -88,5 +111,7 @@ float AEntityPreset::GetAITurnSpeed()
 
 EnumAttackType AEntityPreset::GetAttackType()
 {
-	return attackType;
+	UE_LOG(LogTemp, Warning, TEXT("Get AttackType: %d"), currentAttackType);
+
+	return currentAttackType;
 }

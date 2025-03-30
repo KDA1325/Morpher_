@@ -42,11 +42,9 @@ AMyAIController::AMyAIController()
 }
 
 void AMyAIController::RunAI()
-{
-    BlackboardComp = Blackboard.Get();
-
+{ 
     GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Run AI")));
-    if (UseBlackboard(BBMonster, BlackboardComp))
+    if (BlackboardComp)
     {
         Blackboard->SetValueAsVector(BBKEY_HOMEPOS, GetPawn()->GetActorLocation());
 
@@ -92,21 +90,44 @@ void AMyAIController::OnPossess(APawn* InPawn)
 
     if (InPawn)
     {
-        // Blackboard 초기화 후 AttackType 설정
-        if (UseBlackboard(BBMonster, BlackboardComp) && BlackboardComp)
+        AEntityPreset* PossessedCharacter = Cast<AEntityPreset>(InPawn);
+        if (PossessedCharacter)
         {
-            // 캐스팅 실패 시 널 체크
-            AEntityPreset* PossessedCharacter = Cast<AEntityPreset>(InPawn);
-            if (PossessedCharacter)
+            if (UseBlackboard(BBMonster, BlackboardComp) && BlackboardComp)
             {
-                // EnumAttackType 값을 uint8로 캐스팅하여 Blackboard에 저장
-                BlackboardComp->SetValueAsEnum(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
+                BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
+                //UE_LOG(LogTemp, Warning, TEXT("Updated Blackboard AttackType to: %d"), (uint8)PossessedCharacter->GetAttackType());
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("UseBlackboard failed in OnPossess"));
             }
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("UseBlackboard failed in OnPossess"));
+            UE_LOG(LogTemp, Error, TEXT("Casting to AEntityPreset failed in OnPossess"));
         }
+        UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s"), *InPawn->GetName());
+        //// Blackboard 초기화 후 AttackType 설정
+        //if (UseBlackboard(BBMonster, BlackboardComp) && BlackboardComp)
+        //{
+        //    AEntityPreset* PossessedCharacter = Cast<AEntityPreset>(InPawn);
+        //    // 캐스팅 실패 시 널 체크
+        //    if (PossessedCharacter)
+        //    {
+        //        // EnumAttackType 값을 uint8로 캐스팅하여 Blackboard에 저장
+        //        BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
+        //        UE_LOG(LogTemp, Error, TEXT("SetValueAsInt: %d"), (uint8)PossessedCharacter->GetAttackType());
+        //    }
+        //    else
+        //    {
+        //        UE_LOG(LogTemp, Error, TEXT("casting failed"));
+        //    }
+        //}
+        //else
+        //{
+        //    UE_LOG(LogTemp, Error, TEXT("UseBlackboard failed in OnPossess"));
+        //}
     }
     else
     {

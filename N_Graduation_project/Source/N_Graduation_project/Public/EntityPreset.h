@@ -37,7 +37,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	int32 currentHp;
 	int32 currentSpeed;
-	EnumAttackType attackType;
+
+	UPROPERTY(EditAnywhere)
+	EnumAttackType currentAttackType;
 
 public:	
 	// Called every frame
@@ -61,8 +63,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void SetMoveSpeed(int32 MoveSpeed);
 
-	UFUNCTION(BlueprintCallable, Category = "Data")
-	void SetAttackType(EnumAttackType AttackType);
+	//UFUNCTION(BlueprintCallable, Category = "Data")
+	//void SetAttackType(EnumAttackType AttackType);
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	EnumAttackType GetAttackType();
