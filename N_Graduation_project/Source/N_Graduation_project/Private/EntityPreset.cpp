@@ -1,9 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
+#include "EntityWidget.h"
 #include "EntityPreset.h"
 #include "MyAIController.h"
-#include "EntityWidget.h"
 
 // Sets default values
 AEntityPreset::AEntityPreset()
@@ -16,12 +15,50 @@ AEntityPreset::AEntityPreset()
 
 	CurrentHP = 0;
 	currentSpeed = 0;
+	MaxHp = 100.0f;
+
+
+
 }
 
 // Called when the game starts or when spawned
 void AEntityPreset::BeginPlay()
 {
 	Super::BeginPlay();
+	// WidgetComponent를 통해 위젯 인스턴스를 가져와 EntityWidget에 할당
+	FName WidgetCompName = TEXT("EntityPresetWidget");
+	WidgetComp = Cast<UWidgetComponent>(GetDefaultSubobjectByName(WidgetCompName));  // 멤버 변수 WidgetComp 사용
+
+	if (WidgetComp)
+	{
+		UUserWidget* UserWidget = WidgetComp->GetUserWidgetObject();
+		if (UserWidget)
+		{
+			EntityWidget = Cast<UEntityWidget>(UserWidget);
+			if (EntityWidget)
+			{
+				OnHealthChanged.Broadcast(CurrentHP);
+
+				// 위젯에서 이 EntityPreset을 참조하도록 설정
+				EntityWidget->EntityPreset = this;
+				// 체력 변경 델리게이트 바인딩
+				OnHealthChanged.AddDynamic(EntityWidget, &UEntityWidget::UpdateHealthBar);
+				UE_LOG(LogTemp, Warning, TEXT("banana HP Bar connected %s"), *GetName());
+			}
+		/*	else
+			{
+				UE_LOG(LogTemp, Error, TEXT("bananaBeginPlay WidgetComp's widget is not of type UEntityWidget for %s"), *GetName());
+			}*/
+		}
+		/*else
+		{
+			UE_LOG(LogTemp, Error, TEXT("bananaBeginPlay WidgetComp exists, but no widget instance was created for %s"), *GetName());
+		}*/
+	}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Error, TEXT("bananaBeginPlay WidgetComp is not assigned in blueprint for %s"), *GetName());
+	//}
 
 }
 
@@ -29,22 +66,20 @@ void AEntityPreset::BeginPlay()
 void AEntityPreset::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
 void AEntityPreset::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 }
 
 float AEntityPreset::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
+{	
+	UE_LOG(LogTemp, Log, TEXT("banana Damage: %f"), DamageAmount);
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser); // 부모 클래스의 TakeDamage 호출
-		UE_LOG(LogTemp, Log, TEXT("banana (TakeDamage)CurrentHP: %f, DamageAmount: %f, CurrentHP - DamageAmount: %f"), CurrentHP, DamageAmount, CurrentHP - DamageAmount);
+	UE_LOG(LogTemp, Log, TEXT("banana (TakeDamage)CurrentHP: %f, DamageAmount: %f, CurrentHP - DamageAmount: %f"), CurrentHP, DamageAmount, CurrentHP - DamageAmount);
 
-	UE_LOG(LogTemp, Log, TEXT("banana TakeDamage called! Damage: %f"), DamageAmount);
 
 	if (CurrentHP > 0)
 	{
@@ -52,33 +87,44 @@ float AEntityPreset::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("banana Entity Died!"));
-		Destroy();
+		//UE_LOG(LogTemp, Log, TEXT("banana Entity Died!"));
+				//Destroy();
 	}
 	return ActualDamage;
 }
 
 void AEntityPreset::SetHP(float NewHP)
 {
-	CurrentHP = NewHP;
-	UE_LOG(LogTemp, Warning, TEXT("SetHP NewHP: %f"), NewHP);
-	/*if (NewHP <= 0)
-	{
-		CurrentHP = 0;
-		UE_LOG(LogTemp, Log, TEXT("banana CurrentHP=0"));
+	CurrentHP = FMath::Clamp(NewHP, 0.0f ,MaxHp);
+	//CurrentHP = NewHP;
+	// 델리게이트 호출
+	//UE_LOG(LogTemp, Warning, TEXT("banana SetHP - NewHP: %f, ClampedHP: %f, MaxHP: %f"), NewHP, CurrentHP, MaxHp);
+	OnHealthChanged.Broadcast(CurrentHP);
 
-	}
-	else
+	if (CurrentHP <= 0)
 	{
-		CurrentHP = NewHP;
-		UE_LOG(LogTemp, Log, TEXT("banana Monster CurrentHP: %f"), CurrentHP);
-	}*/
+		UE_LOG(LogTemp, Warning, TEXT("banana Entity Die"));
+		//	Destroy();
+	}
 }
+
 
 void AEntityPreset::ApplyDamage(float DamageAmount)
 {
 	SetHP(CurrentHP - DamageAmount);
+}
 
+float AEntityPreset::GetHPRatio()
+{
+	if (MaxHp > 0)
+	{
+		//UE_LOG(LogTemp, Log, TEXT("banana MaxHp > 0"));
+		return(CurrentHP / MaxHp);
+	}
+	else {
+		//UE_LOG(LogTemp, Log, TEXT("banana MaxHp = 0"));
+		return 0.0f;
+	}
 }
 
 void AEntityPreset::SetMoveSpeed(int32 MoveSpeed)
@@ -87,14 +133,17 @@ void AEntityPreset::SetMoveSpeed(int32 MoveSpeed)
 }
 
 void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
-{
+{	
 	// Entity 데이터에 따라 초기화 
+	MaxHp = InEntityData.HP;
 	SetActorLabel(InEntityData.EntityName);
-	SetHP(InEntityData.HP);
 	SetMoveSpeed(InEntityData.MoveSpeed);
+	SetHP(InEntityData.HP);
 
-	UE_LOG(LogTemp, Warning, TEXT("Initialized Entity with Name: %s, HP: %f, Move Speed: %d"),
-		*InEntityData.EntityName, CurrentHP, InEntityData.MoveSpeed);
+	UE_LOG(LogTemp, Error, TEXT("banana Initialized Entity with Name: %s, HP: %d, Move Speed: %d"),
+		*InEntityData.EntityName, InEntityData.HP, InEntityData.MoveSpeed);
+	//	EntityWidget->MaxHealth = CurrentHP;
+	//	UE_LOG(LogTemp, Log, TEXT("banana MaxHealth: %f"), EntityWidget->MaxHealth);
 }
 
 float AEntityPreset::GetAIPatrolRadius()
