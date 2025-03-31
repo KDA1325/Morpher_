@@ -38,7 +38,7 @@ EBTNodeResult::Type UBTTask_MoveToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
     }
 
     float DistanceToPlayer = BlackboardComp->GetValueAsFloat(BBKEY_DISTANCE);
-    float MinDistance = BlackboardComp->GetValueAsFloat(BBKEY_MINDISTANCE);
+    float MinDistance = BlackboardComp->GetValueAsFloat(BBKEY_FOLLOWMINDISTANCE);
     float MonsterCapsuleRadius = BlackboardComp->GetValueAsFloat(BBKEY_MONSTERRADIUS);
     float PlayerCapsuleRadius = BlackboardComp->GetValueAsFloat(BBKEY_PLAYERRADIUS);
 

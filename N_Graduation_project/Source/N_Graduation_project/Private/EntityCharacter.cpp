@@ -155,8 +155,8 @@ void AEntityCharacter::InitializeEntity(FABEntityData& InEntityData)
 	// 메시 및 애니메이션 설정 
 	SetPreset(InEntityData.PresetReference);
 
-	UE_LOG(LogTemp, Warning, TEXT("Initialized Entity with Name: %s, HP: %d, Move Speed: %d"),
-		*InEntityData.EntityName, InEntityData.HP, InEntityData.MoveSpeed);
+	UE_LOG(LogTemp, Warning, TEXT("Initialized Entity with Name: %s, HP: %d, Move Speed: %d, AttackType: %d"),
+		*InEntityData.EntityName, InEntityData.HP, InEntityData.MoveSpeed, InEntityData.AttackType);
 	
 	SetWidget();
 }
