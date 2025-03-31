@@ -39,10 +39,10 @@ void UMyPlayerStatComponent::BeginPlay()
 	HUDWidget = CreateWidget(GetWorld()->GetFirstPlayerController(), HUDClass);
 	HUDWidget->AddToViewport();
 
-	UpdateHUD();
+	//UpdateHUD();
 }
 
-void UMyPlayerStatComponent::SetHP(int NewHP)
+void UMyPlayerStatComponent::SetHP(float NewHP)
 {
 	if (NewHP <= 0)
 	{
@@ -52,11 +52,10 @@ void UMyPlayerStatComponent::SetHP(int NewHP)
 	else
 	{
 		CurrentHP = NewHP;
-		UE_LOG(LogTemp, Log, TEXT("== CurrentHP: %f"), CurrentHP);	
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Current HP: %f"), CurrentHP));
+		UE_LOG(LogTemp, Log, TEXT("avocado SetHp_CurrentHP: %f"), CurrentHP);	
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Current HP: %0.f"), CurrentHP));
 		UpdateHUD();
 	}
-//	OnHPChanged.Broadcast();
 }
 
 void UMyPlayerStatComponent::SetMaxHp(int MaxHp)
@@ -87,30 +86,29 @@ void UMyPlayerStatComponent::UseMana(int ManaAmount)
 
 void UMyPlayerStatComponent::TransformToEntity(int HP, int Mana)
 {
-	SetMaxHp(HP);
-
 	if (CurrentHP == PastMaxHP) {
 		UseMana(Mana);
 		SetHP(HP);
-		UE_LOG(LogTemp, Log, TEXT("== CurrentHP: %f,  BeforeMaxHP: %f"), CurrentHP, PastMaxHP);
+		UE_LOG(LogTemp, Log, TEXT("avocado CurrentHP: %f,  BeforeMaxHP: %f"), CurrentHP, PastMaxHP);
 
 	}
 	else {
 		// 변신 전 최대 HP 저장 (BeforeMaxHP)
-		UE_LOG(LogTemp, Log, TEXT("!= CurrentHP: %f,  BeforeMaxHP: %f, NewMaxHP:%d"), CurrentHP, PastMaxHP, NewMaxHP);
+		//UE_LOG(LogTemp, Log, TEXT("avocado CurrentHP: %f,  BeforeMaxHP: %f, NewMaxHP:%f"), CurrentHP, PastMaxHP, NewMaxHP);
 		float NewHP = ((CurrentHP / PastMaxHP) * 100 + 10) * (HP / 100);
-		UE_LOG(LogTemp, Log, TEXT("!= CurrentHP / PastMaxHP: %f,  HP / 100: %d, NewHP: %f"), CurrentHP / PastMaxHP, HP / 100, NewHP);
+		UE_LOG(LogTemp, Log, TEXT("avocado CurrentHP / PastMaxHP: %f,  HP / 100: %d, NewHP: %f"), CurrentHP / PastMaxHP, HP / 100, NewHP);
+
+		SetMaxHp(HP);
 
 		if (NewHP < NewMaxHP) {
 			// 새로운 HP 값을 올림 처리
 			NewHP = FMath::CeilToFloat(NewHP);
 		}
 		else NewHP = NewMaxHP;
-		
 		UseMana(Mana);
 		SetHP(NewHP);
 
-		UE_LOG(LogTemp, Log, TEXT("HP: %f,  Mana: %d"), NewHP, Mana);
+	//	UE_LOG(LogTemp, Log, TEXT("HP: %f,  Mana: %d"), NewHP, Mana);
 	}
 }
 
@@ -122,10 +120,10 @@ bool UMyPlayerStatComponent::CanTransform(int ManaCost) const
 
 void UMyPlayerStatComponent::UpdateHUD()
 {
-	UE_LOG(LogTemp, Log, TEXT("avocado UpdateHUD"));
+	//UE_LOG(LogTemp, Log, TEXT("avocado UpdateHUD"));
 	if (HUDWidget)
 	{
-		UE_LOG(LogTemp, Log, TEXT("avocado Yes HUDWidget"));
+		//UE_LOG(LogTemp, Log, TEXT("avocado Yes HUDWidget"));
 		// HUDWidget에서 ProgressBar_55와 TestBlock_369를 찾아 업데이트
 		if (UProgressBar* HealthBar = Cast<UProgressBar>(HUDWidget->GetWidgetFromName(TEXT("ProgressBar_55"))))
 		{
@@ -135,15 +133,15 @@ void UMyPlayerStatComponent::UpdateHUD()
 		}
 		if (UTextBlock* HealthText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("TextBlock_369"))))
 		{
-			HealthText->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), CurrentHP, PastMaxHP)));
-			UE_LOG(LogTemp, Log, TEXT("avocado Found HealthText, setting text: %.0f / %.0f"), CurrentHP, PastMaxHP);
+			HealthText->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), CurrentHP, NewMaxHP)));
+			//UE_LOG(LogTemp, Log, TEXT("avocado Found HealthText, setting text: %.0f / %.0f"), CurrentHP, NewMaxHP);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("avocado Could not find widget named 'TestBlock_369'"));
+			//UE_LOG(LogTemp, Warning, TEXT("avocado Could not find widget named 'TestBlock_369'"));
 		}
 	}
 	else{
-		UE_LOG(LogTemp, Log, TEXT("avocado No HUDWidget"));
+		//UE_LOG(LogTemp, Log, TEXT("avocado No HUDWidget"));
 	}
 }

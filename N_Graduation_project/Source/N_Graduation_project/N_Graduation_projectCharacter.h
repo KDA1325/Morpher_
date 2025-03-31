@@ -145,7 +145,7 @@ public:
 
 	// 무적 상태 활성화
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool IsInvincible;
 
 	UFUNCTION(BlueprintNativeEvent)

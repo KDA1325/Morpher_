@@ -340,10 +340,10 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	UpdateEntityData();
 	//속도 변하는지 체크하려고
 	*/
-	//currentPreset = "WildBoar"; //임시로	
-	//SetPreset(currentPreset);
+	currentPreset = "WildBoar"; //임시로	
+	SetPreset(currentPreset);
 
-	//UpdateEntityData();
+	UpdateEntityData();
 	/*FString HPText = FString::Printf(TEXT("HP: %f"), PlayerStatComponent->CurrentHP);
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, HPText);*/
 }
@@ -378,8 +378,11 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 {
 	UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
 	if (PlayerSkillComponent->IsDefending == true) {
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
+		//IsInvincible = false;
+	
 		return 0.0f;//무적상태라면 리턴.
+
 	}
 	else
 	{
@@ -400,7 +403,9 @@ void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 	{
 		// 무적 상태 활성화
 		IsInvincible = true;
-
+		if (IsInvincible) {
+			UE_LOG(LogTemp, Log, TEXT("IsInvincible"));
+		}
 		// PlayerSkillComponent에서 방어 스킬을 실행
 		PlayerSkillComponent->OnDefenseSkill(1.0f);
 		// 깜박이기구현->BP

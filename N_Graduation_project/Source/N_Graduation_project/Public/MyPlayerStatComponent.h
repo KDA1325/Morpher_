@@ -27,7 +27,7 @@ protected:
     virtual void InitializeComponent() override;
 
 public:
-    void SetHP(int NewHP);
+    void SetHP(float NewHP);
     void SetMaxHp(int MaxHp);
 
     void SetMana(int NewMana);
@@ -52,9 +52,8 @@ public:
    // FOnHpIsZeroDelegate OnHPIsZero;
 
     int TransManaCost;
-    int NewMaxHP;
+    float NewMaxHP;
     float PastMaxHP;
-    float PastHP;
 
     AN_Graduation_projectCharacter* OwnerPlayer;
   
