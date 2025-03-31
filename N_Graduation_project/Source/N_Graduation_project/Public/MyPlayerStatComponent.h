@@ -12,7 +12,7 @@
 //DECLARE_MULTICAST_DELEGATE(FOnHpIsZeroDelegate);
 //DECLARE_MULTICAST_DELEGATE(FOnHpChangedDelegate);
 //DECLARE_MULTICAST_DELEGATE(FOnManaChangedDelegate);
-
+class UMyPlayerStatComponent;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class N_GRADUATION_PROJECT_API UMyPlayerStatComponent : public UActorComponent
@@ -37,6 +37,14 @@ public:
     void TransformToEntity(int HP, int Mana);
     bool CanTransform(int TransManaCost) const;
 
+    UFUNCTION()
+    void UpdateHUD();
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TSubclassOf<class UUserWidget> HUDClass;
+
+    UPROPERTY()
+    class UUserWidget* HUDWidget;
    // ECharacterState GetCurrentState() const { return CurrentState; }
    // void SetCurrentState(ECharacterState NewState);
    
@@ -56,7 +64,9 @@ public:
     UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
     int CurrentMana;
 
-  
+    /** 체력 컴포넌트 */
+    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+    UMyPlayerStatComponent* PlayerStatComponent;
 
     //UPROPERTY(BlueprintAssignable)
     //FOnHpChangedDelegate OnHPChanged;

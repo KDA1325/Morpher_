@@ -12,13 +12,6 @@ UABEntityDataComponent::UABEntityDataComponent()
 	bWantsInitializeComponent = true; // InitializeComponent함수를 호출 할 수 있도록 하기 위해서
 }
 
-/*void UABEntityDataComponent::InitializeComponent()
-{   //액터의 생명주기와 관련된 함수
-	// BeginPlay 함수 이전에 호출됨
-	Super::InitializeComponent();
-	SetHP(MaxHP);
-}*/
-
 // Called when the game starts
 void UABEntityDataComponent::BeginPlay()
 {

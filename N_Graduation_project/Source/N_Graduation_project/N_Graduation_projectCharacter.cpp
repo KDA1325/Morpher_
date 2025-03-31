@@ -19,6 +19,7 @@
 #include "GameFramework/Character.h"//ApplyDamage
 #include "CharacterStateComponent.h" //state
 
+
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
@@ -92,15 +93,6 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	PlayerSkillComponent = CreateDefaultSubobject<UPlayerSkillComponent>(TEXT("PlayerSkillComponent"));
 	CharacterStateComponent = CreateDefaultSubobject<UCharacterStateComponent>(TEXT("CharacterStateComponent"));
 
-	//위젯 블루프린트 클래스 찾기
-	//static ConstructorHelpers::FClassFinder<UUserWidget> WidgetFinder(TEXT("WidgetBlueprint'/Game/Entity/BP/Character_HealthBar.Character_HealthBar_C'"));
-
-	//if (WidgetFinder.Succeeded())
-	//{
-	//	CharacterHealthBarWidgetClass = WidgetFinder.Class; // 위젯 클래스 설정
-	//}
-
-
 	m_pMeshCom = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
 
 	// RootComponent 설정 -> 안 하면 m_pMeshCom nullptr 오류 발생
@@ -113,6 +105,14 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 
 	bIsMoving = true;
 	pastPreset = "PlayerCharacter";
+
+	////위젯 블루프린트 클래스 찾기
+	//static ConstructorHelpers::FClassFinder<UUserWidget> HUD(TEXT("WidgetBlueprint'/Game/GUI/HUD_Profile.HUD_Profile_C'"));
+
+	//if (HUD.Succeeded())
+	//{
+	//	HUDClass = HUD.Class; // 위젯 클래스 설정
+	//}
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -120,7 +120,8 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	//SpawnWidget();
+	//HUDWidget = CreateWidget(GetWorld()->GetFirstPlayerController(), HUDClass);
+	//HUDWidget->AddToViewport();
 
 	FOnTimelineFloat DashCallback;
 	currentPreset = "PlayerCharacter";
@@ -170,6 +171,7 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 		}
 	}
 }
+
 
 
 /*

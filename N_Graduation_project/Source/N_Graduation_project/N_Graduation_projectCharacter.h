@@ -5,7 +5,8 @@
 #include "Logging/LogMacros.h"
 #include "ABEntityData.h" // Entity Data 구조체
 #include "ABGameSingleton.h"
-
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
 #include "N_Graduation_projectCharacter.generated.h"
 
 class UPlayerSkillComponent;
@@ -19,12 +20,16 @@ struct FInputActionValue;
 class UCharacterStateComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthChanged);
 
 UCLASS(config = Game, Blueprintable)
 
 class AN_Graduation_projectCharacter : public ACharacter
 {
 	GENERATED_BODY()
+
+	//UFUNCTION()
+	//void OnHealthChanged();
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -121,6 +126,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	UCharacterStateComponent* CharacterStateComponent;
+
 	/** 체력 컴포넌트 */
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UMyPlayerStatComponent* PlayerStatComponent;
@@ -150,7 +156,17 @@ public:
 	/*private:
 		TSubclassOf<UUserWidget> CharacterHealthBarWidgetClass;
 		UUserWidget* CharacterHealthBarWidget;
-	void SpawnWidget();*/
+	void SpawnWidget();
+*/
+	//UFUNCTION()
+	//void UpdateHUD();
+
+	//UPROPERTY(EditDefaultsOnly, Category = "UI")
+	//TSubclassOf<class UUserWidget> HUDClass;
+
+	//UPROPERTY()
+	//class UUserWidget* HUDWidget;
+
 
 	// 캐릭터 변신 메소드
 	/*UFUNCTION(EditAnywhere, BlueprintCallable, Category = "Stat")

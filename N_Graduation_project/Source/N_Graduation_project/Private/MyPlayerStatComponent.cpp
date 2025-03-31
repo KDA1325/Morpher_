@@ -3,15 +3,22 @@
 #include "ABEntityData.h" // Entity Data 구조체
 #include "ABGameSingleton.h"
 #include <N_Graduation_project/N_Graduation_projectCharacter.h>
+#include "Blueprint/UserWidget.h"
 
 
 UMyPlayerStatComponent::UMyPlayerStatComponent()
 {
 	TransManaCost = 0; //데이터테이블 머지 후 뺴기
 	NewMaxHP = 150;
-	PastMaxHP = 0;
+	PastMaxHP = 150;
 	CurrentHP = 150;
+	//위젯 블루프린트 클래스 찾기
+	static ConstructorHelpers::FClassFinder<UUserWidget> HUD(TEXT("WidgetBlueprint'/Game/GUI/HUD_Profile.HUD_Profile_C'"));
 
+	if (HUD.Succeeded())
+	{
+		HUDClass = HUD.Class; // 위젯 클래스 설정
+	}
 }
 
 void UMyPlayerStatComponent::InitializeComponent()
@@ -28,6 +35,11 @@ void UMyPlayerStatComponent::BeginPlay()
 	{
 		OwnerPlayer = Cast<AN_Graduation_projectCharacter>(CharacterOwner); // 캐스팅
 	}
+
+	HUDWidget = CreateWidget(GetWorld()->GetFirstPlayerController(), HUDClass);
+	HUDWidget->AddToViewport();
+
+	UpdateHUD();
 }
 
 void UMyPlayerStatComponent::SetHP(int NewHP)
@@ -42,7 +54,7 @@ void UMyPlayerStatComponent::SetHP(int NewHP)
 		CurrentHP = NewHP;
 		UE_LOG(LogTemp, Log, TEXT("== CurrentHP: %f"), CurrentHP);	
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Current HP: %f"), CurrentHP));
-
+		UpdateHUD();
 	}
 //	OnHPChanged.Broadcast();
 }
@@ -108,3 +120,30 @@ bool UMyPlayerStatComponent::CanTransform(int ManaCost) const
 	return CurrentMana >= ManaCost;
 }
 
+void UMyPlayerStatComponent::UpdateHUD()
+{
+	UE_LOG(LogTemp, Log, TEXT("avocado UpdateHUD"));
+	if (HUDWidget)
+	{
+		UE_LOG(LogTemp, Log, TEXT("avocado Yes HUDWidget"));
+		// HUDWidget에서 ProgressBar_55와 TestBlock_369를 찾아 업데이트
+		if (UProgressBar* HealthBar = Cast<UProgressBar>(HUDWidget->GetWidgetFromName(TEXT("ProgressBar_55"))))
+		{
+			HealthBar->SetPercent(CurrentHP / NewMaxHP);
+			UE_LOG(LogTemp, Log, TEXT("avocado SetPercent: %f"),CurrentHP / NewMaxHP);
+
+		}
+		if (UTextBlock* HealthText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("TextBlock_369"))))
+		{
+			HealthText->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), CurrentHP, PastMaxHP)));
+			UE_LOG(LogTemp, Log, TEXT("avocado Found HealthText, setting text: %.0f / %.0f"), CurrentHP, PastMaxHP);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("avocado Could not find widget named 'TestBlock_369'"));
+		}
+	}
+	else{
+		UE_LOG(LogTemp, Log, TEXT("avocado No HUDWidget"));
+	}
+}
