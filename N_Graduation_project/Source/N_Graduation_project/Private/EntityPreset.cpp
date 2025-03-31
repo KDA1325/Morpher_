@@ -3,6 +3,8 @@
 #include "EntityWidget.h"
 #include "EntityPreset.h"
 #include "MyAIController.h"
+#include "MyAI.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 // Sets default values뚜
 AEntityPreset::AEntityPreset()
@@ -165,26 +167,9 @@ float AEntityPreset::GetAITurnSpeed()
 	return 0.0f;
 }
 
-//void AEntityPreset::WidgetUpdate()
-//{
-//	// EntityPresetClass에서 새로운 Actor를 스폰
-//	AActor* SpawnedEntityPreset = GetWorld()->SpawnActor<AActor>(EntityPresetClass, GetActorLocation(), GetActorRotation());
-//	// 스폰 실패 시 로그 출력
-//	if (!SpawnedEntityPreset)
-//	{
-//		UE_LOG(LogTemp, Error, TEXT("banana SpawnEntityPreset failed!"));
-//		return;
-//	}
-//
-//	// 스폰된 Actor에서 WidgetComponent를 찾아서 UI 업데이트
-//	UWidgetComponent* WidgetComponent = SpawnedEntityPreset->FindComponentByClass<UWidgetComponent>();
-//
-//	if (WidgetComponent)
-//	{
-//		UUserWidget* UserWidget = WidgetComponent->GetWidget();
-//		if (UEntityWidget* MyEntityWidget = Cast<UEntityWidget>(UserWidget))
-//		{
-//			MyEntityWidget->UpdateHealthBar(CurrentHP);  // 체력 업데이트
-//		}
-//	}
-//}
+EnumAttackType AEntityPreset::GetAttackType()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Get AttackType: %d"), currentAttackType);
+
+	return currentAttackType;
+}

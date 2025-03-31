@@ -56,6 +56,9 @@ private:
 	float MaxHp;
 	int32 currentSpeed;
 
+	UPROPERTY(EditAnywhere)
+	EnumAttackType currentAttackType;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -82,6 +85,9 @@ public:
 	// AEntityCharacter.h
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	float GetHPRatio(); // 최대 HP로 나누기
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	EnumAttackType GetAttackType();
 // AI Section
 protected:
 	virtual float GetAIPatrolRadius() override;
