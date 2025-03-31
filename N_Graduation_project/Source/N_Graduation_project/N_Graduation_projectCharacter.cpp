@@ -297,21 +297,21 @@ void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	StateComp->ChangeState(ECharacterState::Dash);
 	CharacterStateComponent->ApplyActionRestrictions();
-	// 상태 업데이트
-	StartAction();
-	CharacterStateComponent->isDash = true;
+	
 
 	// 마지막 입력이 ZeroVector(중립)가 아니면 실행 -> 캐릭터가 정지 중엔 실행되지 않음(반드시 대시로 이동하고 싶은 방향쪽 방향키를 눌러야 대시 발동(기획서대로 수정 필요))
 	if (GetCharacterMovement()->GetLastInputVector() != FVector::ZeroVector)
 	{
 		FHitResult HitResult;
+		// 상태 업데이트
+		StartAction();	
+		CharacterStateComponent->isDash = true;
 
 		// LineTracer를 이용해 현재 액터의 위치와 마지막 입력이 가해졌던 방향(마지막 움직임의 이동방향)에 DashDistance를 곱해 나온 위치로 Dash 
 		bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult,
 			GetActorLocation(),
 			GetActorLocation() + (GetCharacterMovement()->GetLastInputVector() * DashDistance),
 			ECollisionChannel::ECC_Visibility);
-
 		// Dash가 발동되어 최종적으로 이동할 위치에 액터 또는 충돌 가능한 무언가가 존재한다면
 		if (IsHit) {
 			// 충돌한 객체의 위치값에 캐릭터의 몸 값(55.0f)을 빼서 이동
@@ -321,7 +321,8 @@ void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
 		else {
 			Dash(GetActorLocation() + (GetCharacterMovement()->GetLastInputVector() * DashDistance), GetActorForwardVector());
 		}
-		
+		EndDash();
+
 	}
 }
 
@@ -332,7 +333,7 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	DashDirection = DashDir;
 	DashVelocity = DashVel;
 	DashTimeline->PlayFromStart();
-	EndDash();
+//	EndDash();
 	/*currentPreset = "Inpermon";
 	UpdateEntityData();
 	//속도 변하는지 체크하려고
@@ -349,7 +350,7 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 {
 	// Dash 키 입력 -> DeshCheck 바인딩 -> Dash 수행 -> 타임라인 실행 -> DashCurve에 따라 Callback 함수 DashInterpReturn 바인딩 -> 로케이션 
 	SetActorLocation(FMath::Lerp(GetActorLocation(), DashDirection, value));
-	EndDash();
+
 }
 
 void AN_Graduation_projectCharacter::EndDash()
