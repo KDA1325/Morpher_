@@ -16,9 +16,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void UpdateHealthBar(float NewHealth);
 
-	//UPROPERTY(BlueprintReadOnly)
-	//float UpdateHP;
-
 	UPROPERTY(BlueprintReadWrite, Category = "UI", meta = (BindWidget))
 	class UProgressBar* HealthBar;
 

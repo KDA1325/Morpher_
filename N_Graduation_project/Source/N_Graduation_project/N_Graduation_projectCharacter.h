@@ -57,8 +57,6 @@ class AN_Graduation_projectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LeftClickAction;
 
-	void NomalSkillAction(const FInputActionValue& Value);
-
 public:
 	AN_Graduation_projectCharacter();
 
@@ -77,6 +75,9 @@ protected:
 	// 대시 기능 수행 
 	void Dash(const FVector DashDir, const FVector DashVel);
 	void EndDash();
+
+	//마우스 좌클릭
+	void NomalSkillAction(const FInputActionValue& Value);
 
 protected:
 	// APawn interface

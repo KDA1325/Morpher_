@@ -47,6 +47,7 @@ void UPlayerSkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+/* 스킬 관련 */
 void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
 {
 	if (Count > 0)
@@ -86,6 +87,7 @@ void UPlayerSkillComponent::SpecialCooldown()
 //	UE_LOG(LogTemp, Log, TEXT("Defense skill is ready to use again!"));
 }
 
+/* 히트박스 관련 */
 void UPlayerSkillComponent::SettingHitBox(const FSkillData& SkillData)
 {
 	if (!OnceHitBox && HitBox)
@@ -101,7 +103,6 @@ void UPlayerSkillComponent::SettingHitBox(const FSkillData& SkillData)
 		OnceHitBox = true;
 	}
 }
-
 void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 {
 	if (HitBox && Arrow)
@@ -135,8 +136,8 @@ void UPlayerSkillComponent::HideHitBox()
 	}
 }
 
-
-AActor* UPlayerSkillComponent::FindMonsterTarget()
+/* 몬스터 거리 측정 관련 */
+AActor* UPlayerSkillComponent::FindMonsterTarget() const
 {
 	if (!GetWorld()) {
 	//	UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
@@ -165,9 +166,27 @@ AActor* UPlayerSkillComponent::FindMonsterTarget()
 	}
 }
 
+float UPlayerSkillComponent::GetDistanceTo(const AActor* OtherActor) const
+{
+	// 현재 액터와 플레이어 간 거리 계산
+	return OtherActor ? (GetOwner()->GetActorLocation() - OtherActor->GetActorLocation()).Size() : 0.f;
+}
+
+float UPlayerSkillComponent::MeasureDistanceToMonster() const
+{
+	AActor* MonsterTarget = FindMonsterTarget();
+	if (MonsterTarget)
+	{
+		return GetDistanceTo(MonsterTarget);
+	}
+	return 0.f;
+}
+
+/* 스킬 실행 */
 void UPlayerSkillComponent::NomalSkillType(const FString& SkillID)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Yes NomalSkillType"));
+	SkillAnimation("Skill_Slash");
 
 	FSkillData SkillData;
 	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
@@ -177,16 +196,8 @@ void UPlayerSkillComponent::NomalSkillType(const FString& SkillID)
 		return;
 	}
 
-	AActor* MonsterTarget = FindMonsterTarget();  // 몬스터 찾기
-	if (!MonsterTarget)
-	{
-		//UE_LOG(LogTemp, Warning, TEXT("No Monster found!"));
-		return;
-	}
-
-	distance = GetDistanceTo(MonsterTarget);  // 몬스터와 거리 계산
-	//UE_LOG(LogTemp, Warning, TEXT("Distance to Monster: %f"), distance);
-
+	distance = MeasureDistanceToMonster();
+	UE_LOG(LogTemp, Warning, TEXT("Distance to Monster: %f"), distance);
 
 	//	히트박스 처리 (범위 내 스킬)
 	if (distance <= SkillData.SkillRange)
@@ -225,15 +236,8 @@ void UPlayerSkillComponent::SpecialSkillType(const FString& SkillID)
 	}
 
 
-	AActor* MonsterTarget = FindMonsterTarget();  // 몬스터 찾기
-	if (!MonsterTarget)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No Monster found!"));
-		return;
-	}
-
-	distance = GetDistanceTo(MonsterTarget);  // 몬스터와 거리 계산
-	UE_LOG(LogTemp, Warning, TEXT("Distance to Monster: %f"), distance);
+	distance = MeasureDistanceToMonster();  // 몬스터와 거리 계산
+//	UE_LOG(LogTemp, Warning, TEXT("Distance to Monster: %f"), distance);
 
 
 	//	히트박스 처리 (범위 내 스킬)
@@ -280,11 +284,8 @@ void UPlayerSkillComponent::SpecialSkillType(const FString& SkillID)
 	}
 }
 
-float UPlayerSkillComponent::GetDistanceTo(const AActor* OtherActor) const
-{
-	// 현재 액터와 플레이어 간 거리 계산
-	return OtherActor ? (GetOwner()->GetActorLocation() - OtherActor->GetActorLocation()).Size() : 0.f;
-}
+
+
 
 void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 {

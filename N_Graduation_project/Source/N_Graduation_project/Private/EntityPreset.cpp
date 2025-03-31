@@ -4,7 +4,7 @@
 #include "EntityPreset.h"
 #include "MyAIController.h"
 
-// Sets default values
+// Sets default values뚜
 AEntityPreset::AEntityPreset()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -39,7 +39,6 @@ void AEntityPreset::BeginPlay()
 			{
 				OnHealthChanged.Broadcast(CurrentHP);
 
-				// 위젯에서 이 EntityPreset을 참조하도록 설정
 				EntityWidget->EntityPreset = this;
 				// 체력 변경 델리게이트 바인딩
 				OnHealthChanged.AddDynamic(EntityWidget, &UEntityWidget::UpdateHealthBar);

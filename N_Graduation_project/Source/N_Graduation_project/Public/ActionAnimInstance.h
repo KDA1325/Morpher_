@@ -30,9 +30,5 @@ protected:
 
 private:
 	UAnimMontage* M_Slash;
-public:
-	//노티파이
-	//UFUNCTION()
-	//void AnimNotify_OnSlashAttack();
-	//void AnimNotify_EndSlashAttack();
+
 };

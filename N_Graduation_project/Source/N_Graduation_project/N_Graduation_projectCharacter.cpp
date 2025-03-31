@@ -147,9 +147,6 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
 	FVector Velocity = GetVelocity();
 	float Speed = Velocity.Size(); // 현재 속도
-	//PlayerSkillComponent->FindMonsterTarget();
-	PlayerSkillComponent->NomalSkillType("Skill_Slash");
-
 
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	if (!StateComp)
@@ -245,10 +242,8 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 	else {
 		StartAction();
 		UE_LOG(LogTemp, Error, TEXT("NomalSkillAction"));
-		PlayerSkillComponent->SkillAnimation("Skill_Slash");
-
+		PlayerSkillComponent->NomalSkillType("Skill_Slash");
 	}
-
 }
 
 void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)

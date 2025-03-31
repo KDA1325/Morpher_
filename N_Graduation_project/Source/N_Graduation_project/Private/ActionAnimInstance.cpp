@@ -4,11 +4,6 @@
 
 UActionAnimInstance::UActionAnimInstance()
 {
-	/*static ConstructorHelpers::FObjectFinder<UAnimMontage> M_SlashMontage(TEXT("/Game/Animation/Sample/retarget_Stable_Sword_Outward_Slash_Anim_mixamo_com"));
-	if (M_SlashMontage.Succeeded())
-	{
-		M_Slash = M_SlashMontage.Object;
-	}*/
 
 	FSoftObjectPath MontagePath(TEXT("/Game/Animation/Sample/retarget_Stable_Sword_Outward_Slash_Anim_mixamo_com_Montage"));
 
@@ -33,12 +28,6 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 	}
-	//AActor* OwnerActor = GetOwningActor();
-	//UCharacterStateComponent* StateComp = OwnerActor->FindComponentByClass<UCharacterStateComponent>();
-	//if (StateComp)
-	//{
-	//	StateComp->ChangeState(ECharacterState::Action);
-	//}
 }
 
 void UActionAnimInstance::OnMontageEndCallback(UAnimMontage* Montage, bool bInterrupted)

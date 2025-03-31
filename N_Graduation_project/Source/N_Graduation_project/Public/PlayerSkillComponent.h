@@ -46,7 +46,11 @@ public:
 	// 현재 스킬 ID
 	FString CurrentSkillID;
 
-	AActor* FindMonsterTarget();
+	// 거리 감지
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	float MeasureDistanceToMonster() const;
+	//몬스터감지
+	AActor* FindMonsterTarget() const;
 
 	//UFUNCTION(BlueprintNativeEvent) // 시간있음 재정의로 해보기
 	void NomalSkillType(const FString& SkillID);    // 노말스킬 타입 설정 함수
@@ -59,7 +63,6 @@ public:
 	void SpecialCooldown();          // 스킬 쿨타임 초기화
 	void SetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
 	float GetDistanceTo(const AActor* OtherActor) const;    // 거리 계산 함수
-	//void ActivateShieldEffect(const FString& EffectID); //이펙트값 넣을 함수
 	// 히트박스 초기화 및 활성화 함수
 	void SettingHitBox(const FSkillData& SkillData); // 히트박스 초기화
 	void OnHitBox(const FSkillData& SkillData);                            // 히트박스 활성화
@@ -67,15 +70,9 @@ public:
 	void SkillAnimation(const FString& EffectID);
 	void EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted);
 	void SkillEffect(const FString& SkillNameID);
-	// 애니메이션 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skills")
-	//UMyAnimInstance* MyAnimInstance;
-	//AActor* FindMonsterTarget();
+
 	UPROPERTY(BlueprintReadOnly)
 	float DamageAmount;
-
-	/*UFUNCTION(BlueprintNativeEvent)
-	void OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);*/
 
 protected:
 	virtual void BeginPlay() override;
