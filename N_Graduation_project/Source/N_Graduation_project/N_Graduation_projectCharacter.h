@@ -71,7 +71,9 @@ protected:
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
+	//void Look(const FInputActionValue& Value);
+
+	void RotateCharacterToCursor();
 
 	/** Called for Dash input */
 	// 대시를 시전하면 도착하는 위치로 이동할 수 있는지 확인
@@ -99,6 +101,9 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 private:
+	FVector MouseWorldPosition;
+	FVector MouseWorldDirection;
+
 	// Dash 거리
 	UPROPERTY(EditAnywhere, Category = "Dash", meta = (AllowPrivateAccess = "true"))
 	float DashDistance;
