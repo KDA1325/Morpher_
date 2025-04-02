@@ -125,8 +125,8 @@ void AN_Graduation_projectCharacter::BeginPlay()
 
 	FOnTimelineFloat DashCallback;
 	currentPreset = "PlayerCharacter";
-	UpdateEntityData();
 
+	//UpdateEntityData();
 	//currentPreset = "WildBoar";
 
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
@@ -173,32 +173,6 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 
 	RotateCharacterToCursor();
 }
-
-
-
-/*
-void AN_Graduation_projectCharacter::SpawnWidget()
-{
-	if (IsValid(CharacterHealthBarWidgetClass))
-	{
-		CharacterHealthBarWidget = CreateWidget<UUserWidget>(GetWorld(), CharacterHealthBarWidgetClass);
-
-		if (IsValid(CharacterHealthBarWidget))
-		{
-			CharacterHealthBarWidget->AddToViewport();
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Character HealthBar Widget Added!"));
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Failed to Create Character HealthBar Widget!"));
-		}
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("CharacterHealthBarWidgetClass Not Set"));
-	}
-}
-*/
 
 //////////////////////////////////////////////////////////////////////////
 // Input
@@ -356,7 +330,8 @@ void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
 		else {
 			Dash(GetActorLocation() + (GetCharacterMovement()->GetLastInputVector() * DashDistance), GetActorForwardVector());
 		}
-		EndDash();
+		EndAction();
+		CharacterStateComponent->isDash = false;
 
 	}
 }
@@ -388,24 +363,6 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 
 }
 
-void AN_Graduation_projectCharacter::EndDash()
-{
-	// 대시가 끝났을 때 호출되는 함수
-	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
-	StateComp->ChangeState(ECharacterState::Idle);
-	UE_LOG(LogTemp, Error, TEXT("!EndAction"));
-	// Action 상태 종료 시 입력 활성화
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	if (PlayerController)
-	{
-		//PlayerController->EnableInput(PlayerController); // 입력 활성화
-		GetCharacterMovement()->MaxWalkSpeed = currentSpeed;
-	}
-
-	UE_LOG(LogTemp, Error, TEXT("EndDash"));
-	CharacterStateComponent->isDash = false;
-}
-
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
@@ -424,6 +381,8 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 		IsInvincible = false;
 		// 데미지 로그 출력	
 		float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	//	UE_LOG(LogTemp, Error, TEXT("avocado take damage %f"), DamageAmount);
+
 		//PlayerSkillComponent->OnDefenseSkill(3.0);
 
 		return FinalDamage;
@@ -458,7 +417,7 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 	// currentPreset!=클릭한 버튼의 캐릭터이름 이면..
 	if (pastPreset != currentPreset) {
 		UE_LOG(LogTemp, Error, TEXT("= pastPreset != currentPreset"));
-		PlayerStatComponent->TransformToEntity(EntityData.HP, 10);
+		PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID,EntityData.HP, EntityData.TransManaCost);
 		pastPreset = currentPreset;
 	}
 }
@@ -481,16 +440,25 @@ void AN_Graduation_projectCharacter::StartAction()
 	// 플레이어 컨트롤러 가져오기
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 
+	//if (PlayerController)
+	//{
+	//	//PlayerController->DisableInput(PlayerController); // 입력 비활성화
+	//	GetCharacterMovement()->MaxWalkSpeed = 0;
+	//	UE_LOG(LogTemp, Error, TEXT("Yes PlayerController!"));
+	//}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Error, TEXT("No PlayerController"));
+	//}   
 	if (PlayerController)
 	{
-		//PlayerController->DisableInput(PlayerController); // 입력 비활성화
-		GetCharacterMovement()->MaxWalkSpeed = 0;
-		UE_LOG(LogTemp, Error, TEXT("Yes PlayerController!"));
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->RemoveMappingContext(DefaultMappingContext);
+			UE_LOG(LogTemp, Error, TEXT("Input Mapping Context Removed"));
+		}
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("No PlayerController"));
-	}
+
 }
 void AN_Graduation_projectCharacter::EndAction()
 {
@@ -504,10 +472,14 @@ void AN_Graduation_projectCharacter::EndAction()
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	if (PlayerController)
 	{
-		//PlayerController->EnableInput(PlayerController); // 입력 활성화
-		GetCharacterMovement()->MaxWalkSpeed = currentSpeed;
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+			UE_LOG(LogTemp, Error, TEXT("Input Mapping Context Restored"));
+		}
+
+		UE_LOG(LogTemp, Error, TEXT("Yes Action PlayerController!"));
 	}
-//	CharacterStateComponent->ChangeState(ECharacterState::Idle);
 }
 void AN_Graduation_projectCharacter::OnPlayerDead()
 {
