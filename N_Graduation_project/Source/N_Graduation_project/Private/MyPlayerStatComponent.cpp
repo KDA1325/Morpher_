@@ -91,7 +91,7 @@ void UMyPlayerStatComponent::SetHP(float NewHP)
 		CurrentHP = NewHP;
 		UE_LOG(LogTemp, Log, TEXT("avocado SetHp_CurrentHP: %f"), CurrentHP);
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Current HP: %0.f, %f"), CurrentHP, NewMaxHP));
-	}		
+	}
 	UpdateHUD();
 
 }
@@ -132,36 +132,39 @@ void UMyPlayerStatComponent::UseMana(int ManaAmount)
 
 void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 {
-	MonsterName = Name;
-	IconChange();
-	if (CurrentHP == PastMaxHP) {
-		SetMaxHp(HP);
-		UseMana(Mana);
-		SetHP(HP);
-		UE_LOG(LogTemp, Log, TEXT("avocado %s : CurrentHP: %f,  BeforeMaxHP: %f"), *Name, CurrentHP, NewMaxHP);
+	if (CurrentMana > Mana) 
+	{
+		MonsterName = Name;
+		IconChange();
+		if (CurrentHP == PastMaxHP) {
+			SetMaxHp(HP);
+			UseMana(Mana);
+			SetHP(HP);
+			UE_LOG(LogTemp, Log, TEXT("avocado %s : CurrentHP: %f,  BeforeMaxHP: %f"), *Name, CurrentHP, NewMaxHP);
 
+		}
+		else
+		{
+			// 변신 전 최대 HP 저장 (BeforeMaxHP)
+			//UE_LOG(LogTemp, Log, TEXT("avocado CurrentHP: %f,  BeforeMaxHP: %f, NewMaxHP:%f"), CurrentHP, PastMaxHP, NewMaxHP);
+			
+				float NewHP = ((CurrentHP / PastMaxHP) * 100 + 10) * (HP / 100);
+				UE_LOG(LogTemp, Log, TEXT("avocado CurrentHP / PastMaxHP: %f,  HP / 100: %d, NewHP: %f"), CurrentHP / PastMaxHP, HP / 100, NewHP);
+				UE_LOG(LogTemp, Log, TEXT("avocado HP: %f,  Mana: %d"), NewHP, Mana);
+
+				SetMaxHp(HP);
+
+				if (NewHP < NewMaxHP) {
+					// 새로운 HP 값을 올림 처리
+					NewHP = FMath::CeilToFloat(NewHP);
+				}
+				else NewHP = NewMaxHP;
+				UseMana(Mana);
+				SetHP(NewHP);
+		}
 	}
 	else {
-		// 변신 전 최대 HP 저장 (BeforeMaxHP)
-		//UE_LOG(LogTemp, Log, TEXT("avocado CurrentHP: %f,  BeforeMaxHP: %f, NewMaxHP:%f"), CurrentHP, PastMaxHP, NewMaxHP);
-		if (CurrentMana >= Mana) {
-			float NewHP = ((CurrentHP / PastMaxHP) * 100 + 10) * (HP / 100);
-			UE_LOG(LogTemp, Log, TEXT("avocado CurrentHP / PastMaxHP: %f,  HP / 100: %d, NewHP: %f"), CurrentHP / PastMaxHP, HP / 100, NewHP);
-			UE_LOG(LogTemp, Log, TEXT("avocado HP: %f,  Mana: %d"), NewHP, Mana);
-
-			SetMaxHp(HP);
-
-			if (NewHP < NewMaxHP) {
-				// 새로운 HP 값을 올림 처리
-				NewHP = FMath::CeilToFloat(NewHP);
-			}
-			else NewHP = NewMaxHP;
-			UseMana(Mana);
-			SetHP(NewHP);
-		}
-		else {
-			UE_LOG(LogTemp, Error, TEXT("You can not Transform to Entity"));
-		}
+		UE_LOG(LogTemp, Error, TEXT("You can not Transform to Entity"));
 	}
 }
 
