@@ -170,6 +170,8 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 			StateComp->ChangeState(ECharacterState::Idle);  // Idle 상태로 변경
 		}
 	}
+
+	RotateCharacterToCursor();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -197,7 +199,7 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::Move);
 
 		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::Look);
+		//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::Look);
 
 		// Dash
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::DashCheck);
@@ -253,17 +255,48 @@ void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
 	}
 }
 
-void AN_Graduation_projectCharacter::Look(const FInputActionValue& Value)
+//void AN_Graduation_projectCharacter::Look(const FInputActionValue& Value)
+//{
+//	// input is a Vector2D
+//	FVector2D LookAxisVector = Value.Get<FVector2D>();
+//
+//	if (Controller != nullptr)
+//	{
+//		// add yaw and pitch input to controller
+//		AddControllerYawInput(LookAxisVector.X);
+//		AddControllerPitchInput(LookAxisVector.Y);
+//	}
+//}
+void AN_Graduation_projectCharacter::RotateCharacterToCursor()
 {
-	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!PlayerController) return;
 
-	if (Controller != nullptr)
+	if (PlayerController->DeprojectMousePositionToWorld(MouseWorldPosition, MouseWorldDirection))
 	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		// Raycast to find the hit location under the cursor
+		FHitResult HitResult;
+		FVector Start = MouseWorldPosition;
+		FVector End = Start + (MouseWorldDirection * 10000.0f);
+
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility))
+		{
+			FVector TargetLocation = HitResult.Location;
+			FVector CharacterLocation = GetActorLocation();
+
+			// Calculate the desired rotation
+			FRotator LookAtRotation = (TargetLocation - CharacterLocation).Rotation();
+			LookAtRotation.Pitch = 0.0f; // Lock Pitch
+			LookAtRotation.Roll = 0.0f; // Lock Roll
+
+			// Smooth rotation
+			FRotator CurrentRotation = GetActorRotation();
+			FRotator NewRotation = FMath::RInterpTo(CurrentRotation, LookAtRotation, GetWorld()->GetDeltaSeconds(), 10.0f);
+
+			SetActorRotation(NewRotation);
+		}
 	}
+
 }
 
 void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
