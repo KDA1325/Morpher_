@@ -1,11 +1,9 @@
-
 #include "EntityWidget.h"
 #include "EntityPreset.h"
 #include "MyAIController.h"
 #include "MyAI.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-// Sets default values¶Ñ
 AEntityPreset::AEntityPreset()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.

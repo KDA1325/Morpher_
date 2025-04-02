@@ -5,6 +5,8 @@
 #include "ABEntityData.h" // Entity Data 구조체
 #include "ABGameSingleton.h"
 #include <N_Graduation_project/N_Graduation_projectCharacter.h>
+#include "Blueprint/UserWidget.h"
+#include "Components/Image.h"
 
 #include "MyPlayerStatComponent.generated.h"
 
@@ -14,7 +16,7 @@
 //DECLARE_MULTICAST_DELEGATE(FOnManaChangedDelegate);
 class UMyPlayerStatComponent;
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), meta = (Blueprintable))
 class N_GRADUATION_PROJECT_API UMyPlayerStatComponent : public UActorComponent
 {
     GENERATED_BODY()
@@ -27,15 +29,37 @@ protected:
     virtual void InitializeComponent() override;
 
 public:
-    void SetHP(float NewHP);
-    void SetMaxHp(int MaxHp);
+    void TransformToEntity(FString Name, int HP, int Mana);
+    AN_Graduation_projectCharacter* OwnerPlayer;
+    FString MonsterName;
 
-    void SetMana(int NewMana);
-    void UseMana(int ManaAmount);
+    // hp 관련
+    void SetHP(float NewHP);
     void ApplyDamage(float DamageAmount);
 
-    void TransformToEntity(int HP, int Mana);
-    bool CanTransform(int TransManaCost) const;
+    float NewMaxHP;
+    float PastMaxHP;
+
+    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+    UMyPlayerStatComponent* PlayerStatComponent;
+
+    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
+    float CurrentHP;
+
+    // 마나 관련
+    void SetMaxHp(int MaxHp);
+    void SetMana(int NewMana);
+    void UseMana(int ManaAmount);
+    void RegenerateMana();
+
+    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
+    int CurrentMana;
+
+    FTimerHandle ManaRegenTimerHandle;
+
+    //위젯 관련
+    UPROPERTY()
+    class UUserWidget* HUDWidget;
 
     UFUNCTION()
     void UpdateHUD();
@@ -43,34 +67,9 @@ public:
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<class UUserWidget> HUDClass;
 
-    UPROPERTY()
-    class UUserWidget* HUDWidget;
-   // ECharacterState GetCurrentState() const { return CurrentState; }
-   // void SetCurrentState(ECharacterState NewState);
-   
-    //UPROPERTY(BlueprintAssignable)
-   // FOnHpIsZeroDelegate OnHPIsZero;
+    void IconChange();
 
-    int TransManaCost;
-    float NewMaxHP;
-    float PastMaxHP;
+    TArray<UImage*> ManaTokenImages;
+    TArray<UImage*> IconImages;
 
-    AN_Graduation_projectCharacter* OwnerPlayer;
-  
-    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
-    float CurrentHP;
-
-    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
-    int CurrentMana;
-
-    /** 체력 컴포넌트 */
-    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    UMyPlayerStatComponent* PlayerStatComponent;
-
-    //UPROPERTY(BlueprintAssignable)
-    //FOnHpChangedDelegate OnHPChanged;
-
-    //UPROPERTY(BlueprintAssignable)
-    //FOnManaChangedDelegate OnManaChangedDelegate;
-    
 };

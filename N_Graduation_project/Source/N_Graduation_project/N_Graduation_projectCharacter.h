@@ -79,7 +79,6 @@ protected:
 
 	// 대시 기능 수행 
 	void Dash(const FVector DashDir, const FVector DashVel);
-	void EndDash();
 
 	//마우스 좌클릭
 	void NomalSkillAction(const FInputActionValue& Value);
