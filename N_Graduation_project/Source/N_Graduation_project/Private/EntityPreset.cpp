@@ -100,7 +100,7 @@ void AEntityPreset::SetHP(float NewHP)
 	if (CurrentHP <= 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("banana Entity Die"));
-		//	Destroy();
+		Destroy();
 	}
 }
 
