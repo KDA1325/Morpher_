@@ -136,34 +136,70 @@ void UPlayerSkillComponent::HideHitBox()
 	}
 }
 
-/* 몬스터 거리 측정 관련 */
-AActor* UPlayerSkillComponent::FindMonsterTarget() const
+///* 몬스터 거리 측정 관련 */
+//AActor* UPlayerSkillComponent::FindMonsterTarget() const
+//{
+//	if (!GetWorld()) {
+//		//	UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
+//		return nullptr;
+//	}
+//	else {
+//		//			UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
+//
+//		AActor* ClosestMonster = nullptr;
+//		float MinDistance = FLT_MAX;
+//
+//		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+//		{
+//			AActor* Actor = *It;
+//			if (Actor && Actor->ActorHasTag(FName("Monster")))
+//			{
+//				float CurrentDistance = GetDistanceTo(Actor);
+//				if (CurrentDistance < MinDistance)
+//				{
+//					MinDistance = CurrentDistance;
+//					ClosestMonster = Actor;
+//				}
+//			}
+//		}
+//		return ClosestMonster;  // 가장 가까운 몬스터 반환
+//	}
+//}
+AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
 {
-	if (!GetWorld()) {
-		//	UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
-		return nullptr;
-	}
-	else {
-		//			UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
+	if (!GetWorld()) return nullptr;
 
-		AActor* ClosestMonster = nullptr;
-		float MinDistance = FLT_MAX;
+	AActor* ClosestMonster = nullptr;
+	float MinDistance = FLT_MAX;
+	float MaxDotProduct = -1.0f; // 정면과의 유사도 (1에 가까울수록 정면 방향)
 
-		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+	AActor* Owner = GetOwner();
+	if (!Owner) return nullptr;
+
+	FVector PlayerLocation = Owner->GetActorLocation();
+	FVector PlayerForward = Owner->GetActorForwardVector(); // 플레이어 정면 방향
+
+	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+	{
+		AActor* Actor = *It;
+		if (Actor && Actor->ActorHasTag(FName("Monster")))
 		{
-			AActor* Actor = *It;
-			if (Actor && Actor->ActorHasTag(FName("Monster")))
+			FVector ToMonster = (Actor->GetActorLocation() - PlayerLocation).GetSafeNormal();
+			float DotProduct = FVector::DotProduct(PlayerForward, ToMonster); // 정면과의 유사도 계산
+
+			float CurrentDistance = FVector::Dist(PlayerLocation, Actor->GetActorLocation());
+
+			// 정면 방향이고, 기존보다 가까운 몬스터를 선택
+			if (DotProduct > MaxDotProduct || (DotProduct == MaxDotProduct && CurrentDistance < MinDistance))
 			{
-				float CurrentDistance = GetDistanceTo(Actor);
-				if (CurrentDistance < MinDistance)
-				{
-					MinDistance = CurrentDistance;
-					ClosestMonster = Actor;
-				}
+				MaxDotProduct = DotProduct;
+				MinDistance = CurrentDistance;
+				ClosestMonster = Actor;
 			}
 		}
-		return ClosestMonster;  // 가장 가까운 몬스터 반환
 	}
+
+	return ClosestMonster;
 }
 
 float UPlayerSkillComponent::GetDistanceTo(const AActor* OtherActor) const
