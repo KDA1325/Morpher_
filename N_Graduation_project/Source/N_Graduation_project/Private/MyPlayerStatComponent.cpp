@@ -84,6 +84,11 @@ void UMyPlayerStatComponent::SetHP(float NewHP)
 	if (NewHP < 0)
 	{
 		CurrentHP = 0;
+
+		if (OwnerPlayer)
+		{
+			OwnerPlayer->OnPlayerDead();
+		}
 		//OnHPIsZero.Broadcast();
 	}
 	else

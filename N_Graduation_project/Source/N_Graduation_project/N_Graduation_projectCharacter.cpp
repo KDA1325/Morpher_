@@ -491,6 +491,7 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 	}
 	// HP가 0이 되었을 때 처리할 로직
 	UE_LOG(LogTemp, Warning, TEXT("Player is dead!"));
+	Destroy();
 	// 여기서 플레이어 죽음 처리 (예: 애니메이션, UI 변경 등)
 }
 

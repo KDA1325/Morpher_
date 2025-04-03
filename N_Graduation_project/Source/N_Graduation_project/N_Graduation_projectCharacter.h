@@ -124,7 +124,7 @@ private:
 	// Dash를 수행할 때의 속력 
 	FVector DashVelocity;
 
-	void OnPlayerDead();
+
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UPlayerSkillComponent* PlayerSkillComponent;
 
@@ -155,7 +155,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void On_invincibility();
 
-
+	UFUNCTION(BlueprintCallable)
+	void OnPlayerDead();
 	// 실제 위젯 인스턴스
 	/*private:
 		TSubclassOf<UUserWidget> CharacterHealthBarWidgetClass;
@@ -194,6 +195,9 @@ public:
 	// 메시 변경 테스트를 위해 
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* m_pMeshCom;
+
+	UPROPERTY(EditAnywhere)
+	float currentHP;
 
 	int32 maxHp;
 	int32 moveSpeed;
