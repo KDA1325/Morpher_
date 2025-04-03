@@ -79,12 +79,12 @@ void UPlayerSkillComponent::OffDefenseSkill()
 void UPlayerSkillComponent::NomalCooldown()
 {
 	CanUseNomalSkill = true;
-//	UE_LOG(LogTemp, Log, TEXT("Defense skill is ready to use again!"));
+	UE_LOG(LogTemp, Log, TEXT("Kakao NomalCooldown"));
 }
 void UPlayerSkillComponent::SpecialCooldown()
 {
 	CanUseSpecialSkill = true;
-//	UE_LOG(LogTemp, Log, TEXT("Defense skill is ready to use again!"));
+	//	UE_LOG(LogTemp, Log, TEXT("Defense skill is ready to use again!"));
 }
 
 /* 히트박스 관련 */
@@ -131,7 +131,7 @@ void UPlayerSkillComponent::HideHitBox()
 		//UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow hidden."));
 	}
 	else {
-	//	UE_LOG(LogTemp, Warning, TEXT("No HitBox and Arrow hidden."));
+		//	UE_LOG(LogTemp, Warning, TEXT("No HitBox and Arrow hidden."));
 
 	}
 }
@@ -140,11 +140,11 @@ void UPlayerSkillComponent::HideHitBox()
 AActor* UPlayerSkillComponent::FindMonsterTarget() const
 {
 	if (!GetWorld()) {
-	//	UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
+		//	UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
 		return nullptr;
 	}
 	else {
-//			UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
+		//			UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
 
 		AActor* ClosestMonster = nullptr;
 		float MinDistance = FLT_MAX;
@@ -177,21 +177,22 @@ float UPlayerSkillComponent::MeasureDistanceToMonster() const
 	AActor* MonsterTarget = FindMonsterTarget();
 	if (MonsterTarget)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("GetDistanceTo(MonsterTarget): %f"), GetDistanceTo(MonsterTarget));
 		return GetDistanceTo(MonsterTarget);
 	}
 	return 0.f;
 }
 
 /* 스킬 실행 */
-void UPlayerSkillComponent::NomalSkillType(const FString& SkillID)
+void UPlayerSkillComponent::VisibleHitBox(const FString& SkillID)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Yes NomalSkillType"));
-	SkillAnimation("Skill_Slash");
+//	SkillAnimation("Skill_Slash");
 
 	FSkillData SkillData;
 	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
 	{
-	//	UE_LOG(LogTemp, Warning, TEXT("No UABGameSingleton"));
+		//	UE_LOG(LogTemp, Warning, TEXT("No UABGameSingleton"));
 
 		return;
 	}
@@ -210,11 +211,8 @@ void UPlayerSkillComponent::NomalSkillType(const FString& SkillID)
 		{
 			SettingHitBox(SkillData);  // 히트박스 초기화
 			OnHitBox(SkillData);    // 히트박스 활성화
+			UE_LOG(LogTemp, Warning, TEXT("kakao On OnHitBox"));
 
-			CanUseNomalSkill = false;  // 방어 스킬 쿨타임 시작
-			FTimerDelegate NomalCooldownEnd;
-			NomalCooldownEnd.BindUObject(this, &UPlayerSkillComponent::NomalCooldown);//바인딩
-			SetSkillTimer(SkillData.SkillCoolTime, NomalCooldownEnd);  // 쿨타임 설정
 		}
 		else if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
 		{
@@ -227,42 +225,53 @@ void UPlayerSkillComponent::NomalSkillType(const FString& SkillID)
 
 	}
 }
-void UPlayerSkillComponent::SpecialSkillType(const FString& SkillID)
+void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 {
-	FSkillData SkillData;
-	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
-	{
-		return;
+	UE_LOG(LogTemp, Warning, TEXT("kakao On NomalSkillPlay"));
+
+	if (CanUseNomalSkill == true) {
+
+		UE_LOG(LogTemp, Warning, TEXT("kakao On CanUseNomalSkill"));
+
+		FSkillData SkillData;
+		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
+		{
+			//	UE_LOG(LogTemp, Warning, TEXT("No UABGameSingleton"));
+
+			return;
+		}
+
+		CanUseNomalSkill = false;
+
+		//노말 스킬
+		if (SkillID == "Skill_Slash") {
+			SkillAnimation(SkillID);
+			UE_LOG(LogTemp, Warning, TEXT("kakao On SkillSlash"));
+
+		}
+		FTimerDelegate NomalCooldownEnd;
+		NomalCooldownEnd.BindUObject(this, &UPlayerSkillComponent::NomalCooldown);//바인딩
+		SetSkillTimer(SkillData.SkillCoolTime, NomalCooldownEnd);  // 쿨타임 설정
+		//SetSkillTimer(3.0f, NomalCooldownEnd);  // 슬래시 쿨타임 너무 짧아서 테스트용
 	}
+}
 
-
-	distance = MeasureDistanceToMonster();  // 몬스터와 거리 계산
-//	UE_LOG(LogTemp, Warning, TEXT("Distance to Monster: %f"), distance);
-
-
-	//	히트박스 처리 (범위 내 스킬)
-	if (distance <= SkillData.SkillRange)
+void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
+{
+	if (CanUseSpecialSkill == true)
 	{
-		//SkillAnimation(SkillData.SkillNameID);
+		CanUseSpecialSkill = false;
 
-		UE_LOG(LogTemp, Error, TEXT("distance: %f"), distance);
-
-		if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
+		FSkillData SkillData;
+		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
 		{
-			SettingHitBox(SkillData);  // 히트박스 초기화
-			OnHitBox(SkillData);    // 히트박스 활성화
+			//	UE_LOG(LogTemp, Warning, TEXT("No UABGameSingleton"));
 
-			CanUseNomalSkill = false;  // 방어 스킬 쿨타임 시작
-			FTimerDelegate NomalCooldownEnd;
-			NomalCooldownEnd.BindUObject(this, &UPlayerSkillComponent::NomalCooldown);//바인딩
-			SetSkillTimer(SkillData.SkillCoolTime, NomalCooldownEnd);  // 쿨타임 설정
+			return;
 		}
-		else if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
-		{
-			//	 Sphere 관련 처리 추가
-		}
-		//}
-		if (SkillData.SkillNameID == "Skill_ShieldGuard") {
+
+		//스페셜 스킬
+		if (SkillID == "Skill_ShieldGuard") {
 			// 방어 스킬 처리 (범위 밖 스킬)
 			if (!CanUseSpecialSkill)
 			{
@@ -270,22 +279,14 @@ void UPlayerSkillComponent::SpecialSkillType(const FString& SkillID)
 				return;  // 쿨타임 중이면 방어 스킬 실행하지 않음
 			}
 			OnDefenseSkill(3.0);  // 방어 스킬 실행
-
-			// 쿨타임 후 방어 스킬 사용 가능하게 설정
-			CanUseSpecialSkill = false;  // 방어 스킬 쿨타임 시작
-			FTimerDelegate SpecialCooldownEnd;
-			SpecialCooldownEnd.BindUObject(this, &UPlayerSkillComponent::SpecialCooldown);
-			SetSkillTimer(SkillData.SkillCoolTime, SpecialCooldownEnd);  // 쿨타임 설정
 		}
-	}
-	else {
-		FTimerHandle  HitboxEnd;
-		GetWorld()->GetTimerManager().SetTimer(HitboxEnd, this, &UPlayerSkillComponent::HideHitBox, SkillData.SkillDuration, false);
+		// 쿨타임 후 방어 스킬 사용 가능하게 설정
+		CanUseSpecialSkill = false;  // special 스킬 쿨타임 시작
+		FTimerDelegate SpecialCooldownEnd;
+		SpecialCooldownEnd.BindUObject(this, &UPlayerSkillComponent::SpecialCooldown);
+		SetSkillTimer(SkillData.SkillCoolTime, SpecialCooldownEnd);  // 쿨타임 설정
 	}
 }
-
-
-
 
 void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 {
@@ -320,12 +321,8 @@ void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Skill Animation Ended: %s"), *Montage->GetName());
-
 	AActor* OwnerActor = GetOwner();
-	if (OwnerActor)
-	{
 
-	}
 }
 
 void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)

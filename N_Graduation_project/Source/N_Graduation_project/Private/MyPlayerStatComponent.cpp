@@ -69,9 +69,6 @@ void UMyPlayerStatComponent::BeginPlay()
 		}
 	}
 
-	// 4초마다 RegenerateMana를 호출하여 마나 회복
-	GetWorld()->GetTimerManager().SetTimer(ManaRegenTimerHandle, this, &UMyPlayerStatComponent::RegenerateMana, 4.0f, true);
-
 }
 void UMyPlayerStatComponent::RegenerateMana()
 {
@@ -133,7 +130,8 @@ void UMyPlayerStatComponent::UseMana(int ManaAmount)
 void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 {
 	if (CurrentMana > Mana) 
-	{
+	{// 4초마다 RegenerateMana를 호출하여 마나 회복
+		GetWorld()->GetTimerManager().SetTimer(ManaRegenTimerHandle, this, &UMyPlayerStatComponent::RegenerateMana, 4.0f, true);
 		MonsterName = Name;
 		IconChange();
 		if (CurrentHP == PastMaxHP) {

@@ -148,7 +148,7 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
 	FVector Velocity = GetVelocity();
 	float Speed = Velocity.Size(); // 현재 속도
-
+	PlayerSkillComponent->VisibleHitBox("Skill_Slash");
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	if (!StateComp)
 	{
@@ -219,8 +219,9 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 	}
 	else {
 		StartAction();
-		UE_LOG(LogTemp, Error, TEXT("NomalSkillAction"));
-		PlayerSkillComponent->NomalSkillType("Skill_Slash");
+		//UE_LOG(LogTemp, Error, TEXT("NomalSkillAction"));
+		PlayerSkillComponent->NomalSkillPlay("Skill_Slash");
+		//EndAction();
 	}
 }
 
@@ -313,7 +314,7 @@ void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
 	{
 		FHitResult HitResult;
 		// 상태 업데이트
-		StartAction();	
+	//	StartAction();	
 		CharacterStateComponent->isDash = true;
 
 		// LineTracer를 이용해 현재 액터의 위치와 마지막 입력이 가해졌던 방향(마지막 움직임의 이동방향)에 DashDistance를 곱해 나온 위치로 Dash 
