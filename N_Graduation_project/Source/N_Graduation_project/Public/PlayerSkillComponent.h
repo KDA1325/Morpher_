@@ -53,9 +53,9 @@ public:
 	AActor* FindMonsterTarget() const;
 
 	//UFUNCTION(BlueprintNativeEvent) // 시간있음 재정의로 해보기
-	void NomalSkillType(const FString& SkillID);    // 노말스킬 타입 설정 함수
-	void SpecialSkillType(const FString& SkillID);    // 스페셜스킬 타입 설정 함수
-
+	void VisibleHitBox(const FString& SkillID);    // 히트박스 보이게
+	void NomalSkillPlay(const FString& SkillID);    // 스킬
+	void SpecialSkillPlay(const FString& SkillID);    // 스킬
 	// 함수들
 	void OnDefenseSkill(float Count);          // 방어 스킬 활성화 함수
 	void OffDefenseSkill();                    // 방어 스킬 비활성화 함수

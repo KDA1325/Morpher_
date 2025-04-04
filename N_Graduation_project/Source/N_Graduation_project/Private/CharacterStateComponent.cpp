@@ -68,7 +68,6 @@ void UCharacterStateComponent::ApplyActionRestrictions()
 			break;
 		case ECharacterState::Dash:
 			// 이동 조작X, 스킬 조작X, 변신 조작X
-
 			break;
 		case ECharacterState::Move:
 			break;
