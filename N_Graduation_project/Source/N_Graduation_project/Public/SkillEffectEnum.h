@@ -17,5 +17,6 @@ enum class EnumEffectType : uint8
     Freezing     UMETA(DisplayName = "Freezing"),
     Stun     UMETA(DisplayName = "Stun"),
     Guard     UMETA(DisplayName = "Guard"),
+    AOEDamage        UMETA(DisplayName = "AOEDamage"),
     // 필요한 값 추가...
 };
