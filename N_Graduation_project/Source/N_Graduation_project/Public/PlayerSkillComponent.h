@@ -50,7 +50,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	float MeasureDistanceToMonster() const;
 	//몬스터감지
-	AActor* FindMonsterTarget() const;
+	AActor* FindFrontMonsterTarget() const;
 
 	//UFUNCTION(BlueprintNativeEvent) // 시간있음 재정의로 해보기
 	void VisibleHitBox(const FString& SkillID);    // 히트박스 보이게

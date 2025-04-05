@@ -210,7 +210,7 @@ float UPlayerSkillComponent::GetDistanceTo(const AActor* OtherActor) const
 
 float UPlayerSkillComponent::MeasureDistanceToMonster() const
 {
-	AActor* MonsterTarget = FindMonsterTarget();
+	AActor* MonsterTarget = FindFrontMonsterTarget();
 	if (MonsterTarget)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("GetDistanceTo(MonsterTarget): %f"), GetDistanceTo(MonsterTarget));
