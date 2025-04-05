@@ -17,7 +17,7 @@ UMyPlayerStatComponent::UMyPlayerStatComponent()
 	CurrentHP = 150;
 	MonsterName = "PlayerCharacter";
 	//위젯 블루프린트 클래스 찾기
-	static ConstructorHelpers::FClassFinder<UUserWidget> HUD(TEXT("WidgetBlueprint'/Game/GUI/HUD_Profile.HUD_Profile_C'"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> HUD(TEXT("WidgetBlueprint'/Game/GUI/HUD_Collection.HUD_Collection_C'"));
 	if (HUD.Succeeded())
 	{
 		HUDClass = HUD.Class; // 위젯 클래스 설정
