@@ -1,4 +1,4 @@
-#include "EntityPreset.h"
+ï»¿#include "EntityPreset.h"
 #include "EntityWidget.h"
 #include "MyAIController.h"
 #include "MyAI.h"
@@ -21,9 +21,9 @@ AEntityPreset::AEntityPreset()
 void AEntityPreset::BeginPlay()
 {
 	Super::BeginPlay();
-	// WidgetComponent¸¦ ÅëÇØ À§Á¬ ÀÎ½ºÅÏ½º¸¦ °¡Á®¿Í EntityWidget¿¡ ÇÒ´ç
+	// WidgetComponentë¥¼ í†µí•´ ìœ„ì ¯ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ê°€ì ¸ì™€ EntityWidgetì— í• ë‹¹
 	FName WidgetCompName = TEXT("EntityPresetWidget");
-	WidgetComp = Cast<UWidgetComponent>(GetDefaultSubobjectByName(WidgetCompName));  // ¸â¹ö º¯¼ö WidgetComp »ç¿ë
+	WidgetComp = Cast<UWidgetComponent>(GetDefaultSubobjectByName(WidgetCompName));  // ë©¤ë²„ ë³€ìˆ˜ WidgetComp ì‚¬ìš©
 
 	if (WidgetComp)
 	{
@@ -36,7 +36,7 @@ void AEntityPreset::BeginPlay()
 				OnHealthChanged.Broadcast(CurrentHP);
 
 				EntityWidget->EntityPreset = this;
-				// Ã¼·Â º¯°æ µ¨¸®°ÔÀÌÆ® ¹ÙÀÎµù
+				// ì²´ë ¥ ë³€ê²½ ë¸ë¦¬ê²Œì´íŠ¸ ë°”ì¸ë”©
 				OnHealthChanged.AddDynamic(EntityWidget, &UEntityWidget::UpdateHealthBar);
 				UE_LOG(LogTemp, Warning, TEXT("banana HP Bar connected %s"), *GetName());
 			}
@@ -72,7 +72,7 @@ void AEntityPreset::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 float AEntityPreset::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {	
 	UE_LOG(LogTemp, Log, TEXT("banana Damage: %f"), DamageAmount);
-	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser); // ºÎ¸ğ Å¬·¡½ºÀÇ TakeDamage È£Ãâ
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser); // ë¶€ëª¨ í´ë˜ìŠ¤ì˜ TakeDamage í˜¸ì¶œ
 	UE_LOG(LogTemp, Log, TEXT("banana (TakeDamage)CurrentHP: %f, DamageAmount: %f, CurrentHP - DamageAmount: %f"), CurrentHP, DamageAmount, CurrentHP - DamageAmount);
 
 
@@ -92,7 +92,7 @@ void AEntityPreset::SetHP(float NewHP)
 {
 	CurrentHP = FMath::Clamp(NewHP, 0.0f ,MaxHp);
 	//CurrentHP = NewHP;
-	// µ¨¸®°ÔÀÌÆ® È£Ãâ
+	// ë¸ë¦¬ê²Œì´íŠ¸ í˜¸ì¶œ
 	//UE_LOG(LogTemp, Warning, TEXT("banana SetHP - NewHP: %f, ClampedHP: %f, MaxHP: %f"), NewHP, CurrentHP, MaxHp);
 	OnHealthChanged.Broadcast(CurrentHP);
 
@@ -129,7 +129,7 @@ void AEntityPreset::SetMoveSpeed(int32 MoveSpeed)
 
 void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 {	
-	// Entity µ¥ÀÌÅÍ¿¡ µû¶ó ÃÊ±âÈ­ 
+	// Entity ë°ì´í„°ì— ë”°ë¼ ì´ˆê¸°í™” 
 	MaxHp = InEntityData.HP;
 	SetActorLabel(InEntityData.EntityName);
 	SetMoveSpeed(InEntityData.MoveSpeed);
@@ -143,12 +143,12 @@ void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 
 float AEntityPreset::GetAIPatrolRadius()
 {
-	return 800.0f; // 8¹ÌÅÍ
+	return 800.0f; // 8ë¯¸í„°
 }
 
 float AEntityPreset::GetAIDetectRange()
 {
-	return 900.0f; // 8¹ÌÅÍ
+	return 900.0f; // 8ë¯¸í„°
 }
 
 float AEntityPreset::GetAIAttackRange()

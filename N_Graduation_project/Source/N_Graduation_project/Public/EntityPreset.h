@@ -1,10 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EngineMinimal.h" // USkeletalMeshComponent¸¦ »ç¿ëÇÏ±â À§ÇØ º¯°æ
-#include "ABEntityData.h" // Entity Data ±¸Á¶Ã¼
+#include "EngineMinimal.h" // USkeletalMeshComponentë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ë³€ê²½
+#include "ABEntityData.h" // Entity Data êµ¬ì¡°ì²´
 #include "ABGameSingleton.h"
 #include "GameFramework/Character.h"
 #include "Components/WidgetComponent.h"
@@ -23,7 +23,7 @@ class N_GRADUATION_PROJECT_API AEntityPreset : public ACharacter, public ICharac
 	GENERATED_BODY()
 
 public:
-	// µ¨¸®°ÔÀÌÆ® ¼±¾ğ
+	// ë¸ë¦¬ê²Œì´íŠ¸ ì„ ì–¸
 	UPROPERTY(BlueprintAssignable, Category = "Health")
 	FOnHealthChanged OnHealthChanged;
 
@@ -34,9 +34,9 @@ public:
 	UEntityWidget* EntityWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	UWidgetComponent* WidgetComp; //¾×ÅÍ¿¡ ºÙÀÌ´Â ÄÄÆ÷³ÍÆ®(ºí·çÇÁ¸°Æ® À§Á¬À¸·Î ÁöÁ¤)
+	UWidgetComponent* WidgetComp; //ì•¡í„°ì— ë¶™ì´ëŠ” ì»´í¬ë„ŒíŠ¸(ë¸”ë£¨í”„ë¦°íŠ¸ ìœ„ì ¯ìœ¼ë¡œ ì§€ì •)
 
-	// ºí·çÇÁ¸°Æ®¿¡¼­ ÇÒ´çÇÏ´Â WidgetComponent (ÀÌ ÄÄÆ÷³ÍÆ®¿¡ À§Á¬ ºí·çÇÁ¸°Æ®°¡ ÁöÁ¤µÇ¾î ÀÖ¾î¾ß ÇÔ)
+	// ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ í• ë‹¹í•˜ëŠ” WidgetComponent (ì´ ì»´í¬ë„ŒíŠ¸ì— ìœ„ì ¯ ë¸”ë£¨í”„ë¦°íŠ¸ê°€ ì§€ì •ë˜ì–´ ìˆì–´ì•¼ í•¨)
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	//UWidgetComponent* WidgetComp;
 
@@ -52,7 +52,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	FString currentPreset;
-	// ÃÖ´ë Ã¼·Â¿Í ÀÌµ¿ ¼Óµµ
+	// ìµœëŒ€ ì²´ë ¥ì™€ ì´ë™ ì†ë„
 	float MaxHp;
 	int32 currentSpeed;
 
@@ -71,11 +71,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Spawn")
 	void InitializeEntity(FABEntityData& InEntityData);
 
-	// MaxHP¸¦ ¼³Á¤ÇÏ´Â ÇÔ¼ö
+	// MaxHPë¥¼ ì„¤ì •í•˜ëŠ” í•¨ìˆ˜
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void SetHP(float NewHP);
 
-	// MoveSpeed¸¦ ¼³Á¤ÇÏ´Â ÇÔ¼ö
+	// MoveSpeedë¥¼ ì„¤ì •í•˜ëŠ” í•¨ìˆ˜
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void SetMoveSpeed(int32 MoveSpeed);
 
@@ -84,7 +84,7 @@ public:
 
 	// AEntityCharacter.h
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-	float GetHPRatio(); // ÃÖ´ë HP·Î ³ª´©±â
+	float GetHPRatio(); // ìµœëŒ€ HPë¡œ ë‚˜ëˆ„ê¸°
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	EnumAttackType GetAttackType();

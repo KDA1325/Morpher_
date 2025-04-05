@@ -136,35 +136,7 @@ void UPlayerSkillComponent::HideHitBox()
 	}
 }
 
-///* 몬스터 거리 측정 관련 */
-//AActor* UPlayerSkillComponent::FindMonsterTarget() const
-//{
-//	if (!GetWorld()) {
-//		//	UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
-//		return nullptr;
-//	}
-//	else {
-//		//			UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
-//
-//		AActor* ClosestMonster = nullptr;
-//		float MinDistance = FLT_MAX;
-//
-//		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
-//		{
-//			AActor* Actor = *It;
-//			if (Actor && Actor->ActorHasTag(FName("Monster")))
-//			{
-//				float CurrentDistance = GetDistanceTo(Actor);
-//				if (CurrentDistance < MinDistance)
-//				{
-//					MinDistance = CurrentDistance;
-//					ClosestMonster = Actor;
-//				}
-//			}
-//		}
-//		return ClosestMonster;  // 가장 가까운 몬스터 반환
-//	}
-//}
+
 AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
 {
 	if (!GetWorld()) return nullptr;

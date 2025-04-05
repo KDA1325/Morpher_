@@ -30,7 +30,7 @@ void UMyPlayerStatComponent::InitializeComponent()
 	IconChange();
 }
 void UMyPlayerStatComponent::BeginPlay()
-{
+{ 
 	Super::BeginPlay();
 
 	// OwnerPlayer를 AN_Graduation_projectCharacter로 캐스팅하여 설정

@@ -1,8 +1,8 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "ABEntityData.h" // Entity Data ±¸Á¶Ã¼
+#include "ABEntityData.h" // Entity Data êµ¬ì¡°ì²´
 #include "ABGameSingleton.h"
 #include <N_Graduation_project/N_Graduation_projectCharacter.h>
 #include "Blueprint/UserWidget.h"
@@ -10,7 +10,7 @@
 
 #include "MyPlayerStatComponent.generated.h"
 
-//µ¨¸®°ÔÀÌÆ® ¸ø¾²°ÚÀ½. 
+//ë¸ë¦¬ê²Œì´íŠ¸ ëª»ì“°ê² ìŒ. 
 //DECLARE_MULTICAST_DELEGATE(FOnHpIsZeroDelegate);
 //DECLARE_MULTICAST_DELEGATE(FOnHpChangedDelegate);
 //DECLARE_MULTICAST_DELEGATE(FOnManaChangedDelegate);
@@ -33,7 +33,7 @@ public:
     AN_Graduation_projectCharacter* OwnerPlayer;
     FString MonsterName;
 
-    // hp °ü·Ã
+    // hp ê´€ë ¨
     void SetHP(float NewHP);
     void ApplyDamage(float DamageAmount);
 
@@ -46,7 +46,7 @@ public:
     UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
     float CurrentHP;
 
-    // ¸¶³ª °ü·Ã
+    // ë§ˆë‚˜ ê´€ë ¨
     void SetMaxHp(int MaxHp);
     void SetMana(int NewMana);
     void UseMana(int ManaAmount);
@@ -57,7 +57,7 @@ public:
 
     FTimerHandle ManaRegenTimerHandle;
 
-    //À§Á¬ °ü·Ã
+    //ìœ„ì ¯ ê´€ë ¨
     UPROPERTY()
     class UUserWidget* HUDWidget;
 
@@ -71,5 +71,6 @@ public:
 
     TArray<UImage*> ManaTokenImages;
     TArray<UImage*> IconImages;
+
 
 };
