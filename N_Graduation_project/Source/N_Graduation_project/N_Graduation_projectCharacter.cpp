@@ -217,10 +217,10 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 	if (CharacterStateComponent->CurrentState == ECharacterState::Action|| CharacterStateComponent->CurrentState == ECharacterState::Dash) {
 		return;
 	}
-	else {
+	if(PlayerSkillComponent->CanUseNomalSkill==true) {
 		StartAction();
 		//UE_LOG(LogTemp, Error, TEXT("NomalSkillAction"));
-		PlayerSkillComponent->NomalSkillPlay("Skill_Slash");
+		PlayerSkillComponent->NomalSkillPlay("Skill_FireBall");
 		//EndAction();
 	}
 }

@@ -8,6 +8,7 @@
 #include "Components/BoxComponent.h"  // UBoxComponent
 #include "Components/ArrowComponent.h"  // UArrowComponent
 #include "ActionAnimInstance.h"
+#include "MyCharacterWidget.h"
 
 #include "PlayerSkillComponent.generated.h"
 
@@ -15,7 +16,7 @@
 class AActor;
 class UBoxComponent;
 class UArrowComponent;
-
+//class UMyCharacterWidget;
 
 
 DECLARE_MULTICAST_DELEGATE(FOnAction);
@@ -27,11 +28,14 @@ class N_GRADUATION_PROJECT_API UPlayerSkillComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+	UMyCharacterWidget* MyCharacterWidget;
+
+
 	// Sets default values for this component's properties
 	UPlayerSkillComponent();
 
 	FOnAction OnAction;
-
+	float CoolTimeData;
 	// 스킬 관련 변수들
 	bool CanUseNomalSkill;  // 일반 스킬 사용 가능 여부
 	bool CanUseSpecialSkill; // 스페셜 스킬 사용 가능 여부

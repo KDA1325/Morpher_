@@ -14,6 +14,9 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	CanUseNomalSkill = true;
 	CanUseSpecialSkill = true;
 	DamageAmount = 50;
+	// 예시: 캐릭터의 BeginPlay 또는 Init 함수 안에서
+	MyCharacterWidget = CreateDefaultSubobject<UMyCharacterWidget>(TEXT("MyCharacterWidget"));
+
 }
 
 void UPlayerSkillComponent::BeginPlay()
@@ -79,11 +82,24 @@ void UPlayerSkillComponent::OffDefenseSkill()
 void UPlayerSkillComponent::NomalCooldown()
 {
 	CanUseNomalSkill = true;
+	if (MyCharacterWidget)
+	{
+		MyCharacterWidget->bIsNomalCool = CanUseNomalSkill;
+		UE_LOG(LogTemp, Warning, TEXT("toto bIsNomalCool is %s"), MyCharacterWidget->bIsNomalCool? TEXT("true") : TEXT("false"));
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("toto MyCharacterWidget is nullptr!"));
+	}
+	
+
 	UE_LOG(LogTemp, Log, TEXT("Kakao NomalCooldown"));
 }
 void UPlayerSkillComponent::SpecialCooldown()
 {
 	CanUseSpecialSkill = true;
+	MyCharacterWidget->bIsNomalCool = CanUseSpecialSkill;
 	//	UE_LOG(LogTemp, Log, TEXT("Defense skill is ready to use again!"));
 }
 
@@ -249,12 +265,20 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 			return;
 		}
 
+		//CoolTimeData = SkillData.SkillCoolTime;
 		CanUseNomalSkill = false;
+		UE_LOG(LogTemp, Log, TEXT("toto time: %f"), SkillData.SkillCoolTime);
+		MyCharacterWidget->CollTimeData(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
 
 		//노말 스킬
 		if (SkillID == "Skill_Slash") {
 			SkillAnimation(SkillID);
 			UE_LOG(LogTemp, Warning, TEXT("kakao On SkillSlash"));
+
+		}
+		if (SkillID == "Skill_FireBall") {
+			SkillAnimation(SkillID);
+			UE_LOG(LogTemp, Warning, TEXT("toto On FireBall"));
 
 		}
 		FTimerDelegate NomalCooldownEnd;

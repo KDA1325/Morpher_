@@ -72,5 +72,5 @@ public:
     TArray<UImage*> ManaTokenImages;
     TArray<UImage*> IconImages;
 
-
+ 
 };
