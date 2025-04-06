@@ -1,10 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EngineMinimal.h" // USkeletalMeshComponent¸¦ »ç¿ëÇÏ±â À§ÇØ º¯°æ
-#include "ABEntityData.h" // Entity Data ±¸Á¶Ã¼
+#include "EngineMinimal.h" // USkeletalMeshComponentë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ë³€ê²½
+#include "ABEntityData.h" // Entity Data êµ¬ì¡°ì²´
 #include "ABGameSingleton.h"
 #include "GameFramework/Character.h"
 #include "Components/WidgetComponent.h"
@@ -23,7 +23,7 @@ class N_GRADUATION_PROJECT_API AEntityPreset : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// µ¨¸®°ÔÀÌÆ® ¼±¾ğ
+	// ë¸ë¦¬ê²Œì´íŠ¸ ì„ ì–¸
 	UPROPERTY(BlueprintAssignable, Category = "Health")
 	FOnHealthChanged OnHealthChanged;
 
@@ -34,9 +34,9 @@ public:
 	UEntityWidget* EntityWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	UWidgetComponent* WidgetComp; //¾×ÅÍ¿¡ ºÙÀÌ´Â ÄÄÆ÷³ÍÆ®(ºí·çÇÁ¸°Æ® À§Á¬À¸·Î ÁöÁ¤)
+	UWidgetComponent* WidgetComp; //ì•¡í„°ì— ë¶™ì´ëŠ” ì»´í¬ë„ŒíŠ¸(ë¸”ë£¨í”„ë¦°íŠ¸ ìœ„ì ¯ìœ¼ë¡œ ì§€ì •)
 
-	// ºí·çÇÁ¸°Æ®¿¡¼­ ÇÒ´çÇÏ´Â WidgetComponent (ÀÌ ÄÄÆ÷³ÍÆ®¿¡ À§Á¬ ºí·çÇÁ¸°Æ®°¡ ÁöÁ¤µÇ¾î ÀÖ¾î¾ß ÇÔ)
+	// ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ í• ë‹¹í•˜ëŠ” WidgetComponent (ì´ ì»´í¬ë„ŒíŠ¸ì— ìœ„ì ¯ ë¸”ë£¨í”„ë¦°íŠ¸ê°€ ì§€ì •ë˜ì–´ ìˆì–´ì•¼ í•¨)
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	//UWidgetComponent* WidgetComp;
 
@@ -44,17 +44,24 @@ public:
 	float CurrentHP;
 
 	FABEntityData EntityData;
+	FSkillEffectData NormalSkillEffectData;
 
-	// HitBox¸¦ À§ÇÑ ÄÁÅ×ÀÌ³Ê ÄÄÆ÷³ÍÆ® (¼ÒÄÏ ±âÁØ)
+	// HitBoxë¥¼ ìœ„í•œ ì»¨í…Œì´ë„ˆ ì»´í¬ë„ŒíŠ¸ (ì†Œì¼“ ê¸°ì¤€)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	USceneComponent* HitBoxContainer;
 
-	// Normal ½ºÅ³¿ë È÷Æ®¹Ú½º ÄÄÆ÷³ÍÆ® 
+	// Normal ìŠ¤í‚¬ìš© íˆíŠ¸ë°•ìŠ¤ ì»´í¬ë„ŒíŠ¸ 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	UBoxComponent* NormalSkillHitBox;
 
-	// Normal ½ºÅ³ÀÇ È÷Æ®¹Ú½º ÄÄÆ÷³ÍÆ®¸¦ »ı¼º ¹× ¼³Á¤ÇÏ´Â ÇÔ¼ö 
+	// Normal ìŠ¤í‚¬ì˜ íˆíŠ¸ë°•ìŠ¤ ì»´í¬ë„ŒíŠ¸ë¥¼ ìƒì„± ë° ì„¤ì •í•˜ëŠ” í•¨ìˆ˜ 
 	void SetupHitBoxComponent(FSkillData& SkillData);
+
+	// íˆíŠ¸ë°•ìŠ¤ Overlap ì´ë²¤íŠ¸ ì²˜ë¦¬ í•¨ìˆ˜
+	UFUNCTION()
+	void OnHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+		const FHitResult& SweepResult);
 
 protected:
 	// Called when the game starts or when spawned
@@ -66,7 +73,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	FString currentPreset;
-	// ÃÖ´ë Ã¼·Â¿Í ÀÌµ¿ ¼Óµµ
+	// ìµœëŒ€ ì²´ë ¥ì™€ ì´ë™ ì†ë„
 	float MaxHp;
 	int32 currentSpeed;
 
@@ -80,22 +87,22 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// Entity Data·Î ÃÊ±âÈ­ 
+	// Entity Dataë¡œ ì´ˆê¸°í™” 
 	UFUNCTION(BlueprintCallable, Category = "Spawn")
 	void InitializeEntity(FABEntityData& InEntityData);
 
-	// MaxHP¸¦ ¼³Á¤ÇÏ´Â ÇÔ¼ö
+	// MaxHPë¥¼ ì„¤ì •í•˜ëŠ” í•¨ìˆ˜
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void SetHP(float NewHP);
 
-	// MoveSpeed¸¦ ¼³Á¤ÇÏ´Â ÇÔ¼ö
+	// MoveSpeedë¥¼ ì„¤ì •í•˜ëŠ” í•¨ìˆ˜
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void SetMoveSpeed(int32 MoveSpeed);
 
 	void ApplyDamage(float DamageAmount);
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-	float GetHPRatio(); // ÃÖ´ë HP·Î ³ª´©±â
+	float GetHPRatio(); // ìµœëŒ€ HPë¡œ ë‚˜ëˆ„ê¸°
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	EnumAttackType GetAttackType();

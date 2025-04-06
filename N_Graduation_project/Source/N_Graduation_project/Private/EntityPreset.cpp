@@ -154,15 +154,36 @@ void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 		{
 			SetupHitBoxComponent(NormalSkillData);
 		}
+
+		// NormalSkillData에 저장된 SkillNameID 식별자를 통해 스킬 효과 데이터 가져옴
+		if (UABGameSingleton::Get().GetSkillEffectDataTBySkillID(NormalSkillData.SkillNameID, NormalSkillEffectData))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Effect Data: %s, Effect Type: %d, Effect Value: %f"),
+				*NormalSkillEffectData.SkillNameID, (uint8)NormalSkillEffectData.EffectType, NormalSkillEffectData.EffectValue01);
+		}
 	}
 
-	// NormalSkillData에 저장된 SkillNameID 식별자를 통해 스킬 효과 데이터 가져옴
-	FSkillEffectData NormalSkillEffectData;
-	if (UABGameSingleton::Get().GetSkillEffectDataTBySkillID(NormalSkillData.SkillNameID, NormalSkillEffectData))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Effect Data: %s, Effect Type: %d, Effect Value: %f"),
-			*NormalSkillEffectData.SkillNameID, (uint8)NormalSkillEffectData.EffectType, NormalSkillEffectData.EffectValue01);
-	}
+	//// EntityData에 저장된 Normal Skill 식별자를 통해 스킬 데이터 가져옴 
+	//FSkillData NormalSkillData;
+	//if (UABGameSingleton::Get().GetSkillDataBySkillID(InEntityData.NormalSkill, NormalSkillData))
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
+	//		*NormalSkillData.SkillNameID, (uint8)NormalSkillData.SkillType, NormalSkillData.SkillRange);
+
+	//	// SkillType이 HitBox라면 
+	//	if (NormalSkillData.SkillType == EnumSkillType::HitBox)
+	//	{
+	//		SetupHitBoxComponent(NormalSkillData);
+	//	}
+	//}
+
+	//// NormalSkillData에 저장된 SkillNameID 식별자를 통해 스킬 효과 데이터 가져옴
+	//FSkillEffectData NormalSkillEffectData;
+	//if (UABGameSingleton::Get().GetSkillEffectDataTBySkillID(NormalSkillData.SkillNameID, NormalSkillEffectData))
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Effect Data: %s, Effect Type: %d, Effect Value: %f"),
+	//		*NormalSkillEffectData.SkillNameID, (uint8)NormalSkillEffectData.EffectType, NormalSkillEffectData.EffectValue01);
+	//}
 }
 
 void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
@@ -190,6 +211,9 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			{
 				NormalSkillHitBox->RegisterComponent();
 				NormalSkillHitBox->AttachToComponent(HitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
+
+				// Overlap 이벤트 바인딩 
+				NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnHitBoxOverlap);
 			}
 		}
 
@@ -221,6 +245,27 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
 	{
 		
+	}
+}
+
+void AEntityPreset::OnHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this)
+	{
+		// 플레이어 캐릭터인지 확인
+		ACharacter* PlayerCharacter = Cast<ACharacter>(OtherActor);
+		if (PlayerCharacter)
+		{
+			// 스킬 효과에 따른 대미지 적용 (예시: 50.0f 대미지)
+
+			float DamageToApply = NormalSkillEffectData.EffectValue01;
+
+			UGameplayStatics::ApplyDamage(OtherActor, DamageToApply, GetController(), this, nullptr);
+			UE_LOG(LogTemp, Warning, TEXT("HitBox Overlap: Applied %f damage to %s"), DamageToApply, *OtherActor->GetName());
+
+			// 만약 한 번만 적용하고 히트박스를 파괴하고 싶다면
+			// NormalSkillHitBox->SetHiddenInGame(true); 또는 Destroy();
+		}
 	}
 }
 
