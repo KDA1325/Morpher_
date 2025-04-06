@@ -28,7 +28,6 @@ void UMyPlayerStatComponent::InitializeComponent()
 void UMyPlayerStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
 	if (ACharacter* CharacterOwner = Cast<ACharacter>(GetOwner()))
 	{
 		OwnerPlayer = Cast<AN_Graduation_projectCharacter>(CharacterOwner);
@@ -91,6 +90,7 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 		GetWorld()->GetTimerManager().SetTimer(ManaRegenTimerHandle, this, &UMyPlayerStatComponent::RegenerateMana, 4.0f, true);
 
 		MonsterName = Name;
+		HUDWidget-> SkillName=MonsterName;//스킬이미지
 		if (HUDWidget) HUDWidget->ChangeIcon(MonsterName);
 
 		if (CurrentHP == PastMaxHP)

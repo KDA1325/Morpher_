@@ -18,7 +18,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void InitializeComponent() override;
-
 public:
 	void SetHP(float NewHP);
 	void SetMaxHp(int MaxHp);
@@ -29,8 +28,7 @@ public:
 	void RegenerateMana();
 
 private:
-	void UpdateHUD(); // 이제 내부적으로 Widget에 전달만 함
-	void IconChange(); // MonsterName 변경 시 아이콘 갱신
+	void UpdateHUD();//위젯값을 연결
 
 public:
 	UPROPERTY()

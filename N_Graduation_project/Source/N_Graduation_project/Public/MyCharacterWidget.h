@@ -13,6 +13,8 @@ class N_GRADUATION_PROJECT_API UMyCharacterWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	FString SkillName;
+
 	UFUNCTION(BlueprintCallable)
 	void UpdateHPBar(float CurrentHP, float MaxHP);
 
@@ -23,10 +25,14 @@ public:
 	void ChangeIcon(const FString& MonsterName);
 
 	UFUNCTION(BlueprintCallable)
+	void SetSkillIcon();
+
+	UFUNCTION(BlueprintCallable)
 	void UpdateSkillCooldown(float CoolTime, bool nomal, bool special);
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UPROPERTY(meta = (BindWidget))
 	TArray<UImage*> ManaTokenImages;
@@ -34,13 +40,19 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TArray<UImage*> IconImages;
 
-private:
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float CoolTime;
+public:
+	UPROPERTY(BlueprintReadOnly, Category = "SkillCoolTime")
+	float SkillCoolTime;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = "SkillCoolTime")
 	bool CanNomal;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = "SkillCoolTime")
 	bool CanSpecial;
+
+private:
+	UPROPERTY()
+	UMaterialInstanceDynamic* CooldownMID;
+
+	float PassedTime = 0.0f;
 };
