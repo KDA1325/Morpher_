@@ -28,6 +28,7 @@ class N_GRADUATION_PROJECT_API UPlayerSkillComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+	UPROPERTY()
 	UMyCharacterWidget* MyCharacterWidget;
 
 

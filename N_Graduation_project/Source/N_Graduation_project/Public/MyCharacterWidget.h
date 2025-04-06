@@ -1,31 +1,46 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-//#include "PlayerSkillComponent.h"
+#include "Components/Image.h"
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
 #include "MyCharacterWidget.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class N_GRADUATION_PROJECT_API UMyCharacterWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UFUNCTION(BlueprintCallable)
-	void CollTimeData(float time, bool IsNomalCool, bool IsSpecialCool);
+	void UpdateHPBar(float CurrentHP, float MaxHP);
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UFUNCTION(BlueprintCallable)
+	void UpdateMana(int ManaAmount);
+
+	UFUNCTION(BlueprintCallable)
+	void ChangeIcon(const FString& MonsterName);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateSkillCooldown(float CoolTime, bool nomal, bool special);
+
+protected:
+	virtual void NativeConstruct() override;
+
+	UPROPERTY(meta = (BindWidget))
+	TArray<UImage*> ManaTokenImages;
+
+	UPROPERTY(meta = (BindWidget))
+	TArray<UImage*> IconImages;
+
+private:
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float CoolTime;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	bool bIsNomalCool;
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool CanNomal;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	bool bIsSpecialCool;
-
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool CanSpecial;
 };

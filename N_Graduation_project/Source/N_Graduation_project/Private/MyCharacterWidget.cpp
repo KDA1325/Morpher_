@@ -1,27 +1,80 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MyCharacterWidget.h"
-//MyCharacterWidget = CreateDefaultSubobject<UMyCharacterWidget>(TEXT("MyCharacterWidget"));
 
-//void UMyCharacterWidget::GetTime() {
-//	CoolTime = PlayerSkillComponent->CoolTimeData;
-//	bIsNomalCool = PlayerSkillComponent->CanUseNomalSkill;
-//	bIsSpecialCool = PlayerSkillComponent->CanUseSpecialSkill;
-//}
+void UMyCharacterWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
 
-void UMyCharacterWidget::CollTimeData(float time, bool IsNomalCool, bool IsSpecialCool) {
-	UE_LOG(LogTemp, Warning, TEXT("toto Widget Address: %p, CoolTime Address: %p"), this, &CoolTime);
-
-	if (this == nullptr)
+	for (int i = 0; i < 10; i++)
 	{
-		UE_LOG(LogTemp, Error, TEXT("toto UMyCharacterWidget is nullptr!"));
-		return;
+		FString Name = FString::Printf(TEXT("mp_slot%d"), i);
+		if (UImage* Image = Cast<UImage>(GetWidgetFromName(*Name)))
+		{
+			ManaTokenImages.Add(Image);
+		}
 	}
-	else {
-		UE_LOG(LogTemp, Log, TEXT("toto Widget time: %f bIsNomalCool: %s"), time, IsNomalCool ? TEXT("true") : TEXT("false"));
-		CoolTime = time;
-		bIsNomalCool = IsNomalCool;
-		bIsSpecialCool = IsSpecialCool;
+
+	for (int i = 0; i < 7; i++)
+	{
+		FString Name = FString::Printf(TEXT("P_icon%d"), i);
+		if (UImage* Icon = Cast<UImage>(GetWidgetFromName(*Name)))
+		{
+			IconImages.Add(Icon);
+		}
 	}
+}
+
+void UMyCharacterWidget::UpdateHPBar(float CurrentHP, float MaxHP)
+{
+	if (UProgressBar* HealthBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("ProgressBar_55"))))
+	{
+		HealthBar->SetPercent(CurrentHP / MaxHP);
+	}
+
+	if (UTextBlock* HealthText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_369"))))
+	{
+		HealthText->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), CurrentHP, MaxHP)));
+	}
+}
+
+
+void UMyCharacterWidget::UpdateMana(int ManaAmount)
+{
+	for (int i = 0; i < ManaTokenImages.Num(); i++)
+	{
+		if (ManaTokenImages[i])
+		{
+			ManaTokenImages[i]->SetVisibility(i < ManaAmount ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		}
+	}
+}
+
+void UMyCharacterWidget::ChangeIcon(const FString& MonsterName)
+{
+	for (UImage* Icon : IconImages)
+	{
+		if (Icon) Icon->SetVisibility(ESlateVisibility::Hidden);
+	}
+
+	TMap<FString, int32> IconMap = {
+		{"PlayerCharacter", 0},
+		{"WildBoar", 1},
+		{"Inpermon", 2},
+		{"Freezard", 3},
+		{"StoneGolem", 4},
+		{"SkeletonWarrior", 5},
+		{"SkeletonArcher", 6}
+	};
+
+	if (IconMap.Contains(MonsterName) && IconImages.IsValidIndex(IconMap[MonsterName]))
+	{
+		IconImages[IconMap[MonsterName]]->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+void UMyCharacterWidget::UpdateSkillCooldown( float cooltime, bool nomal, bool special)
+{
+	CoolTime = cooltime;
+	CanNomal = nomal;
+	CanSpecial = special;
+	UE_LOG(LogTemp, Log, TEXT("toto time: %f"), CoolTime);
+
 }

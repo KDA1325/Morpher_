@@ -2,75 +2,60 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "ABEntityData.h" // Entity Data 구조체
-#include "ABGameSingleton.h"
-#include <N_Graduation_project/N_Graduation_projectCharacter.h>
-#include "Blueprint/UserWidget.h"
-#include "Components/Image.h"
-
 #include "MyPlayerStatComponent.generated.h"
 
-//델리게이트 못쓰겠음. 
-//DECLARE_MULTICAST_DELEGATE(FOnHpIsZeroDelegate);
-//DECLARE_MULTICAST_DELEGATE(FOnHpChangedDelegate);
-//DECLARE_MULTICAST_DELEGATE(FOnManaChangedDelegate);
-class UMyPlayerStatComponent;
+class AN_Graduation_projectCharacter;
+class UMyCharacterWidget;
 
-UCLASS(ClassGroup = (Custom), meta = (Blueprintable))
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class N_GRADUATION_PROJECT_API UMyPlayerStatComponent : public UActorComponent
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-    UMyPlayerStatComponent();
+	UMyPlayerStatComponent();
 
 protected:
-    virtual void BeginPlay() override;
-    virtual void InitializeComponent() override;
+	virtual void BeginPlay() override;
+	virtual void InitializeComponent() override;
 
 public:
-    void TransformToEntity(FString Name, int HP, int Mana);
-    AN_Graduation_projectCharacter* OwnerPlayer;
-    FString MonsterName;
+	void SetHP(float NewHP);
+	void SetMaxHp(int MaxHp);
+	void ApplyDamage(float DamageAmount);
+	void SetMana(int NewMana);
+	void UseMana(int ManaAmount);
+	void TransformToEntity(FString Name, int HP, int Mana);
+	void RegenerateMana();
 
-    // hp 관련
-    void SetHP(float NewHP);
-    void ApplyDamage(float DamageAmount);
+private:
+	void UpdateHUD(); // 이제 내부적으로 Widget에 전달만 함
+	void IconChange(); // MonsterName 변경 시 아이콘 갱신
 
-    float NewMaxHP;
-    float PastMaxHP;
+public:
+	UPROPERTY()
+	AN_Graduation_projectCharacter* OwnerPlayer;
 
-    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    UMyPlayerStatComponent* PlayerStatComponent;
+	UPROPERTY()
+	UMyCharacterWidget* HUDWidget;
 
-    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
-    float CurrentHP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	float CurrentHP;
 
-    // 마나 관련
-    void SetMaxHp(int MaxHp);
-    void SetMana(int NewMana);
-    void UseMana(int ManaAmount);
-    void RegenerateMana();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	int CurrentMana;
 
-    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
-    int CurrentMana;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	int NewMaxHP;
 
-    FTimerHandle ManaRegenTimerHandle;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	int PastMaxHP;
 
-    //위젯 관련
-    UPROPERTY()
-    class UUserWidget* HUDWidget;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	FString MonsterName;
 
-    UFUNCTION()
-    void UpdateHUD();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UUserWidget> HUDClass;
 
-    UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<class UUserWidget> HUDClass;
-
-    void IconChange();
-
-    TArray<UImage*> ManaTokenImages;
-    TArray<UImage*> IconImages;
-
- 
+	FTimerHandle ManaRegenTimerHandle;
 };

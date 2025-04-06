@@ -84,8 +84,8 @@ void UPlayerSkillComponent::NomalCooldown()
 	CanUseNomalSkill = true;
 	if (MyCharacterWidget)
 	{
-		MyCharacterWidget->bIsNomalCool = CanUseNomalSkill;
-		UE_LOG(LogTemp, Warning, TEXT("toto bIsNomalCool is %s"), MyCharacterWidget->bIsNomalCool? TEXT("true") : TEXT("false"));
+		//MyWidget->SetIsNomalCool(true); // 이런 식으로 바꿔줘
+		//UE_LOG(LogTemp, Warning, TEXT("toto bIsNomalCool is %s"), MyCharacterWidget->bIsNomalCool? TEXT("true") : TEXT("false"));
 
 	}
 	else
@@ -99,7 +99,7 @@ void UPlayerSkillComponent::NomalCooldown()
 void UPlayerSkillComponent::SpecialCooldown()
 {
 	CanUseSpecialSkill = true;
-	MyCharacterWidget->bIsNomalCool = CanUseSpecialSkill;
+	//MyCharacterWidget->bIsNomalCool = CanUseSpecialSkill;
 	//	UE_LOG(LogTemp, Log, TEXT("Defense skill is ready to use again!"));
 }
 
@@ -268,7 +268,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		//CoolTimeData = SkillData.SkillCoolTime;
 		CanUseNomalSkill = false;
 		UE_LOG(LogTemp, Log, TEXT("toto time: %f"), SkillData.SkillCoolTime);
-		MyCharacterWidget->CollTimeData(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
+		MyCharacterWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
 
 		//노말 스킬
 		if (SkillID == "Skill_Slash") {
@@ -278,7 +278,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		}
 		if (SkillID == "Skill_FireBall") {
 			SkillAnimation(SkillID);
-			UE_LOG(LogTemp, Warning, TEXT("toto On FireBall"));
+			UE_LOG(LogTemp, Warning, TEXT("kakao On FireBall"));
 
 		}
 		FTimerDelegate NomalCooldownEnd;
