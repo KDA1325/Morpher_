@@ -8,7 +8,7 @@
 #include "ABGameSingleton.h"
 #include "GameFramework/Character.h"
 #include "Components/WidgetComponent.h"
-#include "CharacterAllInterface.h"
+//#include "CharacterAllInterface.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimBlueprint.h"
@@ -18,7 +18,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, NewHealth);
 class UEntityWidget;
 
 UCLASS()
-class N_GRADUATION_PROJECT_API AEntityPreset : public ACharacter, public ICharacterAllInterface
+class N_GRADUATION_PROJECT_API AEntityPreset : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -42,6 +42,16 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	float CurrentHP;
+
+	FABEntityData EntityData;
+
+	// Normal 스킬용 히트박스 컴포넌트 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
+	UBoxComponent* NormalSkillHitBox;
+
+	// Normal 스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
+	void SetupHitBoxComponent(FSkillData& SkillData);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -66,8 +76,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-
-
+	// Entity Data로 초기화 
 	UFUNCTION(BlueprintCallable, Category = "Spawn")
 	void InitializeEntity(FABEntityData& InEntityData);
 
@@ -80,9 +89,7 @@ public:
 	void SetMoveSpeed(int32 MoveSpeed);
 
 	void ApplyDamage(float DamageAmount);
-	//void  WidgetUpdate();
 
-	// AEntityCharacter.h
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	float GetHPRatio(); // 최대 HP로 나누기
 
@@ -90,9 +97,9 @@ public:
 	EnumAttackType GetAttackType();
 // AI Section
 protected:
-	virtual float GetAIPatrolRadius() override;
-	virtual float GetAIDetectRange() override;
-	virtual float GetAIAttackRange() override;
-	virtual float GetAITurnSpeed() override;
+	//virtual float GetAIPatrolRadius() override;
+	//virtual float GetAIDetectRange() override;
+	//virtual float GetAIAttackRange() override;
+	//virtual float GetAITurnSpeed() override;
 
 };

@@ -17,18 +17,18 @@ struct FSkillEffectData : public FTableRowBase
 public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkillEffect")
-    FString SkillNameID;
+    FString SkillNameID = "";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkillEffect")
-    FString EffectID;
+    FString EffectID = "";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkillEffect")
-    EnumEffectType EffectType;
+    EnumEffectType EffectType = EnumEffectType::Damage;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkillEffect")
-    float EffectValue01;
+    float EffectValue01 = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SkillEffect")
-    float EffectValue02;
+    float EffectValue02 = 0;
 };
 

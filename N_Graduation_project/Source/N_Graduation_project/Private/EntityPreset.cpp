@@ -15,6 +15,8 @@ AEntityPreset::AEntityPreset()
 	CurrentHP = 0;
 	currentSpeed = 0;
 	MaxHp = 100.0f;
+
+	NormalSkillHitBox = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -129,7 +131,9 @@ void AEntityPreset::SetMoveSpeed(int32 MoveSpeed)
 
 void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 {	
-	// Entity �����Ϳ� ���� �ʱ�ȭ 
+	//EntityData = InEntityData;
+
+	// Entity 정보 초기화 
 	MaxHp = InEntityData.HP;
 	SetActorLabel(InEntityData.EntityName);
 	SetMoveSpeed(InEntityData.MoveSpeed);
@@ -137,29 +141,111 @@ void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 
 	UE_LOG(LogTemp, Error, TEXT("banana Initialized Entity with Name: %s, HP: %d, Move Speed: %d"),
 		*InEntityData.EntityName, InEntityData.HP, InEntityData.MoveSpeed);
-	//	EntityWidget->MaxHealth = CurrentHP;
-	//	UE_LOG(LogTemp, Log, TEXT("banana MaxHealth: %f"), EntityWidget->MaxHealth);
+
+	// EntityData에 저장된 Normal Skill 식별자를 통해 스킬 데이터 가져옴 
+	FSkillData NormalSkillData;
+	if (UABGameSingleton::Get().GetSkillDataBySkillID(InEntityData.NormalSkill, NormalSkillData))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
+			*NormalSkillData.SkillNameID, (uint8)NormalSkillData.SkillType, NormalSkillData.SkillRange);
+
+		// SkillType이 HitBox라면 
+		if (NormalSkillData.SkillType == EnumSkillType::HitBox)
+		{
+			SetupHitBoxComponent(NormalSkillData);
+		}
+	}
+
+	// NormalSkillData에 저장된 SkillNameID 식별자를 통해 스킬 효과 데이터 가져옴
+	FSkillEffectData NormalSkillEffectData;
+	if (UABGameSingleton::Get().GetSkillEffectDataTBySkillID(NormalSkillData.SkillNameID, NormalSkillEffectData))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Effect Data: %s, Effect Type: %d, Effect Value: %f"),
+			*NormalSkillEffectData.SkillNameID, (uint8)NormalSkillEffectData.EffectType, NormalSkillEffectData.EffectValue01);
+	}
 }
 
-float AEntityPreset::GetAIPatrolRadius()
+// Normal 스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
+void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 {
-	return 800.0f; // 8����
-}
+	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
+	{
+		// 히트박스 컴포넌트 생성 
+		if (!NormalSkillHitBox)
+		{
+			NormalSkillHitBox = NewObject<UBoxComponent>(this, TEXT("NormalSkillHitBox"));
 
-float AEntityPreset::GetAIDetectRange()
-{
-	return 900.0f; // 8����
-}
+			if (NormalSkillHitBox)
+			{
+				// 컴포넌트 등록
+				NormalSkillHitBox->RegisterComponent();
 
-float AEntityPreset::GetAIAttackRange()
-{
-	return 0.0f;
-}
+				// 스켈레탈 메시 소켓에 부착 
+				NormalSkillHitBox->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("BiteHitBox"));
+			}
+		}
 
-float AEntityPreset::GetAITurnSpeed()
-{
-	return 0.0f;
+		// 히트박스 컴포넌트 설정 
+		if (NormalSkillHitBox)
+		{
+			FVector HalfExtent = FVector(SkillData.SkillTypeSizeX / 2, SkillData.SkillTypeSizeY / 2, 50.0f);
+			NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+			// 전방 길이가 SkillTypeSizeX 전체가 되도록 히트박스 중심을 X축 방향으로 옮김
+			FVector NewRelativeLocation = FVector(SkillData.SkillTypeSizeX / 2, 0, 0);
+			NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+		}
+	}
+
+	//if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
+	//{
+	//	// 히트박스 컴포넌트 생성 
+	//	if (!NormalSkillHitBox)
+	//	{
+	//		NormalSkillHitBox = NewObject<UBoxComponent>(this, TEXT("NormalSkillHitBox"));
+
+	//		if (NormalSkillHitBox)
+	//		{
+	//			// 컴포넌트 등록
+	//			NormalSkillHitBox->RegisterComponent();
+
+	//			// 스켈레탈 메시 소켓에 부착 
+	//			NormalSkillHitBox->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("BiteHitBox"));
+	//		}
+	//	}
+
+	//	// 히트박스 컴포넌트 설정 
+	//	if (NormalSkillHitBox)
+	//	{
+	//		FVector HalfExtent = FVector(SkillData.SkillTypeSizeX / 2, SkillData.SkillTypeSizeY / 2, 50.0f);
+	//		NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+	//		// 전방 길이가 SkillTypeSizeX 전체가 되도록 히트박스 중심을 X축 방향으로 옮김
+	//		FVector NewRelativeLocation = FVector(SkillData.SkillTypeSizeX / 2, 0, 0);
+	//		NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+	//	}
+	//}	
 }
+//
+//float AEntityPreset::GetAIPatrolRadius()
+//{
+//	return 800.0f; // 8����
+//}
+//
+//float AEntityPreset::GetAIDetectRange()
+//{
+//	return 900.0f; // 8����
+//}
+//
+//float AEntityPreset::GetAIAttackRange()
+//{
+//	return 0.0f;
+//}
+//
+//float AEntityPreset::GetAITurnSpeed()
+//{
+//	return 0.0f;
+//}
 
 EnumAttackType AEntityPreset::GetAttackType()
 {
