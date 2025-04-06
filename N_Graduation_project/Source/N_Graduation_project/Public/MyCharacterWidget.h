@@ -52,7 +52,10 @@ public:
 
 private:
 	UPROPERTY()
-	UMaterialInstanceDynamic* CooldownMID;
+	UMaterialInstanceDynamic* CooldownMID1;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* CooldownMID2;
 
 	float PassedTime = 0.0f;
 };

@@ -88,15 +88,16 @@ void UMyCharacterWidget::SetSkillIcon() {
 	{
 		if (SkillName == "PlayerCharacter") {
 			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Materials/MI_Cooldown.MI_Cooldown"));
-			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Materials2/MI_Cooldown.MI_Cooldown2"));
+			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Materials/MI_Cooldown2.MI_Cooldown2"));
 			if (BaseMaterial)
 			{
 				// 다이나믹 머티리얼 인스턴스 생성
-				CooldownMID = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+				CooldownMID1 = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+				CooldownMID2 = UMaterialInstanceDynamic::Create(BaseMaterial2, this);
 
 				// 브러시에 머티리얼 인스턴스 설정
-				SkillIcon1->SetBrushFromMaterial(CooldownMID);
-				SkillIcon2->SetBrushFromMaterial(CooldownMID);
+				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
+				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
 
 				// 초기화
 				PassedTime = 0.f;
@@ -108,11 +109,12 @@ void UMyCharacterWidget::SetSkillIcon() {
 			if (BaseMaterial)
 			{
 				// 다이나믹 머티리얼 인스턴스 생성
-				CooldownMID = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+				CooldownMID1 = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+				CooldownMID2 = UMaterialInstanceDynamic::Create(BaseMaterial2, this);
 
 				// 브러시에 머티리얼 인스턴스 설정
-				SkillIcon1->SetBrushFromMaterial(CooldownMID);
-				SkillIcon2->SetBrushFromMaterial(CooldownMID);
+				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
+				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
 
 				// 초기화
 				PassedTime = 0.f;
@@ -126,23 +128,15 @@ void UMyCharacterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	//UE_LOG(LogTemp, Log, TEXT("NativeTick CanNomal %s"),CanNomal ? TEXT("true") : TEXT("false"));
 	SetSkillIcon();
-	if (!CanNomal || !CooldownMID)
-		return;
 
-	// 1) 시간 누적 (나누기 한 번만)
-	PassedTime += InDeltaTime;
-
-	// 2) 0~1 정규화
-	float NormalizedTime = FMath::Clamp(PassedTime / SkillCoolTime, 0.0f, 1.0f);
-
-	// 3) 머티리얼 파라미터 반영
-	//    머티리얼에서 percent=0일 때 완전 밝음, 1일 때 어두움이라면
-	CooldownMID->SetScalarParameterValue(TEXT("percent"), 1.0f - NormalizedTime);
-
-	// 4) 쿨타임 완료 처리
-	if (NormalizedTime >= 1.0f)
+	if (CanNomal && CooldownMID1)
 	{
-		CanNomal = false;
-		PassedTime = 0.0f;
+		if (PassedTime < 1.0f)
+		{
+			PassedTime += InDeltaTime / SkillCoolTime;
+			PassedTime = FMath::Clamp(PassedTime, 0.0f, 1.0f);
+
+			CooldownMID1->SetScalarParameterValue(TEXT("percent"), PassedTime - 1.0f);
+		}
 	}
 }

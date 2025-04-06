@@ -84,7 +84,7 @@ void UPlayerSkillComponent::NomalCooldown()
 	if (MyCharacterWidget)
 	{
 		MyCharacterWidget->CanNomal = CanUseNomalSkill;
-		UE_LOG(LogTemp, Warning, TEXT("today CanNomal is %s"), MyCharacterWidget->CanNomal ? TEXT("true") : TEXT("false"));
+		UE_LOG(LogTemp, Warning, TEXT("toto CanNomal is %s"), MyCharacterWidget->CanNomal ? TEXT("true") : TEXT("false"));
 
 	}
 	else
