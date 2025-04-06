@@ -188,6 +188,10 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 		// 히트박스 컴포넌트 설정 
 		if (NormalSkillHitBox)
 		{
+			NormalSkillHitBox->SetHiddenInGame(false);
+			NormalSkillHitBox->SetVisibility(true);
+			UE_LOG(LogTemp, Warning, TEXT("HitBox is now visible"));
+
 			FVector HalfExtent = FVector(SkillData.SkillTypeSizeX / 2, SkillData.SkillTypeSizeY / 2, 50.0f);
 			NormalSkillHitBox->SetBoxExtent(HalfExtent);
 
