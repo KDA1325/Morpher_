@@ -45,6 +45,10 @@ public:
 
 	FABEntityData EntityData;
 
+	// HitBox를 위한 컨테이너 컴포넌트 (소켓 기준)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
+	USceneComponent* HitBoxContainer;
+
 	// Normal 스킬용 히트박스 컴포넌트 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	UBoxComponent* NormalSkillHitBox;

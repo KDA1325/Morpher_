@@ -165,91 +165,64 @@ void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 	}
 }
 
-// Normal 스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
 void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 {
 	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
 	{
-		// 히트박스 컴포넌트 생성 
-		if (!NormalSkillHitBox)
+		// 1. HitBoxContainer 생성 및 소켓에 부착
+		if (!HitBoxContainer)
 		{
-			NormalSkillHitBox = NewObject<UBoxComponent>(this, TEXT("NormalSkillHitBox"));
-
-			if (NormalSkillHitBox)
+			HitBoxContainer = NewObject<USceneComponent>(this, TEXT("HitBoxContainer"));
+			if (HitBoxContainer)
 			{
-				// 컴포넌트 등록
-				NormalSkillHitBox->RegisterComponent();
-
-				// 스켈레탈 메시 소켓에 부착 
-				NormalSkillHitBox->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("BiteHitBox"));
+				HitBoxContainer->RegisterComponent();
+				// 스켈레탈 메시의 소켓에 부착
+				HitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("BiteHitBox"));
+				// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
 			}
 		}
 
-		// 히트박스 컴포넌트 설정 
-		if (NormalSkillHitBox)
+		// 2. NormalSkillHitBox 생성 (HitBoxContainer의 자식)
+		if (!NormalSkillHitBox)
 		{
+			NormalSkillHitBox = NewObject<UBoxComponent>(this, TEXT("NormalSkillHitBox"));
+			if (NormalSkillHitBox)
+			{
+				NormalSkillHitBox->RegisterComponent();
+				NormalSkillHitBox->AttachToComponent(HitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
+			}
+		}
+
+		if (NormalSkillHitBox && HitBoxContainer)
+		{
+			// HitBox를 보이도록 설정
 			NormalSkillHitBox->SetHiddenInGame(false);
 			NormalSkillHitBox->SetVisibility(true);
-			UE_LOG(LogTemp, Warning, TEXT("HitBox is now visible"));
 
-			FVector HalfExtent = FVector(SkillData.SkillTypeSizeX / 2, SkillData.SkillTypeSizeY / 2, 50.0f);
+			// UBoxComponent는 half extents를 사용
+			// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
+			// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
+			// Y축은 Z 크기 값,
+			// Z축은 X 크기 값(SkillTypeSizeX/2)
+			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
 			NormalSkillHitBox->SetBoxExtent(HalfExtent);
 
-			// 전방 길이가 SkillTypeSizeX 전체가 되도록 히트박스 중심을 X축 방향으로 옮김
-			FVector NewRelativeLocation = FVector(SkillData.SkillTypeSizeX / 2, 0, 0);
+			// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
+			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
+			// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
+			FVector NewRelativeLocation = FVector(0.0f, 0.0f, HalfExtent.X);
 			NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			UE_LOG(LogTemp, Warning, TEXT("SetupHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+				*HalfExtent.ToString(), *NewRelativeLocation.ToString());
 		}
 	}
 
-	//if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
-	//{
-	//	// 히트박스 컴포넌트 생성 
-	//	if (!NormalSkillHitBox)
-	//	{
-	//		NormalSkillHitBox = NewObject<UBoxComponent>(this, TEXT("NormalSkillHitBox"));
-
-	//		if (NormalSkillHitBox)
-	//		{
-	//			// 컴포넌트 등록
-	//			NormalSkillHitBox->RegisterComponent();
-
-	//			// 스켈레탈 메시 소켓에 부착 
-	//			NormalSkillHitBox->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("BiteHitBox"));
-	//		}
-	//	}
-
-	//	// 히트박스 컴포넌트 설정 
-	//	if (NormalSkillHitBox)
-	//	{
-	//		FVector HalfExtent = FVector(SkillData.SkillTypeSizeX / 2, SkillData.SkillTypeSizeY / 2, 50.0f);
-	//		NormalSkillHitBox->SetBoxExtent(HalfExtent);
-
-	//		// 전방 길이가 SkillTypeSizeX 전체가 되도록 히트박스 중심을 X축 방향으로 옮김
-	//		FVector NewRelativeLocation = FVector(SkillData.SkillTypeSizeX / 2, 0, 0);
-	//		NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
-	//	}
-	//}	
+	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
+	{
+		
+	}
 }
-//
-//float AEntityPreset::GetAIPatrolRadius()
-//{
-//	return 800.0f; // 8����
-//}
-//
-//float AEntityPreset::GetAIDetectRange()
-//{
-//	return 900.0f; // 8����
-//}
-//
-//float AEntityPreset::GetAIAttackRange()
-//{
-//	return 0.0f;
-//}
-//
-//float AEntityPreset::GetAITurnSpeed()
-//{
-//	return 0.0f;
-//}
 
 EnumAttackType AEntityPreset::GetAttackType()
 {
