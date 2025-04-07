@@ -5,6 +5,26 @@
 void UMyCharacterWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	// 머티리얼 초기화
+	UImage* SkillIcon1 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_1")));
+	UImage* SkillIcon2 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_2")));
+	if (SkillIcon1)
+	{
+		CooldownMID1 = SkillIcon1->GetDynamicMaterial();
+		if (CooldownMID1)
+		{
+			CooldownMID1->SetScalarParameterValue(TEXT("percent"), 1.0f);
+		}
+	}
+	if (SkillIcon2)
+	{
+		CooldownMID1 = SkillIcon2->GetDynamicMaterial();
+		if (CooldownMID2)
+		{
+			CooldownMID2->SetScalarParameterValue(TEXT("percent"), 1.0f);
+		}
+	}
+
 	//마나
 	for (int i = 0; i < 10; i++)
 	{
@@ -81,6 +101,10 @@ void UMyCharacterWidget::UpdateSkillCooldown(float cooltime, bool nomal, bool sp
 	CanSpecial = special;
 	UE_LOG(LogTemp, Log, TEXT("toto widget CoolTime: %f"), SkillCoolTime);
 	UE_LOG(LogTemp, Log, TEXT("Widget UpdateSkillCooldown instance address: %p"), this);
+	SetSkillIcon();
+	// 쿨다운 시작 전, 완전히 찬 상태(1.0)로 초기화
+	PassedTime = 0.0f;
+	CooldownMID1->SetScalarParameterValue(TEXT("percent"), 1.0f);
 }
 
 void UMyCharacterWidget::SetSkillIcon() {
@@ -92,18 +116,16 @@ void UMyCharacterWidget::SetSkillIcon() {
 		if (SkillName == "PlayerCharacter") {
 			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Materials/MI_Cooldown.MI_Cooldown"));
 			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Materials/MI_Cooldown2.MI_Cooldown2"));
+
 			if (BaseMaterial)
 			{
 				// 다이나믹 머티리얼 인스턴스 생성
 				CooldownMID1 = UMaterialInstanceDynamic::Create(BaseMaterial, this);
-				CooldownMID2 = UMaterialInstanceDynamic::Create(BaseMaterial2, this);
-
+				//CooldownMID2->SetScalarParameterValue(TEXT("Opacity"), 0.0f); // 또는 Alpha
 				// 브러시에 머티리얼 인스턴스 설정
 				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
 				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
-				Percent = -1;
-				// 초기화
-			//	PassedTime = 0.f;
+
 			}
 		}
 		else if (SkillName == "WildBoar") {
@@ -123,21 +145,20 @@ void UMyCharacterWidget::SetSkillIcon() {
 		}
 	}
 }
-
 void UMyCharacterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	SetSkillIcon();
 
-	if (CanNomal)
+	if (!CooldownMID1 || SkillCoolTime <= 0.f)
+		return;
+
+	// 쿨다운이 진행 중일 때만 갱신
+	if (PassedTime < 1.0f)
 	{
-		if (PassedTime < 1.0f)
-		{
-			PassedTime += InDeltaTime / SkillCoolTime;
-			PassedTime = FMath::Clamp(PassedTime, 0.0f, 1.0f);
-			 Percent = PassedTime-1.0f ;
-			CooldownMID1->SetScalarParameterValue(TEXT("percent"), Percent);
-			UE_LOG(LogTemp, Log, TEXT("toto PassedTime: %f Percent: %f"), PassedTime, Percent);
-		}	
+		PassedTime += InDeltaTime / SkillCoolTime;
+		PassedTime = FMath::Clamp(PassedTime, 0.0f, 1.0f);
+
+		Percent = FMath::Clamp(1.0f - PassedTime, 0.0f, 1.0f);
+		CooldownMID1->SetScalarParameterValue(TEXT("percent"), Percent);
 	}
 }

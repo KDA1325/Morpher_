@@ -256,7 +256,8 @@ void UPlayerSkillComponent::VisibleHitBox(const FString& SkillID)
 	}
 }
 void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
-{
+{		auto StatComponent = GetOwner()->FindComponentByClass<UMyPlayerStatComponent>();
+
 	UE_LOG(LogTemp, Warning, TEXT("kakao On NomalSkillPlay"));
 
 	if (CanUseNomalSkill == true) {
@@ -273,22 +274,13 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 		//스킬 쿨타임
 		CanUseNomalSkill = false;
-		auto StatComponent = GetOwner()->FindComponentByClass<UMyPlayerStatComponent>();
-		StatComponent->HUDWidget->CanNomal = CanUseNomalSkill;
-		StatComponent->HUDWidget->PassedTime = 0.0f;
+		StatComponent->HUDWidget->CanNomal = false;
+	//	StatComponent->HUDWidget->PassedTime = 0.0f;
 		UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
 		if (StatComponent && StatComponent->HUDWidget)
 		{
 			StatComponent->HUDWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
 		}
-
-
-	//	MyCharacterWidget->CanNomal = false;
-		//UE_LOG(LogTemp, Log, TEXT("today CanNomal %s"), MyCharacterWidget->CanNomal ? TEXT("true") : TEXT("false"));
-
-	//	UE_LOG(LogTemp, Log, TEXT("toto SkillData.SkillCoolTime: %f"), SkillData.SkillCoolTime);
-		//MyCharacterWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
-
 		//노말 스킬
 		if (SkillID == "Skill_Slash") {
 			SkillAnimation(SkillID);

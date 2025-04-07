@@ -220,7 +220,7 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 	if(PlayerSkillComponent->CanUseNomalSkill==true) {
 		StartAction();
 		//UE_LOG(LogTemp, Error, TEXT("NomalSkillAction"));
-		PlayerSkillComponent->NomalSkillPlay("Skill_Slash");
+		PlayerSkillComponent->NomalSkillPlay("Skill_FireBall");
 		//EndAction();
 	}
 }
