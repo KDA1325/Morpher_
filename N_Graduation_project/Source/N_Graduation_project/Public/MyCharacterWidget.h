@@ -49,7 +49,8 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "SkillCoolTime")
 	bool CanSpecial;
-
+	float Percent;
+	float PassedTime = 0.0f;
 private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* CooldownMID1;
@@ -57,5 +58,5 @@ private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* CooldownMID2;
 
-	float PassedTime = 0.0f;
+
 };

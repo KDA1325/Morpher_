@@ -1,7 +1,8 @@
 ﻿#include "PlayerSkillComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/Character.h"
-
+#include "MyPlayerStatComponent.h"
+#include "MyCharacterWidget.h"
 #include "TimerManager.h"
 #include "CharacterStateComponent.h" //state
 #include "EngineUtils.h"
@@ -14,7 +15,6 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	CanUseNomalSkill = true;
 	CanUseSpecialSkill = true;
 	DamageAmount = 50;
-	MyCharacterWidget = CreateDefaultSubobject<UMyCharacterWidget>(TEXT("MyCharacterWidget"));
 
 }
 
@@ -43,10 +43,6 @@ void UPlayerSkillComponent::BeginPlay()
 		}
 	}
 
-}
-void UPlayerSkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 /* 스킬 관련 */
@@ -81,7 +77,13 @@ void UPlayerSkillComponent::OffDefenseSkill()
 void UPlayerSkillComponent::NomalCooldown()
 {
 	CanUseNomalSkill = true;
-	if (MyCharacterWidget)
+
+	auto StatComponent = GetOwner()->FindComponentByClass<UMyPlayerStatComponent>();
+	if (StatComponent && StatComponent->HUDWidget)
+	{
+		StatComponent->HUDWidget->CanNomal= CanUseNomalSkill;
+	}
+	/*if (MyCharacterWidget)
 	{
 		MyCharacterWidget->CanNomal = CanUseNomalSkill;
 		UE_LOG(LogTemp, Warning, TEXT("toto CanNomal is %s"), MyCharacterWidget->CanNomal ? TEXT("true") : TEXT("false"));
@@ -90,7 +92,7 @@ void UPlayerSkillComponent::NomalCooldown()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("toto MyCharacterWidget is nullptr!"));
-	}
+	}*/
 
 
 	UE_LOG(LogTemp, Log, TEXT("Kakao NomalCooldown"));
@@ -98,8 +100,13 @@ void UPlayerSkillComponent::NomalCooldown()
 void UPlayerSkillComponent::SpecialCooldown()
 {
 	CanUseSpecialSkill = true;
-	MyCharacterWidget->CanSpecial = CanUseSpecialSkill;
-	UE_LOG(LogTemp, Warning, TEXT("toto CanSpecial is %s"), MyCharacterWidget->CanSpecial ? TEXT("true") : TEXT("false"));
+	auto StatComponent = GetOwner()->FindComponentByClass<UMyPlayerStatComponent>();
+	if (StatComponent && StatComponent->HUDWidget)
+	{
+		StatComponent->HUDWidget->CanSpecial = CanUseNomalSkill;
+	}
+
+	//UE_LOG(LogTemp, Warning, TEXT("toto CanSpecial is %s"), MyCharacterWidget->CanSpecial ? TEXT("true") : TEXT("false"));
 }
 
 /* 히트박스 관련 */
@@ -266,11 +273,21 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 		//스킬 쿨타임
 		CanUseNomalSkill = false;
-		MyCharacterWidget->CanNomal = false;
-		UE_LOG(LogTemp, Log, TEXT("today CanNomal %s"), MyCharacterWidget->CanNomal ? TEXT("true") : TEXT("false"));
+		auto StatComponent = GetOwner()->FindComponentByClass<UMyPlayerStatComponent>();
+		StatComponent->HUDWidget->CanNomal = CanUseNomalSkill;
+		StatComponent->HUDWidget->PassedTime = 0.0f;
+		UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
+		if (StatComponent && StatComponent->HUDWidget)
+		{
+			StatComponent->HUDWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
+		}
 
-		UE_LOG(LogTemp, Log, TEXT("toto SkillData.SkillCoolTime: %f"), SkillData.SkillCoolTime);
-		MyCharacterWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
+
+	//	MyCharacterWidget->CanNomal = false;
+		//UE_LOG(LogTemp, Log, TEXT("today CanNomal %s"), MyCharacterWidget->CanNomal ? TEXT("true") : TEXT("false"));
+
+	//	UE_LOG(LogTemp, Log, TEXT("toto SkillData.SkillCoolTime: %f"), SkillData.SkillCoolTime);
+		//MyCharacterWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
 
 		//노말 스킬
 		if (SkillID == "Skill_Slash") {

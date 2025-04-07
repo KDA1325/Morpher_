@@ -73,18 +73,21 @@ void UMyCharacterWidget::ChangeIcon(const FString& MonsterName)
 		IconImages[IconMap[MonsterName]]->SetVisibility(ESlateVisibility::Visible);
 	}
 }
+
 void UMyCharacterWidget::UpdateSkillCooldown(float cooltime, bool nomal, bool special)
 {
 	SkillCoolTime = cooltime;
 	CanNomal = nomal;
 	CanSpecial = special;
 	UE_LOG(LogTemp, Log, TEXT("toto widget CoolTime: %f"), SkillCoolTime);
+	UE_LOG(LogTemp, Log, TEXT("Widget UpdateSkillCooldown instance address: %p"), this);
 }
+
 void UMyCharacterWidget::SetSkillIcon() {
 	UImage* SkillIcon1 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_1")));
 	UImage* SkillIcon2 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_2")));
 
-	if (SkillIcon1&& SkillIcon2)
+	if (SkillIcon1 && SkillIcon2)
 	{
 		if (SkillName == "PlayerCharacter") {
 			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Materials/MI_Cooldown.MI_Cooldown"));
@@ -98,9 +101,9 @@ void UMyCharacterWidget::SetSkillIcon() {
 				// 브러시에 머티리얼 인스턴스 설정
 				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
 				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
-
+				Percent = -1;
 				// 초기화
-				PassedTime = 0.f;
+			//	PassedTime = 0.f;
 			}
 		}
 		else if (SkillName == "WildBoar") {
@@ -116,8 +119,6 @@ void UMyCharacterWidget::SetSkillIcon() {
 				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
 				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
 
-				// 초기화
-				PassedTime = 0.f;
 			}
 		}
 	}
@@ -126,17 +127,17 @@ void UMyCharacterWidget::SetSkillIcon() {
 void UMyCharacterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	//UE_LOG(LogTemp, Log, TEXT("NativeTick CanNomal %s"),CanNomal ? TEXT("true") : TEXT("false"));
 	SetSkillIcon();
 
-	if (CanNomal && CooldownMID1)
+	if (CanNomal)
 	{
 		if (PassedTime < 1.0f)
 		{
 			PassedTime += InDeltaTime / SkillCoolTime;
 			PassedTime = FMath::Clamp(PassedTime, 0.0f, 1.0f);
-
-			CooldownMID1->SetScalarParameterValue(TEXT("percent"), PassedTime - 1.0f);
-		}
+			 Percent = PassedTime-1.0f ;
+			CooldownMID1->SetScalarParameterValue(TEXT("percent"), Percent);
+			UE_LOG(LogTemp, Log, TEXT("toto PassedTime: %f Percent: %f"), PassedTime, Percent);
+		}	
 	}
 }

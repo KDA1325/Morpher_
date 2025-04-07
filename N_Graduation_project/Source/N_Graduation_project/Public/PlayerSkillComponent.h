@@ -8,7 +8,6 @@
 #include "Components/BoxComponent.h"  // UBoxComponent
 #include "Components/ArrowComponent.h"  // UArrowComponent
 #include "ActionAnimInstance.h"
-#include "MyCharacterWidget.h"
 
 #include "PlayerSkillComponent.generated.h"
 
@@ -16,7 +15,7 @@
 class AActor;
 class UBoxComponent;
 class UArrowComponent;
-//class UMyCharacterWidget;
+
 
 
 DECLARE_MULTICAST_DELEGATE(FOnAction);
@@ -28,8 +27,6 @@ class N_GRADUATION_PROJECT_API UPlayerSkillComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	UPROPERTY()
-	UMyCharacterWidget* MyCharacterWidget;
 
 
 	// Sets default values for this component's properties
@@ -81,7 +78,6 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
 	// 타이머 핸들

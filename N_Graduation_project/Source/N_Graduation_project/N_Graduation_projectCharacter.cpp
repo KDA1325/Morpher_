@@ -220,7 +220,7 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 	if(PlayerSkillComponent->CanUseNomalSkill==true) {
 		StartAction();
 		//UE_LOG(LogTemp, Error, TEXT("NomalSkillAction"));
-		PlayerSkillComponent->NomalSkillPlay("Skill_FireBall");
+		PlayerSkillComponent->NomalSkillPlay("Skill_Slash");
 		//EndAction();
 	}
 }
@@ -371,7 +371,6 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 	if (PlayerSkillComponent->IsDefending == true) {
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 		//IsInvincible = false;
-	
 		return 0.0f;//무적상태라면 리턴.
 
 	}
