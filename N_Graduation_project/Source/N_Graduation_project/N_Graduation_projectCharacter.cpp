@@ -43,7 +43,7 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetCharacterMovement()->MaxWalkSpeed = 1000.0;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
@@ -409,7 +409,7 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 	if (UABGameSingleton::Get().GetEntityDataByGroupID(currentPreset, EntityData))
 	{
 		SetActorLabel(EntityData.EntityName);
-		SetMoveSpeed(EntityData.MoveSpeed);
+		SetMoveSpeed(1000);
 		SetPreset(EntityData.PresetReference);
 		UE_LOG(LogTemp, Error, TEXT("!Entity Name: %s, HP: %d, Move Speed: %d"),
 			*EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed);
