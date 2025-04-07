@@ -57,6 +57,10 @@ public:
 	// Normal 스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
 	void SetupHitBoxComponent(FSkillData& SkillData);
 
+	void ShowHitBox();
+
+	void HideHitBox();
+
 	// 히트박스 Overlap 이벤트 처리 함수
 	UFUNCTION()
 	void OnHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

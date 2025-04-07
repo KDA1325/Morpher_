@@ -219,9 +219,9 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 
 		if (NormalSkillHitBox && HitBoxContainer)
 		{
-			// HitBox를 보이도록 설정
-			NormalSkillHitBox->SetHiddenInGame(false);
-			NormalSkillHitBox->SetVisibility(true);
+			//// HitBox를 보이도록 설정
+			//NormalSkillHitBox->SetHiddenInGame(false);
+			//NormalSkillHitBox->SetVisibility(true);
 
 			// UBoxComponent는 half extents를 사용
 			// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
@@ -247,6 +247,23 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 		
 	}
 }
+
+void AEntityPreset::ShowHitBox()
+{
+	// HitBox 활성화 
+	NormalSkillHitBox->SetHiddenInGame(false);
+	NormalSkillHitBox->SetVisibility(true);
+	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
+}
+
+void AEntityPreset::HideHitBox()
+{
+	// HitBox 비활성화 
+	NormalSkillHitBox->SetHiddenInGame(true);
+	NormalSkillHitBox->SetVisibility(false);
+	UE_LOG(LogTemp, Warning, TEXT("Hide HitBox"));
+}
+
 
 void AEntityPreset::OnHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
