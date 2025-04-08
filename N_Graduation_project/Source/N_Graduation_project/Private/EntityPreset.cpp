@@ -105,7 +105,6 @@ void AEntityPreset::SetHP(float NewHP)
 	}
 }
 
-
 void AEntityPreset::ApplyDamage(float DamageAmount)
 {
 	SetHP(CurrentHP - DamageAmount);
@@ -127,6 +126,16 @@ float AEntityPreset::GetHPRatio()
 void AEntityPreset::SetMoveSpeed(int32 MoveSpeed)
 {
 	currentSpeed = MoveSpeed;
+}
+
+void AEntityPreset::SetNormalSkillRange(float NormalSkillRange)
+{
+	currentNormalSkillRange = NormalSkillRange;
+}
+
+void AEntityPreset::SetSpecialSkillRange(float SpecialSkillRange)
+{
+	currentSpecialSkillRange = SpecialSkillRange;
 }
 
 void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
@@ -222,6 +231,7 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			//// HitBox를 보이도록 설정
 			//NormalSkillHitBox->SetHiddenInGame(false);
 			//NormalSkillHitBox->SetVisibility(true);
+			ShowHitBox(); 
 
 			// UBoxComponent는 half extents를 사용
 			// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
@@ -291,4 +301,18 @@ EnumAttackType AEntityPreset::GetAttackType()
 	UE_LOG(LogTemp, Warning, TEXT("Get AttackType: %d"), currentAttackType);
 
 	return currentAttackType;
+}
+
+float AEntityPreset::GetNormalSkillRange()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Get Normal Skill Range: %d"), currentNormalSkillRange);
+
+	return currentNormalSkillRange;
+}
+
+float AEntityPreset::GetSpecialSkillRange()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Get Special Skill Range: %d"), currentSpecialSkillRange);
+
+	return currentSpecialSkillRange;
 }

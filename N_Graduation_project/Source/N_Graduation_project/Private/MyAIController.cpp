@@ -72,6 +72,9 @@ void AMyAIController::OnPossess(APawn* InPawn)
             {
                 // EnumAttackType 값을 uint8로 캐스팅하여 Blackboard에 저장
                 BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
+                BlackboardComp->SetValueAsFloat(BBKEY_NORMALSKILLRANGE, (uint8)PossessedCharacter->GetNormalSkillRange());
+                BlackboardComp->SetValueAsFloat(BBKEY_SPECIALSKILLRANGE, (uint8)PossessedCharacter->GetSpecialSkillRange());
+
             }
             else
             {

@@ -5,6 +5,8 @@
 #define BBKEY_HOMEPOS TEXT("HomePos")
 #define BBKEY_PATROLPOS TEXT("PatrolPos")
 #define BBKEY_ATTACKTYPE TEXT("AttackType")
+#define BBKEY_NORMALSKILLRANGE TEXT("NormalSkillRange")
+#define BBKEY_SPECIALSKILLRANGE TEXT("SpecialSkillRange")
 //#define BBKEY_TARGET TEXT("Target")
 #define BBKEY_DISTANCE TEXT("Distance")
 #define BBKEY_MINDISTANCE TEXT("MinDistance")

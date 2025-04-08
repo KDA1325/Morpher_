@@ -55,6 +55,7 @@ public:
 	UBoxComponent* NormalSkillHitBox;
 
 	// Normal 스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
+	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void SetupHitBoxComponent(FSkillData& SkillData);
 
 	void ShowHitBox();
@@ -83,6 +84,12 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	EnumAttackType currentAttackType;
+	
+	UPROPERTY(EditAnywhere)
+	float currentNormalSkillRange;
+
+	UPROPERTY(EditAnywhere)
+	float currentSpecialSkillRange;
 
 public:	
 	// Called every frame
@@ -97,11 +104,18 @@ public:
 
 	// MaxHP를 설정하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Data")
-	void SetHP(float NewHP);
+	void SetHP(float NewHP);	
+	
 
 	// MoveSpeed를 설정하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void SetMoveSpeed(int32 MoveSpeed);
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	void SetNormalSkillRange(float NormalSkillRange);
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	void SetSpecialSkillRange(float SpecialSkillRange);
 
 	void ApplyDamage(float DamageAmount);
 
@@ -110,6 +124,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	EnumAttackType GetAttackType();
+	
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	float GetNormalSkillRange();
+	
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	float GetSpecialSkillRange();
 // AI Section
 protected:
 	//virtual float GetAIPatrolRadius() override;
