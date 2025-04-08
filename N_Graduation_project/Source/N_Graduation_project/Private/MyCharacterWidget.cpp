@@ -158,7 +158,7 @@ void UMyCharacterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 		PassedTime += InDeltaTime / SkillCoolTime;
 		PassedTime = FMath::Clamp(PassedTime, 0.0f, 1.0f);
 
-		Percent = FMath::Clamp(1.0f - PassedTime, 0.0f, 1.0f);
+		Percent = FMath::Clamp(PassedTime-1.0, -1.0f, 0.0f);
 		CooldownMID1->SetScalarParameterValue(TEXT("percent"), Percent);
 	}
 }

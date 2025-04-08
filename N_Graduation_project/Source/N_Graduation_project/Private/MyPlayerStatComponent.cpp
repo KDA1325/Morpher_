@@ -91,6 +91,7 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 
 		MonsterName = Name;
 		HUDWidget-> SkillName=MonsterName;//스킬이미지
+		HUDWidget->SetSkillIcon();
 		if (HUDWidget) HUDWidget->ChangeIcon(MonsterName);
 
 		if (CurrentHP == PastMaxHP)
