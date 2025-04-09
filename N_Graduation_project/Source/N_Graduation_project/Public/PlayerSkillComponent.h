@@ -17,7 +17,6 @@ class UBoxComponent;
 class UArrowComponent;
 
 
-
 DECLARE_MULTICAST_DELEGATE(FOnAction);
 
 
@@ -39,14 +38,14 @@ public:
 	bool CanUseSpecialSkill; // 스페셜 스킬 사용 가능 여부
 	bool IsDefending;        // 방어 중인지 여부
 	bool OnceHitBox;
-	// 히트박스 관련 변수들
-	UPROPERTY()
-	UBoxComponent* HitBox;
-	UPROPERTY()
-	UArrowComponent* Arrow;
-
 	// 현재 스킬 ID
 	FString CurrentSkillID;
+
+	// 히트박스 관련 변수들
+	UPROPERTY()
+	UBoxComponent* PlayerHitBox;
+
+	void SetHitBox(UBoxComponent* NewHitBox);
 
 	// 거리 감지
 	UFUNCTION(BlueprintCallable, Category = "Skill")
@@ -55,7 +54,7 @@ public:
 	AActor* FindFrontMonsterTarget() const;
 
 	//UFUNCTION(BlueprintNativeEvent) // 시간있음 재정의로 해보기
-	void VisibleHitBox(const FString& SkillID);    // 히트박스 보이게
+	void VisibleShapeBox(const FString& SkillID);    // 히트박스 보이게
 	void NomalSkillPlay(const FString& SkillID);    // 스킬
 	void SpecialSkillPlay(const FString& SkillID);    // 스킬
 	// 함수들
@@ -67,8 +66,9 @@ public:
 	float GetDistanceTo(const AActor* OtherActor) const;    // 거리 계산 함수
 	// 히트박스 초기화 및 활성화 함수
 	void SettingHitBox(const FSkillData& SkillData); // 히트박스 초기화
-	void OnHitBox(const FSkillData& SkillData);                            // 히트박스 활성화
-	void HideHitBox();     // 히트박스 비활성화
+	void OnHitBox(const FSkillData& SkillData);     
+	// 히트박스 활성화
+	void HideHitBox(const FString& SkillID);     // 히트박스 비활성화
 	void SkillAnimation(const FString& EffectID);
 	void EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted);
 	void SkillEffect(const FString& SkillNameID);

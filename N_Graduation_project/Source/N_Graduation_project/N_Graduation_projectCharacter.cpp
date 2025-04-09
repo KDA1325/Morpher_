@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+ï»¿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "N_Graduation_projectCharacter.h"
 #include "Engine/LocalPlayer.h"
@@ -68,34 +68,34 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 		LeftClickAction = MouseLeftClick.Object;
 	}
 
-	// IA¸¦ Á÷Á¢ ÁöÁ¤ÇÏÁö ¾ÊÀ¸¸é Dash ±â´ÉÀÌ ¼öÇàµÇÁö ¾ÊÀ½ 
+	// IAë¥¼ ì§ì ‘ ì§€ì •í•˜ì§€ ì•Šìœ¼ë©´ Dash ê¸°ëŠ¥ì´ ìˆ˜í–‰ë˜ì§€ ì•ŠìŒ 
 	static ConstructorHelpers::FObjectFinder<UInputAction> DashInput = TEXT("/Script/EnhancedInput.InputAction'/Game/ThirdPerson/Input/Actions/IA_Dash.IA_Dash'");
 	if (DashInput.Object)
 	{
 		DashAction = DashInput.Object;
 	}
 
-	// Dash Curve°¡ Á¸ÀçÇÏ¸é º¯¼ö¿¡ ¿ÀºêÁ§Æ® ³Ö±â
+	// Dash Curveê°€ ì¡´ì¬í•˜ë©´ ë³€ìˆ˜ì— ì˜¤ë¸Œì íŠ¸ ë„£ê¸°
 	const ConstructorHelpers::FObjectFinder<UCurveFloat> Curve(TEXT("/Script/Engine.CurveFloat'/Game/ThirdPerson/CV_Dash.CV_Dash'"));
 	if (Curve.Succeeded())
 	{
 		DashCurve = Curve.Object;
 	}
 
-	// DashTimelineÀÌ Á¸ÀçÇÏ¸é º¯¼ö¿¡ ¿ÀºêÁ§Æ® ³Ö±â
+	// DashTimelineì´ ì¡´ì¬í•˜ë©´ ë³€ìˆ˜ì— ì˜¤ë¸Œì íŠ¸ ë„£ê¸°
 	DashTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("DashTimeline"));
 	DashDistance = 300.0f;
 	DashDirection = FVector::ZeroVector;
 	DashVelocity = FVector::ZeroVector;
 
-	// Ã¼·Â ÄÄÆ÷³ÍÆ® Ãß°¡
+	// ì²´ë ¥ ì»´í¬ë„ŒíŠ¸ ì¶”ê°€
 	PlayerStatComponent = CreateDefaultSubobject<UMyPlayerStatComponent>(TEXT("PlayerStatComponent"));
 	PlayerSkillComponent = CreateDefaultSubobject<UPlayerSkillComponent>(TEXT("PlayerSkillComponent"));
 	CharacterStateComponent = CreateDefaultSubobject<UCharacterStateComponent>(TEXT("CharacterStateComponent"));
 
 	m_pMeshCom = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
 
-	// RootComponent ¼³Á¤ -> ¾È ÇÏ¸é m_pMeshCom nullptr ¿À·ù ¹ß»ı
+	// RootComponent ì„¤ì • -> ì•ˆ í•˜ë©´ m_pMeshCom nullptr ì˜¤ë¥˜ ë°œìƒ
 	if (!m_pMeshCom)
 	{
 		m_pMeshCom = NewObject<USkeletalMeshComponent>(this, TEXT("MeshComponent"));
@@ -105,14 +105,7 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 
 	bIsMoving = true;
 	pastPreset = "PlayerCharacter";
-
-	////À§Á¬ ºí·çÇÁ¸°Æ® Å¬·¡½º Ã£±â
-	//static ConstructorHelpers::FClassFinder<UUserWidget> HUD(TEXT("WidgetBlueprint'/Game/GUI/HUD_Profile.HUD_Profile_C'"));
-
-	//if (HUD.Succeeded())
-	//{
-	//	HUDClass = HUD.Class; // À§Á¬ Å¬·¡½º ¼³Á¤
-	//}
+	NomalSkill = "Skill_Slash";
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -120,8 +113,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	//HUDWidget = CreateWidget(GetWorld()->GetFirstPlayerController(), HUDClass);
-	//HUDWidget->AddToViewport();
+	SpawnHitBoxAtSocket("AttachHitBox");
 
 	FOnTimelineFloat DashCallback;
 	currentPreset = "PlayerCharacter";
@@ -129,14 +121,14 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	//UpdateEntityData();
 	//currentPreset = "WildBoar";
 
-	// Dash°¡ ¼öÇàµÉ ¶§ Callback µÇ´Â ÇÔ¼ö DashInterpReturn ÁöÁ¤
+	// Dashê°€ ìˆ˜í–‰ë  ë•Œ Callback ë˜ëŠ” í•¨ìˆ˜ DashInterpReturn ì§€ì •
 	DashCallback.BindUFunction(this, FName("DashInterpReturn"));
 
-	// Å¸ÀÓ¶óÀÎ ¹İº¹ false ¼³Á¤ 
+	// íƒ€ì„ë¼ì¸ ë°˜ë³µ false ì„¤ì • 
 	DashTimeline->SetLooping(false);
-	// DashCurve¿¡ µû¶ó Å¸ÀÓ¶óÀÎ/Callback ¼öÇà
+	// DashCurveì— ë”°ë¼ íƒ€ì„ë¼ì¸/Callback ìˆ˜í–‰
 	DashTimeline->AddInterpFloat(DashCurve, DashCallback);
-	// Å¸ÀÓ¶óÀÎ ±æÀÌ ¼³Á¤
+	// íƒ€ì„ë¼ì¸ ê¸¸ì´ ì„¤ì •
 	DashTimeline->SetTimelineLength(0.2f);
 
 	//if (PlayerStatComponent)
@@ -147,27 +139,28 @@ void AN_Graduation_projectCharacter::BeginPlay()
 void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
 	FVector Velocity = GetVelocity();
-	float Speed = Velocity.Size(); // ÇöÀç ¼Óµµ
-	PlayerSkillComponent->VisibleHitBox("Skill_Slash");
+	float Speed = Velocity.Size(); // í˜„ì¬ ì†ë„
+	PlayerSkillComponent->HideHitBox(NomalSkill);
+
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	if (!StateComp)
 	{
-		return; // StateComp°¡ ¾øÀ¸¸é ÇÔ¼ö Á¾·á
+		return; // StateCompê°€ ì—†ìœ¼ë©´ í•¨ìˆ˜ ì¢…ë£Œ
 	}
 
-	// Speed°¡ ÀÏÁ¤ ÀÓ°è°ªº¸´Ù Å©¸é ÀÌµ¿ Áß
+	// Speedê°€ ì¼ì • ì„ê³„ê°’ë³´ë‹¤ í¬ë©´ ì´ë™ ì¤‘
 	if (Speed > 0.1f)
 	{
 		if (StateComp->GetCurrentState() != ECharacterState::Move)
 		{
-			StateComp->ChangeState(ECharacterState::Move);  // Move »óÅÂ·Î º¯°æ
+			StateComp->ChangeState(ECharacterState::Move);  // Move ìƒíƒœë¡œ ë³€ê²½
 		}
 	}
-	else  // ¼Óµµ°¡ 0ÀÌ¸é Idle »óÅÂ
+	else  // ì†ë„ê°€ 0ì´ë©´ Idle ìƒíƒœ
 	{
 		if (StateComp->GetCurrentState() != ECharacterState::Idle)
 		{
-			StateComp->ChangeState(ECharacterState::Idle);  // Idle »óÅÂ·Î º¯°æ
+			StateComp->ChangeState(ECharacterState::Idle);  // Idle ìƒíƒœë¡œ ë³€ê²½
 		}
 	}
 
@@ -214,14 +207,11 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
 {
-	if (CharacterStateComponent->CurrentState == ECharacterState::Action|| CharacterStateComponent->CurrentState == ECharacterState::Dash) {
+	if (CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
 		return;
 	}
-	if(PlayerSkillComponent->CanUseNomalSkill==true) {
-		StartAction();
-		//UE_LOG(LogTemp, Error, TEXT("NomalSkillAction"));
-		PlayerSkillComponent->NomalSkillPlay("Skill_FireBall");
-		//EndAction();
+	if (PlayerSkillComponent->CanUseNomalSkill == true) {
+		PlayerSkillComponent->NomalSkillPlay(NomalSkill);
 	}
 }
 
@@ -302,32 +292,32 @@ void AN_Graduation_projectCharacter::RotateCharacterToCursor()
 
 void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemplateCharacter, Error, TEXT("Dash ¹ÙÀÎµù"));
-	// ´ë½Ã »óÅÂ·Î º¯°æ
+	UE_LOG(LogTemplateCharacter, Error, TEXT("Dash ë°”ì¸ë”©"));
+	// ëŒ€ì‹œ ìƒíƒœë¡œ ë³€ê²½
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	StateComp->ChangeState(ECharacterState::Dash);
 	CharacterStateComponent->ApplyActionRestrictions();
-	
 
-	// ¸¶Áö¸· ÀÔ·ÂÀÌ ZeroVector(Áß¸³)°¡ ¾Æ´Ï¸é ½ÇÇà -> Ä³¸¯ÅÍ°¡ Á¤Áö Áß¿£ ½ÇÇàµÇÁö ¾ÊÀ½(¹İµå½Ã ´ë½Ã·Î ÀÌµ¿ÇÏ°í ½ÍÀº ¹æÇâÂÊ ¹æÇâÅ°¸¦ ´­·¯¾ß ´ë½Ã ¹ßµ¿(±âÈ¹¼­´ë·Î ¼öÁ¤ ÇÊ¿ä))
+
+	// ë§ˆì§€ë§‰ ì…ë ¥ì´ ZeroVector(ì¤‘ë¦½)ê°€ ì•„ë‹ˆë©´ ì‹¤í–‰ -> ìºë¦­í„°ê°€ ì •ì§€ ì¤‘ì—” ì‹¤í–‰ë˜ì§€ ì•ŠìŒ(ë°˜ë“œì‹œ ëŒ€ì‹œë¡œ ì´ë™í•˜ê³  ì‹¶ì€ ë°©í–¥ìª½ ë°©í–¥í‚¤ë¥¼ ëˆŒëŸ¬ì•¼ ëŒ€ì‹œ ë°œë™(ê¸°íšì„œëŒ€ë¡œ ìˆ˜ì • í•„ìš”))
 	if (GetCharacterMovement()->GetLastInputVector() != FVector::ZeroVector)
 	{
 		FHitResult HitResult;
-		// »óÅÂ ¾÷µ¥ÀÌÆ®
+		// ìƒíƒœ ì—…ë°ì´íŠ¸
 	//	StartAction();	
 		CharacterStateComponent->isDash = true;
 
-		// LineTracer¸¦ ÀÌ¿ëÇØ ÇöÀç ¾×ÅÍÀÇ À§Ä¡¿Í ¸¶Áö¸· ÀÔ·ÂÀÌ °¡ÇØÁ³´ø ¹æÇâ(¸¶Áö¸· ¿òÁ÷ÀÓÀÇ ÀÌµ¿¹æÇâ)¿¡ DashDistance¸¦ °öÇØ ³ª¿Â À§Ä¡·Î Dash 
+		// LineTracerë¥¼ ì´ìš©í•´ í˜„ì¬ ì•¡í„°ì˜ ìœ„ì¹˜ì™€ ë§ˆì§€ë§‰ ì…ë ¥ì´ ê°€í•´ì¡Œë˜ ë°©í–¥(ë§ˆì§€ë§‰ ì›€ì§ì„ì˜ ì´ë™ë°©í–¥)ì— DashDistanceë¥¼ ê³±í•´ ë‚˜ì˜¨ ìœ„ì¹˜ë¡œ Dash 
 		bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult,
 			GetActorLocation(),
 			GetActorLocation() + (GetCharacterMovement()->GetLastInputVector() * DashDistance),
 			ECollisionChannel::ECC_Visibility);
-		// Dash°¡ ¹ßµ¿µÇ¾î ÃÖÁ¾ÀûÀ¸·Î ÀÌµ¿ÇÒ À§Ä¡¿¡ ¾×ÅÍ ¶Ç´Â Ãæµ¹ °¡´ÉÇÑ ¹«¾ğ°¡°¡ Á¸ÀçÇÑ´Ù¸é
+		// Dashê°€ ë°œë™ë˜ì–´ ìµœì¢…ì ìœ¼ë¡œ ì´ë™í•  ìœ„ì¹˜ì— ì•¡í„° ë˜ëŠ” ì¶©ëŒ ê°€ëŠ¥í•œ ë¬´ì–¸ê°€ê°€ ì¡´ì¬í•œë‹¤ë©´
 		if (IsHit) {
-			// Ãæµ¹ÇÑ °´Ã¼ÀÇ À§Ä¡°ª¿¡ Ä³¸¯ÅÍÀÇ ¸ö °ª(55.0f)À» »©¼­ ÀÌµ¿
+			// ì¶©ëŒí•œ ê°ì²´ì˜ ìœ„ì¹˜ê°’ì— ìºë¦­í„°ì˜ ëª¸ ê°’(55.0f)ì„ ë¹¼ì„œ ì´ë™
 			Dash(HitResult.Location + (GetCharacterMovement()->GetLastInputVector() * -55.0f), GetActorForwardVector());
 		}
-		// Á¸ÀçÇÏÁö ¾Ê´Â´Ù¸é DashDistance¸¸Å­ ÀÌµ¿ 
+		// ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤ë©´ DashDistanceë§Œí¼ ì´ë™ 
 		else {
 			Dash(GetActorLocation() + (GetCharacterMovement()->GetLastInputVector() * DashDistance), GetActorForwardVector());
 		}
@@ -344,12 +334,12 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 	DashDirection = DashDir;
 	DashVelocity = DashVel;
 	DashTimeline->PlayFromStart();
-//	EndDash();
-	/*currentPreset = "Inpermon";
-	UpdateEntityData();
-	//¼Óµµ º¯ÇÏ´ÂÁö Ã¼Å©ÇÏ·Á°í
-	*/
-	currentPreset = "WildBoar"; //ÀÓ½Ã·Î	
+	//	EndDash();
+		/*currentPreset = "Inpermon";
+		UpdateEntityData();
+		//ì†ë„ ë³€í•˜ëŠ”ì§€ ì²´í¬í•˜ë ¤ê³ 
+		*/
+	currentPreset = "WildBoar"; //ì„ì‹œë¡œ	
 	SetPreset(currentPreset);
 
 	UpdateEntityData();
@@ -359,19 +349,19 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 
 void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 {
-	// Dash Å° ÀÔ·Â -> DeshCheck ¹ÙÀÎµù -> Dash ¼öÇà -> Å¸ÀÓ¶óÀÎ ½ÇÇà -> DashCurve¿¡ µû¶ó Callback ÇÔ¼ö DashInterpReturn ¹ÙÀÎµù -> ·ÎÄÉÀÌ¼Ç 
+	// Dash í‚¤ ì…ë ¥ -> DeshCheck ë°”ì¸ë”© -> Dash ìˆ˜í–‰ -> íƒ€ì„ë¼ì¸ ì‹¤í–‰ -> DashCurveì— ë”°ë¼ Callback í•¨ìˆ˜ DashInterpReturn ë°”ì¸ë”© -> ë¡œì¼€ì´ì…˜ 
 	SetActorLocation(FMath::Lerp(GetActorLocation(), DashDirection, value));
 
 }
 
-// µ¥¹ÌÁö¸¦ ¹Ş¾ÒÀ» ¶§ È£ÃâÇÏ´Â ÇÔ¼ö
+// ë°ë¯¸ì§€ë¥¼ ë°›ì•˜ì„ ë•Œ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
 	if (PlayerSkillComponent->IsDefending == true) {
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 		//IsInvincible = false;
-		return 0.0f;//¹«Àû»óÅÂ¶ó¸é ¸®ÅÏ.
+		return 0.0f;//ë¬´ì ìƒíƒœë¼ë©´ ë¦¬í„´.
 
 	}
 	else
@@ -379,11 +369,11 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 		PlayerStatComponent->ApplyDamage(DamageAmount);
 		On_invincibility_Implementation();
 		IsInvincible = false;
-		// µ¥¹ÌÁö ·Î±× Ãâ·Â	
+		// ë°ë¯¸ì§€ ë¡œê·¸ ì¶œë ¥	
 		float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	//	UE_LOG(LogTemp, Error, TEXT("avocado take damage %f"), DamageAmount);
+		//	UE_LOG(LogTemp, Error, TEXT("avocado take damage %f"), DamageAmount);
 
-		//PlayerSkillComponent->OnDefenseSkill(3.0);
+			//PlayerSkillComponent->OnDefenseSkill(3.0);
 
 		return FinalDamage;
 	}
@@ -393,14 +383,14 @@ void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 {
 	if (PlayerSkillComponent && !IsInvincible)
 	{
-		// ¹«Àû »óÅÂ È°¼ºÈ­
+		// ë¬´ì  ìƒíƒœ í™œì„±í™”
 		IsInvincible = true;
 		if (IsInvincible) {
 			UE_LOG(LogTemp, Log, TEXT("IsInvincible"));
 		}
-		// PlayerSkillComponent¿¡¼­ ¹æ¾î ½ºÅ³À» ½ÇÇà
+		// PlayerSkillComponentì—ì„œ ë°©ì–´ ìŠ¤í‚¬ì„ ì‹¤í–‰
 		PlayerSkillComponent->OnDefenseSkill(1.0f);
-		// ±ô¹ÚÀÌ±â±¸Çö->BP
+		// ê¹œë°•ì´ê¸°êµ¬í˜„->BP
 	}
 }
 
@@ -411,13 +401,15 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 		SetActorLabel(EntityData.EntityName);
 		SetMoveSpeed(1000);
 		SetPreset(EntityData.PresetReference);
+		NomalSkill = EntityData.NormalSkill;
+		SpecialSkill = EntityData.SpecialSkill;
 		UE_LOG(LogTemp, Error, TEXT("!Entity Name: %s, HP: %d, Move Speed: %d"),
 			*EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed);
 	}
-	// currentPreset!=Å¬¸¯ÇÑ ¹öÆ°ÀÇ Ä³¸¯ÅÍÀÌ¸§ ÀÌ¸é..
+	// currentPreset!=í´ë¦­í•œ ë²„íŠ¼ì˜ ìºë¦­í„°ì´ë¦„ ì´ë©´..
 	if (pastPreset != currentPreset) {
 		UE_LOG(LogTemp, Error, TEXT("= pastPreset != currentPreset"));
-		PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID,EntityData.HP, EntityData.TransManaCost);
+		PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID, EntityData.HP, EntityData.TransManaCost);
 		pastPreset = currentPreset;
 	}
 }
@@ -437,12 +429,12 @@ void AN_Graduation_projectCharacter::StartAction()
 {
 	UE_LOG(LogTemp, Error, TEXT("!StartAction"));
 
-	// ÇÃ·¹ÀÌ¾î ÄÁÆ®·Ñ·¯ °¡Á®¿À±â
+	// í”Œë ˆì´ì–´ ì»¨íŠ¸ë¡¤ëŸ¬ ê°€ì ¸ì˜¤ê¸°
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 
 	//if (PlayerController)
 	//{
-	//	//PlayerController->DisableInput(PlayerController); // ÀÔ·Â ºñÈ°¼ºÈ­
+	//	//PlayerController->DisableInput(PlayerController); // ì…ë ¥ ë¹„í™œì„±í™”
 	//	GetCharacterMovement()->MaxWalkSpeed = 0;
 	//	UE_LOG(LogTemp, Error, TEXT("Yes PlayerController!"));
 	//}
@@ -466,9 +458,9 @@ void AN_Graduation_projectCharacter::EndAction()
 	StateComp->ChangeState(ECharacterState::Idle);
 	CharacterStateComponent->isAction = false;
 
-	// ±âÁ¸ ¼Óµµ·Î ÀÌµ¿ 
+	// ê¸°ì¡´ ì†ë„ë¡œ ì´ë™ 
 	UE_LOG(LogTemp, Error, TEXT("!EndAction"));
-	// Action »óÅÂ Á¾·á ½Ã ÀÔ·Â È°¼ºÈ­
+	// Action ìƒíƒœ ì¢…ë£Œ ì‹œ ì…ë ¥ í™œì„±í™”
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	if (PlayerController)
 	{
@@ -489,19 +481,19 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 		FString StateString = UEnum::GetValueAsString(StateComp->CurrentState);
 		StateComp->ChangeState(ECharacterState::Dead);
 	}
-	// HP°¡ 0ÀÌ µÇ¾úÀ» ¶§ Ã³¸®ÇÒ ·ÎÁ÷
+	// HPê°€ 0ì´ ë˜ì—ˆì„ ë•Œ ì²˜ë¦¬í•  ë¡œì§
 	UE_LOG(LogTemp, Warning, TEXT("Player is dead!"));
-	// ¿©±â¼­ ÇÃ·¹ÀÌ¾î Á×À½ Ã³¸® (¿¹: ¾Ö´Ï¸ŞÀÌ¼Ç, UI º¯°æ µî)
+	// ì—¬ê¸°ì„œ í”Œë ˆì´ì–´ ì£½ìŒ ì²˜ë¦¬ (ì˜ˆ: ì• ë‹ˆë©”ì´ì…˜, UI ë³€ê²½ ë“±)
 }
 
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 {
 	currentPreset = PresetReference;
 
-	// ÇÁ¸®¼Â ÀÌ¸§¸¶´Ù ¸Ş½Ã ¿¡¼Â ÆÄÀÏ ÇÒ´ç
+	// í”„ë¦¬ì…‹ ì´ë¦„ë§ˆë‹¤ ë©”ì‹œ ì—ì…‹ íŒŒì¼ í• ë‹¹
 	if (currentPreset == "PCPreset.uasset")
 	{
-		// ¿¡µğÅÍ ½ÇÇà ½Ã ¹®Á¦¾øÀÌ ¸Ş½Ã¸¦ ·ÎµåÇÏ±â À§ÇØ FSoftObjectPath¸¦ »ç¿ëÇØ ºñµ¿±â ·Îµù 
+		// ì—ë””í„° ì‹¤í–‰ ì‹œ ë¬¸ì œì—†ì´ ë©”ì‹œë¥¼ ë¡œë“œí•˜ê¸° ìœ„í•´ FSoftObjectPathë¥¼ ì‚¬ìš©í•´ ë¹„ë™ê¸° ë¡œë”© 
 		FSoftObjectPath MeshPath(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny"));
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
@@ -509,7 +501,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 
 		if (LoadedMesh)
 		{
-			// ½ºÄÌ·¹Å» ¸Ş½Ã¸¦ »ç¿ëÇÒ °æ¿ì SetSkeletalMesh() »ç¿ë
+			// ìŠ¤ì¼ˆë ˆíƒˆ ë©”ì‹œë¥¼ ì‚¬ìš©í•  ê²½ìš° SetSkeletalMesh() ì‚¬ìš©
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 		}
 	}
@@ -522,7 +514,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 
 		if (LoadedMesh)
 		{
-			m_pMeshCom->SetSkeletalMesh(LoadedMesh);  // SkeletalMesh´Â Skel_MeshComÀ» »ç¿ë
+			m_pMeshCom->SetSkeletalMesh(LoadedMesh);  // SkeletalMeshëŠ” Skel_MeshComì„ ì‚¬ìš©
 			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("I'm Here")));
 		}
 	}
@@ -560,22 +552,71 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		}
 	}
 }
+//íˆíŠ¸ë°•ìŠ¤ ë™ì  ìƒì„±
+void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
+{
+	// 1. UBoxComponentë¥¼ ë™ì ìœ¼ë¡œ ìƒì„±
+	UBoxComponent* HitBox = NewObject<UBoxComponent>(this);
 
+	if (HitBox)
+	{
+		// ì´ë¦„ ì„¤ì •
+		HitBox->Rename(TEXT("Hitbox"));
 
-/* //³ªÁß¿¡ Å×½ºÅÍ¿¡
+		// RegisterComponent()ë¡œ ì—”ì§„ì— ë“±ë¡ (ê¼­ ë„£ì–´ì•¼ í•¨)
+		HitBox->RegisterComponent();
+		HitBox->OnComponentBeginOverlap.AddDynamic(this, &AN_Graduation_projectCharacter::OnHitboxOverlap);
+		// ì†Œì¼“ì— ë¶™ì´ê¸°
+		HitBox->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, SocketName);
+		//í¬ê¸° ì„¤ì •
+		HitBox->SetBoxExtent(FVector(30.f, 20.f, 10.f));
+		// ì¶©ëŒ ì„¤ì • (QueryOnly-> ë¬¼ë¦¬ì¶©ëŒ ë¬´ì‹œí•˜ê³  ì˜¤ë²„ë©ë§Œ ì²˜ë¦¬)
+		HitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		//ì¶©ëŒ ì±„ë„
+		HitBox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+		//ëª¨ë“  ì¶©ëŒ ë¬´ì‹œ
+		HitBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		//í”Œë ˆì´ì–´ì—ë§Œ ë°˜ì‘
+		HitBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+		HitBox->SetGenerateOverlapEvents(true);
+
+		HitBox->SetHiddenInGame(false);
+
+		PlayerSkillComponent->SetHitBox(HitBox);
+		UE_LOG(LogTemp, Warning, TEXT("papago hHitBox Address: %p"), HitBox);
+
+		PlayerSkillComponent->HideHitBox(NomalSkill);
+
+	}
+
+}
+void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
+{
+	AActor* MyCharacter = Cast<AActor>(UGameplayStatics::GetPlayerCharacter(this, 0));
+	if (PlayerSkillComponent->CanUseNomalSkill || PlayerSkillComponent->CanUseSpecialSkill)
+	{
+		if (OtherActor != MyCharacter) {
+			float Damage = PlayerSkillComponent->DamageAmount;
+			UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr);
+
+			UE_LOG(LogTemp, Warning, TEXT("ë°ë¯¸ì§€ ì¤Œ! hit %s for %.1f damage."), *OtherActor->GetName(), PlayerSkillComponent->DamageAmount);
+		}
+	}
+}
+/* //ë‚˜ì¤‘ì— í…ŒìŠ¤í„°ì—
 void AN_Graduation_projectCharacter::DealDamageToPlayer()
 {
 	UE_LOG(LogTemp, Error, TEXT("50 Damage"));
 
-	//0¹ø ÇÃ·¹ÀÌ¾î¸¦ °¡Á®¿Â´Ù
+	//0ë²ˆ í”Œë ˆì´ì–´ë¥¼ ê°€ì ¸ì˜¨ë‹¤
 	ACharacter* TargetCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	float DamageAmount = 50.0f;
-	// TargetCharacter¿¡¼­ GetController¸¦ È£Ãâ
+	// TargetCharacterì—ì„œ GetControllerë¥¼ í˜¸ì¶œ
 	AController* InstigatorController = TargetCharacter->GetController();
-	AActor* DamageCauser = this; // µ¥¹ÌÁö¸¦ ÁÖ´Â ¾×ÅÍ
-	TSubclassOf<UDamageType> DamageType = UDamageType::StaticClass(); // ±âº» µ¥¹ÌÁö Å¸ÀÔ
+	AActor* DamageCauser = this; // ë°ë¯¸ì§€ë¥¼ ì£¼ëŠ” ì•¡í„°
+	TSubclassOf<UDamageType> DamageType = UDamageType::StaticClass(); // ê¸°ë³¸ ë°ë¯¸ì§€ íƒ€ì…
 
-	// µ¥¹ÌÁö Àû¿ë
+	// ë°ë¯¸ì§€ ì ìš©
 	UGameplayStatics::ApplyDamage(TargetCharacter, DamageAmount, InstigatorController, DamageCauser, DamageType);
 
 }

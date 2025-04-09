@@ -6,6 +6,7 @@
 #include "TimerManager.h"
 #include "CharacterStateComponent.h" //state
 #include "EngineUtils.h"
+#include "N_Graduation_project/N_Graduation_projectCharacter.h"
 
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
@@ -22,29 +23,13 @@ void UPlayerSkillComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ACharacter* PlayerCharacter = GetWorld()->GetFirstPlayerController()->GetCharacter();
-	APawn* PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-
-	if (PlayerPawn)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Slave PlayerPawn"));
-
-		HitBox = PlayerPawn->FindComponentByClass<UBoxComponent>();
-		Arrow = PlayerPawn->FindComponentByClass<UArrowComponent>();
-
-		if (HitBox)
-		{
-			HitBox->SetVisibility(false);
-		}
-
-		if (Arrow)
-		{
-			Arrow->SetVisibility(false);
-		}
-	}
+}
+void UPlayerSkillComponent::SetHitBox(UBoxComponent* InHitBox)
+{
+	PlayerHitBox = InHitBox;
+	UE_LOG(LogTemp, Warning, TEXT("papago PlayerHitBox Address: %p"), PlayerHitBox);
 
 }
-
 /* 스킬 관련 */
 void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
 {
@@ -81,19 +66,8 @@ void UPlayerSkillComponent::NomalCooldown()
 	auto StatComponent = GetOwner()->FindComponentByClass<UMyPlayerStatComponent>();
 	if (StatComponent && StatComponent->HUDWidget)
 	{
-		StatComponent->HUDWidget->CanNomal= CanUseNomalSkill;
+		StatComponent->HUDWidget->CanNomal = CanUseNomalSkill;
 	}
-	/*if (MyCharacterWidget)
-	{
-		MyCharacterWidget->CanNomal = CanUseNomalSkill;
-		UE_LOG(LogTemp, Warning, TEXT("toto CanNomal is %s"), MyCharacterWidget->CanNomal ? TEXT("true") : TEXT("false"));
-
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("toto MyCharacterWidget is nullptr!"));
-	}*/
-
 
 	UE_LOG(LogTemp, Log, TEXT("Kakao NomalCooldown"));
 }
@@ -105,67 +79,69 @@ void UPlayerSkillComponent::SpecialCooldown()
 	{
 		StatComponent->HUDWidget->CanSpecial = CanUseNomalSkill;
 	}
-
-	//UE_LOG(LogTemp, Warning, TEXT("toto CanSpecial is %s"), MyCharacterWidget->CanSpecial ? TEXT("true") : TEXT("false"));
 }
 
-/* 히트박스 관련 */
 void UPlayerSkillComponent::SettingHitBox(const FSkillData& SkillData)
 {
-	if (!OnceHitBox && HitBox)
+	if (!OnceHitBox && PlayerHitBox)
 	{
 		// 히트박스 크기 및 위치 설정
 		FVector NewBoxExtent = FVector(SkillData.SkillTypeSizeX, SkillData.SkillTypeSizeY, 100);
-		HitBox->SetBoxExtent(NewBoxExtent);
+		PlayerHitBox->SetBoxExtent(NewBoxExtent);
 
-		FVector NewLocation = HitBox->GetRelativeLocation();
+		FVector NewLocation = PlayerHitBox->GetRelativeLocation();
 		NewLocation.X += SkillData.SkillTypeSizeX;
-		HitBox->SetRelativeLocation(NewLocation);
+		PlayerHitBox->SetRelativeLocation(NewLocation);
 
 		OnceHitBox = true;
 	}
 }
 void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 {
-	if (HitBox && Arrow)
+	if (PlayerHitBox)
 	{
-		HitBox->SetVisibility(true);
-		Arrow->SetVisibility(true);
+		PlayerHitBox->SetVisibility(true);
+		PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 키기
 
-		// 로그 추가: 활성화된 히트박스와 화살의 상태 확인
-	//	UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow"));
+		UE_LOG(LogTemp, Warning, TEXT("kakao On OnHitBox"));
+		UE_LOG(LogTemp, Warning, TEXT("papago On PlayerHitBox  Address: %p"), PlayerHitBox);
+
 	}
 	else
 	{
-		// HitBox나 Arrow가 없는 경우 로그 추가
-		//UE_LOG(LogTemp, Error, TEXT("Failed to find HitBox or Arrow!"));
+		UE_LOG(LogTemp, Error, TEXT("gugugu Failed to find HitBox "));
+		UE_LOG(LogTemp, Warning, TEXT("papago On Failed PlayerHitBox Address: %p"), PlayerHitBox);
+
 	}
 }
-void UPlayerSkillComponent::HideHitBox()
+void UPlayerSkillComponent::HideHitBox(const FString& SkillID)
 {
-	//UE_LOG(LogTemp, Error, TEXT("HideHitBox() called!"));
-
-	if (HitBox && Arrow)
+	FSkillData SkillData;
+	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
 	{
-		HitBox->SetVisibility(false);
-		Arrow->SetVisibility(false);
-		// 로그 추가: 히트박스와 화살이 숨겨졌는지 확인
-		//UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow hidden."));
+		return;
 	}
-	else {
-		//	UE_LOG(LogTemp, Warning, TEXT("No HitBox and Arrow hidden."));
+	UE_LOG(LogTemp, Warning, TEXT("No SkillID: %s"), *SkillID);
 
+		distance = MeasureDistanceToMonster();
+
+	if (distance > SkillData.SkillRange || distance <= 0)
+	{
+		PlayerHitBox->SetVisibility(false);  // 자식까지 숨기기
+		PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
+		UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow hidden."));
+		UE_LOG(LogTemp, Warning, TEXT("papago hidden PlayerHitBox  Address: %p"), PlayerHitBox);
 	}
 }
-
 
 AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
 {
+	//지삐티니
 	if (!GetWorld()) return nullptr;
 
-	AActor* ClosestMonster = nullptr;
-	float MinDistance = FLT_MAX;
-	float MaxDotProduct = -1.0f; // 정면과의 유사도 (1에 가까울수록 정면 방향)
+	AActor* ClosestMonster = nullptr;//몬스터를 담을 변수
+	float MinDistance = FLT_MAX;//현재까지 찾은 몬스터 중 가장 가까운 거리
+	float MaxDotProduct = -1.0f; // 정면(1에 가까울수록 정면 방향)
 
 	AActor* Owner = GetOwner();
 	if (!Owner) return nullptr;
@@ -173,7 +149,7 @@ AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
 	FVector PlayerLocation = Owner->GetActorLocation();
 	FVector PlayerForward = Owner->GetActorForwardVector(); // 플레이어 정면 방향
 
-	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+	for (TActorIterator<AActor> It(GetWorld()); It; ++It) //월드에 존재하는 모든 AActor를 순회하며 Monster 태그 확인
 	{
 		AActor* Actor = *It;
 		if (Actor && Actor->ActorHasTag(FName("Monster")))
@@ -214,11 +190,8 @@ float UPlayerSkillComponent::MeasureDistanceToMonster() const
 }
 
 /* 스킬 실행 */
-void UPlayerSkillComponent::VisibleHitBox(const FString& SkillID)
+void UPlayerSkillComponent::VisibleShapeBox(const FString& SkillID)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("Yes NomalSkillType"));
-//	SkillAnimation("Skill_Slash");
-
 	FSkillData SkillData;
 	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
 	{
@@ -227,39 +200,22 @@ void UPlayerSkillComponent::VisibleHitBox(const FString& SkillID)
 		return;
 	}
 
-	distance = MeasureDistanceToMonster();
-	UE_LOG(LogTemp, Warning, TEXT("Distance to Monster: %f"), distance);
-
-	//	히트박스 처리 (범위 내 스킬)
-	if (distance <= SkillData.SkillRange)
+	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
 	{
-		//SkillAnimation(SkillData.SkillNameID);
-
-		UE_LOG(LogTemp, Error, TEXT("distance: %f, SkillRange: %f"), distance, SkillData.SkillRange);
-
-		if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
-		{
-			SettingHitBox(SkillData);  // 히트박스 초기화
-			OnHitBox(SkillData);    // 히트박스 활성화
-			UE_LOG(LogTemp, Warning, TEXT("kakao On OnHitBox"));
-
-		}
-		else if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
-		{
-			//	 Sphere 관련 처리 추가
-		}
+		SettingHitBox(SkillData);  // 히트박스 초기화
+		OnHitBox(SkillData);    // 히트박스 활성화
 	}
-	else {
-		FTimerHandle  HitboxEnd;
-		GetWorld()->GetTimerManager().SetTimer(HitboxEnd, this, &UPlayerSkillComponent::HideHitBox, SkillData.SkillDuration, false);
-
+	else if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
+	{
+		//	 Sphere 관련 처리 추가
 	}
+
 }
 void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
-{		auto StatComponent = GetOwner()->FindComponentByClass<UMyPlayerStatComponent>();
-
+{
 	UE_LOG(LogTemp, Warning, TEXT("kakao On NomalSkillPlay"));
-
+	distance = MeasureDistanceToMonster();
+	UE_LOG(LogTemp, Warning, TEXT("Distance to Monster: %f"), distance);
 	if (CanUseNomalSkill == true) {
 
 		UE_LOG(LogTemp, Warning, TEXT("kakao On CanUseNomalSkill"));
@@ -272,30 +228,52 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 			return;
 		}
 
-		//스킬 쿨타임
-		CanUseNomalSkill = false;
-		StatComponent->HUDWidget->CanNomal = false;
-	//	StatComponent->HUDWidget->PassedTime = 0.0f;
-		UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
-		if (StatComponent && StatComponent->HUDWidget)
+		if (distance <= SkillData.SkillRange)
 		{
-			StatComponent->HUDWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
-		}
-		//노말 스킬
-		if (SkillID == "Skill_Slash") {
+			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+			MyChar->StartAction();
+
+			UE_LOG(LogTemp, Warning, TEXT("kakao Yes distance"));
+
+			VisibleShapeBox(SkillID);
+			//스킬 쿨타임
+			CanUseNomalSkill = false;
+			auto StatComponent = GetOwner()->FindComponentByClass<UMyPlayerStatComponent>();
+			if (StatComponent && StatComponent->HUDWidget)
+			{
+				StatComponent->HUDWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
+				StatComponent->HUDWidget->CanNomal = false;
+				UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
+			}
 			SkillAnimation(SkillID);
-			UE_LOG(LogTemp, Warning, TEXT("kakao On SkillSlash"));
+
+			//노말 스킬
+		/*	if (SkillID == "Skill_Slash") {
+				SkillAnimation(SkillID);
+				UE_LOG(LogTemp, Warning, TEXT("kakao On SkillSlash"));
+
+			}*/
+
+			//쿨타임
+			FTimerDelegate NomalCooldownEnd;
+			NomalCooldownEnd.BindUObject(this, &UPlayerSkillComponent::NomalCooldown);//바인딩
+			SetSkillTimer(SkillData.SkillCoolTime, NomalCooldownEnd);  // 쿨타임 설정
+			//SetSkillTimer(3.0f, NomalCooldownEnd);  // 슬래시 쿨타임 너무 짧아서 테스트용
+		}
+		else {
+
+			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+			MyChar->EndAction();
+			UE_LOG(LogTemp, Warning, TEXT("kakao no distance"));
 
 		}
-		if (SkillID == "Skill_FireBall") {
-			SkillAnimation(SkillID);
-			UE_LOG(LogTemp, Warning, TEXT("kakao On FireBall"));
+	}
+	else {
 
-		}
-		FTimerDelegate NomalCooldownEnd;
-		NomalCooldownEnd.BindUObject(this, &UPlayerSkillComponent::NomalCooldown);//바인딩
-		SetSkillTimer(SkillData.SkillCoolTime, NomalCooldownEnd);  // 쿨타임 설정
-		//SetSkillTimer(3.0f, NomalCooldownEnd);  // 슬래시 쿨타임 너무 짧아서 테스트용
+		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+		MyChar->EndAction();
+		UE_LOG(LogTemp, Warning, TEXT("kakao No CanUseNomalSkill"));
+
 	}
 }
 
@@ -360,13 +338,20 @@ void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 		}
 	}
 }
-
 void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Skill Animation Ended: %s"), *Montage->GetName());
-	AActor* OwnerActor = GetOwner();
-
+	if (Montage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Skill Animation Ended: %s"), *Montage->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Skill Animation Ended: Montage is null."));
+	}
+	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+	MyChar->EndAction();
 }
+
 
 void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 {

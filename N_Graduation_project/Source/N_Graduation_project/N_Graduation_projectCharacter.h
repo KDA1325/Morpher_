@@ -155,33 +155,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void On_invincibility();
 
-
-	// 실제 위젯 인스턴스
-	/*private:
-		TSubclassOf<UUserWidget> CharacterHealthBarWidgetClass;
-		UUserWidget* CharacterHealthBarWidget;
-	void SpawnWidget();
-*/
-	//UFUNCTION()
-	//void UpdateHUD();
-
-	//UPROPERTY(EditDefaultsOnly, Category = "UI")
-	//TSubclassOf<class UUserWidget> HUDClass;
-
-	//UPROPERTY()
-	//class UUserWidget* HUDWidget;
-
-
-	// 캐릭터 변신 메소드
-	/*UFUNCTION(EditAnywhere, BlueprintCallable, Category = "Stat")
-	void TransformToEntity(int32 EntityID);*/
-
 	// 설정한 GroupID를 키 값으로 가져온 데이터를 적용하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Stat")
 	void UpdateEntityData();
-	//// 변신 후 현재 체력 업데이트
-	//UFUNCTION(EditAnywhere, BlueprintCallable, Category = "Stat")
-	//void UpdateHealth(float NewHealth);
+
 
 	// 현재 캐릭터 데이터 저장
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
@@ -197,8 +174,8 @@ public:
 
 	int32 maxHp;
 	int32 moveSpeed;
-	FString normalSkill;
-	FString specialSkill;
+	FString NomalSkill;
+	FString SpecialSkill;
 	FString presetReference;
 
 	int32 currentSpeed;
@@ -218,6 +195,19 @@ public:
 //	void DealDamageToPlayer();
 
 	bool bIsMoving;
+
+	// 동적으로 히트박스를 소켓에 부착하는 함수 선언
+	UFUNCTION(BlueprintCallable, Category = "HitBox")
+	void SpawnHitBoxAtSocket(FName SocketName);
+
+	UFUNCTION()
+	void OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
+
 
 };
 
