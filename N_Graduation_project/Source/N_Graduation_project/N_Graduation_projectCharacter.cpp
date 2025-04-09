@@ -359,7 +359,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 	UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
 	if (PlayerSkillComponent->IsDefending == true) {
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
-		//IsInvincible = false;
+		IsInvincible = true;
 		return 0.0f;//무적상태라면 리턴.
 
 	}
