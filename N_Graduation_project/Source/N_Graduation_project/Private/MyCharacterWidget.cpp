@@ -8,6 +8,8 @@ void UMyCharacterWidget::NativeConstruct()
 	// 머티리얼 초기화
 	UImage* SkillIcon1 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_1")));
 	UImage* SkillIcon2 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_2")));
+	SkillIcon2->SetVisibility(ESlateVisibility::Hidden);
+
 	if (SkillIcon1)
 	{
 		CooldownMID1 = SkillIcon1->GetDynamicMaterial();
@@ -22,6 +24,7 @@ void UMyCharacterWidget::NativeConstruct()
 		if (CooldownMID2)
 		{
 			CooldownMID2->SetScalarParameterValue(TEXT("percent"), 1.0f);
+
 		}
 	}
 
@@ -110,6 +113,7 @@ void UMyCharacterWidget::UpdateSkillCooldown(float cooltime, bool nomal, bool sp
 void UMyCharacterWidget::SetSkillIcon() {
 	UImage* SkillIcon1 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_1")));
 	UImage* SkillIcon2 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_2")));
+	SkillIcon2->SetVisibility(ESlateVisibility::Visible);
 
 	if (SkillIcon1 && SkillIcon2)
 	{
@@ -124,7 +128,8 @@ void UMyCharacterWidget::SetSkillIcon() {
 				//CooldownMID2->SetScalarParameterValue(TEXT("Opacity"), 0.0f); // 또는 Alpha
 				// 브러시에 머티리얼 인스턴스 설정
 				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
-				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
+				//SkillIcon2->SetBrushFromMaterial(CooldownMID2);
+				SkillIcon2->SetVisibility(ESlateVisibility::Hidden);
 
 			}
 		}
