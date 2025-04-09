@@ -114,24 +114,15 @@ void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 
 	}
 }
-void UPlayerSkillComponent::HideHitBox(const FString& SkillID)
+void UPlayerSkillComponent::HideHitBox()
 {
-	FSkillData SkillData;
-	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
-	{
-		return;
-	}
-	UE_LOG(LogTemp, Warning, TEXT("No SkillID: %s"), *SkillID);
+	PlayerHitBox->SetVisibility(false);  // 자식까지 숨기기
+	PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
+	UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow hidden."));
+	UE_LOG(LogTemp, Warning, TEXT("papago hidden PlayerHitBox  Address: %p"), PlayerHitBox);
 
-		distance = MeasureDistanceToMonster();
-
-	if (distance > SkillData.SkillRange || distance <= 0)
-	{
-		PlayerHitBox->SetVisibility(false);  // 자식까지 숨기기
-		PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
-		UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow hidden."));
-		UE_LOG(LogTemp, Warning, TEXT("papago hidden PlayerHitBox  Address: %p"), PlayerHitBox);
-	}
+	// 데미지 체크 초기화
+	DamagedActors.Empty();
 }
 
 AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
@@ -193,12 +184,7 @@ float UPlayerSkillComponent::MeasureDistanceToMonster() const
 void UPlayerSkillComponent::VisibleShapeBox(const FString& SkillID)
 {
 	FSkillData SkillData;
-	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
-	{
-		//	UE_LOG(LogTemp, Warning, TEXT("No UABGameSingleton"));
-
-		return;
-	}
+	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData)) return;
 
 	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
 	{
@@ -221,12 +207,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		UE_LOG(LogTemp, Warning, TEXT("kakao On CanUseNomalSkill"));
 
 		FSkillData SkillData;
-		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
-		{
-			//	UE_LOG(LogTemp, Warning, TEXT("No UABGameSingleton"));
-
-			return;
-		}
+		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData)) return;
 
 		if (distance <= SkillData.SkillRange)
 		{
@@ -343,6 +324,7 @@ void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage, bool bInter
 	if (Montage)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Skill Animation Ended: %s"), *Montage->GetName());
+		HideHitBox();
 	}
 	else
 	{

@@ -68,13 +68,16 @@ public:
 	void SettingHitBox(const FSkillData& SkillData); // 히트박스 초기화
 	void OnHitBox(const FSkillData& SkillData);     
 	// 히트박스 활성화
-	void HideHitBox(const FString& SkillID);     // 히트박스 비활성화
+	void HideHitBox();     // 히트박스 비활성화
 	void SkillAnimation(const FString& EffectID);
 	void EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted);
 	void SkillEffect(const FString& SkillNameID);
 
 	UPROPERTY(BlueprintReadOnly)
 	float DamageAmount;
+	
+	UPROPERTY()
+	TSet<AActor*> DamagedActors; // 데미지를 받은 몬스터 저장
 
 protected:
 	virtual void BeginPlay() override;

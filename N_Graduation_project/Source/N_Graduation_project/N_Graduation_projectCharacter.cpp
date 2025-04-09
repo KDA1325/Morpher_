@@ -140,7 +140,6 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
 	FVector Velocity = GetVelocity();
 	float Speed = Velocity.Size(); // 현재 속도
-	PlayerSkillComponent->HideHitBox(NomalSkill);
 
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	if (!StateComp)
@@ -585,24 +584,32 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		PlayerSkillComponent->SetHitBox(HitBox);
 		UE_LOG(LogTemp, Warning, TEXT("papago hHitBox Address: %p"), HitBox);
 
-		PlayerSkillComponent->HideHitBox(NomalSkill);
+		PlayerSkillComponent->HideHitBox();
 
 	}
 
 }
-void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
+void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	AActor* MyCharacter = Cast<AActor>(UGameplayStatics::GetPlayerCharacter(this, 0));
 	if (PlayerSkillComponent->CanUseNomalSkill || PlayerSkillComponent->CanUseSpecialSkill)
 	{
-		if (OtherActor != MyCharacter) {
-			float Damage = PlayerSkillComponent->DamageAmount;
-			UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr);
-
-			UE_LOG(LogTemp, Warning, TEXT("데미지 줌! hit %s for %.1f damage."), *OtherActor->GetName(), PlayerSkillComponent->DamageAmount);
+		if (OtherActor != MyCharacter)
+		{
+			if (!PlayerSkillComponent->DamagedActors.Contains(OtherActor)) //데미지를 받은 적 있는지 확인 후
+			{
+				float Damage = PlayerSkillComponent->DamageAmount;//데미지받은 몬스터 저장?
+				UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr);
+				if (PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false) 
+				{
+					PlayerSkillComponent->DamagedActors.Add(OtherActor);
+					UE_LOG(LogTemp, Warning, TEXT("DamagedActors에 추가된 액터: %s"), *OtherActor->GetName());
+				}
+			}
 		}
 	}
 }
+
 /* //나중에 테스터에
 void AN_Graduation_projectCharacter::DealDamageToPlayer()
 {
