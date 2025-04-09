@@ -9,6 +9,8 @@
 UBTD_SkillCondition::UBTD_SkillCondition()
 {
     NodeName = TEXT("Skill Condition");
+
+    ObserverAborts = EBTFlowAbortMode::Both;
 }
 
 bool UBTD_SkillCondition::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
@@ -32,6 +34,8 @@ bool UBTD_SkillCondition::CalculateRawConditionValue(UBehaviorTreeComponent& Own
         bool bASkillCondition = (Distance <= A_SkillRange);
         bool bBSkillCondition = (Distance <= B_SkillRange);
 
+        UE_LOG(LogTemp, Warning, TEXT("bASkillCondition: %s"), bASkillCondition ? TEXT("True") : TEXT("False"));
+        UE_LOG(LogTemp, Warning, TEXT("bBSkillCondition: %s"), bBSkillCondition ? TEXT("True") : TEXT("False"));
         return (bASkillCondition || bBSkillCondition);
     }
 

@@ -16,6 +16,9 @@ class N_GRADUATION_PROJECT_API UBTD_SkillCondition : public UBTDecorator
 public:
     UBTD_SkillCondition();
 
+    UPROPERTY(EditAnywhere, Category = "Decorator")
+    TEnumAsByte<EBTFlowAbortMode::Type> ObserverAborts;
+
 protected:
     // 이 함수에서 조건을 평가
     virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;

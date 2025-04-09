@@ -70,25 +70,53 @@ void AMyAIController::OnPossess(APawn* InPawn)
             // Blackboard 초기화 후 키 값 설정
             if (UseBlackboard(BBMonster, BlackboardComp) && BlackboardComp)
             {
-                // 키 값을 Blackboard에 저장
-                BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
-                BlackboardComp->SetValueAsFloat(BBKEY_NORMALSKILLRANGE, PossessedCharacter->GetNormalSkillRange());
-                BlackboardComp->SetValueAsFloat(BBKEY_SPECIALSKILLRANGE, PossessedCharacter->GetSpecialSkillRange());
+                // 짧은 지연 후 BlackBoard 업데이트  
+                FTimerHandle TempHandle;
+                GetWorld()->GetTimerManager().SetTimer(TempHandle, [this, PossessedCharacter]() {
 
-                // 스킬 사용 조건 플로우에 사용할 A 스킬, B 스킬 정의
-                DefineSkillPriority(PossessedCharacter);
+                    // 키 값을 Blackboard에 저장
+                    BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
+                    BlackboardComp->SetValueAsFloat(BBKEY_NORMALSKILLRANGE, PossessedCharacter->GetNormalSkillRange());
+                    BlackboardComp->SetValueAsFloat(BBKEY_SPECIALSKILLRANGE, PossessedCharacter->GetSpecialSkillRange());
 
+                    // 스킬 사용 조건 플로우에 사용할 A 스킬, B 스킬 정의
+                    DefineSkillPriority(PossessedCharacter);
+                    }, 0.1f, false);
             }
             else
             {
                 UE_LOG(LogTemp, Error, TEXT("UseBlackboard failed in OnPossess"));
             }
+            
+
+            //// Possess 후 짧은 지연 후 BlackBoard 업데이트  
+            //FTimerHandle TempHandle;
+            //GetWorld()->GetTimerManager().SetTimer(TempHandle, [this, PossessedCharacter]()
+            //{
+            //        // Blackboard 초기화 후 키 값 설정
+            //        if (UseBlackboard(BBMonster, BlackboardComp) && BlackboardComp)
+            //        {
+            //            // 키 값을 Blackboard에 저장
+            //            BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
+            //            BlackboardComp->SetValueAsFloat(BBKEY_NORMALSKILLRANGE, PossessedCharacter->GetNormalSkillRange());
+            //            BlackboardComp->SetValueAsFloat(BBKEY_SPECIALSKILLRANGE, PossessedCharacter->GetSpecialSkillRange());
+
+            //            // 스킬 사용 조건 플로우에 사용할 A 스킬, B 스킬 정의
+            //            DefineSkillPriority(PossessedCharacter);
+
+            //        }
+            //        else
+            //        {
+            //           UE_LOG(LogTemp, Error, TEXT("UseBlackboard failed in OnPossess"));
+            //        }
+            //}, 0.01f, false);
+            //
+            UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s"), *InPawn->GetName());
         }
         else
         {
             UE_LOG(LogTemp, Error, TEXT("Casting to AEntityPreset failed in OnPossess"));
         }
-        UE_LOG(LogTemp, Warning, TEXT("Possessed Pawn: %s"), *InPawn->GetName());
     }
     else
     {

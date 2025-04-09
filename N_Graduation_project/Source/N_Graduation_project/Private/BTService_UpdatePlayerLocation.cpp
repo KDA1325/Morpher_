@@ -64,6 +64,29 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 		BlackboardComp->SetValueAsFloat(BBKEY_DISTANCE, DistanceToPlayer);
 	}
 
+	// Blackboard로부터 값 읽어오기
+	float A_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_ASKILLRANGE);
+	float B_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_BSKILLRANGE);
+	//bool bA_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BASKILLAVAILABLE);
+	//bool bB_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BBSKILLAVAILABLE);
+
+	// 스킬 쿨타임이 구현 되어있지 않은 관계로 Range 비교 결과로만 스킬 시전 
+	// 조건 계산:
+	// A스킬 조건: Distance <= ARange AND AAvailable true
+	// B스킬 조건: Distance <= BRange AND BAvailable true
+	/*bool bASkillCondition = (Distance <= A_SkillRange) && bA_SkillAvailable;
+	bool bBSkillCondition = (Distance <= B_SkillRange) && bB_SkillAvailable;*/
+
+	bool bASkillCondition = (DistanceToPlayer <= A_SkillRange);
+	bool bBSkillCondition = (DistanceToPlayer <= B_SkillRange);
+
+	BlackboardComp->SetValueAsBool(BBKEY_BASKILLCONDITION, bASkillCondition);
+	BlackboardComp->SetValueAsBool(BBKEY_BBSKILLCONDITION, bBSkillCondition);
+
+	UE_LOG(LogTemp, Warning, TEXT("bASkillCondition: %s"), bASkillCondition ? TEXT("True") : TEXT("False"));
+	UE_LOG(LogTemp, Warning, TEXT("bBSkillCondition: %s"), bBSkillCondition ? TEXT("True") : TEXT("False"));
+
+
 	//// AttackType에 따라 최소 거리 값 설정
 	//uint8 AttackType = BlackboardComp->GetValueAsInt(BBKEY_ATTACKTYPE);
 

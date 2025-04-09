@@ -285,6 +285,7 @@ void AEntityPreset::ShowHitBox()
 	// HitBox 활성화 
 	NormalSkillHitBox->SetHiddenInGame(false);
 	NormalSkillHitBox->SetVisibility(true);
+	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기
 	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
 }
 
@@ -293,6 +294,7 @@ void AEntityPreset::HideHitBox()
 	// HitBox 비활성화 
 	NormalSkillHitBox->SetHiddenInGame(true);
 	NormalSkillHitBox->SetVisibility(false);
+	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 끄기
 	UE_LOG(LogTemp, Warning, TEXT("Hide HitBox"));
 }
 
@@ -305,8 +307,7 @@ void AEntityPreset::OnHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AA
 		ACharacter* PlayerCharacter = Cast<ACharacter>(OtherActor);
 		if (PlayerCharacter)
 		{
-			// 스킬 효과에 따른 대미지 적용 (예시: 50.0f 대미지)
-
+			// 스킬 효과에 따른 대미지 적용
 			float DamageToApply = NormalSkillEffectData.EffectValue01;
 
 			UGameplayStatics::ApplyDamage(OtherActor, DamageToApply, GetController(), this, nullptr);
