@@ -67,11 +67,6 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	//// AttackType에 따라 최소 거리 값 설정
 	//uint8 AttackType = BlackboardComp->GetValueAsInt(BBKEY_ATTACKTYPE);
 
-	//if (AttackType == (uint8)EnumAttackType::Melee)
-	//{
-
-	//}
-
 	//// 최소 거리
 	//float MinDistance = BlackboardComp->GetValueAsFloat(BBKEY_MINDISTANCE);
 

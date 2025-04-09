@@ -67,13 +67,16 @@ void AMyAIController::OnPossess(APawn* InPawn)
         // 캐스팅 실패 시 널 체크
         if (PossessedCharacter)
         {
-            // Blackboard 초기화 후 AttackType 설정
+            // Blackboard 초기화 후 키 값 설정
             if (UseBlackboard(BBMonster, BlackboardComp) && BlackboardComp)
             {
-                // EnumAttackType 값을 uint8로 캐스팅하여 Blackboard에 저장
+                // 키 값을 Blackboard에 저장
                 BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
-                BlackboardComp->SetValueAsFloat(BBKEY_NORMALSKILLRANGE, (uint8)PossessedCharacter->GetNormalSkillRange());
-                BlackboardComp->SetValueAsFloat(BBKEY_SPECIALSKILLRANGE, (uint8)PossessedCharacter->GetSpecialSkillRange());
+                BlackboardComp->SetValueAsFloat(BBKEY_NORMALSKILLRANGE, PossessedCharacter->GetNormalSkillRange());
+                BlackboardComp->SetValueAsFloat(BBKEY_SPECIALSKILLRANGE, PossessedCharacter->GetSpecialSkillRange());
+
+                // 스킬 사용 조건 플로우에 사용할 A 스킬, B 스킬 정의
+                DefineSkillPriority(PossessedCharacter);
 
             }
             else
@@ -99,5 +102,36 @@ void AMyAIController::OnPossess(APawn* InPawn)
 void AMyAIController::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+}
 
+// 스킬 사용 조건 플로우에 사용할 A 스킬, B 스킬 정의
+void AMyAIController::DefineSkillPriority(AEntityPreset* PossessedCharacter)
+{
+    float NormalSkillRange = BlackboardComp->GetValueAsFloat(BBKEY_NORMALSKILLRANGE);
+    float SpecialSkillRange = BlackboardComp->GetValueAsFloat(BBKEY_SPECIALSKILLRANGE);
+
+    //FString ASkillID, BSkillID;
+    float A_SkillRange, B_SkillRange;
+
+    // A스킬, B스킬 정의를 위한 Skill Range 비교 
+    if (NormalSkillRange <= SpecialSkillRange)
+    {
+        A_SkillRange = NormalSkillRange;
+        B_SkillRange = SpecialSkillRange;
+
+        //ASkillID = PossessedCharacter->NormalSkillData.SkillNameID;
+        //BSkillID = PossessedCharacter->SpecialSkillData.SkillNameID;
+    }
+    else
+    {
+        A_SkillRange = SpecialSkillRange;
+        B_SkillRange = NormalSkillRange;
+
+        //ASkillID = PossessedCharacter->NormalSkillData.SkillNameID;
+        //BSkillID = PossessedCharacter->SpecialSkillData.SkillNameID;
+    }
+
+    BlackboardComp->SetValueAsFloat(BBKEY_ASKILLRANGE, A_SkillRange);
+    BlackboardComp->SetValueAsFloat(BBKEY_BSKILLRANGE, B_SkillRange);
+    
 }

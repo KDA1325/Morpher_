@@ -7,6 +7,9 @@
 #include "GameFramework/Character.h"
 #include "MyAIController.generated.h"
 
+// 순환 참조를 방지하기 위한 전방 선언 
+class AEntityPreset;
+
 UCLASS()
 class N_GRADUATION_PROJECT_API AMyAIController : public AAIController
 {
@@ -28,6 +31,8 @@ protected:
 public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
+
+    void DefineSkillPriority(AEntityPreset* PossessedCharacter);
 
 private:
     UPROPERTY()

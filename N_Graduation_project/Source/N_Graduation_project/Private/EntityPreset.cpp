@@ -152,11 +152,12 @@ void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 		*InEntityData.EntityName, InEntityData.HP, InEntityData.MoveSpeed);
 
 	// EntityData에 저장된 Normal Skill 식별자를 통해 스킬 데이터 가져옴 
-	FSkillData NormalSkillData;
 	if (UABGameSingleton::Get().GetSkillDataBySkillID(InEntityData.NormalSkill, NormalSkillData))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
 			*NormalSkillData.SkillNameID, (uint8)NormalSkillData.SkillType, NormalSkillData.SkillRange);
+
+		SetNormalSkillRange(NormalSkillData.SkillRange);
 
 		// SkillType이 HitBox라면 
 		if (NormalSkillData.SkillType == EnumSkillType::HitBox)
@@ -171,44 +172,63 @@ void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 				*NormalSkillEffectData.SkillNameID, (uint8)NormalSkillEffectData.EffectType, NormalSkillEffectData.EffectValue01);
 		}
 	}
+	
+	// EntityData에 저장된 Special Skill 식별자를 통해 스킬 데이터 가져옴 
+	if (UABGameSingleton::Get().GetSkillDataBySkillID(InEntityData.SpecialSkill, SpecialSkillData))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
+			*SpecialSkillData.SkillNameID, (uint8)SpecialSkillData.SkillType, SpecialSkillData.SkillRange);
 
-	//// EntityData에 저장된 Normal Skill 식별자를 통해 스킬 데이터 가져옴 
-	//FSkillData NormalSkillData;
-	//if (UABGameSingleton::Get().GetSkillDataBySkillID(InEntityData.NormalSkill, NormalSkillData))
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
-	//		*NormalSkillData.SkillNameID, (uint8)NormalSkillData.SkillType, NormalSkillData.SkillRange);
+		SetSpecialSkillRange(SpecialSkillData.SkillRange);
 
-	//	// SkillType이 HitBox라면 
-	//	if (NormalSkillData.SkillType == EnumSkillType::HitBox)
-	//	{
-	//		SetupHitBoxComponent(NormalSkillData);
-	//	}
-	//}
+		// SkillType이 HitBox라면 
+		if (SpecialSkillData.SkillType == EnumSkillType::HitBox)
+		{
+			SetupHitBoxComponent(SpecialSkillData);
+		}
 
-	//// NormalSkillData에 저장된 SkillNameID 식별자를 통해 스킬 효과 데이터 가져옴
-	//FSkillEffectData NormalSkillEffectData;
-	//if (UABGameSingleton::Get().GetSkillEffectDataTBySkillID(NormalSkillData.SkillNameID, NormalSkillEffectData))
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Effect Data: %s, Effect Type: %d, Effect Value: %f"),
-	//		*NormalSkillEffectData.SkillNameID, (uint8)NormalSkillEffectData.EffectType, NormalSkillEffectData.EffectValue01);
-	//}
+		// SpecialSkillData에 저장된 SkillNameID 식별자를 통해 스킬 효과 데이터 가져옴
+		if (UABGameSingleton::Get().GetSkillEffectDataTBySkillID(SpecialSkillData.SkillNameID, SpecialSkillEffectData))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Effect Data: %s, Effect Type: %d, Effect Value: %f"),
+				*SpecialSkillEffectData.SkillNameID, (uint8)SpecialSkillEffectData.EffectType, SpecialSkillEffectData.EffectValue01);
+		}
+	}
 }
 
 void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 {
 	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
 	{
+		// SkillNameID -> 소켓 이름 매핑 테이블
+		TMap<FString, FName> SkillToSocketMap = {
+			//{ "Skill_Slash", TEXT("SlashSocket") },
+			{ "Skill_Bite", TEXT("BiteHitBox") },
+			//{ "Skill_Charge", TEXT("ChargeSocket") },
+			//{ "Skill_TailSwing", TEXT("TailSocket") },
+			//{ "Skill_FreezeBreath", TEXT("MouthSocket") },
+			//{ "Skill_ArmSwing", TEXT("RightArmSocket") },
+			//{ "Skill_EarthBreaker", TEXT("FootSocket") }
+		};
+
+		FName SocketToAttach = TEXT("DefaultHitBox"); 
+		if (FName* FoundSocket = SkillToSocketMap.Find(SkillData.SkillNameID))
+		{
+			SocketToAttach = *FoundSocket;
+		}
+
 		// 1. HitBoxContainer 생성 및 소켓에 부착
 		if (!HitBoxContainer)
 		{
 			HitBoxContainer = NewObject<USceneComponent>(this, TEXT("HitBoxContainer"));
 			if (HitBoxContainer)
 			{
+				// 컨테이너를 컴포넌트로 등록 
 				HitBoxContainer->RegisterComponent();
+
 				// 스켈레탈 메시의 소켓에 부착
-				HitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("BiteHitBox"));
 				// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
+				HitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketToAttach);
 			}
 		}
 
@@ -221,6 +241,8 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 				NormalSkillHitBox->RegisterComponent();
 				NormalSkillHitBox->AttachToComponent(HitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
 
+				HideHitBox();
+
 				// Overlap 이벤트 바인딩 
 				NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnHitBoxOverlap);
 			}
@@ -231,7 +253,7 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			//// HitBox를 보이도록 설정
 			//NormalSkillHitBox->SetHiddenInGame(false);
 			//NormalSkillHitBox->SetVisibility(true);
-			ShowHitBox(); 
+			//ShowHitBox(); 
 
 			// UBoxComponent는 half extents를 사용
 			// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
@@ -254,7 +276,7 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 
 	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
 	{
-		
+		UE_LOG(LogTemp, Warning, TEXT("Sphere"));
 	}
 }
 
@@ -298,21 +320,42 @@ void AEntityPreset::OnHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AA
 
 EnumAttackType AEntityPreset::GetAttackType()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Get AttackType: %d"), currentAttackType);
+	UE_LOG(LogTemp, Warning, TEXT("Get AttackType: %d"), (uint8)currentAttackType);
 
 	return currentAttackType;
 }
 
 float AEntityPreset::GetNormalSkillRange()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Get Normal Skill Range: %d"), currentNormalSkillRange);
+	UE_LOG(LogTemp, Warning, TEXT("Get Normal Skill Range: %f"), currentNormalSkillRange);
 
 	return currentNormalSkillRange;
 }
 
 float AEntityPreset::GetSpecialSkillRange()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Get Special Skill Range: %d"), currentSpecialSkillRange);
+	UE_LOG(LogTemp, Warning, TEXT("Get Special Skill Range: %f"), currentSpecialSkillRange);
 
 	return currentSpecialSkillRange;
+}
+
+void AEntityPreset::PerformNormalSkill()
+{
+	if (NormalSkillMontage)
+	{
+		if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+		{
+			// 몽타주 재생
+			AnimInst->Montage_Play(NormalSkillMontage);
+			UE_LOG(LogTemp, Warning, TEXT("PerformNormalSkill: Montage played"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("PerformNormalSkill: AnimInstance not found"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("PerformNormalSkill: NormalSkillMontage is not set"));
+	}
 }

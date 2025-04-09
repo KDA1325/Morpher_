@@ -44,7 +44,10 @@ public:
 	float CurrentHP;
 
 	FABEntityData EntityData;
+	FSkillData NormalSkillData;
+	FSkillData SpecialSkillData;
 	FSkillEffectData NormalSkillEffectData;
+	FSkillEffectData SpecialSkillEffectData;
 
 	// HitBox를 위한 컨테이너 컴포넌트 (소켓 기준)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
@@ -58,8 +61,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void SetupHitBoxComponent(FSkillData& SkillData);
 
+	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ShowHitBox();
 
+	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void HideHitBox();
 
 	// 히트박스 Overlap 이벤트 처리 함수
@@ -90,6 +95,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float currentSpecialSkillRange;
+
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* NormalSkillMontage;
 
 public:	
 	// Called every frame
@@ -130,6 +138,10 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	float GetSpecialSkillRange();
+
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void PerformNormalSkill();
+
 // AI Section
 protected:
 	//virtual float GetAIPatrolRadius() override;
