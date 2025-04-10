@@ -11,6 +11,12 @@ UWidgetActor::UWidgetActor()
 	{
 		HUDClass = HUD.Class;
 	}
+    
+    static ConstructorHelpers::FClassFinder<UUserWidget> Pie(TEXT("WidgetBlueprint'/Game/GUI/HUD_PieMenu.HUD_PieMenu_C'"));
+	if (Pie.Succeeded())
+	{
+		PieClass = Pie.Class;
+	}
 }
 
 void UWidgetActor::BeginPlay()
@@ -25,15 +31,16 @@ void UWidgetActor::BeginPlay()
         if (HUDWidget)
         {
             HUDWidget->AddToViewport();
-            UE_LOG(LogTemp, Warning, TEXT("HUDWidget Created and Added to Viewport"));
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("HUDWidget is NULL after CreateWidget"));
         }
     }
-    else
+    
+    if (PieClass)
     {
-        UE_LOG(LogTemp, Error, TEXT("HUDClass is NULL!"));
+        PieWidget = Cast<UPieMenuWidget>(CreateWidget(GetWorld()->GetFirstPlayerController(), PieClass));
+        if (PieWidget)
+        {
+          //  PieWidget->AddToViewport();
+        }
     }
+
 }

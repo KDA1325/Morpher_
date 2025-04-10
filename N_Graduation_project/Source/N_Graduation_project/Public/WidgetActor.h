@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "MyCharacterWidget.h" // 캐릭터 HUD 위젯
+#include "PieMenuWidget.h"
 #include "WidgetActor.generated.h"
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -22,6 +23,12 @@ public:
 
 	UPROPERTY()
 	UMyCharacterWidget* HUDWidget;
+	
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> PieClass;
+
+	UPROPERTY()
+	UPieMenuWidget* PieWidget;
 
 	// 접근용 Getter 함수
 	UMyCharacterWidget* GetHUDWidget() const { return HUDWidget; }
