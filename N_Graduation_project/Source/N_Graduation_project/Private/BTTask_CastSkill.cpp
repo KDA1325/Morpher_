@@ -25,6 +25,8 @@ EBTNodeResult::Type UBTTask_CastSkill::ExecuteTask(UBehaviorTreeComponent& Owner
         return EBTNodeResult::Failed;
     }
 
+    OwnerComp.GetAIOwner()->StopMovement();
+
     AEntityPreset* PossessedEntity = Cast<AEntityPreset>(ControllingPawn);
     if (nullptr == PossessedEntity)
     {
