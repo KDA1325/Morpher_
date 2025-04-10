@@ -282,13 +282,17 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 
 void AEntityPreset::ShowHitBox()
 {
+	float Duration = NormalSkillData.SkillDuration;
+
 	// HitBox 활성화 
 	NormalSkillHitBox->SetHiddenInGame(false);
 	NormalSkillHitBox->SetVisibility(true);
 	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기
 	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
 
-
+	// 유지 시간 이후 HideHitBox 함수 호출  
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::HideHitBox, Duration, false);
 }
 
 void AEntityPreset::HideHitBox()
