@@ -287,6 +287,8 @@ void AEntityPreset::ShowHitBox()
 	NormalSkillHitBox->SetVisibility(true);
 	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기
 	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
+
+
 }
 
 void AEntityPreset::HideHitBox()

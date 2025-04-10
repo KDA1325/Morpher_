@@ -57,6 +57,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	UBoxComponent* NormalSkillHitBox;
 
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	UAnimMontage* NormalSkillMontage;
+
 	// Normal 스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void SetupHitBoxComponent(FSkillData& SkillData);
@@ -95,9 +98,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float currentSpecialSkillRange;
-
-	UPROPERTY(EditAnywhere)
-	UAnimMontage* NormalSkillMontage;
 
 public:	
 	// Called every frame
