@@ -58,5 +58,4 @@ private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* CooldownMID2;
 
-
 };

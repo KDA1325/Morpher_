@@ -1,6 +1,7 @@
 #include "MyPlayerStatComponent.h"
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "MyCharacterWidget.h"
+#include "WidgetActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
 #include "TimerManager.h"
@@ -12,12 +13,18 @@ UMyPlayerStatComponent::UMyPlayerStatComponent()
 	PastMaxHP = 150;
 	CurrentHP = 150;
 	MonsterName = "PlayerCharacter";
+}
 
-	static ConstructorHelpers::FClassFinder<UUserWidget> HUD(TEXT("WidgetBlueprint'/Game/GUI/HUD_Collection.HUD_Collection_C'"));
-	if (HUD.Succeeded())
+UMyCharacterWidget* UMyPlayerStatComponent::GetHUD() const
+{
+	if (AActor* Owner = GetOwner())
 	{
-		HUDClass = HUD.Class;
+		if (UWidgetActor* WidgetActor = Owner->FindComponentByClass<UWidgetActor>())
+		{
+			return WidgetActor->GetHUDWidget();
+		}
 	}
+	return nullptr;
 }
 
 void UMyPlayerStatComponent::InitializeComponent()
@@ -28,20 +35,13 @@ void UMyPlayerStatComponent::InitializeComponent()
 void UMyPlayerStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
 	if (ACharacter* CharacterOwner = Cast<ACharacter>(GetOwner()))
 	{
 		OwnerPlayer = Cast<AN_Graduation_projectCharacter>(CharacterOwner);
 	}
 
-	if (HUDClass)
-	{
-		HUDWidget = Cast<UMyCharacterWidget>(CreateWidget(GetWorld()->GetFirstPlayerController(), HUDClass));
-		if (HUDWidget)
-		{
-			HUDWidget->AddToViewport();
-			UpdateHUD();
-		}
-	}
+	UpdateHUD(); // 게임 시작 시 HUD 초기화
 }
 
 void UMyPlayerStatComponent::SetHP(float NewHP)
@@ -87,12 +87,15 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 {
 	if (CurrentMana > Mana)
 	{
-		GetWorld()->GetTimerManager().SetTimer(ManaRegenTimerHandle, this, &UMyPlayerStatComponent::RegenerateMana, 4.0f, true);
+		if (UMyCharacterWidget* HUD = GetHUD())
+		{
+			GetWorld()->GetTimerManager().SetTimer(ManaRegenTimerHandle, this, &UMyPlayerStatComponent::RegenerateMana, 4.0f, true);
 
-		MonsterName = Name;
-		HUDWidget-> SkillName=MonsterName;//스킬이미지
-		HUDWidget->SetSkillIcon();
-		if (HUDWidget) HUDWidget->ChangeIcon(MonsterName);
+			MonsterName = Name;
+			HUD->SkillName = MonsterName;
+			HUD->SetSkillIcon();
+			HUD->ChangeIcon(MonsterName);
+		}
 
 		if (CurrentHP == PastMaxHP)
 		{
@@ -116,10 +119,11 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 
 void UMyPlayerStatComponent::UpdateHUD()
 {
-	if (HUDWidget)
+	if (UMyCharacterWidget* HUD = GetHUD())
 	{
-		HUDWidget->UpdateHPBar(CurrentHP, NewMaxHP);
-		HUDWidget->UpdateMana(CurrentMana);
-		HUDWidget->ChangeIcon(MonsterName);
+		HUD->UpdateHPBar(CurrentHP, NewMaxHP);
+		HUD->UpdateMana(CurrentMana);
+		HUD->ChangeIcon(MonsterName);
 	}
 }
+

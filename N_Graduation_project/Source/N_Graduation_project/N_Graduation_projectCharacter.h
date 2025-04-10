@@ -18,6 +18,7 @@ class UInputAction;
 class UTimelineComponent;
 struct FInputActionValue;
 class UCharacterStateComponent;
+class UWidgetActor;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthChanged);
@@ -102,6 +103,9 @@ public:
 private:
 	FVector MouseWorldPosition;
 	FVector MouseWorldDirection;
+
+	UPROPERTY()
+	UWidgetActor* WidgetActor;
 
 	// Dash °Å¸®
 	UPROPERTY(EditAnywhere, Category = "Dash", meta = (AllowPrivateAccess = "true"))

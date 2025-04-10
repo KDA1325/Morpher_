@@ -2,7 +2,7 @@
 #include "GameFramework/Actor.h"
 #include "GameFramework/Character.h"
 #include "MyPlayerStatComponent.h"
-#include "MyCharacterWidget.h"
+#include "WidgetActor.h"
 #include "TimerManager.h"
 #include "CharacterStateComponent.h" //state
 #include "EngineUtils.h"
@@ -63,7 +63,7 @@ void UPlayerSkillComponent::NomalCooldown()
 {
 	CanUseNomalSkill = true;
 
-	auto StatComponent = GetOwner()->FindComponentByClass<UMyPlayerStatComponent>();
+	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 	if (StatComponent && StatComponent->HUDWidget)
 	{
 		StatComponent->HUDWidget->CanNomal = CanUseNomalSkill;
@@ -74,7 +74,7 @@ void UPlayerSkillComponent::NomalCooldown()
 void UPlayerSkillComponent::SpecialCooldown()
 {
 	CanUseSpecialSkill = true;
-	auto StatComponent = GetOwner()->FindComponentByClass<UMyPlayerStatComponent>();
+	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 	if (StatComponent && StatComponent->HUDWidget)
 	{
 		StatComponent->HUDWidget->CanSpecial = CanUseNomalSkill;
@@ -219,7 +219,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 			VisibleShapeBox(SkillID);
 			//스킬 쿨타임
 			CanUseNomalSkill = false;
-			auto StatComponent = GetOwner()->FindComponentByClass<UMyPlayerStatComponent>();
+			auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 			if (StatComponent && StatComponent->HUDWidget)
 			{
 				StatComponent->HUDWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);

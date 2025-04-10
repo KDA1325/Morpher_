@@ -2,10 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "WidgetActor.h"
+
 #include "MyPlayerStatComponent.generated.h"
 
 class AN_Graduation_projectCharacter;
-class UMyCharacterWidget;
+class UWidgetActor;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class N_GRADUATION_PROJECT_API UMyPlayerStatComponent : public UActorComponent
@@ -29,13 +31,11 @@ public:
 
 private:
 	void UpdateHUD();//위젯값을 연결
+	UMyCharacterWidget* GetHUD() const;	//내부에서 위젯을 찾는 헬퍼 함수
 
 public:
 	UPROPERTY()
 	AN_Graduation_projectCharacter* OwnerPlayer;
-
-	UPROPERTY()
-	UMyCharacterWidget* HUDWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	float CurrentHP;
@@ -51,9 +51,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	FString MonsterName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UUserWidget> HUDClass;
 
 	FTimerHandle ManaRegenTimerHandle;
 };

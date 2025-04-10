@@ -89,6 +89,7 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	DashVelocity = FVector::ZeroVector;
 
 	// 체력 컴포넌트 추가
+	WidgetActor = CreateDefaultSubobject<UWidgetActor>(TEXT("WidgetActorComponent"));
 	PlayerStatComponent = CreateDefaultSubobject<UMyPlayerStatComponent>(TEXT("PlayerStatComponent"));
 	PlayerSkillComponent = CreateDefaultSubobject<UPlayerSkillComponent>(TEXT("PlayerSkillComponent"));
 	CharacterStateComponent = CreateDefaultSubobject<UCharacterStateComponent>(TEXT("CharacterStateComponent"));
@@ -600,7 +601,7 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 			{
 				float Damage = PlayerSkillComponent->DamageAmount;//데미지받은 몬스터 저장?
 				UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr);
-				if (PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false) 
+				if (PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false)
 				{
 					PlayerSkillComponent->DamagedActors.Add(OtherActor);
 					UE_LOG(LogTemp, Warning, TEXT("DamagedActors에 추가된 액터: %s"), *OtherActor->GetName());
