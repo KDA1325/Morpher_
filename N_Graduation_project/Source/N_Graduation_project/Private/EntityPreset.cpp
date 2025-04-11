@@ -3,6 +3,7 @@
 #include "MyAIController.h"
 #include "MyAI.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "WidgetActor.h"
 
 AEntityPreset::AEntityPreset()
 {
@@ -100,9 +101,31 @@ void AEntityPreset::SetHP(float NewHP)
 
 	if (CurrentHP <= 0)
 	{
+		if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("yorimo PlayerController 존재"));
+
+			APawn* PlayerPawn = PC->GetPawn();
+			ACharacter* Character = Cast<ACharacter>(PlayerPawn);
+
+			// 여기가 핵심: 플레이어에서 WidgetActor 찾기
+			if (UWidgetActor* WidgetActor = Character->FindComponentByClass<UWidgetActor>())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("yorimo WidgetActor 찾음"));
+
+				if (!WidgetActor->PieWidget->DeadMonsters.Contains(currentPreset))
+				{
+					WidgetActor->PieWidget->DeadMonsters.Add(currentPreset);
+					UE_LOG(LogTemp, Warning, TEXT("yorimo DeadMonsters에 %s 추가됨"), *currentPreset);
+					WidgetActor->PieWidget->OpenCharacter(currentPreset);
+				}
+
+			}
+		}
 		UE_LOG(LogTemp, Warning, TEXT("banana Entity Die"));
 		Destroy();
 	}
+
 }
 
 void AEntityPreset::ApplyDamage(float DamageAmount)
@@ -145,7 +168,8 @@ void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 	SetActorLabel(InEntityData.EntityName);
 	SetMoveSpeed(InEntityData.MoveSpeed);
 	SetHP(InEntityData.HP);
-
+	currentPreset = InEntityData.EntityGroupID;
+	 
 	UE_LOG(LogTemp, Error, TEXT("banana Initialized Entity with Name: %s, HP: %d, Move Speed: %d"),
 		*InEntityData.EntityName, InEntityData.HP, InEntityData.MoveSpeed);
 
