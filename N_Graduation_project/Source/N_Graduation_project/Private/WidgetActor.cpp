@@ -74,7 +74,7 @@ void UWidgetActor::ShowPieMenu()
 			FVector2D FinalPosition(CalculatedX, CalculatedY);
 			PieWidget->SetPositionInViewport(FinalPosition, false);
 			PieWidget->SetVisibility(ESlateVisibility::Visible);
-			PieWidget->SetInitialMousePosition();
+			PieWidget->StandardPosition();
 			PC->bShowMouseCursor = true;
 
 			UE_LOG(LogTemp, Log, TEXT("Pie 메뉴 보임, 계산된 위치: %s"), *FinalPosition.ToString());
