@@ -47,7 +47,13 @@ void UMyPlayerStatComponent::BeginPlay()
 void UMyPlayerStatComponent::SetHP(float NewHP)
 {
 	CurrentHP = FMath::Max(0.0f, NewHP);
+
 	UpdateHUD();
+
+	if (CurrentHP == 0)
+	{
+		OwnerPlayer->OnPlayerDead();
+	}
 }
 
 void UMyPlayerStatComponent::SetMaxHp(int MaxHp)

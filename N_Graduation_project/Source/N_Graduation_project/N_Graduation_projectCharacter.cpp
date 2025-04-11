@@ -136,11 +136,6 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	DashTimeline->AddInterpFloat(DashCurve, DashCallback);
 	// 타임라인 길이 설정
 	DashTimeline->SetTimelineLength(0.2f);
-
-	//if (PlayerStatComponent)
-	//{
-	//	PlayerStatComponent->OnHPIsZero.AddDynamic(this, &AN_Graduation_projectCharacter::OnPlayerDead);
-	//}
 }
 void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
