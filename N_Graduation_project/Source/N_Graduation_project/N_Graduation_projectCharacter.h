@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "ABEntityData.h" // Entity Data ±¸Á¶Ã¼
+#include "ABEntityData.h" // Entity Data ï¿½ï¿½ï¿½ï¿½Ã¼
 #include "ABGameSingleton.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
@@ -18,6 +18,7 @@ class UInputAction;
 class UTimelineComponent;
 struct FInputActionValue;
 class UCharacterStateComponent;
+class UWidgetActor;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthChanged);
@@ -62,6 +63,9 @@ class AN_Graduation_projectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LeftClickAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* PieMenuAction;
+
 public:
 	AN_Graduation_projectCharacter();
 
@@ -72,17 +76,19 @@ protected:
 
 	/** Called for looking input */
 	//void Look(const FInputActionValue& Value);
+	void OnPieMenuPressed();//ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	void OnPieMenuReleased(); //ï¿½ï¿½ ï¿½ï¿½
 
 	void RotateCharacterToCursor();
 
 	/** Called for Dash input */
-	// ´ë½Ã¸¦ ½ÃÀüÇÏ¸é µµÂøÇÏ´Â À§Ä¡·Î ÀÌµ¿ÇÒ ¼ö ÀÖ´ÂÁö È®ÀÎ
+	// ï¿½ï¿½Ã¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ìµï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 	void DashCheck(const FInputActionValue& Value);
 
-	// ´ë½Ã ±â´É ¼öÇà 
+	// ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 
 	void Dash(const FVector DashDir, const FVector DashVel);
 
-	//¸¶¿ì½º ÁÂÅ¬¸¯
+	//ï¿½ï¿½ï¿½ì½º ï¿½ï¿½Å¬ï¿½ï¿½
 	void NomalSkillAction(const FInputActionValue& Value);
 
 protected:
@@ -99,29 +105,33 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	UPROPERTY()
+	UWidgetActor* WidgetActor;
+
 private:
 	FVector MouseWorldPosition;
 	FVector MouseWorldDirection;
 
-	// Dash °Å¸®
+
+	// Dash ï¿½Å¸ï¿½
 	UPROPERTY(EditAnywhere, Category = "Dash", meta = (AllowPrivateAccess = "true"))
 	float DashDistance;
 
-	// Dash¸¦ ¼öÇàÇÒ Å¸ÀÓ¶óÀÎ
+	// Dashï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½Ó¶ï¿½ï¿½ï¿½
 	UPROPERTY()
 	UTimelineComponent* DashTimeline;
 
-	// Å¸ÀÓ¶óÀÎ¿¡ »ç¿ëÇÒ Ä¿ºê
+	// Å¸ï¿½Ó¶ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Ä¿ï¿½ï¿½
 	UPROPERTY()
 	UCurveFloat* DashCurve;
 
-	// Å¸ÀÓ¶óÀÎ¿¡ ÀÖ´Â Ä¿ºê°¡ ¼öÇàµÇ¸é¼­ ½ÇÇàµÉ ÇÔ¼ö 
+	// Å¸ï¿½Ó¶ï¿½ï¿½Î¿ï¿½ ï¿½Ö´ï¿½ Ä¿ï¿½ê°¡ ï¿½ï¿½ï¿½ï¿½Ç¸é¼­ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ 
 	UFUNCTION()
 	void DashInterpReturn(float value);
 
-	// Dash¸¦ ¼öÇàÇÏ´Â ¹æÇâ
+	// Dashï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½
 	FVector DashDirection;
-	// Dash¸¦ ¼öÇàÇÒ ¶§ÀÇ ¼Ó·Â 
+	// Dashï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ó·ï¿½ 
 	FVector DashVelocity;
 
 
@@ -131,23 +141,23 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	UCharacterStateComponent* CharacterStateComponent;
 
-	/** Ã¼·Â ÄÄÆ÷³ÍÆ® */
+	/** Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® */
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UMyPlayerStatComponent* PlayerStatComponent;
 
 
 public:
 
-	/** µ¥¹ÌÁö ¹Þ´Â ÇÔ¼ö */
+	/** ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ´ï¿½ ï¿½Ô¼ï¿½ */
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	//¾×ÅÍ°¡ ¹ÞÀº ´ë¹ÌÁö¸¦ Ã³¸®ÇÏ´Â ·ÎÁ÷À» Ãß°¡ÇÏ±â À§ÇØ ¿À¹ö¶óÀÌµå.
-	//DamageAmount µ¥¹ÌÁöÀÇ ¾ç
-	//FDamageEvent const& DamageEvent µ¥¹ÌÁö Á¾·ù
-	//EventInstigator,//µ¥¹ÌÁö¸¦ ÁØ ÄÁÆ®·Ñ·¯
-	//DamageCauser//µ¥¹ÌÁö¸¦ ÁØ ¾×ÅÍ ÀÚÃ¼
+	//ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìµï¿½.
+	//DamageAmount ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
+	//FDamageEvent const& DamageEvent ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	//EventInstigator,//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½
+	//DamageCauser//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼
 
-	// ¹«Àû »óÅÂ È°¼ºÈ­
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool IsInvincible;
@@ -157,7 +167,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void OnPlayerDead();
-	// ½ÇÁ¦ À§Á¬ ÀÎ½ºÅÏ½º
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½Ï½ï¿½
 	/*private:
 		TSubclassOf<UUserWidget> CharacterHealthBarWidgetClass;
 		UUserWidget* CharacterHealthBarWidget;
@@ -173,26 +183,24 @@ public:
 	//class UUserWidget* HUDWidget;
 
 
-	// Ä³¸¯ÅÍ º¯½Å ¸Þ¼Òµå
+	// Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¼Òµï¿½
 	/*UFUNCTION(EditAnywhere, BlueprintCallable, Category = "Stat")
 	void TransformToEntity(int32 EntityID);*/
 
-	// ¼³Á¤ÇÑ GroupID¸¦ Å° °ªÀ¸·Î °¡Á®¿Â µ¥ÀÌÅÍ¸¦ Àû¿ëÇÏ´Â ÇÔ¼ö
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ GroupIDï¿½ï¿½ Å° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 	UFUNCTION(BlueprintCallable, Category = "Stat")
 	void UpdateEntityData();
-	//// º¯½Å ÈÄ ÇöÀç Ã¼·Â ¾÷µ¥ÀÌÆ®
-	//UFUNCTION(EditAnywhere, BlueprintCallable, Category = "Stat")
-	//void UpdateHealth(float NewHealth);
 
-	// ÇöÀç Ä³¸¯ÅÍ µ¥ÀÌÅÍ ÀúÀå
+
+	// ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	FABEntityData EntityData;
 
-	/* Ä³¸¯ÅÍÀÇ ÇöÀç Ã¼·Â
+	/* Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã¼ï¿½ï¿½
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	float CurrentHealth;*/
 
-	// ¸Þ½Ã º¯°æ Å×½ºÆ®¸¦ À§ÇØ 
+	// ï¿½Þ½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½×½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* m_pMeshCom;
 
@@ -201,8 +209,8 @@ public:
 
 	int32 maxHp;
 	int32 moveSpeed;
-	FString normalSkill;
-	FString specialSkill;
+	FString NomalSkill;
+	FString SpecialSkill;
 	FString presetReference;
 
 	int32 currentSpeed;
@@ -211,17 +219,30 @@ public:
 	FString pastPreset;
 
 
-	// MoveSpeed¸¦ ¼³Á¤ÇÏ´Â ÇÔ¼ö
+	// MoveSpeedï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 	void SetMoveSpeed(int32 MoveSpeed);
 	void StartAction();
 	void EndAction();
-	// PresetÀ» ¼³Á¤ÇÏ´Â ÇÔ¼ö
+	// Presetï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 	void SetPreset(FString PresetReference);
 
-	//µ¥¹ÌÁö Å×½ºÆ®
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×½ï¿½Æ®
 //	void DealDamageToPlayer();
 
 	bool bIsMoving;
+
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½Ú½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½ï¿½
+	UFUNCTION(BlueprintCallable, Category = "HitBox")
+	void SpawnHitBoxAtSocket(FName SocketName);
+
+	UFUNCTION()
+	void OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
+
 
 };
 

@@ -1,10 +1,12 @@
-#include "PlayerSkillComponent.h"
+ï»¿#include "PlayerSkillComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/Character.h"
-
+#include "MyPlayerStatComponent.h"
+#include "WidgetActor.h"
 #include "TimerManager.h"
 #include "CharacterStateComponent.h" //state
 #include "EngineUtils.h"
+#include "N_Graduation_project/N_Graduation_projectCharacter.h"
 
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
@@ -14,40 +16,21 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	CanUseNomalSkill = true;
 	CanUseSpecialSkill = true;
 	DamageAmount = 50;
+
 }
 
 void UPlayerSkillComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ACharacter* PlayerCharacter = GetWorld()->GetFirstPlayerController()->GetCharacter();
-	APawn* PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-
-	if (PlayerPawn)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Slave PlayerPawn"));
-
-		HitBox = PlayerPawn->FindComponentByClass<UBoxComponent>();
-		Arrow = PlayerPawn->FindComponentByClass<UArrowComponent>();
-
-		if (HitBox)
-		{
-			HitBox->SetVisibility(false);
-		}
-
-		if (Arrow)
-		{
-			Arrow->SetVisibility(false);
-		}
-	}
-
 }
-void UPlayerSkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UPlayerSkillComponent::SetHitBox(UBoxComponent* InHitBox)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
+	PlayerHitBox = InHitBox;
+	UE_LOG(LogTemp, Warning, TEXT("papago PlayerHitBox Address: %p"), PlayerHitBox);
 
-/* ½ºÅ³ °ü·Ã */
+}
+/* ìŠ¤í‚¬ ê´€ë ¨ */
 void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
 {
 	if (Count > 0)
@@ -64,7 +47,7 @@ void UPlayerSkillComponent::OnDefenseSkill(float Count)
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill on"));
 	}
 
-	// ¹æ¾î ÇØÁ¦ Å¸ÀÌ¸Ó ¼³Á¤
+	// ë°©ì–´ í•´ì œ íƒ€ì´ë¨¸ ì„¤ì •
 	FTimerDelegate DefenseEnd;
 	DefenseEnd.BindUObject(this, &UPlayerSkillComponent::OffDefenseSkill);
 	SetSkillTimer(Count, DefenseEnd);
@@ -79,117 +62,95 @@ void UPlayerSkillComponent::OffDefenseSkill()
 void UPlayerSkillComponent::NomalCooldown()
 {
 	CanUseNomalSkill = true;
+
+	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
+	if (StatComponent && StatComponent->HUDWidget)
+	{
+		StatComponent->HUDWidget->CanNomal = CanUseNomalSkill;
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("Kakao NomalCooldown"));
 }
 void UPlayerSkillComponent::SpecialCooldown()
 {
 	CanUseSpecialSkill = true;
-	//	UE_LOG(LogTemp, Log, TEXT("Defense skill is ready to use again!"));
+	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
+	if (StatComponent && StatComponent->HUDWidget)
+	{
+		StatComponent->HUDWidget->CanSpecial = CanUseNomalSkill;
+	}
 }
 
-/* È÷Æ®¹Ú½º °ü·Ã */
 void UPlayerSkillComponent::SettingHitBox(const FSkillData& SkillData)
 {
-	if (!OnceHitBox && HitBox)
+	if (!OnceHitBox && PlayerHitBox)
 	{
-		// È÷Æ®¹Ú½º Å©±â ¹× À§Ä¡ ¼³Á¤
+		// íˆíŠ¸ë°•ìŠ¤ í¬ê¸° ë° ìœ„ì¹˜ ì„¤ì •
 		FVector NewBoxExtent = FVector(SkillData.SkillTypeSizeX, SkillData.SkillTypeSizeY, 100);
-		HitBox->SetBoxExtent(NewBoxExtent);
+		PlayerHitBox->SetBoxExtent(NewBoxExtent);
 
-		FVector NewLocation = HitBox->GetRelativeLocation();
+		FVector NewLocation = PlayerHitBox->GetRelativeLocation();
 		NewLocation.X += SkillData.SkillTypeSizeX;
-		HitBox->SetRelativeLocation(NewLocation);
+		PlayerHitBox->SetRelativeLocation(NewLocation);
 
 		OnceHitBox = true;
 	}
 }
 void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 {
-	if (HitBox && Arrow)
+	if (PlayerHitBox)
 	{
-		HitBox->SetVisibility(true);
-		Arrow->SetVisibility(true);
+		PlayerHitBox->SetVisibility(true);
+		PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // ì¶©ëŒ í‚¤ê¸°
 
-		// ·Î±× Ãß°¡: È°¼ºÈ­µÈ È÷Æ®¹Ú½º¿Í È­»ìÀÇ »óÅÂ È®ÀÎ
-	//	UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow"));
+		UE_LOG(LogTemp, Warning, TEXT("kakao On OnHitBox"));
+		UE_LOG(LogTemp, Warning, TEXT("papago On PlayerHitBox  Address: %p"), PlayerHitBox);
+
 	}
 	else
 	{
-		// HitBox³ª Arrow°¡ ¾ø´Â °æ¿ì ·Î±× Ãß°¡
-		//UE_LOG(LogTemp, Error, TEXT("Failed to find HitBox or Arrow!"));
+		UE_LOG(LogTemp, Error, TEXT("gugugu Failed to find HitBox "));
+		UE_LOG(LogTemp, Warning, TEXT("papago On Failed PlayerHitBox Address: %p"), PlayerHitBox);
+
 	}
 }
 void UPlayerSkillComponent::HideHitBox()
 {
-	//UE_LOG(LogTemp, Error, TEXT("HideHitBox() called!"));
+	PlayerHitBox->SetVisibility(false);  // ìì‹ê¹Œì§€ ìˆ¨ê¸°ê¸°
+	PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // ì¶©ëŒ êº¼ë²„ë¦¬ê¸°
+	UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow hidden."));
+	UE_LOG(LogTemp, Warning, TEXT("papago hidden PlayerHitBox  Address: %p"), PlayerHitBox);
 
-	if (HitBox && Arrow)
-	{
-		HitBox->SetVisibility(false);
-		Arrow->SetVisibility(false);
-		// ·Î±× Ãß°¡: È÷Æ®¹Ú½º¿Í È­»ìÀÌ ¼û°ÜÁ³´ÂÁö È®ÀÎ
-		//UE_LOG(LogTemp, Warning, TEXT("HitBox and Arrow hidden."));
-	}
-	else {
-		//	UE_LOG(LogTemp, Warning, TEXT("No HitBox and Arrow hidden."));
-
-	}
+	// ë°ë¯¸ì§€ ì²´í¬ ì´ˆê¸°í™”
+	DamagedActors.Empty();
 }
 
-///* ¸ó½ºÅÍ °Å¸® ÃøÁ¤ °ü·Ã */
-//AActor* UPlayerSkillComponent::FindMonsterTarget() const
-//{
-//	if (!GetWorld()) {
-//		//	UE_LOG(LogTemp, Error, TEXT("NO GetWorld"));
-//		return nullptr;
-//	}
-//	else {
-//		//			UE_LOG(LogTemp, Error, TEXT("Yes GetWorld"));
-//
-//		AActor* ClosestMonster = nullptr;
-//		float MinDistance = FLT_MAX;
-//
-//		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
-//		{
-//			AActor* Actor = *It;
-//			if (Actor && Actor->ActorHasTag(FName("Monster")))
-//			{
-//				float CurrentDistance = GetDistanceTo(Actor);
-//				if (CurrentDistance < MinDistance)
-//				{
-//					MinDistance = CurrentDistance;
-//					ClosestMonster = Actor;
-//				}
-//			}
-//		}
-//		return ClosestMonster;  // °¡Àå °¡±î¿î ¸ó½ºÅÍ ¹İÈ¯
-//	}
-//}
 AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
 {
+	//ì§€ì‚í‹°ë‹ˆ
 	if (!GetWorld()) return nullptr;
 
-	AActor* ClosestMonster = nullptr;
-	float MinDistance = FLT_MAX;
-	float MaxDotProduct = -1.0f; // Á¤¸é°úÀÇ À¯»çµµ (1¿¡ °¡±î¿ï¼ö·Ï Á¤¸é ¹æÇâ)
+	AActor* ClosestMonster = nullptr;//ëª¬ìŠ¤í„°ë¥¼ ë‹´ì„ ë³€ìˆ˜
+	float MinDistance = FLT_MAX;//í˜„ì¬ê¹Œì§€ ì°¾ì€ ëª¬ìŠ¤í„° ì¤‘ ê°€ì¥ ê°€ê¹Œìš´ ê±°ë¦¬
+	float MaxDotProduct = -1.0f; // ì •ë©´(1ì— ê°€ê¹Œìš¸ìˆ˜ë¡ ì •ë©´ ë°©í–¥)
 
 	AActor* Owner = GetOwner();
 	if (!Owner) return nullptr;
 
 	FVector PlayerLocation = Owner->GetActorLocation();
-	FVector PlayerForward = Owner->GetActorForwardVector(); // ÇÃ·¹ÀÌ¾î Á¤¸é ¹æÇâ
+	FVector PlayerForward = Owner->GetActorForwardVector(); // í”Œë ˆì´ì–´ ì •ë©´ ë°©í–¥
 
-	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+	for (TActorIterator<AActor> It(GetWorld()); It; ++It) //ì›”ë“œì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  AActorë¥¼ ìˆœíšŒí•˜ë©° Monster íƒœê·¸ í™•ì¸
 	{
 		AActor* Actor = *It;
 		if (Actor && Actor->ActorHasTag(FName("Monster")))
 		{
 			FVector ToMonster = (Actor->GetActorLocation() - PlayerLocation).GetSafeNormal();
-			float DotProduct = FVector::DotProduct(PlayerForward, ToMonster); // Á¤¸é°úÀÇ À¯»çµµ °è»ê
+			float DotProduct = FVector::DotProduct(PlayerForward, ToMonster); // ì •ë©´ê³¼ì˜ ìœ ì‚¬ë„ ê³„ì‚°
 
 			float CurrentDistance = FVector::Dist(PlayerLocation, Actor->GetActorLocation());
 
-			// Á¤¸é ¹æÇâÀÌ°í, ±âÁ¸º¸´Ù °¡±î¿î ¸ó½ºÅÍ¸¦ ¼±ÅÃ
+			// ì •ë©´ ë°©í–¥ì´ê³ , ê¸°ì¡´ë³´ë‹¤ ê°€ê¹Œìš´ ëª¬ìŠ¤í„°ë¥¼ ì„ íƒ
 			if (DotProduct > MaxDotProduct || (DotProduct == MaxDotProduct && CurrentDistance < MinDistance))
 			{
 				MaxDotProduct = DotProduct;
@@ -204,7 +165,7 @@ AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
 
 float UPlayerSkillComponent::GetDistanceTo(const AActor* OtherActor) const
 {
-	// ÇöÀç ¾×ÅÍ¿Í ÇÃ·¹ÀÌ¾î °£ °Å¸® °è»ê
+	// í˜„ì¬ ì•¡í„°ì™€ í”Œë ˆì´ì–´ ê°„ ê±°ë¦¬ ê³„ì‚°
 	return OtherActor ? (GetOwner()->GetActorLocation() - OtherActor->GetActorLocation()).Size() : 0.f;
 }
 
@@ -219,76 +180,81 @@ float UPlayerSkillComponent::MeasureDistanceToMonster() const
 	return 0.f;
 }
 
-/* ½ºÅ³ ½ÇÇà */
-void UPlayerSkillComponent::VisibleHitBox(const FString& SkillID)
+/* ìŠ¤í‚¬ ì‹¤í–‰ */
+void UPlayerSkillComponent::VisibleShapeBox(const FString& SkillID)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("Yes NomalSkillType"));
-//	SkillAnimation("Skill_Slash");
-
 	FSkillData SkillData;
-	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
+	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData)) return;
+
+	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
 	{
-		//	UE_LOG(LogTemp, Warning, TEXT("No UABGameSingleton"));
-
-		return;
+		SettingHitBox(SkillData);  // íˆíŠ¸ë°•ìŠ¤ ì´ˆê¸°í™”
+		OnHitBox(SkillData);    // íˆíŠ¸ë°•ìŠ¤ í™œì„±í™”
 	}
-
-	distance = MeasureDistanceToMonster();
-	UE_LOG(LogTemp, Warning, TEXT("Distance to Monster: %f"), distance);
-
-	//	È÷Æ®¹Ú½º Ã³¸® (¹üÀ§ ³» ½ºÅ³)
-	if (distance <= SkillData.SkillRange)
+	else if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
 	{
-		//SkillAnimation(SkillData.SkillNameID);
-
-		UE_LOG(LogTemp, Error, TEXT("distance: %f, SkillRange: %f"), distance, SkillData.SkillRange);
-
-		if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
-		{
-			SettingHitBox(SkillData);  // È÷Æ®¹Ú½º ÃÊ±âÈ­
-			OnHitBox(SkillData);    // È÷Æ®¹Ú½º È°¼ºÈ­
-			UE_LOG(LogTemp, Warning, TEXT("kakao On OnHitBox"));
-
-		}
-		else if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
-		{
-			//	 Sphere °ü·Ã Ã³¸® Ãß°¡
-		}
+		//	 Sphere ê´€ë ¨ ì²˜ë¦¬ ì¶”ê°€
 	}
-	else {
-		FTimerHandle  HitboxEnd;
-		GetWorld()->GetTimerManager().SetTimer(HitboxEnd, this, &UPlayerSkillComponent::HideHitBox, SkillData.SkillDuration, false);
 
-	}
 }
 void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 {
 	UE_LOG(LogTemp, Warning, TEXT("kakao On NomalSkillPlay"));
-
+	distance = MeasureDistanceToMonster();
+	UE_LOG(LogTemp, Warning, TEXT("Distance to Monster: %f"), distance);
 	if (CanUseNomalSkill == true) {
 
 		UE_LOG(LogTemp, Warning, TEXT("kakao On CanUseNomalSkill"));
 
 		FSkillData SkillData;
-		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
+		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData)) return;
+
+		if (distance <= SkillData.SkillRange)
 		{
-			//	UE_LOG(LogTemp, Warning, TEXT("No UABGameSingleton"));
+			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+			MyChar->StartAction();
 
-			return;
-		}
+			UE_LOG(LogTemp, Warning, TEXT("kakao Yes distance"));
 
-		CanUseNomalSkill = false;
-
-		//³ë¸» ½ºÅ³
-		if (SkillID == "Skill_Slash") {
+			VisibleShapeBox(SkillID);
+			//ìŠ¤í‚¬ ì¿¨íƒ€ì„
+			CanUseNomalSkill = false;
+			auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
+			if (StatComponent && StatComponent->HUDWidget)
+			{
+				StatComponent->HUDWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
+				StatComponent->HUDWidget->CanNomal = false;
+				UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
+			}
 			SkillAnimation(SkillID);
-			UE_LOG(LogTemp, Warning, TEXT("kakao On SkillSlash"));
+
+			//ë…¸ë§ ìŠ¤í‚¬
+		/*	if (SkillID == "Skill_Slash") {
+				SkillAnimation(SkillID);
+				UE_LOG(LogTemp, Warning, TEXT("kakao On SkillSlash"));
+
+			}*/
+
+			//ì¿¨íƒ€ì„
+			FTimerDelegate NomalCooldownEnd;
+			NomalCooldownEnd.BindUObject(this, &UPlayerSkillComponent::NomalCooldown);//ë°”ì¸ë”©
+			SetSkillTimer(SkillData.SkillCoolTime, NomalCooldownEnd);  // ì¿¨íƒ€ì„ ì„¤ì •
+			//SetSkillTimer(3.0f, NomalCooldownEnd);  // ìŠ¬ë˜ì‹œ ì¿¨íƒ€ì„ ë„ˆë¬´ ì§§ì•„ì„œ í…ŒìŠ¤íŠ¸ìš©
+		}
+		else {
+
+			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+			MyChar->EndAction();
+			UE_LOG(LogTemp, Warning, TEXT("kakao no distance"));
 
 		}
-		FTimerDelegate NomalCooldownEnd;
-		NomalCooldownEnd.BindUObject(this, &UPlayerSkillComponent::NomalCooldown);//¹ÙÀÎµù
-		SetSkillTimer(SkillData.SkillCoolTime, NomalCooldownEnd);  // ÄğÅ¸ÀÓ ¼³Á¤
-		//SetSkillTimer(3.0f, NomalCooldownEnd);  // ½½·¡½Ã ÄğÅ¸ÀÓ ³Ê¹« Âª¾Æ¼­ Å×½ºÆ®¿ë
+	}
+	else {
+
+		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+		MyChar->EndAction();
+		UE_LOG(LogTemp, Warning, TEXT("kakao No CanUseNomalSkill"));
+
 	}
 }
 
@@ -306,21 +272,21 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 			return;
 		}
 
-		//½ºÆä¼È ½ºÅ³
+		//ìŠ¤í˜ì…œ ìŠ¤í‚¬
 		if (SkillID == "Skill_ShieldGuard") {
-			// ¹æ¾î ½ºÅ³ Ã³¸® (¹üÀ§ ¹Û ½ºÅ³)
+			// ë°©ì–´ ìŠ¤í‚¬ ì²˜ë¦¬ (ë²”ìœ„ ë°– ìŠ¤í‚¬)
 			if (!CanUseSpecialSkill)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Defense skill is on cooldown!"));
-				return;  // ÄğÅ¸ÀÓ ÁßÀÌ¸é ¹æ¾î ½ºÅ³ ½ÇÇàÇÏÁö ¾ÊÀ½
+				return;  // ì¿¨íƒ€ì„ ì¤‘ì´ë©´ ë°©ì–´ ìŠ¤í‚¬ ì‹¤í–‰í•˜ì§€ ì•ŠìŒ
 			}
-			OnDefenseSkill(3.0);  // ¹æ¾î ½ºÅ³ ½ÇÇà
+			OnDefenseSkill(3.0);  // ë°©ì–´ ìŠ¤í‚¬ ì‹¤í–‰
 		}
-		// ÄğÅ¸ÀÓ ÈÄ ¹æ¾î ½ºÅ³ »ç¿ë °¡´ÉÇÏ°Ô ¼³Á¤
-		CanUseSpecialSkill = false;  // special ½ºÅ³ ÄğÅ¸ÀÓ ½ÃÀÛ
+		// ì¿¨íƒ€ì„ í›„ ë°©ì–´ ìŠ¤í‚¬ ì‚¬ìš© ê°€ëŠ¥í•˜ê²Œ ì„¤ì •
+		CanUseSpecialSkill = false;  // special ìŠ¤í‚¬ ì¿¨íƒ€ì„ ì‹œì‘
 		FTimerDelegate SpecialCooldownEnd;
 		SpecialCooldownEnd.BindUObject(this, &UPlayerSkillComponent::SpecialCooldown);
-		SetSkillTimer(SkillData.SkillCoolTime, SpecialCooldownEnd);  // ÄğÅ¸ÀÓ ¼³Á¤
+		SetSkillTimer(SkillData.SkillCoolTime, SpecialCooldownEnd);  // ì¿¨íƒ€ì„ ì„¤ì •
 	}
 }
 
@@ -340,7 +306,7 @@ void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 		{
 			ActionAnimInstance->PlayAnimation(EffectID);
 
-			// µ¨¸®°ÔÀÌÆ® ¹ÙÀÎµù Ãß°¡
+			// ë¸ë¦¬ê²Œì´íŠ¸ ë°”ì¸ë”© ì¶”ê°€
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this, &UPlayerSkillComponent::EndSkillAnimation);
 			ActionAnimInstance->Montage_SetEndDelegate(EndDelegate);
@@ -353,13 +319,21 @@ void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 		}
 	}
 }
-
 void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Skill Animation Ended: %s"), *Montage->GetName());
-	AActor* OwnerActor = GetOwner();
-
+	if (Montage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Skill Animation Ended: %s"), *Montage->GetName());
+		HideHitBox();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Skill Animation Ended: Montage is null."));
+	}
+	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+	MyChar->EndAction();
 }
+
 
 void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 {
@@ -370,7 +344,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 		return;
 	}
 	DamageAmount = EffectData.EffectValue01;
-	UE_LOG(LogTemp, Warning, TEXT("SkillEffect ½ÇÇàµÊ! DamageAmount: %f"), DamageAmount);
+	UE_LOG(LogTemp, Warning, TEXT("SkillEffect ì‹¤í–‰ë¨! DamageAmount: %f"), DamageAmount);
 
 }
 //void UPlayerSkillComponent::OnHitboxOverlap_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

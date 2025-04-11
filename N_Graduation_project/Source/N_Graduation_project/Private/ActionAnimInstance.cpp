@@ -28,6 +28,12 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 	}
+	if (EffectID == "Skill_FireBall") {
+		UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *M_Slash->GetName());
+		Montage_Play(M_Slash);
+		// 애니메이션 종료 이벤트 바인딩
+		OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
+	}
 }
 
 void UActionAnimInstance::OnMontageEndCallback(UAnimMontage* Montage, bool bInterrupted)

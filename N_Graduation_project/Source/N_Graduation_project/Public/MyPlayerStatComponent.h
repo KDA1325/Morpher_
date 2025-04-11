@@ -1,75 +1,56 @@
-#pragma once
+Ôªø#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "ABEntityData.h" // Entity Data ±∏¡∂√º
-#include "ABGameSingleton.h"
-#include <N_Graduation_project/N_Graduation_projectCharacter.h>
-#include "Blueprint/UserWidget.h"
-#include "Components/Image.h"
+#include "WidgetActor.h"
 
 #include "MyPlayerStatComponent.generated.h"
 
-//µ®∏Æ∞‘¿Ã∆Æ ∏¯æ≤∞⁄¿Ω. 
-//DECLARE_MULTICAST_DELEGATE(FOnHpIsZeroDelegate);
-//DECLARE_MULTICAST_DELEGATE(FOnHpChangedDelegate);
-//DECLARE_MULTICAST_DELEGATE(FOnManaChangedDelegate);
-class UMyPlayerStatComponent;
+class AN_Graduation_projectCharacter;
+class UWidgetActor;
 
-UCLASS(ClassGroup = (Custom), meta = (Blueprintable))
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class N_GRADUATION_PROJECT_API UMyPlayerStatComponent : public UActorComponent
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-    UMyPlayerStatComponent();
+	UMyPlayerStatComponent();
 
 protected:
-    virtual void BeginPlay() override;
-    virtual void InitializeComponent() override;
+	virtual void BeginPlay() override;
+	virtual void InitializeComponent() override;
+public:
+	void SetHP(float NewHP);
+	void SetMaxHp(int MaxHp);
+	void ApplyDamage(float DamageAmount);
+	void SetMana(int NewMana);
+	void UseMana(int ManaAmount);
+	void TransformToEntity(FString Name, int HP, int Mana);
+	void RegenerateMana();
+
+private:
+	void UpdateHUD();//ÏúÑÏ†ØÍ∞íÏùÑ Ïó∞Í≤∞
+	UMyCharacterWidget* GetHUD() const;	//ÎÇ¥Î∂ÄÏóêÏÑú ÏúÑÏ†ØÏùÑ Ï∞æÎäî Ìó¨Ìçº Ìï®Ïàò
 
 public:
-    void TransformToEntity(FString Name, int HP, int Mana);
-    AN_Graduation_projectCharacter* OwnerPlayer;
-    FString MonsterName;
+	UPROPERTY()
+	AN_Graduation_projectCharacter* OwnerPlayer;
 
-    // hp ∞¸∑√
-    void SetHP(float NewHP);
-    void ApplyDamage(float DamageAmount);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	float CurrentHP;
 
-    float NewMaxHP;
-    float PastMaxHP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	int CurrentMana;
 
-    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    UMyPlayerStatComponent* PlayerStatComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	int NewMaxHP;
 
-    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
-    float CurrentHP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	int PastMaxHP;
 
-    // ∏∂≥™ ∞¸∑√
-    void SetMaxHp(int MaxHp);
-    void SetMana(int NewMana);
-    void UseMana(int ManaAmount);
-    void RegenerateMana();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	FString MonsterName;
 
-    UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat", Meta = (AllowPrivateAccess = true))
-    int CurrentMana;
-
-    FTimerHandle ManaRegenTimerHandle;
-
-    //¿ß¡¨ ∞¸∑√
-    UPROPERTY()
-    class UUserWidget* HUDWidget;
-
-    UFUNCTION()
-    void UpdateHUD();
-
-    UPROPERTY(EditDefaultsOnly, Category = "UI")
-    TSubclassOf<class UUserWidget> HUDClass;
-
-    void IconChange();
-
-    TArray<UImage*> ManaTokenImages;
-    TArray<UImage*> IconImages;
-
+	FTimerHandle ManaRegenTimerHandle;
 };

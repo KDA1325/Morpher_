@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -17,7 +17,6 @@ class UBoxComponent;
 class UArrowComponent;
 
 
-
 DECLARE_MULTICAST_DELEGATE(FOnAction);
 
 
@@ -27,62 +26,67 @@ class N_GRADUATION_PROJECT_API UPlayerSkillComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+
+
 	// Sets default values for this component's properties
 	UPlayerSkillComponent();
 
 	FOnAction OnAction;
-
-	// ½ºÅ³ °ü·Ã º¯¼öµé
-	bool CanUseNomalSkill;  // ÀÏ¹İ ½ºÅ³ »ç¿ë °¡´É ¿©ºÎ
-	bool CanUseSpecialSkill; // ½ºÆä¼È ½ºÅ³ »ç¿ë °¡´É ¿©ºÎ
-	bool IsDefending;        // ¹æ¾î ÁßÀÎÁö ¿©ºÎ
+	float CoolTimeData;
+	// ìŠ¤í‚¬ ê´€ë ¨ ë³€ìˆ˜ë“¤
+	bool CanUseNomalSkill;  // ì¼ë°˜ ìŠ¤í‚¬ ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€
+	bool CanUseSpecialSkill; // ìŠ¤í˜ì…œ ìŠ¤í‚¬ ì‚¬ìš© ê°€ëŠ¥ ì—¬ë¶€
+	bool IsDefending;        // ë°©ì–´ ì¤‘ì¸ì§€ ì—¬ë¶€
 	bool OnceHitBox;
-	// È÷Æ®¹Ú½º °ü·Ã º¯¼öµé
-	UPROPERTY()
-	UBoxComponent* HitBox;
-	UPROPERTY()
-	UArrowComponent* Arrow;
-
-	// ÇöÀç ½ºÅ³ ID
+	// í˜„ì¬ ìŠ¤í‚¬ ID
 	FString CurrentSkillID;
 
-	// °Å¸® °¨Áö
+	// íˆíŠ¸ë°•ìŠ¤ ê´€ë ¨ ë³€ìˆ˜ë“¤
+	UPROPERTY()
+	UBoxComponent* PlayerHitBox;
+
+	void SetHitBox(UBoxComponent* NewHitBox);
+
+	// ê±°ë¦¬ ê°ì§€
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	float MeasureDistanceToMonster() const;
-	//¸ó½ºÅÍ°¨Áö
+	//ëª¬ìŠ¤í„°ê°ì§€
 	AActor* FindFrontMonsterTarget() const;
 
-	//UFUNCTION(BlueprintNativeEvent) // ½Ã°£ÀÖÀ½ ÀçÁ¤ÀÇ·Î ÇØº¸±â
-	void VisibleHitBox(const FString& SkillID);    // È÷Æ®¹Ú½º º¸ÀÌ°Ô
-	void NomalSkillPlay(const FString& SkillID);    // ½ºÅ³
-	void SpecialSkillPlay(const FString& SkillID);    // ½ºÅ³
-	// ÇÔ¼öµé
-	void OnDefenseSkill(float Count);          // ¹æ¾î ½ºÅ³ È°¼ºÈ­ ÇÔ¼ö
-	void OffDefenseSkill();                    // ¹æ¾î ½ºÅ³ ºñÈ°¼ºÈ­ ÇÔ¼ö
-	void NomalCooldown();          // ½ºÅ³ ÄğÅ¸ÀÓ ÃÊ±âÈ­
-	void SpecialCooldown();          // ½ºÅ³ ÄğÅ¸ÀÓ ÃÊ±âÈ­
-	void SetSkillTimer(float Count, FTimerDelegate Call);  // Å¸ÀÌ¸Ó ¼³Á¤ ÇÔ¼ö
-	float GetDistanceTo(const AActor* OtherActor) const;    // °Å¸® °è»ê ÇÔ¼ö
-	// È÷Æ®¹Ú½º ÃÊ±âÈ­ ¹× È°¼ºÈ­ ÇÔ¼ö
-	void SettingHitBox(const FSkillData& SkillData); // È÷Æ®¹Ú½º ÃÊ±âÈ­
-	void OnHitBox(const FSkillData& SkillData);                            // È÷Æ®¹Ú½º È°¼ºÈ­
-	void HideHitBox();     // È÷Æ®¹Ú½º ºñÈ°¼ºÈ­
+	//UFUNCTION(BlueprintNativeEvent) // ì‹œê°„ìˆìŒ ì¬ì •ì˜ë¡œ í•´ë³´ê¸°
+	void VisibleShapeBox(const FString& SkillID);    // íˆíŠ¸ë°•ìŠ¤ ë³´ì´ê²Œ
+	void NomalSkillPlay(const FString& SkillID);    // ìŠ¤í‚¬
+	void SpecialSkillPlay(const FString& SkillID);    // ìŠ¤í‚¬
+	// í•¨ìˆ˜ë“¤
+	void OnDefenseSkill(float Count);          // ë°©ì–´ ìŠ¤í‚¬ í™œì„±í™” í•¨ìˆ˜
+	void OffDefenseSkill();                    // ë°©ì–´ ìŠ¤í‚¬ ë¹„í™œì„±í™” í•¨ìˆ˜
+	void NomalCooldown();          // ìŠ¤í‚¬ ì¿¨íƒ€ì„ ì´ˆê¸°í™”
+	void SpecialCooldown();          // ìŠ¤í‚¬ ì¿¨íƒ€ì„ ì´ˆê¸°í™”
+	void SetSkillTimer(float Count, FTimerDelegate Call);  // íƒ€ì´ë¨¸ ì„¤ì • í•¨ìˆ˜
+	float GetDistanceTo(const AActor* OtherActor) const;    // ê±°ë¦¬ ê³„ì‚° í•¨ìˆ˜
+	// íˆíŠ¸ë°•ìŠ¤ ì´ˆê¸°í™” ë° í™œì„±í™” í•¨ìˆ˜
+	void SettingHitBox(const FSkillData& SkillData); // íˆíŠ¸ë°•ìŠ¤ ì´ˆê¸°í™”
+	void OnHitBox(const FSkillData& SkillData);     
+	// íˆíŠ¸ë°•ìŠ¤ í™œì„±í™”
+	void HideHitBox();     // íˆíŠ¸ë°•ìŠ¤ ë¹„í™œì„±í™”
 	void SkillAnimation(const FString& EffectID);
 	void EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted);
 	void SkillEffect(const FString& SkillNameID);
 
 	UPROPERTY(BlueprintReadOnly)
 	float DamageAmount;
+	
+	UPROPERTY()
+	TSet<AActor*> DamagedActors; // ë°ë¯¸ì§€ë¥¼ ë°›ì€ ëª¬ìŠ¤í„° ì €ì¥
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	// Å¸ÀÌ¸Ó ÇÚµé
+	// íƒ€ì´ë¨¸ í•¸ë“¤
 	FTimerHandle TimerHandle;
 
-	// ÇÃ·¹ÀÌ¾î¿ÍÀÇ °Å¸®
+	// í”Œë ˆì´ì–´ì™€ì˜ ê±°ë¦¬
 	float distance;
 
 };

@@ -1,4 +1,4 @@
-#include "EntityPreset.h"
+﻿#include "EntityPreset.h"
 #include "EntityWidget.h"
 #include "MyAIController.h"
 #include "MyAI.h"
@@ -23,9 +23,9 @@ AEntityPreset::AEntityPreset()
 void AEntityPreset::BeginPlay()
 {
 	Super::BeginPlay();
-	// WidgetComponent�� ���� ���� �ν��Ͻ��� ������ EntityWidget�� �Ҵ�
+	// WidgetComponent를 통해 위젯 인스턴스를 가져와 EntityWidget에 할당
 	FName WidgetCompName = TEXT("EntityPresetWidget");
-	WidgetComp = Cast<UWidgetComponent>(GetDefaultSubobjectByName(WidgetCompName));  // ��� ���� WidgetComp ���
+	WidgetComp = Cast<UWidgetComponent>(GetDefaultSubobjectByName(WidgetCompName));  // 멤버 변수 WidgetComp 사용
 
 	if (WidgetComp)
 	{
@@ -38,7 +38,7 @@ void AEntityPreset::BeginPlay()
 				OnHealthChanged.Broadcast(CurrentHP);
 
 				EntityWidget->EntityPreset = this;
-				// ü�� ���� ��������Ʈ ���ε�
+				// 체력 변경 델리게이트 바인딩
 				OnHealthChanged.AddDynamic(EntityWidget, &UEntityWidget::UpdateHealthBar);
 				UE_LOG(LogTemp, Warning, TEXT("banana HP Bar connected %s"), *GetName());
 			}
@@ -74,7 +74,7 @@ void AEntityPreset::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 float AEntityPreset::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {	
 	UE_LOG(LogTemp, Log, TEXT("banana Damage: %f"), DamageAmount);
-	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser); // �θ� Ŭ������ TakeDamage ȣ��
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser); // 부모 클래스의 TakeDamage 호출
 	UE_LOG(LogTemp, Log, TEXT("banana (TakeDamage)CurrentHP: %f, DamageAmount: %f, CurrentHP - DamageAmount: %f"), CurrentHP, DamageAmount, CurrentHP - DamageAmount);
 
 
@@ -94,7 +94,7 @@ void AEntityPreset::SetHP(float NewHP)
 {
 	CurrentHP = FMath::Clamp(NewHP, 0.0f ,MaxHp);
 	//CurrentHP = NewHP;
-	// ��������Ʈ ȣ��
+	// 델리게이트 호출
 	//UE_LOG(LogTemp, Warning, TEXT("banana SetHP - NewHP: %f, ClampedHP: %f, MaxHP: %f"), NewHP, CurrentHP, MaxHp);
 	OnHealthChanged.Broadcast(CurrentHP);
 
@@ -140,9 +140,7 @@ void AEntityPreset::SetSpecialSkillRange(float SpecialSkillRange)
 
 void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 {	
-	//EntityData = InEntityData;
-
-	// Entity 정보 초기화 
+	// Entity 데이터에 따라 초기화 
 	MaxHp = InEntityData.HP;
 	SetActorLabel(InEntityData.EntityName);
 	SetMoveSpeed(InEntityData.MoveSpeed);
