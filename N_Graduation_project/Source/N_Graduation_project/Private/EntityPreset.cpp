@@ -1,0 +1,366 @@
+﻿#include "EntityPreset.h"
+#include "EntityWidget.h"
+#include "MyAIController.h"
+#include "MyAI.h"
+#include "BehaviorTree/BlackboardComponent.h"
+
+AEntityPreset::AEntityPreset()
+{
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+
+	AIControllerClass = AMyAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	CurrentHP = 0;
+	currentSpeed = 0;
+	MaxHp = 100.0f;
+
+	NormalSkillHitBox = nullptr;
+}
+
+// Called when the game starts or when spawned
+void AEntityPreset::BeginPlay()
+{
+	Super::BeginPlay();
+	// WidgetComponent를 통해 위젯 인스턴스를 가져와 EntityWidget에 할당
+	FName WidgetCompName = TEXT("EntityPresetWidget");
+	WidgetComp = Cast<UWidgetComponent>(GetDefaultSubobjectByName(WidgetCompName));  // 멤버 변수 WidgetComp 사용
+
+	if (WidgetComp)
+	{
+		UUserWidget* UserWidget = WidgetComp->GetUserWidgetObject();
+		if (UserWidget)
+		{
+			EntityWidget = Cast<UEntityWidget>(UserWidget);
+			if (EntityWidget)
+			{
+				OnHealthChanged.Broadcast(CurrentHP);
+
+				EntityWidget->EntityPreset = this;
+				// 체력 변경 델리게이트 바인딩
+				OnHealthChanged.AddDynamic(EntityWidget, &UEntityWidget::UpdateHealthBar);
+				UE_LOG(LogTemp, Warning, TEXT("banana HP Bar connected %s"), *GetName());
+			}
+		/*	else
+			{
+				UE_LOG(LogTemp, Error, TEXT("bananaBeginPlay WidgetComp's widget is not of type UEntityWidget for %s"), *GetName());
+			}*/
+		}
+		/*else
+		{
+			UE_LOG(LogTemp, Error, TEXT("bananaBeginPlay WidgetComp exists, but no widget instance was created for %s"), *GetName());
+		}*/
+	}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Error, TEXT("bananaBeginPlay WidgetComp is not assigned in blueprint for %s"), *GetName());
+	//}
+
+}
+
+// Called every frame
+void AEntityPreset::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+// Called to bind functionality to input
+void AEntityPreset::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+float AEntityPreset::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{	
+	UE_LOG(LogTemp, Log, TEXT("banana Damage: %f"), DamageAmount);
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser); // 부모 클래스의 TakeDamage 호출
+	UE_LOG(LogTemp, Log, TEXT("banana (TakeDamage)CurrentHP: %f, DamageAmount: %f, CurrentHP - DamageAmount: %f"), CurrentHP, DamageAmount, CurrentHP - DamageAmount);
+
+
+	if (CurrentHP > 0)
+	{
+		ApplyDamage(DamageAmount);
+	}
+	else
+	{
+		//UE_LOG(LogTemp, Log, TEXT("banana Entity Died!"));
+				//Destroy();
+	}
+	return ActualDamage;
+}
+
+void AEntityPreset::SetHP(float NewHP)
+{
+	CurrentHP = FMath::Clamp(NewHP, 0.0f ,MaxHp);
+	//CurrentHP = NewHP;
+	// 델리게이트 호출
+	//UE_LOG(LogTemp, Warning, TEXT("banana SetHP - NewHP: %f, ClampedHP: %f, MaxHP: %f"), NewHP, CurrentHP, MaxHp);
+	OnHealthChanged.Broadcast(CurrentHP);
+
+	if (CurrentHP <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("banana Entity Die"));
+		Destroy();
+	}
+}
+
+void AEntityPreset::ApplyDamage(float DamageAmount)
+{
+	SetHP(CurrentHP - DamageAmount);
+}
+
+float AEntityPreset::GetHPRatio()
+{
+	if (MaxHp > 0)
+	{
+		//UE_LOG(LogTemp, Log, TEXT("banana MaxHp > 0"));
+		return(CurrentHP / MaxHp);
+	}
+	else {
+		//UE_LOG(LogTemp, Log, TEXT("banana MaxHp = 0"));
+		return 0.0f;
+	}
+}
+
+void AEntityPreset::SetMoveSpeed(int32 MoveSpeed)
+{
+	currentSpeed = MoveSpeed;
+}
+
+void AEntityPreset::SetNormalSkillRange(float NormalSkillRange)
+{
+	currentNormalSkillRange = NormalSkillRange;
+}
+
+void AEntityPreset::SetSpecialSkillRange(float SpecialSkillRange)
+{
+	currentSpecialSkillRange = SpecialSkillRange;
+}
+
+void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
+{	
+	// Entity 데이터에 따라 초기화 
+	MaxHp = InEntityData.HP;
+	SetActorLabel(InEntityData.EntityName);
+	SetMoveSpeed(InEntityData.MoveSpeed);
+	SetHP(InEntityData.HP);
+
+	UE_LOG(LogTemp, Error, TEXT("banana Initialized Entity with Name: %s, HP: %d, Move Speed: %d"),
+		*InEntityData.EntityName, InEntityData.HP, InEntityData.MoveSpeed);
+
+	// EntityData에 저장된 Normal Skill 식별자를 통해 스킬 데이터 가져옴 
+	if (UABGameSingleton::Get().GetSkillDataBySkillID(InEntityData.NormalSkill, NormalSkillData))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
+			*NormalSkillData.SkillNameID, (uint8)NormalSkillData.SkillType, NormalSkillData.SkillRange);
+
+		SetNormalSkillRange(NormalSkillData.SkillRange);
+
+		// SkillType이 HitBox라면 
+		if (NormalSkillData.SkillType == EnumSkillType::HitBox)
+		{
+			SetupHitBoxComponent(NormalSkillData);
+		}
+
+		// NormalSkillData에 저장된 SkillNameID 식별자를 통해 스킬 효과 데이터 가져옴
+		if (UABGameSingleton::Get().GetSkillEffectDataTBySkillID(NormalSkillData.SkillNameID, NormalSkillEffectData))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Effect Data: %s, Effect Type: %d, Effect Value: %f"),
+				*NormalSkillEffectData.SkillNameID, (uint8)NormalSkillEffectData.EffectType, NormalSkillEffectData.EffectValue01);
+		}
+	}
+	
+	// EntityData에 저장된 Special Skill 식별자를 통해 스킬 데이터 가져옴 
+	if (UABGameSingleton::Get().GetSkillDataBySkillID(InEntityData.SpecialSkill, SpecialSkillData))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
+			*SpecialSkillData.SkillNameID, (uint8)SpecialSkillData.SkillType, SpecialSkillData.SkillRange);
+
+		SetSpecialSkillRange(SpecialSkillData.SkillRange);
+
+		// SkillType이 HitBox라면 
+		if (SpecialSkillData.SkillType == EnumSkillType::HitBox)
+		{
+			SetupHitBoxComponent(SpecialSkillData);
+		}
+
+		// SpecialSkillData에 저장된 SkillNameID 식별자를 통해 스킬 효과 데이터 가져옴
+		if (UABGameSingleton::Get().GetSkillEffectDataTBySkillID(SpecialSkillData.SkillNameID, SpecialSkillEffectData))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Effect Data: %s, Effect Type: %d, Effect Value: %f"),
+				*SpecialSkillEffectData.SkillNameID, (uint8)SpecialSkillEffectData.EffectType, SpecialSkillEffectData.EffectValue01);
+		}
+	}
+}
+
+void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
+{
+	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
+	{
+		// SkillNameID -> 소켓 이름 매핑 테이블
+		TMap<FString, FName> SkillToSocketMap = {
+			//{ "Skill_Slash", TEXT("SlashSocket") },
+			{ "Skill_Bite", TEXT("BiteHitBox") },
+			//{ "Skill_Charge", TEXT("ChargeSocket") },
+			//{ "Skill_TailSwing", TEXT("TailSocket") },
+			//{ "Skill_FreezeBreath", TEXT("MouthSocket") },
+			//{ "Skill_ArmSwing", TEXT("RightArmSocket") },
+			//{ "Skill_EarthBreaker", TEXT("FootSocket") }
+		};
+
+		FName SocketToAttach = TEXT("DefaultHitBox"); 
+		if (FName* FoundSocket = SkillToSocketMap.Find(SkillData.SkillNameID))
+		{
+			SocketToAttach = *FoundSocket;
+		}
+
+		// 1. HitBoxContainer 생성 및 소켓에 부착
+		if (!HitBoxContainer)
+		{
+			HitBoxContainer = NewObject<USceneComponent>(this, TEXT("HitBoxContainer"));
+			if (HitBoxContainer)
+			{
+				// 컨테이너를 컴포넌트로 등록 
+				HitBoxContainer->RegisterComponent();
+
+				// 스켈레탈 메시의 소켓에 부착
+				// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
+				HitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketToAttach);
+			}
+		}
+
+		// 2. NormalSkillHitBox 생성 (HitBoxContainer의 자식)
+		if (!NormalSkillHitBox)
+		{
+			NormalSkillHitBox = NewObject<UBoxComponent>(this, TEXT("NormalSkillHitBox"));
+			if (NormalSkillHitBox)
+			{
+				NormalSkillHitBox->RegisterComponent();
+				NormalSkillHitBox->AttachToComponent(HitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
+
+				HideHitBox();
+
+				// Overlap 이벤트 바인딩 
+				NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnHitBoxOverlap);
+			}
+		}
+
+		if (NormalSkillHitBox && HitBoxContainer)
+		{
+			//// HitBox를 보이도록 설정
+			//NormalSkillHitBox->SetHiddenInGame(false);
+			//NormalSkillHitBox->SetVisibility(true);
+			//ShowHitBox(); 
+
+			// UBoxComponent는 half extents를 사용
+			// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
+			// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
+			// Y축은 Z 크기 값,
+			// Z축은 X 크기 값(SkillTypeSizeX/2)
+			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
+			NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+			// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
+			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
+			// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
+			FVector NewRelativeLocation = FVector(0.0f, 0.0f, HalfExtent.X);
+			NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			UE_LOG(LogTemp, Warning, TEXT("SetupHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+				*HalfExtent.ToString(), *NewRelativeLocation.ToString());
+		}
+	}
+
+	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Sphere"));
+	}
+}
+
+void AEntityPreset::ShowHitBox()
+{
+	float Duration = NormalSkillData.SkillDuration;
+
+	// HitBox 활성화 
+	NormalSkillHitBox->SetHiddenInGame(false);
+	NormalSkillHitBox->SetVisibility(true);
+	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기
+	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
+
+	// 유지 시간 이후 HideHitBox 함수 호출  
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::HideHitBox, Duration, false);
+}
+
+void AEntityPreset::HideHitBox()
+{
+	// HitBox 비활성화 
+	NormalSkillHitBox->SetHiddenInGame(true);
+	NormalSkillHitBox->SetVisibility(false);
+	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 끄기
+	UE_LOG(LogTemp, Warning, TEXT("Hide HitBox"));
+}
+
+
+void AEntityPreset::OnHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this)
+	{
+		// 플레이어 캐릭터인지 확인
+		ACharacter* PlayerCharacter = Cast<ACharacter>(OtherActor);
+		if (PlayerCharacter)
+		{
+			// 스킬 효과에 따른 대미지 적용
+			float DamageToApply = NormalSkillEffectData.EffectValue01;
+
+			UGameplayStatics::ApplyDamage(OtherActor, DamageToApply, GetController(), this, nullptr);
+			UE_LOG(LogTemp, Warning, TEXT("HitBox Overlap: Applied %f damage to %s"), DamageToApply, *OtherActor->GetName());
+
+			// 만약 한 번만 적용하고 히트박스를 파괴하고 싶다면
+			// NormalSkillHitBox->SetHiddenInGame(true); 또는 Destroy();
+		}
+	}
+}
+
+EnumAttackType AEntityPreset::GetAttackType()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Get AttackType: %d"), (uint8)currentAttackType);
+
+	return currentAttackType;
+}
+
+float AEntityPreset::GetNormalSkillRange()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Get Normal Skill Range: %f"), currentNormalSkillRange);
+
+	return currentNormalSkillRange;
+}
+
+float AEntityPreset::GetSpecialSkillRange()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Get Special Skill Range: %f"), currentSpecialSkillRange);
+
+	return currentSpecialSkillRange;
+}
+
+void AEntityPreset::PerformNormalSkill()
+{
+	if (NormalSkillMontage)
+	{
+		if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+		{
+			// 몽타주 재생
+			AnimInst->Montage_Play(NormalSkillMontage);
+			UE_LOG(LogTemp, Warning, TEXT("PerformNormalSkill: Montage played"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("PerformNormalSkill: AnimInstance not found"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("PerformNormalSkill: NormalSkillMontage is not set"));
+	}
+}

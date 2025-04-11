@@ -1,0 +1,21 @@
+
+#pragma once
+
+#define BBKEY_PLAYERLOCATION TEXT("PlayerLocation")
+#define BBKEY_HOMEPOS TEXT("HomePos")
+#define BBKEY_PATROLPOS TEXT("PatrolPos")
+#define BBKEY_ATTACKTYPE TEXT("AttackType")
+#define BBKEY_NORMALSKILLRANGE TEXT("NormalSkillRange")
+#define BBKEY_SPECIALSKILLRANGE TEXT("SpecialSkillRange")
+#define BBKEY_ASKILLRANGE TEXT("ASkillRange")
+#define BBKEY_BASKILLAVAILABLE TEXT("bASkillAvailable")
+#define BBKEY_BASKILLCONDITION TEXT("bASkillCondition")
+#define BBKEY_BSKILLRANGE TEXT("BSkillRange")
+#define BBKEY_BBSKILLAVAILABLE TEXT("bBSkillAvailable")
+#define BBKEY_BBSKILLCONDITION TEXT("bBSkillCondition")
+#define BBKEY_DISTANCE TEXT("Distance")
+#define BBKEY_MINDISTANCE TEXT("MinDistance")
+#define BBKEY_FOLLOWMINDISTANCE TEXT("FollowMinDistance")
+#define BBKEY_ADJUSTMINDISTANCE TEXT("AdjustMinDistance")
+#define BBKEY_MONSTERRADIUS TEXT("MonsterCapsuleRadius")
+#define BBKEY_PLAYERRADIUS TEXT("PlayerCapsuleRadius")

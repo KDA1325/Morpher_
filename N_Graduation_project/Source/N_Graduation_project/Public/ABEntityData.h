@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"  // FTableRowBase 사용을 위한 헤더 추가 
 #include "Engine/GameInstance.h"
+#include "EntityDataEnum.h"
 #include "ABEntityData.generated.h"
 
 USTRUCT(BlueprintType)
@@ -10,28 +11,35 @@ struct FABEntityData : public FTableRowBase
     GENERATED_BODY()
 
 public:
-    FABEntityData()
-        : EntityGroupID(TEXT("1")), EntityName(TEXT("EntityName")), HP(0), MoveSpeed(0), NormalSkill(TEXT("NormalSkill")), SpecialSkill(TEXT("SpecialSkill")), PresetReference(TEXT("PresetReference")) {}
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString EntityGroupID;
+    FString EntityGroupID = "";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString EntityName;
+    FString EntityName = "";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    int32 HP;
+    int32 HP = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    int32 MoveSpeed;
+    int32 MoveSpeed = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString NormalSkill;
+    FString NormalSkill = "";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString SpecialSkill;
+    FString SpecialSkill = "";
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-    FString PresetReference;
+    int32 TransManaCost = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+    FString PresetReference = "";
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+    int32 CapsuleRadius = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+    EnumAttackType AttackType = EnumAttackType::Melee;
 };
 
