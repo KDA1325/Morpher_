@@ -19,7 +19,6 @@
 #include "GameFramework/Character.h"//ApplyDamage
 #include "CharacterStateComponent.h" //state
 
-
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
@@ -249,35 +248,22 @@ void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
 		}
 	}
 }
+
 void AN_Graduation_projectCharacter::OnPieMenuPressed()
 {
-
 	if (WidgetActor)
 	{
-		UPieMenuWidget* PieWidget = WidgetActor->GetPieWidget();
-		if (PieWidget)
-		{
-			PieWidget->SetVisibility(ESlateVisibility::Visible);
-			UE_LOG(LogTemp, Warning, TEXT("Pie 메뉴 보임"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("PieWidget이 nullptr입니다."));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("WidgetActor가 nullptr입니다."));
+		WidgetActor->ShowPieMenu();
+
 	}
 }
 
 void AN_Graduation_projectCharacter::OnPieMenuReleased()
 {
-
-	WidgetActor->GetPieWidget()->SetVisibility(ESlateVisibility::Hidden);
-	UE_LOG(LogTemp, Warning, TEXT("Pie 메뉴 숨김"));
-
-
+	if (WidgetActor)
+	{
+		WidgetActor->HidePieMenu();
+	}
 }
 
 //void AN_Graduation_projectCharacter::Look(const FInputActionValue& Value)

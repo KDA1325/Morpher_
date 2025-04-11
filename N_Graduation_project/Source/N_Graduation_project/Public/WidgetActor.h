@@ -18,6 +18,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	void HidePieMenu();
+	void ShowPieMenu();
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> HUDClass;
 

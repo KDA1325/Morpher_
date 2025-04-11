@@ -119,6 +119,10 @@ void AEntityPreset::SetHP(float NewHP)
 					UE_LOG(LogTemp, Warning, TEXT("yorimo DeadMonsters에 %s 추가됨"), *currentPreset);
 					WidgetActor->PieWidget->OpenCharacter(currentPreset);
 				}
+				else {
+					UE_LOG(LogTemp, Warning, TEXT("yorimo 추가실패"));
+
+				}
 
 			}
 		}
