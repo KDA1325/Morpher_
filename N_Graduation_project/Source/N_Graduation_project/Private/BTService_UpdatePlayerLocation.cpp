@@ -58,15 +58,15 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	{
 		return;
 	}
-	else 
-	{
-		BlackboardComp->SetValueAsVector(BBKEY_PLAYERLOCATION, PlayerLocation);
-		BlackboardComp->SetValueAsFloat(BBKEY_DISTANCE, DistanceToPlayer);
-	}
+
+	BlackboardComp->SetValueAsVector(BBKEY_PLAYERLOCATION, PlayerLocation);
+	BlackboardComp->SetValueAsFloat(BBKEY_DISTANCE, DistanceToPlayer);
 
 	// Blackboard로부터 값 읽어오기
 	float A_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_ASKILLRANGE);
 	float B_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_BSKILLRANGE);
+	//bool bASkillCondition = BlackboardComp->GetValueAsBool(BBKEY_BASKILLCONDITION);
+	//bool bBSkillCondition = BlackboardComp->GetValueAsBool(BBKEY_BBSKILLCONDITION);
 	//bool bA_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BASKILLAVAILABLE);
 	//bool bB_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BBSKILLAVAILABLE);
 
@@ -77,11 +77,34 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	/*bool bASkillCondition = (Distance <= A_SkillRange) && bA_SkillAvailable;
 	bool bBSkillCondition = (Distance <= B_SkillRange) && bB_SkillAvailable;*/
 
+	// 거리 조건 계산: 조건을 매 틱마다 새로 설정
 	bool bASkillCondition = (DistanceToPlayer <= A_SkillRange);
-	bool bBSkillCondition = (DistanceToPlayer <= B_SkillRange);
+	bool bBSkillCondition = (!bASkillCondition && (DistanceToPlayer <= B_SkillRange));
 
+	// 블랙보드에 조건 결과 업데이트
 	BlackboardComp->SetValueAsBool(BBKEY_BASKILLCONDITION, bASkillCondition);
 	BlackboardComp->SetValueAsBool(BBKEY_BBSKILLCONDITION, bBSkillCondition);
+
+	/*if (DistanceToPlayer <= A_SkillRange)
+	{
+		bASkillCondition = true;
+
+		BlackboardComp->SetValueAsBool(BBKEY_BASKILLCONDITION, bASkillCondition);
+		BlackboardComp->SetValueAsBool(BBKEY_BBSKILLCONDITION, bBSkillCondition);
+	}
+
+	if (!bASkillCondition && DistanceToPlayer <= B_SkillRange)
+	{
+		bBSkillCondition = true;
+
+		BlackboardComp->SetValueAsBool(BBKEY_BASKILLCONDITION, bASkillCondition);
+		BlackboardComp->SetValueAsBool(BBKEY_BBSKILLCONDITION, bBSkillCondition);
+	}*/
+	//bool bASkillCondition = (DistanceToPlayer <= A_SkillRange);
+	//bool bBSkillCondition = (DistanceToPlayer <= B_SkillRange);
+
+	//BlackboardComp->SetValueAsBool(BBKEY_BASKILLCONDITION, bASkillCondition);
+	//BlackboardComp->SetValueAsBool(BBKEY_BBSKILLCONDITION, bBSkillCondition);
 
 	UE_LOG(LogTemp, Warning, TEXT("bASkillCondition: %s"), bASkillCondition ? TEXT("True") : TEXT("False"));
 	UE_LOG(LogTemp, Warning, TEXT("bBSkillCondition: %s"), bBSkillCondition ? TEXT("True") : TEXT("False"));
