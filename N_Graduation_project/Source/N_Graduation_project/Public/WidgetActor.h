@@ -32,4 +32,7 @@ public:
 
 	// 접근용 Getter 함수
 	UMyCharacterWidget* GetHUDWidget() const { return HUDWidget; }
+
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	UPieMenuWidget* GetPieWidget() const { return PieWidget; }
 };

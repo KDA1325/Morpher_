@@ -67,6 +67,11 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	{
 		LeftClickAction = MouseLeftClick.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> Tab = TEXT("/Script/EnhancedInput.InputAction'/Game/ThirdPerson/Input/Actions/IA_Tab.IA_Tab'");
+	if (Tab.Object)
+	{
+		PieMenuAction = Tab.Object;
+	}
 
 	// IA를 직접 지정하지 않으면 Dash 기능이 수행되지 않음 
 	static ConstructorHelpers::FObjectFinder<UInputAction> DashInput = TEXT("/Script/EnhancedInput.InputAction'/Game/ThirdPerson/Input/Actions/IA_Dash.IA_Dash'");
@@ -199,6 +204,10 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 
 		// NomalSkill
 		EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::NomalSkillAction);
+
+		EnhancedInputComponent->BindAction(PieMenuAction, ETriggerEvent::Started, this, &AN_Graduation_projectCharacter::OnPieMenuPressed);
+		EnhancedInputComponent->BindAction(PieMenuAction, ETriggerEvent::Completed, this, &AN_Graduation_projectCharacter::OnPieMenuReleased);
+
 	}
 	else
 	{
@@ -244,6 +253,36 @@ void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
 			StateComp->ChangeState(ECharacterState::Move);
 		}
 	}
+}
+void AN_Graduation_projectCharacter::OnPieMenuPressed()
+{
+
+	if (WidgetActor)
+	{
+		UPieMenuWidget* PieWidget = WidgetActor->GetPieWidget();
+		if (PieWidget)
+		{
+			PieWidget->SetVisibility(ESlateVisibility::Visible);
+			UE_LOG(LogTemp, Warning, TEXT("Pie 메뉴 보임"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("PieWidget이 nullptr입니다."));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("WidgetActor가 nullptr입니다."));
+	}
+}
+
+void AN_Graduation_projectCharacter::OnPieMenuReleased()
+{
+
+	WidgetActor->GetPieWidget()->SetVisibility(ESlateVisibility::Hidden);
+	UE_LOG(LogTemp, Warning, TEXT("Pie 메뉴 숨김"));
+
+
 }
 
 //void AN_Graduation_projectCharacter::Look(const FInputActionValue& Value)

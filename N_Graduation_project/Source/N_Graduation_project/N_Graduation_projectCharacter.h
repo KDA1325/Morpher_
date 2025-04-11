@@ -63,6 +63,9 @@ class AN_Graduation_projectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LeftClickAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* PieMenuAction;
+
 public:
 	AN_Graduation_projectCharacter();
 
@@ -73,6 +76,8 @@ protected:
 
 	/** Called for looking input */
 	//void Look(const FInputActionValue& Value);
+	void OnPieMenuPressed();//ÅÇ ´©¸£´ÂÁß
+	void OnPieMenuReleased(); //ÅÇ ¶«
 
 	void RotateCharacterToCursor();
 
@@ -100,12 +105,13 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	UPROPERTY()
+	UWidgetActor* WidgetActor;
+
 private:
 	FVector MouseWorldPosition;
 	FVector MouseWorldDirection;
 
-	UPROPERTY()
-	UWidgetActor* WidgetActor;
 
 	// Dash °Å¸®
 	UPROPERTY(EditAnywhere, Category = "Dash", meta = (AllowPrivateAccess = "true"))

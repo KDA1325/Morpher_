@@ -8,7 +8,7 @@ void UPieMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	for (int i = 1; i <= 7; i++)
+	/*for (int i = 1; i <= 7; i++)
 	{
 		FString Name = FString::Printf(TEXT("slot%d"), i);
 		if (UScaleBox* ScaleBox = Cast<UScaleBox>(GetWidgetFromName(*Name)))
@@ -19,11 +19,8 @@ void UPieMenuWidget::NativeConstruct()
 		else {
 			UE_LOG(LogTemp, Log, TEXT("No ScaleBox"));
 		}
-	}
-
-
+	}*/\
 }
-
 
 void UPieMenuWidget::OnCollection_Implementation(const FString& DeadMonsterName)
 {
@@ -50,16 +47,41 @@ void UPieMenuWidget::OpenCharacter(FString DeadMonsterName)
 
 	if (DeadMonsterName == "WildBoar") {
 		UE_LOG(LogTemp, Log, TEXT("와일드 보어 해금 완료"));
-		PieScaleBoxes[2]->SetVisibility(ESlateVisibility::Visible);
+		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("boar_img"))))
+		{
+			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
+		}
 	}
-
 	else if (DeadMonsterName == "Inpermon")
 	{
 		UE_LOG(LogTemp, Log, TEXT("인페르몽 해금 완료"));
+		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("monkey_img"))))
+		{
+			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
+		}
 	}
-	else if (DeadMonsterName == "SkeletonWarrior") {}
-	else if (DeadMonsterName == "StoneGolem") {}
-	else if (DeadMonsterName == "SkeletonArcher") {}
-	else if (DeadMonsterName == "lizard") {}
-
+	else if (DeadMonsterName == "SkeletonWarrior") {
+		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("Skeleton1_img"))))
+		{
+			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	else if (DeadMonsterName == "StoneGolem") {
+		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("Golem_img"))))
+		{
+			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	else if (DeadMonsterName == "SkeletonArcher") {
+		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("Skeleton2_img"))))
+		{
+			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	else if (DeadMonsterName == "lizard") {
+		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("lizard_img"))))
+		{
+			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
 }

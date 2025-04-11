@@ -1,5 +1,6 @@
 ﻿#include "WidgetActor.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
 UWidgetActor::UWidgetActor()
@@ -17,6 +18,7 @@ UWidgetActor::UWidgetActor()
 	{
 		PieClass = Pie.Class;
 	}
+  
 }
 
 void UWidgetActor::BeginPlay()
@@ -39,7 +41,8 @@ void UWidgetActor::BeginPlay()
         PieWidget = Cast<UPieMenuWidget>(CreateWidget(GetWorld()->GetFirstPlayerController(), PieClass));
         if (PieWidget)
         {
-          //  PieWidget->AddToViewport();
+            PieWidget->AddToViewport();
+            PieWidget->SetVisibility(ESlateVisibility::Hidden);
         }
     }
 
