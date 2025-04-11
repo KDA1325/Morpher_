@@ -246,7 +246,23 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			}
 		}
 
-		if (NormalSkillHitBox && HitBoxContainer)
+		// 3. SpecialSkillHitBox 생성 (HitBoxContainer의 자식)
+		if (!SpecialSkillHitBox)
+		{
+			SpecialSkillHitBox = NewObject<UBoxComponent>(this, TEXT("SpecialSkillHitBox"));
+			if (SpecialSkillHitBox)
+			{
+				SpecialSkillHitBox->RegisterComponent();
+				SpecialSkillHitBox->AttachToComponent(HitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
+
+				HideHitBox();
+
+				// Overlap 이벤트 바인딩 
+				SpecialSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnHitBoxOverlap);
+			}
+		}
+
+		if (NormalSkillHitBox && SpecialSkillHitBox && HitBoxContainer)
 		{
 			//// HitBox를 보이도록 설정
 			//NormalSkillHitBox->SetHiddenInGame(false);

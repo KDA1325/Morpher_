@@ -56,9 +56,14 @@ public:
 	// Normal 스킬용 히트박스 컴포넌트 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	UBoxComponent* NormalSkillHitBox;
+	// Special 스킬용 히트박스 컴포넌트 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
+	UBoxComponent* SpecialSkillHitBox;
 
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	UAnimMontage* NormalSkillMontage;
+	UPROPERTY(EditAnywhere, Category = "Skill")
+	UAnimMontage* SpecialSkillMontage;
 
 	// Normal 스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
