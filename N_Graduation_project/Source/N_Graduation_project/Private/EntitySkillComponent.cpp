@@ -94,7 +94,7 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, 
 
 	if (SkillData.SkillNameID == "Skill_Charge")
 	{
-		//Entity->PerformSpecialSkill_Charge();
+		OwnerEntity->PerformSkill_Charge();
 		UE_LOG(LogTemp, Warning, TEXT("Skill_Charge"));
 	}
 	else
@@ -105,10 +105,10 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, 
 
 void UEntitySkillComponent::ExecuteProjectileTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
 {
-	// 
+	// Projectile 스킬 구현 
 }
 
 void UEntitySkillComponent::ExecuteBuffTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
 {
-	//
+	// Buff 스킬 구현 
 }

@@ -455,6 +455,87 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 		}
 	}
 }
+void AEntityPreset::PerformSkill_Charge()
+{
+	// 돌진(Charge) 스킬은 SpecialSkillMontage를 사용한다고 가정
+	if (SpecialSkillMontage)
+	{
+		if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+		{
+			// 플레이어에게 돌진하기 전, 준비 애니메이션(예: 기를 모으는 Idle 등)을 재생
+			AnimInst->Montage_Play(SpecialSkillMontage);
+			UE_LOG(LogTemp, Warning, TEXT("PerformSpecialSkill_Charge: Montage played"));
+
+			// 몽타주 종료 델리게이트 바인딩 (돌진 후 히트박스 숨김 처리)
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this, &AEntityPreset::OnSpecialSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
+
+			// 준비 시간 동안 돌진 경로 표시 (여기서는 간단하게 히트박스 표시)
+			ShowSpecialHitBox();
+			// 돌진 경로 표시 함수 호출 (예: DrawChargePath())
+			DrawChargePath();
+
+			// 준비 시간 후 돌진 실행 (예: 0.5초 후 실행)
+			float PrepTime = 0.5f; // 필요에 따라 조정
+			FTimerHandle TimerHandle;
+			GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::ExecuteChargeDash, PrepTime, false);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill_Charge: AnimInstance not found"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill_Charge: SpecialSkillMontage is not set"));
+	}
+}
+void AEntityPreset::ExecuteChargeDash()
+{
+	// 돌진 방향은 현재 캐릭터의 전방 벡터로 결정
+	FVector DashDirection = GetActorForwardVector();
+	// SkillData에 정의된 SkillRange를 돌진 거리로 사용 (예: 600)
+	float DashDistance = SpecialSkillData.SkillRange;
+	FVector StartLocation = GetActorLocation();
+	FVector DashTarget = StartLocation + DashDirection * DashDistance;
+
+	// 돌진 동작은 LaunchCharacter를 통해 구현 (속도는 필요에 따라 조정)
+	float DashSpeed = 2000.0f; // 예시 속도, 필요에 따라 조정
+	LaunchCharacter(DashDirection * DashSpeed, true, true);
+
+	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Dashing towards %s"), *DashTarget.ToString());
+}
+
+// Special 스킬 몽타주 종료 콜백
+void AEntityPreset::OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	// 실제 돌진 동작: 빠른 이동 및 히트박스 생성
+    // 예를 들어: 전방으로 특정 거리를 빠르게 이동 + ShowSpecialHitBox() 호출
+    
+    // 돌진 이동 처리 (임의 값, 필요에 따라 수정)
+	FVector ForwardDirection = GetActorForwardVector();
+	float ChargeDistance = 600.f; // SkillData.SkillRange 등 데이터 사용 가능
+	FVector TargetLocation = GetActorLocation() + ForwardDirection * ChargeDistance;
+
+	// 빠른 이동(예: Teleport or Smooth movement using a timeline)
+	SetActorLocation(TargetLocation);
+	UE_LOG(LogTemp, Warning, TEXT("OnSpecialSkill_ChargeMontageEnded: Moved to Charge target location"));
+
+	// 돌진 동작 시 히트박스 활성화
+	//ShowSpecialHitBox();
+	HideSpecialHitBox();
+}
+
+void AEntityPreset::DrawChargePath()
+{
+	// 예시: 디버그 선을 이용해 경로 표시
+	FVector StartLocation = GetActorLocation();
+	FVector EndLocation = StartLocation + GetActorForwardVector() * 600.f; // 돌진 거리와 동일
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.5f, 0, 5.f);
+	UE_LOG(LogTemp, Warning, TEXT("DrawChargePath: Charge path drawn"));
+}
+
 //void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 //{
 //	if (OtherActor && OtherActor != this)
@@ -512,60 +593,53 @@ float AEntityPreset::GetSpecialSkillRange()
 
 	return currentSpecialSkillRange;
 }
+//
+//void AEntityPreset::PerformNormalSkill()
+//{
+//	if (NormalSkillMontage)
+//	{
+//		if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+//		{
+//			// 몽타주 재생
+//			AnimInst->Montage_Play(NormalSkillMontage);
+//			UE_LOG(LogTemp, Warning, TEXT("PerformNormalSkill: Montage played"));
+//		}
+//		else
+//		{
+//			UE_LOG(LogTemp, Error, TEXT("PerformNormalSkill: AnimInstance not found"));
+//		}
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("PerformNormalSkill: NormalSkillMontage is not set"));
+//	}
+//}
+//
+//void AEntityPreset::PerformSpecialSkill()
+//{
+//	if (SpecialSkillMontage)
+//	{
+//		if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+//		{
+//			// 몽타주 재생
+//			AnimInst->Montage_Play(SpecialSkillMontage);
+//			UE_LOG(LogTemp, Warning, TEXT("PerformSpecialSkill: Montage played"));
+//
+//			// 몽타주 종료 델리게이트 바인딩 
+//			FOnMontageEnded EndDelegate;
+//			EndDelegate.BindUObject(this, &AEntityPreset::OnSpecialSkillMontageEnded);
+//			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
+//
+//			ShowSpecialHitBox();
+//		}
+//		else
+//		{
+//			UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill: AnimInstance not found"));
+//		}
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill: NormalSkillMontage is not set"));
+//	}
+//}
 
-void AEntityPreset::PerformNormalSkill()
-{
-	if (NormalSkillMontage)
-	{
-		if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
-		{
-			// 몽타주 재생
-			AnimInst->Montage_Play(NormalSkillMontage);
-			UE_LOG(LogTemp, Warning, TEXT("PerformNormalSkill: Montage played"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("PerformNormalSkill: AnimInstance not found"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("PerformNormalSkill: NormalSkillMontage is not set"));
-	}
-}
-
-void AEntityPreset::PerformSpecialSkill()
-{
-	if (SpecialSkillMontage)
-	{
-		if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
-		{
-			// 몽타주 재생
-			AnimInst->Montage_Play(SpecialSkillMontage);
-			UE_LOG(LogTemp, Warning, TEXT("PerformSpecialSkill: Montage played"));
-
-			// 몽타주 종료 델리게이트 바인딩 
-			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this, &AEntityPreset::OnSpecialSkillMontageEnded);
-			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
-
-			ShowSpecialHitBox();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill: AnimInstance not found"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill: NormalSkillMontage is not set"));
-	}
-}
-
-// Special 스킬 몽타주 종료 콜백
-void AEntityPreset::OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted)
-{
-	UE_LOG(LogTemp, Error, TEXT("Montage Ended"));
-
-	HideSpecialHitBox();
-}

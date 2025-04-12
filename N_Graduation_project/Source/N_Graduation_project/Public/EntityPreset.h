@@ -93,6 +93,17 @@ public:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 		const FHitResult& SweepResult);
 
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void PerformSkill_Charge();
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void ExecuteChargeDash();
+
+	// Special Skill 몽타주 종료 콜백 
+	UFUNCTION()
+	void OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	void DrawChargePath();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -156,15 +167,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	float GetSpecialSkillRange();
 
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void PerformNormalSkill();
+	//UFUNCTION(BlueprintCallable, Category = "Skill")
+	//void PerformNormalSkill();
 
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void PerformSpecialSkill();
+	//UFUNCTION(BlueprintCallable, Category = "Skill")
+	//void PerformSpecialSkill();
 
-	// Special 스킬 몽타주 종료 콜백
-	UFUNCTION()
-	void OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 // AI Section
 protected:
 	//virtual float GetAIPatrolRadius() override;
