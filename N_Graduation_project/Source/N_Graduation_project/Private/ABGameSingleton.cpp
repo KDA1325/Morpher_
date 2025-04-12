@@ -150,7 +150,7 @@ bool UABGameSingleton::GetSkillDataBySkillID(const FString& SkillID, FSkillData&
 }
 
 
-bool UABGameSingleton::GetSkillEffectDataTBySkillID(const FString& SkillNameID, FSkillEffectData& EffectData) const
+bool UABGameSingleton::GetSkillEffectDataBySkillID(const FString& SkillNameID, TArray<FSkillEffectData>& EffectData) const
 {
 	// SkillID가 정확히 어떤 값이 전달되었는지 로그로 확인
 	UE_LOG(LogABGameSingleton, Warning, TEXT("Searching for EffectID: %s"), *SkillNameID);
@@ -163,7 +163,7 @@ bool UABGameSingleton::GetSkillEffectDataTBySkillID(const FString& SkillNameID, 
 	{
 		if (Pair.Value.SkillNameID == SkillNameID)
 		{
-			EffectData = Pair.Value;
+			EffectData.Add(Pair.Value);
 			return true;
 		}
 	}

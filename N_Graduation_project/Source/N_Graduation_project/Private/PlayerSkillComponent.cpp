@@ -337,13 +337,14 @@ void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage, bool bInter
 
 void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 {
-	FSkillEffectData EffectData;
-	if (!UABGameSingleton::Get().GetSkillEffectDataTBySkillID(SkillNameID, EffectData))
+	TArray<FSkillEffectData> EffectData;
+	if (!UABGameSingleton::Get().GetSkillEffectDataBySkillID(SkillNameID, EffectData))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("no Effect: %s"), *SkillNameID);
 		return;
 	}
-	DamageAmount = EffectData.EffectValue01;
+
+	DamageAmount = EffectData[0].EffectValue01;
 	UE_LOG(LogTemp, Warning, TEXT("SkillEffect 실행됨! DamageAmount: %f"), DamageAmount);
 
 }

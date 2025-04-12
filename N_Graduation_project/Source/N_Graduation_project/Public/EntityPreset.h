@@ -16,6 +16,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, NewHealth);
 class UEntityWidget;
+class UEntitySkillComponent;
 
 UCLASS()
 class N_GRADUATION_PROJECT_API AEntityPreset : public ACharacter
@@ -36,6 +37,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	UWidgetComponent* WidgetComp; //액터에 붙이는 컴포넌트(블루프린트 위젯으로 지정)
 
+	UEntitySkillComponent* EntitySkillComponent;
 	// 블루프린트에서 할당하는 WidgetComponent (이 컴포넌트에 위젯 블루프린트가 지정되어 있어야 함)
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	//UWidgetComponent* WidgetComp;
@@ -43,11 +45,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	float CurrentHP;
 
+
 	FABEntityData EntityData;
 	FSkillData NormalSkillData;
 	FSkillData SpecialSkillData;
-	FSkillEffectData NormalSkillEffectData;
-	FSkillEffectData SpecialSkillEffectData;
+	TArray<FSkillEffectData> NormalSkillEffectData;
+	TArray<FSkillEffectData> SpecialSkillEffectData;
 
 	// HitBox를 위한 컨테이너 컴포넌트 (소켓 기준)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
@@ -65,19 +68,28 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	UAnimMontage* SpecialSkillMontage;
 
-	// Normal 스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
+	//스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void SetupHitBoxComponent(FSkillData& SkillData);
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void ShowHitBox();
+	void ShowNormalHitBox();
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void HideHitBox();
+	void HideNormalHitBox();
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void ShowSpecialHitBox();
+
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void HideSpecialHitBox();
 
 	// 히트박스 Overlap 이벤트 처리 함수
 	UFUNCTION()
-	void OnHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	void OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+		const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 		const FHitResult& SweepResult);
 
@@ -147,6 +159,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void PerformNormalSkill();
 
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void PerformSpecialSkill();
+
+	// Special 스킬 몽타주 종료 콜백
+	UFUNCTION()
+	void OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 // AI Section
 protected:
 	//virtual float GetAIPatrolRadius() override;
