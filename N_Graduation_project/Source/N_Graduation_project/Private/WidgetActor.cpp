@@ -3,6 +3,8 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/WidgetLayoutLibrary.h" // <- DPI 스케일을 위해 필요
+#include "N_Graduation_project/N_Graduation_projectCharacter.h"
+#include "MyPlayerStatComponent.h"
 
 UWidgetActor::UWidgetActor()
 {
@@ -70,7 +72,7 @@ void UWidgetActor::ShowPieMenu()
 		{
 			// 블루프린트에서 계산했던 방식 가져오기
 			float CalculatedX = ScaledMousePosition.X - 1100.0f;
-			float CalculatedY = ScaledMousePosition.Y-350.0f;  
+			float CalculatedY = ScaledMousePosition.Y - 350.0f;
 			FVector2D FinalPosition(CalculatedX, CalculatedY);
 			PieWidget->SetPositionInViewport(FinalPosition, false);
 			PieWidget->SetVisibility(ESlateVisibility::Visible);
@@ -90,15 +92,25 @@ void UWidgetActor::HidePieMenu()
 {
 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
+	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+	UMyPlayerStatComponent* Stat = MyChar->FindComponentByClass<UMyPlayerStatComponent>();
 	if (PieWidget)
 	{
-		PieWidget->CacheFinalMouseAngle();
+		if (Stat->Change == true) {
+			PieWidget->CacheFinalMouseAngle();
+			MyChar->ChangePreset(PieWidget->Monster);
+			//Stat->Change = false;
+		}
+
 		PieWidget->SetVisibility(ESlateVisibility::Hidden);
+
 
 		if (PC)
 		{
 			UWidgetBlueprintLibrary::SetInputMode_GameOnly(PC);
 			PC->bShowMouseCursor = false;
+			UE_LOG(LogTemp, Log, TEXT("PieWidget->Monster %s"), *PieWidget->Monster);
+
 		}
 
 		UE_LOG(LogTemp, Log, TEXT("Pie 메뉴 제거 및 게임 입력 모드로 전환"));

@@ -123,8 +123,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	FOnTimelineFloat DashCallback;
 	currentPreset = "PlayerCharacter";
 
-	//UpdateEntityData();
-	//currentPreset = "WildBoar";
+	PlayerSword = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Player_sword")));
 
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
 	DashCallback.BindUFunction(this, FName("DashInterpReturn"));
@@ -146,7 +145,7 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 	{
 		return; // StateComp가 없으면 함수 종료
 	}
-
+	//PlayerSkillComponent->MeasureDistanceToMonster();
 	// Speed가 일정 임계값보다 크면 이동 중
 	if (Speed > 0.1f)
 	{
@@ -215,6 +214,8 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 	}
 	if (PlayerSkillComponent->CanUseNomalSkill == true) {
 		PlayerSkillComponent->NomalSkillPlay(NomalSkill);
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
+
 	}
 }
 
@@ -359,12 +360,9 @@ void AN_Graduation_projectCharacter::Dash(const FVector DashDir, const FVector D
 		UpdateEntityData();
 		//속도 변하는지 체크하려고
 		*/
-	currentPreset = "WildBoar"; //임시로	
-	SetPreset(currentPreset);
 
-	UpdateEntityData();
-	/*FString HPText = FString::Printf(TEXT("HP: %f"), PlayerStatComponent->CurrentHP);
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, HPText);*/
+		/*FString HPText = FString::Printf(TEXT("HP: %f"), PlayerStatComponent->CurrentHP);
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, HPText);*/
 }
 
 void AN_Graduation_projectCharacter::DashInterpReturn(float value)
@@ -516,11 +514,11 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	if (currentPreset == "PCPreset.uasset")
 	{
 		// 에디터 실행 시 문제없이 메시를 로드하기 위해 FSoftObjectPath를 사용해 비동기 로딩 
-		FSoftObjectPath MeshPath(TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Player/Player_Attack/Player_attack.Player_attack"));
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		GetMesh()->SetSkeletalMesh(LoadedMesh);
-
+		PlayerSword->SetHiddenInGame(true);
 		if (LoadedMesh)
 		{
 			// 스켈레탈 메시를 사용할 경우 SetSkeletalMesh() 사용
@@ -529,15 +527,14 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	}
 
 	if (currentPreset == "WildBoarPreset.uasset")
-	{
-		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2.Boar_idle_test3s_2"));
+	{//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Gamin/Bore_attack_3.uasset
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Bore_attack_3.Bore_attack_3"));
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		GetMesh()->SetSkeletalMesh(LoadedMesh);
 
 		if (LoadedMesh)
 		{
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);  // SkeletalMesh는 Skel_MeshCom을 사용
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("I'm Here")));
 		}
 	}
 
@@ -563,9 +560,9 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		}
 	}
 
-	if (currentPreset == "StoneGolemPreset.uasset")
-	{
-		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_Lamp_Ceiling.SM_Lamp_Ceiling'"));
+	if (currentPreset == "StoneGolem")
+	{//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/SyntyAsset/PolygonFantasyRivals/Meshes/New_Characters/SK_BR_Character_ElementalGolem_01.uasset
+		FSoftObjectPath MeshPath(TEXT("/Game/SyntyAsset/PolygonFantasyRivals/Meshes/New_Characters/SK_BR_Character_ElementalGolem_01.SK_BR_Character_ElementalGolem_01"));
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if (LoadedMesh)
@@ -630,6 +627,17 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 				}
 			}
 		}
+	}
+}
+//변신
+void AN_Graduation_projectCharacter::ChangePreset(FString Name)
+{
+	currentPreset = Name;
+	if (currentPreset != pastPreset) {
+		SetPreset(currentPreset);
+		UpdateEntityData();
+		PlayerSword->SetHiddenInGame(false);
+		pastPreset = currentPreset;
 	}
 }
 

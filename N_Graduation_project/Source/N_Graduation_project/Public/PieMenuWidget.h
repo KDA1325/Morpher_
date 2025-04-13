@@ -39,6 +39,8 @@ public:
 	TSet<FString> DeadMonsters;
 
 	float SectorAngle = 360.0f / 7.0f; // 7∞≥ ºΩ≈Õ
+	FString Monster;
+	FString BeforeMonster;
 
 	UPROPERTY()
 	TArray<UScaleBox*> PieScaleBoxes;

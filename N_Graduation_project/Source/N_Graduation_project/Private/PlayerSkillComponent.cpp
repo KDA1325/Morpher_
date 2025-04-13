@@ -127,7 +127,33 @@ void UPlayerSkillComponent::HideHitBox()
 
 AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
 {
-	//지삐티니
+	/*if (!GetWorld()) return nullptr;
+
+	AActor* ClosestMonster = nullptr;
+	float MinDistance = FLT_MAX;
+
+	AActor* Owner = GetOwner();
+	if (!Owner) return nullptr;
+
+	FVector PlayerLocation = Owner->GetActorLocation();
+
+	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+	{
+		AActor* Actor = *It;
+		if (Actor && Actor->ActorHasTag(FName("Monster")))
+		{
+			float CurrentDistance = FVector::Dist(PlayerLocation, Actor->GetActorLocation());
+
+			if (CurrentDistance < MinDistance)
+			{
+				MinDistance = CurrentDistance;
+				ClosestMonster = Actor;
+			}
+		}
+	}
+
+	return ClosestMonster;*/
+	//정면방향 몬스터 거리
 	if (!GetWorld()) return nullptr;
 
 	AActor* ClosestMonster = nullptr;//몬스터를 담을 변수
@@ -174,7 +200,7 @@ float UPlayerSkillComponent::MeasureDistanceToMonster() const
 	AActor* MonsterTarget = FindFrontMonsterTarget();
 	if (MonsterTarget)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("GetDistanceTo(MonsterTarget): %f"), GetDistanceTo(MonsterTarget));
+		UE_LOG(LogTemp, Warning, TEXT("GetDistanceTo(MonsterTarget): %f"), GetDistanceTo(MonsterTarget));
 		return GetDistanceTo(MonsterTarget);
 	}
 	return 0.f;
@@ -201,7 +227,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 {
 	UE_LOG(LogTemp, Warning, TEXT("kakao On NomalSkillPlay"));
 	distance = MeasureDistanceToMonster();
-	UE_LOG(LogTemp, Warning, TEXT("Distance to Monster: %f"), distance);
+	UE_LOG(LogTemp, Warning, TEXT("Kakao Distance to Monster: %f"), distance);
 	if (CanUseNomalSkill == true) {
 
 		UE_LOG(LogTemp, Warning, TEXT("kakao On CanUseNomalSkill"));

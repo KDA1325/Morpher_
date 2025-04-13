@@ -68,7 +68,7 @@ class AN_Graduation_projectCharacter : public ACharacter
 
 public:
 	AN_Graduation_projectCharacter();
-
+	void ChangePreset(FString Name);
 
 protected:
 	/** Called for movement input */
@@ -108,10 +108,12 @@ public:
 	UPROPERTY()
 	UWidgetActor* WidgetActor;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UStaticMeshComponent* PlayerSword;
+
 private:
 	FVector MouseWorldPosition;
 	FVector MouseWorldDirection;
-
 
 	// Dash �Ÿ�
 	UPROPERTY(EditAnywhere, Category = "Dash", meta = (AllowPrivateAccess = "true"))

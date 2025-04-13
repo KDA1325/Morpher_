@@ -39,7 +39,7 @@ void UMyCharacterWidget::NativeConstruct()
 		}
 	}
 	//프로필
-	for (int i = 0; i < 7; i++)
+	for (int i = 1; i <= 7; i++)
 	{
 		FString Name = FString::Printf(TEXT("P_icon%d"), i);
 		if (UImage* Icon = Cast<UImage>(GetWidgetFromName(*Name)))
@@ -91,10 +91,10 @@ void UMyCharacterWidget::ChangeIcon(const FString& MonsterName)
 		{"SkeletonWarrior", 5},
 		{"SkeletonArcher", 6}
 	};
-
+	
 	if (IconMap.Contains(MonsterName) && IconImages.IsValidIndex(IconMap[MonsterName]))
 	{
-		IconImages[IconMap[MonsterName]]->SetVisibility(ESlateVisibility::Visible);
+		IconImages[IconMap[MonsterName]]->SetVisibility(ESlateVisibility::Visible);		
 	}
 }
 

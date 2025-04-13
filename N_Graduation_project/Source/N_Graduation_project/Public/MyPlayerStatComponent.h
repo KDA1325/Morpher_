@@ -52,5 +52,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	FString MonsterName;
 
+	bool Change;
+
 	FTimerHandle ManaRegenTimerHandle;
 };

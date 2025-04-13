@@ -26,6 +26,8 @@ void UPieMenuWidget::NativeConstruct()
 
 	// 파이 메뉴 열릴 때 초기 상태를 플레이어로 설정
 	CachedMouseFinalAngle = 102.0f;
+	Monster = "PlayerCharacter";
+	BeforeMonster = "PlayerCharacter";
 }
 void UPieMenuWidget::StandardPosition()
 {
@@ -78,34 +80,35 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 		{
 			CachedMouseFinalAngle = 0.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+
 			UE_LOG(LogTemp, Log, TEXT("전사 선택"));
 
-			// "SkeletonWarrior";
+			BeforeMonster = "SkeletonWarrior";
 		}
 		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 77.0f)
 	{
-		if (StoneGolem_OK) 
+		if (StoneGolem_OK)
 		{
-			CachedMouseFinalAngle = 309.0f;
+			CachedMouseFinalAngle = 306.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 			UE_LOG(LogTemp, Log, TEXT("골렘 선택"));
 
-			// "StoneGolem";
+			BeforeMonster = "StoneGolem";
 			//CachedMouseFinalAngle = 51.0f;
 		}
 		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 129.0f)
 	{
-		if (Freezard_OK) 
+		if (Freezard_OK)
 		{
 			CachedMouseFinalAngle = 257.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 			UE_LOG(LogTemp, Log, TEXT("프리자드 선택"));
 
-			//"Freezard";
+			BeforeMonster = "Freezard";
 			//		CachedMouseFinalAngle = 103.0f;
 		}
 		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
@@ -117,21 +120,21 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			CachedMouseFinalAngle = 206.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 			UE_LOG(LogTemp, Log, TEXT("인페르몽 선택"));
-			// "Inpermon";
+			BeforeMonster = "Inpermon";
 			//		CachedMouseFinalAngle = 154.0f;
 		}
 		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 233.0f)
 	{
-		if (WildBoar_Ok) 
+		if (WildBoar_Ok)
 		{
 			CachedMouseFinalAngle = 154.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 			UE_LOG(LogTemp, Log, TEXT("와일드 보어 선택"));
 
-			//"WildBoar";
-			//		CachedMouseFinalAngle = 206.0f;
+			BeforeMonster = "WildBoar";
+			//	CachedMouseFinalAngle = 206.0f;
 		}
 		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 
@@ -143,30 +146,31 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 		CachedMouseFinalAngle = 102.0f;
 		Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 
-		// "Player";
+		BeforeMonster = "PlayerCharacter";
 		//CachedMouseFinalAngle = 257.0f;
 	}
 	else if (CachedMouseFinalAngle <= 337.0f)
 	{
-		if (SkeletonArcher_OK) 
+		if (SkeletonArcher_OK)
 		{
 			UE_LOG(LogTemp, Log, TEXT("궁수 선택"));
 
 			CachedMouseFinalAngle = 51.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 
-			// "SkeletonArcher";
+			BeforeMonster = "SkeletonArcher";
 			//CachedMouseFinalAngle = 309.0f;
 		}
-		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		else { 
+	//		CachedMouseFinalAngle = Before_CachedMouseFinalAngle; 
+		}
 	}
 	else
 	{
 		CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		Monster = BeforeMonster;
 	}
-	//CachedMouseFinalAngle = GetFinalAngleForName(TargetName);
-
-	//	UE_LOG(LogTemp, Warning, TEXT("최종 선택된 각도: %f"), CachedMouseFinalAngle);
+	Monster = BeforeMonster;
 }
 
 

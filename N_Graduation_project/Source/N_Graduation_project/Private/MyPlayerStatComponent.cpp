@@ -13,6 +13,7 @@ UMyPlayerStatComponent::UMyPlayerStatComponent()
 	PastMaxHP = 150;
 	CurrentHP = 150;
 	MonsterName = "PlayerCharacter";
+	Change = true;
 }
 
 UMyCharacterWidget* UMyPlayerStatComponent::GetHUD() const
@@ -87,12 +88,17 @@ void UMyPlayerStatComponent::RegenerateMana()
 	{
 		SetMana(CurrentMana + 1);
 	}
+	if (CurrentMana >= 2) {
+		Change = true;
+	}
 }
 
 void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 {
-	if (CurrentMana > Mana)
+	if (CurrentMana >= Mana)
 	{
+		Change = true;
+
 		if (UMyCharacterWidget* HUD = GetHUD())
 		{
 			GetWorld()->GetTimerManager().SetTimer(ManaRegenTimerHandle, this, &UMyPlayerStatComponent::RegenerateMana, 4.0f, true);
@@ -119,7 +125,8 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("You can not Transform to Entity"));
+		Change = false;
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("마나가 부족합니다")));
 	}
 }
 
