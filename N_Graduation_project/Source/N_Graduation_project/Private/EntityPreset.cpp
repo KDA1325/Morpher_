@@ -534,47 +534,102 @@ void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedCompone
 	}
 }
 
+//void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+//{
+//	if (OtherActor && OtherActor != this)
+//	{
+//		// 플레이어 캐릭터인지 확인
+//		ACharacter* PlayerCharacter = Cast<ACharacter>(OtherActor);
+//		if (PlayerCharacter)
+//		{
+//			for (const FSkillEffectData& Effect : SpecialSkillEffectData)
+//			{
+//				switch (Effect.EffectType)
+//				{
+//				case EnumEffectType::Damage:
+//				{
+//					float DamageToApply = Effect.EffectValue01;
+//					UGameplayStatics::ApplyDamage(OtherActor, DamageToApply, GetController(), this, nullptr);
+//					UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Applied Damage %f to %s"),
+//						DamageToApply, *OtherActor->GetName());
+//					break;
+//				}
+//				case EnumEffectType::KnockBack:
+//				{
+//					// KnockBack 효과 로직 구현
+//					UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: KnockBack effect applied to %s"),
+//						*OtherActor->GetName());
+//					break;
+//				}
+//				case EnumEffectType::Destroy:
+//				{
+//					//OtherActor->Destroy();
+//					UE_LOG(LogTemp, Warning, TEXT(" Destroyed "));
+//					//UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Destroyed %s"), *OtherActor->GetName());
+//					break;
+//				}
+//				default:
+//					break;
+//				}
+//			}
+//		}
+//	}
+//}
+
 void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != this)
+	if (!OtherActor || OtherActor == this) return;
+
+	ACharacter* PlayerCharacter = Cast<ACharacter>(OtherActor);
+	if (!PlayerCharacter) return;
+
+	// 1. Damage를 먼저 처리
+	for (const FSkillEffectData& Effect : SpecialSkillEffectData)
 	{
-		// 플레이어 캐릭터인지 확인
-		ACharacter* PlayerCharacter = Cast<ACharacter>(OtherActor);
-		if (PlayerCharacter)
+		if (Effect.EffectType == EnumEffectType::Damage)
 		{
-			for (const FSkillEffectData& Effect : SpecialSkillEffectData)
+			float DamageToApply = Effect.EffectValue01;
+			UGameplayStatics::ApplyDamage(OtherActor, DamageToApply, GetController(), this, nullptr);
+			UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Applied Damage %f to %s"),
+				DamageToApply, *OtherActor->GetName());
+		}
+	}
+
+	// 2. KnockBack 효과 처리
+	for (const FSkillEffectData& Effect : SpecialSkillEffectData)
+	{
+		if (Effect.EffectType == EnumEffectType::KnockBack)
+		{
+			// 예: LaunchCharacter 또는 AddImpulse 로 구현
+			FVector KnockbackDir = OtherActor->GetActorLocation() - GetActorLocation();
+			KnockbackDir.Normalize();
+			float Force = Effect.EffectValue01;
+			float Duration = Effect.EffectValue02;
+
+			UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
+			if (MoveComp)
 			{
-				switch (Effect.EffectType)
-				{
-				case EnumEffectType::Damage:
-				{
-					float DamageToApply = Effect.EffectValue01;
-					UGameplayStatics::ApplyDamage(OtherActor, DamageToApply, GetController(), this, nullptr);
-					UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Applied Damage %f to %s"),
-						DamageToApply, *OtherActor->GetName());
-					break;
-				}
-				case EnumEffectType::KnockBack:
-				{
-					// KnockBack 효과 로직 구현
-					UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: KnockBack effect applied to %s"),
-						*OtherActor->GetName());
-					break;
-				}
-				case EnumEffectType::Destroy:
-				{
-					//OtherActor->Destroy();
-					UE_LOG(LogTemp, Warning, TEXT(" Destroyed "));
-					//UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Destroyed %s"), *OtherActor->GetName());
-					break;
-				}
-				default:
-					break;
-				}
+				MoveComp->Launch(KnockbackDir * Force);
 			}
+
+			UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: KnockBack applied to %s with force %f"), *OtherActor->GetName(), Force);
+		}
+	}
+
+	// 3. Destroy 효과는 마지막에 처리 (원하면 주석 처리 가능)
+	for (const FSkillEffectData& Effect : SpecialSkillEffectData)
+	{
+		if (Effect.EffectType == EnumEffectType::Destroy)
+		{
+			// 파괴가 정말 필요하다면 여기에
+			// OtherActor->Destroy();
+			UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Destroy effect processed (log only) for %s"), *OtherActor->GetName());
 		}
 	}
 }
+
+
+
 void AEntityPreset::PerformSkill_Charge()
 {
 	// 스킬 시전 플래그 설정

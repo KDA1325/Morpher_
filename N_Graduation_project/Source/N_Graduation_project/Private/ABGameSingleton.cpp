@@ -88,14 +88,36 @@ UABGameSingleton::UABGameSingleton()
 	{
 		UDataTable* DataTable = SkillEffectDataTableRef.Object;
 		TArray<FSkillEffectData*> Rows;
-		DataTable->GetAllRows<FSkillEffectData>(TEXT(""), Rows);
+		DataTable->GetAllRows<FSkillEffectData>(TEXT("Load SkillEffectData"), Rows);
 
 		for (FSkillEffectData* Row : Rows)
 		{
-			SkillEffectDataTable.Add(*Row);
-			SkillEffectDataMap.Add(Row->SkillNameID, *Row);
+			if (Row)
+			{
+				// 배열이 없으면 새로 만들고
+				if (!SkillEffectDataMap.Contains(Row->SkillNameID))
+				{
+					SkillEffectDataMap.Add(Row->SkillNameID, TArray<FSkillEffectData>());
+				}
+
+				// 해당 SkillNameID에 효과 추가
+				SkillEffectDataMap[Row->SkillNameID].Add(*Row);
+			}
 		}
 	}
+
+	//if (SkillEffectDataTableRef.Succeeded())
+	//{
+	//	UDataTable* DataTable = SkillEffectDataTableRef.Object;
+	//	TArray<FSkillEffectData*> Rows;
+	//	DataTable->GetAllRows<FSkillEffectData>(TEXT(""), Rows);
+
+	//	for (FSkillEffectData* Row : Rows)
+	//	{
+	//		SkillEffectDataTable.Add(*Row);
+	//		SkillEffectDataMap.Add(Row->SkillNameID, *Row);
+	//	}
+	//}
 
 	// 확인 완료 
 	/*for (const FSkillEffectData& SkillEffectData : SkillEffectDataTable)
@@ -152,20 +174,33 @@ bool UABGameSingleton::GetSkillDataBySkillID(const FString& SkillID, FSkillData&
 
 bool UABGameSingleton::GetSkillEffectDataBySkillID(const FString& SkillNameID, TArray<FSkillEffectData>& EffectData) const
 {
-	// SkillID가 정확히 어떤 값이 전달되었는지 로그로 확인
-	UE_LOG(LogABGameSingleton, Warning, TEXT("Searching for EffectID: %s"), *SkillNameID);
-	//if (const FSkillEffectData* FoundData = SkillEffectDataMap.Find(SkillNameID))
-	//{
-	//	EffectData = *FoundData;
-	//	return true;
-	//}
-	for (const auto& Pair : SkillEffectDataMap)
+	UE_LOG(LogABGameSingleton, Warning, TEXT("Searching for SkillEffectData for SkillNameID: %s"), *SkillNameID);
+
+	const TArray<FSkillEffectData>* FoundArray = SkillEffectDataMap.Find(SkillNameID);
+	if (FoundArray)
 	{
-		if (Pair.Value.SkillNameID == SkillNameID)
-		{
-			EffectData.Add(Pair.Value);
-			return true;
-		}
+		EffectData = *FoundArray;
+		return true;
 	}
+
 	return false;
 }
+
+//bool UABGameSingleton::GetSkillEffectDataBySkillID(const FString& SkillNameID, TArray<FSkillEffectData>& EffectData) const
+//{
+//	// SkillID가 정확히 어떤 값이 전달되었는지 로그로 확인
+//	UE_LOG(LogABGameSingleton, Warning, TEXT("Searching for EffectID: %s"), *SkillNameID);
+//	//if (const FSkillEffectData* FoundData = SkillEffectDataMap.Find(SkillNameID))
+//	//{
+//	//	EffectData = *FoundData;
+//	//	return true;
+//	//}
+//	for (const auto& Pair : SkillEffectDataMap)
+//	{
+//		if (Pair.Value.SkillNameID == SkillNameID)
+//		{
+//			EffectData.Add(Pair.Value);
+//		}
+//	}
+//	return EffectData.Num() > 0;
+//}

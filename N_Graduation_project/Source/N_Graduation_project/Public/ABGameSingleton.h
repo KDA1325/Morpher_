@@ -54,5 +54,6 @@ private:
 
 	// Skill Effect 데이터 저장
 	TArray<FSkillEffectData> SkillEffectDataTable;
-	TMap<FString, FSkillEffectData> SkillEffectDataMap;
+	TMap<FString, TArray<FSkillEffectData>> SkillEffectDataMap;
+	//TMap<FString, FSkillEffectData> SkillEffectDataMap;
 };

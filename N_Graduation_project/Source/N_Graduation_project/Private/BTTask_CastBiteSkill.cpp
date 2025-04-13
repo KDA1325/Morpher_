@@ -30,7 +30,7 @@ EBTNodeResult::Type UBTTask_CastBiteSkill::ExecuteTask(UBehaviorTreeComponent& O
 	if (Entity->bIsCastingSkill)
 		return EBTNodeResult::Failed;
 
-	Entity->bIsCastingSkill = true; // 스킬 진행 중 상태 설정
+	//Entity->bIsCastingSkill = true; // 스킬 진행 중 상태 설정
 	Entity->EntitySkillComponent->ExecuteSkill("Skill_Bite");
 
 
