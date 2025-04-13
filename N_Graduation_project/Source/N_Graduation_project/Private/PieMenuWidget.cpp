@@ -53,7 +53,7 @@ float UPieMenuWidget::CalculateMouseAngle()
 	FVector2D Direction = CurrentMousePosition - InitialMousePosition;
 	float Distance = Direction.Size();
 
-	const float IgnoreDistance = 50.0f;	// 일정 거리 이내(중앙에 가까운 클릭)는 무시 처리
+	const float IgnoreDistance = 70.0f;	// 일정 거리 이내(중앙에 가까운 클릭)는 무시 처리
 	if (Distance < IgnoreDistance)
 	{
 		return -1.0f; // 무시
@@ -78,6 +78,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 		{
 			CachedMouseFinalAngle = 0.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+			UE_LOG(LogTemp, Log, TEXT("전사 선택"));
 
 			// "SkeletonWarrior";
 		}
@@ -89,6 +90,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 		{
 			CachedMouseFinalAngle = 309.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+			UE_LOG(LogTemp, Log, TEXT("골렘 선택"));
 
 			// "StoneGolem";
 			//CachedMouseFinalAngle = 51.0f;
@@ -101,6 +103,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 		{
 			CachedMouseFinalAngle = 257.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+			UE_LOG(LogTemp, Log, TEXT("프리자드 선택"));
 
 			//"Freezard";
 			//		CachedMouseFinalAngle = 103.0f;
@@ -109,11 +112,11 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	}
 	else if (CachedMouseFinalAngle <= 181.0f)
 	{
-		if (StoneGolem_OK) 
+		if (Inpermon_OK)
 		{
 			CachedMouseFinalAngle = 206.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
-
+			UE_LOG(LogTemp, Log, TEXT("인페르몽 선택"));
 			// "Inpermon";
 			//		CachedMouseFinalAngle = 154.0f;
 		}
@@ -125,6 +128,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 		{
 			CachedMouseFinalAngle = 154.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+			UE_LOG(LogTemp, Log, TEXT("와일드 보어 선택"));
 
 			//"WildBoar";
 			//		CachedMouseFinalAngle = 206.0f;
@@ -134,6 +138,8 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	}
 	else if (CachedMouseFinalAngle <= 285.0f)
 	{
+		UE_LOG(LogTemp, Log, TEXT("플레이어 선택"));
+
 		CachedMouseFinalAngle = 102.0f;
 		Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 
@@ -144,6 +150,8 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	{
 		if (SkeletonArcher_OK) 
 		{
+			UE_LOG(LogTemp, Log, TEXT("궁수 선택"));
+
 			CachedMouseFinalAngle = 51.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 
@@ -154,7 +162,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	}
 	else
 	{
-	
+		CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	//CachedMouseFinalAngle = GetFinalAngleForName(TargetName);
 
