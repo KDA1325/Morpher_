@@ -64,6 +64,9 @@ class AN_Graduation_projectCharacter : public ACharacter
 	UInputAction* LeftClickAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* RightClickAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PieMenuAction;
 
 public:
@@ -90,6 +93,7 @@ protected:
 
 	//���콺 ��Ŭ��
 	void NomalSkillAction(const FInputActionValue& Value);
+	void SpecialSkillAction(const FInputActionValue& Value);
 
 protected:
 	// APawn interface

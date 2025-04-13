@@ -66,6 +66,12 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	{
 		LeftClickAction = MouseLeftClick.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> MouseRightClick = TEXT("/Script/EnhancedInput.InputAction'/Game/ThirdPerson/Input/Actions/RightClickAction.RightClickAction'");
+	if (MouseLeftClick.Object)
+	{
+		RightClickAction = MouseRightClick.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<UInputAction> Tab = TEXT("/Script/EnhancedInput.InputAction'/Game/ThirdPerson/Input/Actions/IA_Tab.IA_Tab'");
 	if (Tab.Object)
 	{
@@ -201,6 +207,8 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 
 		// NomalSkill
 		EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::NomalSkillAction);
+		//special Skill
+		EnhancedInputComponent->BindAction(RightClickAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::SpecialSkillAction);
 
 		EnhancedInputComponent->BindAction(PieMenuAction, ETriggerEvent::Started, this, &AN_Graduation_projectCharacter::OnPieMenuPressed);
 		EnhancedInputComponent->BindAction(PieMenuAction, ETriggerEvent::Completed, this, &AN_Graduation_projectCharacter::OnPieMenuReleased);
@@ -211,6 +219,14 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
+void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue& Value) 
+{
+	if (CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
+		return;
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
+
+}
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
 {
 	if (CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
@@ -218,9 +234,8 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 	}
 	if (PlayerSkillComponent->CanUseNomalSkill == true) {
 		PlayerSkillComponent->NomalSkillPlay(NomalSkill);
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
-
 	}
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
 }
 
 void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
