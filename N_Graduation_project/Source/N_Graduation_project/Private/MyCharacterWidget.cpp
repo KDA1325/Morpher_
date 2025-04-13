@@ -118,35 +118,35 @@ void UMyCharacterWidget::SetSkillIcon() {
 
 	if (SkillIcon1 && SkillIcon2)
 	{
-		if (SkillName == "PlayerCharacter") {
-			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Materials/MI_Cooldown.MI_Cooldown"));
+		if (SkillName == "PlayerCharacter")
+		{
+			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_Slash.Skill_Slash"));
 			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Materials/MI_Cooldown2.MI_Cooldown2"));
 
 			if (BaseMaterial)
 			{
 				// 다이나믹 머티리얼 인스턴스 생성
 				CooldownMID1 = UMaterialInstanceDynamic::Create(BaseMaterial, this);
-				//CooldownMID2->SetScalarParameterValue(TEXT("Opacity"), 0.0f); // 또는 Alpha
 				// 브러시에 머티리얼 인스턴스 설정
 				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
 				//SkillIcon2->SetBrushFromMaterial(CooldownMID2);
 				SkillIcon2->SetVisibility(ESlateVisibility::Hidden);
 
 			}
+
 		}
 		else if (SkillName == "WildBoar") {
-			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Materials/MI_Cooldown2.MI_Cooldown2"));
-			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Materials/MI_Cooldown.MI_Cooldown"));
+			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_bite.Skill_bite"));
+			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_charge.Skill_charge"));
+
 			if (BaseMaterial)
 			{
 				// 다이나믹 머티리얼 인스턴스 생성
 				CooldownMID1 = UMaterialInstanceDynamic::Create(BaseMaterial, this);
 				CooldownMID2 = UMaterialInstanceDynamic::Create(BaseMaterial2, this);
-
 				// 브러시에 머티리얼 인스턴스 설정
 				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
 				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
-
 			}
 		}
 	}
