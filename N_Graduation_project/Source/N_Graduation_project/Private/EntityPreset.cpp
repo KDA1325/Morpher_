@@ -577,16 +577,22 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 }
 void AEntityPreset::PerformSkill_Charge()
 {
-	// 돌진(Charge) 스킬은 SpecialSkillMontage를 사용한다고 가정
+	// 스킬 시전 플래그 설정
+	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
+	bIsCastingSkill = true;
+
+	// 현재 전방 벡터를 저장 (처음 결정된 방향을 고정)
+	StoredDashDirection = GetActorForwardVector().GetSafeNormal();
+
 	if (SpecialSkillMontage)
 	{
 		if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
 		{
-			// 플레이어에게 돌진하기 전, 준비 애니메이션(예: 기를 모으는 Idle 등)을 재생
+			// 스페셜 스킬 몽타주에 플레이어에게 돌진하기 전, 준비 애니메이션(1초) 포함
 			AnimInst->Montage_Play(SpecialSkillMontage);
 			UE_LOG(LogTemp, Warning, TEXT("PerformSpecialSkill_Charge: Montage played"));
 
-			// 돌진 경로 표시 함수 호출
+			// 돌진 경로 표시
 			DrawChargePath();
 
 			// 준비 시간 후 돌진 실행
@@ -595,10 +601,10 @@ void AEntityPreset::PerformSkill_Charge()
 			GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::ExecuteChargeDash, PrepTime, false);
 
 
-			//// 몽타주 종료 델리게이트 바인딩 (돌진 후 히트박스 숨김 처리)
-			//FOnMontageEnded EndDelegate;
-			//EndDelegate.BindUObject(this, &AEntityPreset::OnSpecialSkillMontageEnded);
-			//AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
+			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this, &AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
 		}
 		else
 		{
@@ -612,27 +618,38 @@ void AEntityPreset::PerformSkill_Charge()
 }
 void AEntityPreset::ExecuteChargeDash()
 {
-	// 돌진 방향은 현재 캐릭터의 전방 벡터로 결정
-	FVector DashDirection = GetActorForwardVector();
-	// SkillData에 정의된 SkillRange를 돌진 거리로 사용 (예: 600)
-	float DashDistance = SpecialSkillData.SkillRange;
-	FVector StartLocation = GetActorLocation();
-	FVector DashTarget = StartLocation + DashDirection * DashDistance;
+	// 준비 시간 동안 저장된 dash 방향을 사용
+	FVector DashDirection = StoredDashDirection;
 
-	// 준비 시간 동안 히트박스 표시
+	// SkillData에 정의된 SkillRange를 돌진 거리로 사용 
+	float DashDistance = SpecialSkillData.SkillRange;
+
+	//FVector StartLocation = GetActorLocation();
+	//FVector DashTarget = StartLocation + DashDirection * DashDistance;
+
+	// 히트박스 활성화 
 	ShowSpecialHitBox();
 
-	// 돌진 동작은 LaunchCharacter를 통해 구현 (속도는 필요에 따라 조정)
-	float DashSpeed = 2000.0f; // 예시 속도, 필요에 따라 조정
+	// 돌진
+	float DashSpeed = 2000.0f; 
 	LaunchCharacter(DashDirection * DashSpeed, true, true);
 
-	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Dashing towards %s"), *DashTarget.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Dashing"));
 
+	// 스킬 종료 처리는 MontageEnded 콜백에서 처리 
 }
 
-// Special 스킬 몽타주 종료 콜백
-void AEntityPreset::OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+void AEntityPreset::ClearCastingSkill()
 {
+	bIsCastingSkill = false;
+}
+
+//  스킬 몽타주 종료 콜백
+void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	// 스킬 종료 처리 
+	bIsCastingSkill = false;
+
 	//// 실제 돌진 동작: 빠른 이동 및 히트박스 생성
  //   // 예를 들어: 전방으로 특정 거리를 빠르게 이동 + ShowSpecialHitBox() 호출
  //   
@@ -649,6 +666,29 @@ void AEntityPreset::OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInte
 	//ShowSpecialHitBox();
 	//HideSpecialHitBox();
 }
+
+//// Special 스킬 몽타주 종료 콜백
+//void AEntityPreset::OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+//{
+//	// 스킬 종료 처리 
+//	bIsCastingSkill = false;
+//
+//	//// 실제 돌진 동작: 빠른 이동 및 히트박스 생성
+// //   // 예를 들어: 전방으로 특정 거리를 빠르게 이동 + ShowSpecialHitBox() 호출
+// //   
+// //   // 돌진 이동 처리 (임의 값, 필요에 따라 수정)
+//	//FVector ForwardDirection = GetActorForwardVector();
+//	//float ChargeDistance = 600.f; // SkillData.SkillRange 등 데이터 사용 가능
+//	//FVector TargetLocation = GetActorLocation() + ForwardDirection * ChargeDistance;
+//
+//	//// 빠른 이동(예: Teleport or Smooth movement using a timeline)
+//	//SetActorLocation(TargetLocation);
+//	//UE_LOG(LogTemp, Warning, TEXT("OnSpecialSkill_ChargeMontageEnded: Moved to Charge target location"));
+//
+//	// 돌진 동작 시 히트박스 활성화
+//	//ShowSpecialHitBox();
+//	//HideSpecialHitBox();
+//}
 
 void AEntityPreset::DrawChargePath()
 {

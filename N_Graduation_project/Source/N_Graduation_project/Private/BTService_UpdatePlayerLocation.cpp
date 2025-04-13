@@ -68,15 +68,15 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	float A_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_ASKILLRANGE);
 	float B_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_BSKILLRANGE);
 
-	// 스킬 쿨타임이 구현 되어있지 않은 관계로 Range 비교 결과로만 스킬 시전 
-	// 조건 계산:
-	// A스킬 조건: Distance <= ARange AND AAvailable true
-	// B스킬 조건: Distance <= BRange AND BAvailable true
-	/*bool bASkillCondition = (Distance <= A_SkillRange) && bA_SkillAvailable;
-	bool bBSkillCondition = (Distance <= B_SkillRange) && bB_SkillAvailable;*/
-
-	// 엔티티의 스킬 사용 가능 여부를 업데이트
 	AEntityPreset* Entity = Cast<AEntityPreset>(ControllingPawn);
+
+	// 만약 현재 엔티티가 스킬 시전 중이라면, SelectedSkillID 등 업데이트를 건너뛰고 리턴
+	if (Entity && Entity->bIsCastingSkill)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BTService: Entity is casting a skill, skipping update"));
+		return;
+	}
+
 	if (Entity && Entity->EntitySkillComponent)
 	{
 		bool bNormalAvailable = Entity->EntitySkillComponent->bCanUseNormalSkill;
@@ -90,12 +90,40 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	bool bB_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BBSKILLAVAILABLE);
 
 	// 거리 조건 계산: 조건을 매 틱마다 새로 설정
-	bool bASkillCondition = (DistanceToPlayer <= A_SkillRange && bA_SkillAvailable);
-	bool bBSkillCondition = (!bASkillCondition && (DistanceToPlayer <= B_SkillRange) && bB_SkillAvailable);
+	bool bASkillCondition = (DistanceToPlayer <= A_SkillRange) && bA_SkillAvailable;
+	bool bBSkillCondition = ((DistanceToPlayer > A_SkillRange) && (DistanceToPlayer <= B_SkillRange)) && bB_SkillAvailable;
 
 	// 블랙보드에 조건 결과 업데이트
 	BlackboardComp->SetValueAsBool(BBKEY_BASKILLCONDITION, bASkillCondition);
 	BlackboardComp->SetValueAsBool(BBKEY_BBSKILLCONDITION, bBSkillCondition);
+
+	UE_LOG(LogTemp, Warning, TEXT("bASkillCondition: %s"), bASkillCondition ? TEXT("True") : TEXT("False"));
+	UE_LOG(LogTemp, Warning, TEXT("bBSkillCondition: %s"), bBSkillCondition ? TEXT("True") : TEXT("False"));
+	
+	// SelectedSkillID 키 설정: 
+	// A스킬 조건이 만족되면 "Skill_Bite", 
+	// B스킬 조건 만족시 "Skill_Charge", 
+	// 둘 다 아니면 해당 키를 클리어
+	if (bASkillCondition)
+	{
+		BlackboardComp->SetValueAsString(BBKEY_SELECTEDSKILLID, TEXT("Skill_Bite"));
+	}
+	else if (bBSkillCondition)
+	{
+		BlackboardComp->SetValueAsString(BBKEY_SELECTEDSKILLID, TEXT("Skill_Charge"));
+	}
+	else
+	{
+		BlackboardComp->ClearValue(BBKEY_SELECTEDSKILLID);
+	}
+
+
+	// 스킬 쿨타임이 구현 되어있지 않은 관계로 Range 비교 결과로만 스킬 시전 
+	// 조건 계산:
+	// A스킬 조건: Distance <= ARange AND AAvailable true
+	// B스킬 조건: Distance <= BRange AND BAvailable true
+	/*bool bASkillCondition = (Distance <= A_SkillRange) && bA_SkillAvailable;
+	bool bBSkillCondition = (Distance <= B_SkillRange) && bB_SkillAvailable;*/
 
 	/*if (DistanceToPlayer <= A_SkillRange)
 	{
@@ -117,26 +145,6 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 
 	//BlackboardComp->SetValueAsBool(BBKEY_BASKILLCONDITION, bASkillCondition);
 	//BlackboardComp->SetValueAsBool(BBKEY_BBSKILLCONDITION, bBSkillCondition);
-
-	UE_LOG(LogTemp, Warning, TEXT("bASkillCondition: %s"), bASkillCondition ? TEXT("True") : TEXT("False"));
-	UE_LOG(LogTemp, Warning, TEXT("bBSkillCondition: %s"), bBSkillCondition ? TEXT("True") : TEXT("False"));
-
-	// SelectedSkillID 키 설정: 
-	// A스킬 조건이 만족되면 "Skill_Bite", 
-	// B스킬 조건 만족시 "Skill_Charge", 
-	// 둘 다 아니면 해당 키를 클리어
-	if (bASkillCondition)
-	{
-		BlackboardComp->SetValueAsString(BBKEY_SELECTEDSKILLID, TEXT("Skill_Bite"));
-	}
-	else if (bBSkillCondition)
-	{
-		BlackboardComp->SetValueAsString(BBKEY_SELECTEDSKILLID, TEXT("Skill_Charge"));
-	}
-	else
-	{
-		BlackboardComp->ClearValue(BBKEY_SELECTEDSKILLID);
-	}
 
 	//// AttackType에 따라 최소 거리 값 설정
 	//uint8 AttackType = BlackboardComp->GetValueAsInt(BBKEY_ATTACKTYPE);

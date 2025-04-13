@@ -95,14 +95,27 @@ public:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 		const FHitResult& SweepResult);
 
+	// 스킬 시전 중 플래그: 돌진 스킬 시전 중엔 이동 업데이트 차단
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
+	bool bIsCastingSkill;
+
+	// 돌진 스킬 실행 시 저장할 방향 (설정 후 변화 없이 유지)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
+	FVector StoredDashDirection;
+
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void PerformSkill_Charge();
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ExecuteChargeDash();
 
-	// Special Skill 몽타주 종료 콜백 
+	void ClearCastingSkill();
+
+	// Skill 몽타주 종료 콜백 
 	UFUNCTION()
-	void OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	void OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	//// Special Skill 몽타주 종료 콜백 
+	//UFUNCTION()
+	//void OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	void DrawChargePath();
 

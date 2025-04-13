@@ -133,14 +133,42 @@ void UEntitySkillComponent::SpecialCooldown()
 	UE_LOG(LogTemp, Log, TEXT("Special skill cooldown ended"));
 }
 
-// 애님 몽타주 노티파이로 호출 
-// 특수 스킬(Special Skill)은 함수를 따로 만들어 이 안에서 호출 
 void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
 {
 	if (!OwnerEntity)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
 		return;
+	}
+
+	OwnerEntity->bIsCastingSkill = true;
+	bCanUseNormalSkill = false;
+
+	FTimerDelegate NormalDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::NormalCooldown);
+	SetSkillTimer(SkillData.SkillCoolTime, NormalDelegate);
+
+	if (OwnerEntity->NormalSkillMontage)
+	{
+		if (UAnimInstance* AnimInst = OwnerEntity->GetMesh()->GetAnimInstance())
+		{
+			// 노멀 스킬 몽타주 재생 
+			AnimInst->Montage_Play(OwnerEntity->NormalSkillMontage);
+			UE_LOG(LogTemp, Warning, TEXT("Normal Skill Montage played"));
+
+
+			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(OwnerEntity, &AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate, OwnerEntity->NormalSkillMontage);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Normal Skill AnimInstance not found"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("NormalSkillMontage is not set"));
 	}
 
 	OwnerEntity->ShowNormalHitBox();
@@ -163,6 +191,11 @@ void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, con
 		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
 		return;
 	}
+
+	bCanUseSpecialSkill = false;
+
+	FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::SpecialCooldown);
+	SetSkillTimer(SkillData.SkillCoolTime, SpecialDelegate);
 
 	OwnerEntity->PerformSkill_Charge();
 }

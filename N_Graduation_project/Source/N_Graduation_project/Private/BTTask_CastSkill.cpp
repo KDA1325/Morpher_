@@ -76,13 +76,13 @@ EBTNodeResult::Type UBTTask_CastSkill::ExecuteTask(UBehaviorTreeComponent& Owner
     return EBTNodeResult::Failed;
 }
 
-// 몽타주 종료 델리게이트 콜백 함수
-void UBTTask_CastSkill::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
-{
-    // 애니메이션 몽타주가 종료되었으면 FinishLatentTask()를 호출하여 태스크를 완료 처리
-    if (CachedOwnerComp)
-    {
-        FinishLatentTask(*CachedOwnerComp, EBTNodeResult::Succeeded);
-        CachedOwnerComp = nullptr; // 캐시 변수 초기화
-    }
-}
+//// 몽타주 종료 델리게이트 콜백 함수
+//void UBTTask_CastSkill::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+//{
+//    // 애니메이션 몽타주가 종료되었으면 FinishLatentTask()를 호출하여 태스크를 완료 처리
+//    if (CachedOwnerComp)
+//    {
+//        FinishLatentTask(*CachedOwnerComp, EBTNodeResult::Succeeded);
+//        CachedOwnerComp = nullptr; // 캐시 변수 초기화
+//    }
+//}
