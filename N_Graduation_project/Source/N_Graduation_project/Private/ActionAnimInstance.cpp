@@ -1,4 +1,4 @@
-#include "ActionAnimInstance.h"
+ï»¿#include "ActionAnimInstance.h"
 #include "CharacterStateComponent.h"
 #include <N_Graduation_project/N_Graduation_projectCharacter.h>
 
@@ -7,48 +7,75 @@ UActionAnimInstance::UActionAnimInstance()
 
 	FSoftObjectPath SlashMontagePath(TEXT("/Game/Gamin/Player/Player_Attack/Player_attack_Anim_Montage.Player_attack_Anim_Montage"));
 
-	// ¾Ö¼Â ·Îµå
+	// ì• ì…‹ ë¡œë“œ
 	M_Slash = Cast<UAnimMontage>(SlashMontagePath.TryLoad());
-	if (M_Slash)
+	//if (M_Slash)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("Successfully loaded Montage: %s"), *M_Slash->GetName());
+	//}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Error, TEXT("Failed to load Montage from path: %s"), *SlashMontagePath.ToString());
+	//}
+	//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Animation/WildBoar_Bite_Anim_Montage.uasset
+	FSoftObjectPath BiteMontagePath(TEXT("/Game/Animation/WildBoar_Bite_Anim_Montage.WildBoar_Bite_Anim_Montage"));
+
+	// ì• ì…‹ ë¡œë“œ
+	M_Bite = Cast<UAnimMontage>(BiteMontagePath.TryLoad());
+	if (M_Bite)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Successfully loaded Montage: %s"), *M_Slash->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("Successfully loaded Montage: %s"), *M_Bite->GetName());
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load Montage from path: %s"), *SlashMontagePath.ToString());
+		UE_LOG(LogTemp, Error, TEXT("Failed to load Montage from path: %s"), *BiteMontagePath.ToString());
 	}
 
 }
 void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Playing Animation í•¨ìˆ˜ ì‹¤í–‰ë¨, EffectID: %s"), *EffectID);
 	if (EffectID == "Skill_Slash")
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *M_Slash->GetName());
 		Montage_Play(M_Slash);
-		// ¾Ö´Ï¸ŞÀÌ¼Ç Á¾·á ÀÌº¥Æ® ¹ÙÀÎµù
+		// ì• ë‹ˆë©”ì´ì…˜ ì¢…ë£Œ ì´ë²¤íŠ¸ ë°”ì¸ë”©
 		OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 	}
-	if (EffectID == "Skill_FireBall") {
-		UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *M_Slash->GetName());
-		Montage_Play(M_Slash);
-		// ¾Ö´Ï¸ŞÀÌ¼Ç Á¾·á ÀÌº¥Æ® ¹ÙÀÎµù
+	//if (EffectID == "Skill_FireBall") {
+	//	UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *M_Slash->GetName());
+	//	Montage_Play(M_Slash);
+	//	// ì• ë‹ˆë©”ì´ì…˜ ì¢…ë£Œ ì´ë²¤íŠ¸ ë°”ì¸ë”©
+	//	OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
+	//}
+	if (EffectID == "Skill_Bite") {
+		UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *M_Bite->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("Playing Skill_Bite ì‹¤í–‰ë¨"));
+		Montage_Play(M_Bite);
+		float PlayResult = Montage_Play(M_Bite);
+		UE_LOG(LogTemp, Warning, TEXT("Montage_Play result: %f"), PlayResult);
+		// ì• ë‹ˆë©”ì´ì…˜ ì¢…ë£Œ ì´ë²¤íŠ¸ ë°”ì¸ë”©
 		OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
+	}
+	else{
+		UE_LOG(LogTemp, Warning, TEXT("Playing Animation í•´ë‹¹í•˜ëŠ” ìŠ¤í‚¬ ì—†ìŒ"));
+
 	}
 }
 
 void UActionAnimInstance::OnMontageEndCallback(UAnimMontage* Montage, bool bInterrupted)
 {
-	// ¾Ö´Ï¸ŞÀÌ¼Ç Á¾·á ÈÄ »óÅÂ º¯°æ
+	// ì• ë‹ˆë©”ì´ì…˜ ì¢…ë£Œ í›„ ìƒíƒœ ë³€ê²½
 	UE_LOG(LogTemp, Error, TEXT("Animation Ended"));
 
 	AActor* OwnerActor = GetOwningActor();
-	// ¾Ö´Ï¸ŞÀÌ¼Ç Á¾·á ÈÄ ¹ÙÀÎµù ¿¬°á
+	// ì• ë‹ˆë©”ì´ì…˜ ì¢…ë£Œ í›„ ë°”ì¸ë”© ì—°ê²°
 	AN_Graduation_projectCharacter* MyCharacter = Cast<AN_Graduation_projectCharacter>(OwnerActor);
 	if (MyCharacter)
 	{
-		MyCharacter->EndAction(); // EndAction È£ÃâÇÏ¿© ¼Óµµ º¹±¸
+		MyCharacter->EndAction(); // EndAction í˜¸ì¶œí•˜ì—¬ ì†ë„ ë³µêµ¬
 	}
 
-	// µ¨¸®°ÔÀÌÆ®¿¡¼­ ¹ÙÀÎµù ÇØÁ¦
+	// ë¸ë¦¬ê²Œì´íŠ¸ì—ì„œ ë°”ì¸ë”© í•´ì œ
 	OnMontageEnded.RemoveDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 }

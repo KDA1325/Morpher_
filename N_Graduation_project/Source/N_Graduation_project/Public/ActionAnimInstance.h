@@ -30,5 +30,6 @@ protected:
 
 private:
 	UAnimMontage* M_Slash;
+	UAnimMontage* M_Bite;
 
 };

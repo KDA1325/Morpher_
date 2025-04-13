@@ -140,9 +140,9 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 	FVector Velocity = GetVelocity();
 	float Speed = Velocity.Size(); // 현재 속도
 
-	if (GetMesh()->GetAnimInstance()) {
+	/*if (GetMesh()->GetAnimInstance()) {
 		UE_LOG(LogTemp, Warning, TEXT("qoqo AnimInstance: %s"), *GetMesh()->GetAnimInstance()->GetName());
-	}
+	}*/
 
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	if (!StateComp)

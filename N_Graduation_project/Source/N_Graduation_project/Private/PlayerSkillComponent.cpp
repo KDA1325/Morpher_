@@ -253,7 +253,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 				UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
 			}
 			SkillAnimation(SkillID);
-
+			UE_LOG(LogTemp, Warning, TEXT("Playing %s"),* SkillID);
 			//노말 스킬
 		/*	if (SkillID == "Skill_Slash") {
 				SkillAnimation(SkillID);
@@ -319,18 +319,21 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("On SkillAnimation"));
+			UE_LOG(LogTemp, Warning, TEXT("Playing SkillAnimation 함수 실행됨, EffectID: %s"), *EffectID);
 
 	AActor* OwnerActor = GetOwner();
 	if (OwnerActor && OwnerActor->IsA<ACharacter>())
 	{
 		ACharacter* CharacterOwner = Cast<ACharacter>(OwnerActor);
 		UAnimInstance* AnimInstance = CharacterOwner->GetMesh()->GetAnimInstance();
-		//UE_LOG(LogTemp, Log, TEXT("Get CharacterOwner"));
+		UE_LOG(LogTemp, Log, TEXT("Playing Get CharacterOwner"));
 
 		UActionAnimInstance* ActionAnimInstance = Cast<UActionAnimInstance>(AnimInstance);
 		if (ActionAnimInstance)
 		{
-			ActionAnimInstance->PlayAnimation(EffectID);
+			UE_LOG(LogTemp, Log, TEXT("Playing Have ActionAnimInstance"));
+
+			ActionAnimInstance->PlayAnimation(EffectID); 
 
 			// 델리게이트 바인딩 추가
 			FOnMontageEnded EndDelegate;
