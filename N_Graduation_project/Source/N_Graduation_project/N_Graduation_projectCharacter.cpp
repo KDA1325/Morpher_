@@ -115,14 +115,14 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 
 void AN_Graduation_projectCharacter::BeginPlay()
 {
-	// Call the base class  
+	// Call the base class    
 	Super::BeginPlay();
-
+	m_pMeshCom = GetMesh();
 	SpawnHitBoxAtSocket("AttachHitBox");
 
 	FOnTimelineFloat DashCallback;
 	currentPreset = "PlayerCharacter";
-
+	SetPreset(currentPreset);
 	PlayerSword = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Player_sword")));
 
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
@@ -139,6 +139,10 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
 	FVector Velocity = GetVelocity();
 	float Speed = Velocity.Size(); // 현재 속도
+
+	if (GetMesh()->GetAnimInstance()) {
+		UE_LOG(LogTemp, Warning, TEXT("qoqo AnimInstance: %s"), *GetMesh()->GetAnimInstance()->GetName());
+	}
 
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	if (!StateComp)
@@ -515,26 +519,29 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	{
 		// 에디터 실행 시 문제없이 메시를 로드하기 위해 FSoftObjectPath를 사용해 비동기 로딩 
 		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Player/Player_Attack/Player_attack.Player_attack"));
+		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/MyPlayerAnimBlueprint.MyPlayerAnimBlueprint_C"));
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		GetMesh()->SetSkeletalMesh(LoadedMesh);
-		PlayerSword->SetHiddenInGame(true);
+		PlayerSword->SetHiddenInGame(true);  
 		if (LoadedMesh)
 		{
 			// 스켈레탈 메시를 사용할 경우 SetSkeletalMesh() 사용
-			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
+			GetMesh()->SetSkeletalMesh(LoadedMesh);
+			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
 	}
 
 	if (currentPreset == "WildBoarPreset.uasset")
 	{//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Gamin/Bore_attack_3.uasset
 		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Bore_attack_3.Bore_attack_3"));
+		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Animation/WildBoar_Skeleton_AnimBP.WildBoar_Skeleton_AnimBP_C"));
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
-		GetMesh()->SetSkeletalMesh(LoadedMesh);
 
-		if (LoadedMesh)
+		if (LoadedMesh&& NewAnimBP)
 		{
-			m_pMeshCom->SetSkeletalMesh(LoadedMesh);  // SkeletalMesh는 Skel_MeshCom을 사용
+			GetMesh()->SetSkeletalMesh(LoadedMesh);
+			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
 	}
 
@@ -634,9 +641,9 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 {
 	currentPreset = Name;
 	if (currentPreset != pastPreset) {
+		PlayerSword->SetHiddenInGame(false);
 		SetPreset(currentPreset);
 		UpdateEntityData();
-		PlayerSword->SetHiddenInGame(false);
 		pastPreset = currentPreset;
 	}
 }

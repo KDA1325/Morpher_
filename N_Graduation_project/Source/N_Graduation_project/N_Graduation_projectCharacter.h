@@ -175,21 +175,21 @@ public:
 		UUserWidget* CharacterHealthBarWidget;
 	void SpawnWidget();
 */
-	//UFUNCTION()
-	//void UpdateHUD();
+//UFUNCTION()
+//void UpdateHUD();
 
-	//UPROPERTY(EditDefaultsOnly, Category = "UI")
-	//TSubclassOf<class UUserWidget> HUDClass;
+//UPROPERTY(EditDefaultsOnly, Category = "UI")
+//TSubclassOf<class UUserWidget> HUDClass;
 
-	//UPROPERTY()
-	//class UUserWidget* HUDWidget;
+//UPROPERTY()
+//class UUserWidget* HUDWidget;
 
 
-	// ĳ���� ���� �޼ҵ�
-	/*UFUNCTION(EditAnywhere, BlueprintCallable, Category = "Stat")
-	void TransformToEntity(int32 EntityID);*/
+// ĳ���� ���� �޼ҵ�
+/*UFUNCTION(EditAnywhere, BlueprintCallable, Category = "Stat")
+void TransformToEntity(int32 EntityID);*/
 
-	// ������ GroupID�� Ű ������ ������ �����͸� �����ϴ� �Լ�
+// ������ GroupID�� Ű ������ ������ �����͸� �����ϴ� �Լ�
 	UFUNCTION(BlueprintCallable, Category = "Stat")
 	void UpdateEntityData();
 
