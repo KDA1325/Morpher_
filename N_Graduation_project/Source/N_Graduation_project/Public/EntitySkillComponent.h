@@ -47,4 +47,6 @@ private:
 
 	// SkillType: Buff 인 스킬을 실행하는 함수 
 	void ExecuteBuffTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData);
+
+	void ExecuteSkill_Charge(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData);
 };

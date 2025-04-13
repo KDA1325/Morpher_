@@ -49,18 +49,25 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 		return;
 	}
 
-	// SkillType에 따라 스킬 실행(모듈화) 
-	switch (SkillData.SkillType)
+	if (SkillID == "Skill_Charge")
 	{
-	case EnumSkillType::HitBox:
-		ExecuteHitBoxTypeSkill(SkillData, EffectDataArray);
-		break;
-	case EnumSkillType::Projectile:
-		ExecuteProjectileTypeSkill(SkillData, EffectDataArray);
-		break;
-	case EnumSkillType::Buff:
-		ExecuteBuffTypeSkill(SkillData, EffectDataArray);
-		break;
+		ExecuteSkill_Charge(SkillData, EffectDataArray);
+	}
+	else
+	{
+		// SkillType에 따라 스킬 실행(모듈화) 
+		switch (SkillData.SkillType)
+		{
+		case EnumSkillType::HitBox:
+			ExecuteHitBoxTypeSkill(SkillData, EffectDataArray);
+			break;
+		case EnumSkillType::Projectile:
+			ExecuteProjectileTypeSkill(SkillData, EffectDataArray);
+			break;
+		case EnumSkillType::Buff:
+			ExecuteBuffTypeSkill(SkillData, EffectDataArray);
+			break;
+		}
 	}
 }
 
@@ -92,15 +99,7 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, 
 		return;
 	}
 
-	if (SkillData.SkillNameID == "Skill_Charge")
-	{
-		OwnerEntity->PerformSkill_Charge();
-		UE_LOG(LogTemp, Warning, TEXT("Skill_Charge"));
-	}
-	else
-	{
-		OwnerEntity->ShowNormalHitBox();
-	}
+	OwnerEntity->ShowNormalHitBox();
 }
 
 void UEntitySkillComponent::ExecuteProjectileTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
@@ -111,4 +110,15 @@ void UEntitySkillComponent::ExecuteProjectileTypeSkill(const FSkillData& SkillDa
 void UEntitySkillComponent::ExecuteBuffTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
 {
 	// Buff 스킬 구현 
+}
+
+void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
+{
+	if (!OwnerEntity)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
+		return;
+	}
+
+	OwnerEntity->PerformSkill_Charge();
 }

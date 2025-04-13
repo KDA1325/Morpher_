@@ -5,6 +5,7 @@
 #define BBKEY_HOMEPOS TEXT("HomePos")
 #define BBKEY_PATROLPOS TEXT("PatrolPos")
 #define BBKEY_ATTACKTYPE TEXT("AttackType")
+#define BBKEY_SELECTEDSKILLID TEXT("SelectedSkillID")
 #define BBKEY_NORMALSKILLRANGE TEXT("NormalSkillRange")
 #define BBKEY_SPECIALSKILLRANGE TEXT("SpecialSkillRange")
 #define BBKEY_ASKILLRANGE TEXT("ASkillRange")

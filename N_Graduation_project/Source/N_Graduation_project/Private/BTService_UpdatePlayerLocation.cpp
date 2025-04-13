@@ -109,6 +109,22 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	UE_LOG(LogTemp, Warning, TEXT("bASkillCondition: %s"), bASkillCondition ? TEXT("True") : TEXT("False"));
 	UE_LOG(LogTemp, Warning, TEXT("bBSkillCondition: %s"), bBSkillCondition ? TEXT("True") : TEXT("False"));
 
+	// SelectedSkillID 키 설정: 
+	// A스킬 조건이 만족되면 "Skill_Bite", 
+	// B스킬 조건 만족시 "Skill_Charge", 
+	// 둘 다 아니면 해당 키를 클리어
+	if (bASkillCondition)
+	{
+		BlackboardComp->SetValueAsString(BBKEY_SELECTEDSKILLID, TEXT("Skill_Bite"));
+	}
+	else if (bBSkillCondition)
+	{
+		BlackboardComp->SetValueAsString(BBKEY_SELECTEDSKILLID, TEXT("Skill_Charge"));
+	}
+	else
+	{
+		BlackboardComp->ClearValue(BBKEY_SELECTEDSKILLID);
+	}
 
 	//// AttackType에 따라 최소 거리 값 설정
 	//uint8 AttackType = BlackboardComp->GetValueAsInt(BBKEY_ATTACKTYPE);

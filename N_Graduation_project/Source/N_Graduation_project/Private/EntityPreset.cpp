@@ -21,6 +21,9 @@ AEntityPreset::AEntityPreset()
 
 	NormalSkillHitBox = nullptr;
 	SpecialSkillHitBox = nullptr;
+
+	NormalHitBoxContainer = nullptr;
+	SpecialHitBoxContainer = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -60,6 +63,34 @@ void AEntityPreset::BeginPlay()
 	//{
 	//	UE_LOG(LogTemp, Error, TEXT("bananaBeginPlay WidgetComp is not assigned in blueprint for %s"), *GetName());
 	//}
+	
+	// 1. HitBoxContainer 생성 및 소켓에 부착
+	if (!NormalHitBoxContainer)
+	{
+		NormalHitBoxContainer = NewObject<USceneComponent>(this, TEXT("NormalHitBoxContainer"));
+		if (NormalHitBoxContainer)
+		{
+			// 컨테이너를 컴포넌트로 등록 
+			NormalHitBoxContainer->RegisterComponent();
+
+			// 스켈레탈 메시의 소켓에 부착
+			// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
+			NormalHitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("BiteHitBox"));
+		}
+	}
+	if (!SpecialHitBoxContainer)
+	{
+		SpecialHitBoxContainer = NewObject<USceneComponent>(this, TEXT("SpecialHitBoxContainer"));
+		if (SpecialHitBoxContainer)
+		{
+			// 컨테이너를 컴포넌트로 등록 
+			SpecialHitBoxContainer->RegisterComponent();
+
+			// 스켈레탈 메시의 소켓에 부착
+			// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
+			SpecialHitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("ChargeHitBox"));
+		}
+	}
 
 }
 
@@ -222,85 +253,39 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			SocketToAttach = *FoundSocket;
 		}
 
-		// 1. HitBoxContainer 생성 및 소켓에 부착
-		if (!HitBoxContainer)
+		USceneComponent* Container = nullptr;
+		if (SkillData.SkillNameID == "Skill_Charge")
 		{
-			HitBoxContainer = NewObject<USceneComponent>(this, TEXT("HitBoxContainer"));
-			if (HitBoxContainer)
-			{
-				// 컨테이너를 컴포넌트로 등록 
-				HitBoxContainer->RegisterComponent();
-
-				// 스켈레탈 메시의 소켓에 부착
-				// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
-				HitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketToAttach);
-			}
+			Container = SpecialHitBoxContainer;
+		}
+		else
+		{
+			Container = NormalHitBoxContainer;
 		}
 
-		// 2. NormalSkillHitBox 생성 (HitBoxContainer의 자식)
-		if (!NormalSkillHitBox)
+		Container->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketToAttach);
+
+		// 스킬 타입에 따라 해당 히트박스 컴포넌트 생성
+		if (SkillData.SkillNameID == "Skill_Charge")
 		{
-			NormalSkillHitBox = NewObject<UBoxComponent>(this, TEXT("NormalSkillHitBox"));
-			if (NormalSkillHitBox)
+			// Special 히트박스 생성
+			if (!SpecialSkillHitBox)
 			{
-				NormalSkillHitBox->RegisterComponent();
-				NormalSkillHitBox->AttachToComponent(HitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
-
-				HideNormalHitBox();
-
-				// Overlap 이벤트 바인딩 
-				NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnNormalHitBoxOverlap);
+				SpecialSkillHitBox = NewObject<UBoxComponent>(this, TEXT("SpecialSkillHitBox"));
+				if (SpecialSkillHitBox)
+				{
+					SpecialSkillHitBox->RegisterComponent();
+					SpecialSkillHitBox->AttachToComponent(Container, FAttachmentTransformRules::KeepRelativeTransform);
+					HideSpecialHitBox();
+					SpecialSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnSpecialHitBoxOverlap);
+				}
 			}
-		}
-
-		// 3. SpecialSkillHitBox 생성 (HitBoxContainer의 자식)
-		if (!SpecialSkillHitBox)
-		{
-			SpecialSkillHitBox = NewObject<UBoxComponent>(this, TEXT("SpecialSkillHitBox"));
-			if (SpecialSkillHitBox)
-			{
-				SpecialSkillHitBox->RegisterComponent();
-				SpecialSkillHitBox->AttachToComponent(HitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
-
-				HideSpecialHitBox();
-
-				// Overlap 이벤트 바인딩 
-				SpecialSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnSpecialHitBoxOverlap);
-			}
-		}
-
-		if (NormalSkillHitBox && HitBoxContainer)
-		{
-			//// HitBox를 보이도록 설정
-			//NormalSkillHitBox->SetHiddenInGame(false);
-			//NormalSkillHitBox->SetVisibility(true);
-			//ShowHitBox(); 
 
 			// UBoxComponent는 half extents를 사용
-			// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
-			// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
-			// Y축은 Z 크기 값,
-			// Z축은 X 크기 값(SkillTypeSizeX/2)
-			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
-			NormalSkillHitBox->SetBoxExtent(HalfExtent);
-
-			// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
-			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
-			// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
-			FVector NewRelativeLocation = FVector(0.0f, 0.0f, HalfExtent.X);
-			NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
-
-			UE_LOG(LogTemp, Warning, TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
-				*HalfExtent.ToString(), *NewRelativeLocation.ToString());
-		}
-		
-		if (SpecialSkillHitBox && HitBoxContainer)
-		{
-			// UBoxComponent는 half extents를 사용
-			// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
-			// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
-			// Y축은 Z 크기 값,
-			// Z축은 X 크기 값(SkillTypeSizeX/2)
+				// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
+				// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
+				// Y축은 Z 크기 값,
+				// Z축은 X 크기 값(SkillTypeSizeX/2)
 			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
 			SpecialSkillHitBox->SetBoxExtent(HalfExtent);
 
@@ -313,6 +298,141 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			UE_LOG(LogTemp, Warning, TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
 				*HalfExtent.ToString(), *NewRelativeLocation.ToString());
 		}
+		else
+		{
+			// Normal 히트박스 생성
+			if (!NormalSkillHitBox)
+			{
+				NormalSkillHitBox = NewObject<UBoxComponent>(this, TEXT("NormalSkillHitBox"));
+				if (NormalSkillHitBox)
+				{
+					NormalSkillHitBox->RegisterComponent();
+					NormalSkillHitBox->AttachToComponent(NormalHitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
+
+					HideNormalHitBox();
+
+					// Overlap 이벤트 바인딩 
+					NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnNormalHitBoxOverlap);
+				}
+			}
+
+			// UBoxComponent는 half extents를 사용
+				// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
+				// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
+				// Y축은 Z 크기 값,
+				// Z축은 X 크기 값(SkillTypeSizeX/2)
+			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
+			NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+			// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
+			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
+			// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
+			FVector NewRelativeLocation = FVector(0.0f, 0.0f, HalfExtent.X);
+			NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			UE_LOG(LogTemp, Warning, TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+				*HalfExtent.ToString(), *NewRelativeLocation.ToString());
+		}
+
+		//// 1. HitBoxContainer 생성 및 소켓에 부착
+		//if (!NormalHitBoxContainer)
+		//{
+		//	NormalHitBoxContainer = NewObject<USceneComponent>(this, TEXT("NormalHitBoxContainer"));
+		//	if (NormalHitBoxContainer)
+		//	{
+		//		// 컨테이너를 컴포넌트로 등록 
+		//		NormalHitBoxContainer->RegisterComponent();
+
+		//		// 스켈레탈 메시의 소켓에 부착
+		//		// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
+		//		NormalHitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketToAttach);
+		//	}
+		//}
+		//if (!SpecialHitBoxContainer)
+		//{
+		//	SpecialHitBoxContainer = NewObject<USceneComponent>(this, TEXT("SpecialHitBoxContainer"));
+		//	if (SpecialHitBoxContainer)
+		//	{
+		//		// 컨테이너를 컴포넌트로 등록 
+		//		SpecialHitBoxContainer->RegisterComponent();
+
+		//		// 스켈레탈 메시의 소켓에 부착
+		//		// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
+		//		SpecialHitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketToAttach);
+		//	}
+		//}
+
+		//// 2. NormalSkillHitBox 생성 (HitBoxContainer의 자식)
+		//if (!NormalSkillHitBox)
+		//{
+		//	NormalSkillHitBox = NewObject<UBoxComponent>(this, TEXT("NormalSkillHitBox"));
+		//	if (NormalSkillHitBox)
+		//	{
+		//		NormalSkillHitBox->RegisterComponent();
+		//		NormalSkillHitBox->AttachToComponent(NormalHitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
+
+		//		HideNormalHitBox();
+
+		//		// Overlap 이벤트 바인딩 
+		//		NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnNormalHitBoxOverlap);
+		//	}
+		//}
+
+		//// 3. SpecialSkillHitBox 생성 (HitBoxContainer의 자식)
+		//if (!SpecialSkillHitBox)
+		//{
+		//	SpecialSkillHitBox = NewObject<UBoxComponent>(this, TEXT("SpecialSkillHitBox"));
+		//	if (SpecialSkillHitBox)
+		//	{
+		//		SpecialSkillHitBox->RegisterComponent();
+		//		SpecialSkillHitBox->AttachToComponent(SpecialHitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
+
+		//		HideSpecialHitBox();
+
+		//		// Overlap 이벤트 바인딩 
+		//		SpecialSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnSpecialHitBoxOverlap);
+		//	}
+		//}
+
+		//if (NormalSkillHitBox && NormalHitBoxContainer)
+		//{
+		//	// UBoxComponent는 half extents를 사용
+		//	// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
+		//	// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
+		//	// Y축은 Z 크기 값,
+		//	// Z축은 X 크기 값(SkillTypeSizeX/2)
+		//	FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
+		//	NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+		//	// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
+		//	// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
+		//	// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
+		//	FVector NewRelativeLocation = FVector(0.0f, 0.0f, HalfExtent.X);
+		//	NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+		//	UE_LOG(LogTemp, Warning, TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+		//		*HalfExtent.ToString(), *NewRelativeLocation.ToString());
+		//}
+		
+		//if (SpecialSkillHitBox && SpecialHitBoxContainer)
+		//{
+		//	// UBoxComponent는 half extents를 사용
+		//	// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
+		//	// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
+		//	// Y축은 Z 크기 값,
+		//	// Z축은 X 크기 값(SkillTypeSizeX/2)
+		//	FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
+		//	SpecialSkillHitBox->SetBoxExtent(HalfExtent);
+
+		//	// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
+		//	// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
+		//	// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
+		//	FVector NewRelativeLocation = FVector(0.0f, 0.0f, HalfExtent.X);
+		//	SpecialSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+		//	UE_LOG(LogTemp, Warning, TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+		//		*HalfExtent.ToString(), *NewRelativeLocation.ToString());
+		//}
 	}
 
 	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
@@ -400,7 +520,7 @@ void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedCompone
 				case EnumEffectType::Destroy:
 				{
 					// Destroy 효과가 적용되는 경우 OtherActor를 파괴하도록 합니다.
-					OtherActor->Destroy();
+					//OtherActor->Destroy();
 					UE_LOG(LogTemp, Warning, TEXT("Normal HitBox Overlap: Destroyed %s"),
 						*OtherActor->GetName());
 					break;
@@ -443,9 +563,9 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 				}
 				case EnumEffectType::Destroy:
 				{
-					OtherActor->Destroy();
-					UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Destroyed %s"),
-						*OtherActor->GetName());
+					//OtherActor->Destroy();
+					UE_LOG(LogTemp, Warning, TEXT(" Destroyed "));
+					//UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Destroyed %s"), *OtherActor->GetName());
 					break;
 				}
 				default:
@@ -466,20 +586,19 @@ void AEntityPreset::PerformSkill_Charge()
 			AnimInst->Montage_Play(SpecialSkillMontage);
 			UE_LOG(LogTemp, Warning, TEXT("PerformSpecialSkill_Charge: Montage played"));
 
-			// 몽타주 종료 델리게이트 바인딩 (돌진 후 히트박스 숨김 처리)
-			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this, &AEntityPreset::OnSpecialSkillMontageEnded);
-			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
-
-			// 준비 시간 동안 돌진 경로 표시 (여기서는 간단하게 히트박스 표시)
-			ShowSpecialHitBox();
-			// 돌진 경로 표시 함수 호출 (예: DrawChargePath())
+			// 돌진 경로 표시 함수 호출
 			DrawChargePath();
 
-			// 준비 시간 후 돌진 실행 (예: 0.5초 후 실행)
-			float PrepTime = 0.5f; // 필요에 따라 조정
+			// 준비 시간 후 돌진 실행
+			float PrepTime = 1.0f; 
 			FTimerHandle TimerHandle;
 			GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::ExecuteChargeDash, PrepTime, false);
+
+
+			//// 몽타주 종료 델리게이트 바인딩 (돌진 후 히트박스 숨김 처리)
+			//FOnMontageEnded EndDelegate;
+			//EndDelegate.BindUObject(this, &AEntityPreset::OnSpecialSkillMontageEnded);
+			//AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
 		}
 		else
 		{
@@ -500,31 +619,35 @@ void AEntityPreset::ExecuteChargeDash()
 	FVector StartLocation = GetActorLocation();
 	FVector DashTarget = StartLocation + DashDirection * DashDistance;
 
+	// 준비 시간 동안 히트박스 표시
+	ShowSpecialHitBox();
+
 	// 돌진 동작은 LaunchCharacter를 통해 구현 (속도는 필요에 따라 조정)
 	float DashSpeed = 2000.0f; // 예시 속도, 필요에 따라 조정
 	LaunchCharacter(DashDirection * DashSpeed, true, true);
 
 	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Dashing towards %s"), *DashTarget.ToString());
+
 }
 
 // Special 스킬 몽타주 종료 콜백
 void AEntityPreset::OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	// 실제 돌진 동작: 빠른 이동 및 히트박스 생성
-    // 예를 들어: 전방으로 특정 거리를 빠르게 이동 + ShowSpecialHitBox() 호출
-    
-    // 돌진 이동 처리 (임의 값, 필요에 따라 수정)
-	FVector ForwardDirection = GetActorForwardVector();
-	float ChargeDistance = 600.f; // SkillData.SkillRange 등 데이터 사용 가능
-	FVector TargetLocation = GetActorLocation() + ForwardDirection * ChargeDistance;
+	//// 실제 돌진 동작: 빠른 이동 및 히트박스 생성
+ //   // 예를 들어: 전방으로 특정 거리를 빠르게 이동 + ShowSpecialHitBox() 호출
+ //   
+ //   // 돌진 이동 처리 (임의 값, 필요에 따라 수정)
+	//FVector ForwardDirection = GetActorForwardVector();
+	//float ChargeDistance = 600.f; // SkillData.SkillRange 등 데이터 사용 가능
+	//FVector TargetLocation = GetActorLocation() + ForwardDirection * ChargeDistance;
 
-	// 빠른 이동(예: Teleport or Smooth movement using a timeline)
-	SetActorLocation(TargetLocation);
-	UE_LOG(LogTemp, Warning, TEXT("OnSpecialSkill_ChargeMontageEnded: Moved to Charge target location"));
+	//// 빠른 이동(예: Teleport or Smooth movement using a timeline)
+	//SetActorLocation(TargetLocation);
+	//UE_LOG(LogTemp, Warning, TEXT("OnSpecialSkill_ChargeMontageEnded: Moved to Charge target location"));
 
 	// 돌진 동작 시 히트박스 활성화
 	//ShowSpecialHitBox();
-	HideSpecialHitBox();
+	//HideSpecialHitBox();
 }
 
 void AEntityPreset::DrawChargePath()
