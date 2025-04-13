@@ -112,25 +112,6 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	//	UE_LOG(LogTemp, Warning, TEXT("최종 선택된 각도: %f"), CachedMouseFinalAngle);
 }
 
-void UPieMenuWidget::OnCollection_Implementation(const FString& DeadMonsterName)
-{
-	if (UScaleBox* CollectionScaleBoxes = Cast<UScaleBox>(GetWidgetFromName(TEXT("Collection_box")))) {
-		//	CollectionScaleBoxes ->SetVisibility(true);
-		UE_LOG(LogTemp, Warning, TEXT("OnCollection_Implementation 실행됨"));
-
-		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("Image_265"))))
-		{
-			if (DeadMonsterName == "WildBoar") {
-				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/Image/Icon/monkey_ic.monkey_ic"));
-				if (NewTexture)
-				{
-					CollecterIcon->SetBrushFromTexture(NewTexture);
-				}
-			}
-		}
-	}
-}
-
 void UPieMenuWidget::OpenCharacter(FString DeadMonsterName)
 {
 	UE_LOG(LogTemp, Log, TEXT("OpenCharacter 실행됨_ %s"), *DeadMonsterName);
@@ -168,7 +149,7 @@ void UPieMenuWidget::OpenCharacter(FString DeadMonsterName)
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
-	else if (DeadMonsterName == "lizard") {
+	else if (DeadMonsterName == "Freezard") {
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("lizard_img"))))
 		{
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);

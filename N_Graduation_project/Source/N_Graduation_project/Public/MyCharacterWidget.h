@@ -57,5 +57,10 @@ private:
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* CooldownMID2;
+public:
+	UFUNCTION(BlueprintNativeEvent)
+	void OnCollection(const FString& DeadMonsterName);
+
+	virtual void OnCollection_Implementation(const FString& DeadMonsterName);
 
 };

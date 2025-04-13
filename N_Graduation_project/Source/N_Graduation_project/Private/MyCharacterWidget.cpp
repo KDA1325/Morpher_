@@ -1,5 +1,6 @@
 ﻿#include "MyCharacterWidget.h"
 #include "Components/Image.h"
+#include "Components/ScaleBox.h"
 #include "Engine/Texture2D.h"
 
 void UMyCharacterWidget::NativeConstruct()
@@ -165,5 +166,85 @@ void UMyCharacterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 
 		Percent = FMath::Clamp(PassedTime - 1.0, -1.0f, 0.0f);
 		CooldownMID1->SetScalarParameterValue(TEXT("percent"), Percent);
+	}
+}
+
+void UMyCharacterWidget::OnCollection_Implementation(const FString& DeadMonsterName)
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnCollection_Implementation 실행됨"));
+	OnCollection(DeadMonsterName);
+	FString CleanName = DeadMonsterName.TrimStartAndEnd();
+
+	if (UScaleBox* CollectionScaleBoxes = Cast<UScaleBox>(GetWidgetFromName(TEXT("Collection_box")))) {
+
+		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("Image_265"))))
+		{
+			if (DeadMonsterName == "WildBoar") {
+				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/Image/Icon/멧P.멧P"));
+				if (NewTexture)
+				{
+					CollecterIcon->SetBrushFromTexture(NewTexture);
+				}
+				if (UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_181"))))
+				{
+					NameText->SetText(FText::FromString(FString::Printf(TEXT("와일드보어"))));
+				}
+			}
+			else if (DeadMonsterName == "Inpermon") {
+				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/Image/Icon/원P.원P"));
+				if (NewTexture)
+				{
+					CollecterIcon->SetBrushFromTexture(NewTexture);
+				}
+				if (UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_181"))))
+				{
+					NameText->SetText(FText::FromString(FString::Printf(TEXT("인페르몽"))));
+				}
+			}
+			else if (DeadMonsterName == "SkeletonWarrior") {
+				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/Image/Icon/검P.검P"));
+				if (NewTexture)
+				{
+					CollecterIcon->SetBrushFromTexture(NewTexture);
+				}
+				if (UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_181"))))
+				{
+					NameText->SetText(FText::FromString(FString::Printf(TEXT("스켈레톤 전사"))));
+				}
+			}
+			else if (DeadMonsterName == "StoneGolem") {
+				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/Image/Icon/골P.골P"));
+				if (NewTexture)
+				{
+					CollecterIcon->SetBrushFromTexture(NewTexture);
+				}
+				if (UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_181"))))
+				{
+					NameText->SetText(FText::FromString(FString::Printf(TEXT("스톤 골렘"))));
+				}
+			}
+			else if (DeadMonsterName == "SkeletonArcher") {
+				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/Image/Icon/활P.활P"));
+				if (NewTexture)
+				{
+					CollecterIcon->SetBrushFromTexture(NewTexture);
+				}
+				if (UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_181"))))
+				{
+					NameText->SetText(FText::FromString(FString::Printf(TEXT("스켈레톤 궁수"))));
+				}
+			}
+			else if (DeadMonsterName == "Freezard") {
+				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/UI/Image/Icon/도P.도P"));
+				if (NewTexture)
+				{
+					CollecterIcon->SetBrushFromTexture(NewTexture);
+				}
+				if (UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_181"))))
+				{
+					NameText->SetText(FText::FromString(FString::Printf(TEXT("프리자드"))));
+				}
+			}
+		}
 	}
 }

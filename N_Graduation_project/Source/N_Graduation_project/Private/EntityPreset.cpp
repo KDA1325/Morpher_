@@ -112,9 +112,9 @@ void AEntityPreset::SetHP(float NewHP)
 			if (UWidgetActor* WidgetActor = Character->FindComponentByClass<UWidgetActor>())
 			{
 				UE_LOG(LogTemp, Warning, TEXT("yorimo WidgetActor 찾음"));
-
 				if (!WidgetActor->PieWidget->DeadMonsters.Contains(currentPreset))
 				{
+					WidgetActor->HUDWidget->OnCollection_Implementation(currentPreset);
 					WidgetActor->PieWidget->DeadMonsters.Add(currentPreset);
 					UE_LOG(LogTemp, Warning, TEXT("yorimo DeadMonsters에 %s 추가됨"), *currentPreset);
 					WidgetActor->PieWidget->OpenCharacter(currentPreset);

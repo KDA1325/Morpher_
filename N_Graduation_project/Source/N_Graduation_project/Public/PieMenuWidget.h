@@ -40,11 +40,6 @@ public:
 	UPROPERTY()
 	TArray<UScaleBox*> PieScaleBoxes;
 
-	UFUNCTION(BlueprintNativeEvent)
-	void OnCollection(const FString& DeadMonsterName);
-
-	virtual void OnCollection_Implementation(const FString& DeadMonsterName);
-
 	void OpenCharacter(FString DeadMonsterName);
 
 
