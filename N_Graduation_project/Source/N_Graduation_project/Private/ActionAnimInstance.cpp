@@ -5,17 +5,17 @@
 UActionAnimInstance::UActionAnimInstance()
 {
 
-	FSoftObjectPath MontagePath(TEXT("/Game/Animation/Sample/retarget_Stable_Sword_Outward_Slash_Anim_mixamo_com_Montage"));
+	FSoftObjectPath SlashMontagePath(TEXT("/Game/Gamin/Player/Player_Attack/Player_attack_Anim_Montage.Player_attack_Anim_Montage"));
 
 	// 애셋 로드
-	M_Slash = Cast<UAnimMontage>(MontagePath.TryLoad());
+	M_Slash = Cast<UAnimMontage>(SlashMontagePath.TryLoad());
 	if (M_Slash)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Successfully loaded Montage: %s"), *M_Slash->GetName());
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load Montage from path: %s"), *MontagePath.ToString());
+		UE_LOG(LogTemp, Error, TEXT("Failed to load Montage from path: %s"), *SlashMontagePath.ToString());
 	}
 
 }
@@ -49,6 +49,6 @@ void UActionAnimInstance::OnMontageEndCallback(UAnimMontage* Montage, bool bInte
 		MyCharacter->EndAction(); // EndAction 호출하여 속도 복구
 	}
 
-	// 델리게이트에서 호출된 후, 다음 호출을 막기 위해 델리게이트에서 바인딩 해제
+	// 델리게이트에서 바인딩 해제
 	OnMontageEnded.RemoveDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 }
