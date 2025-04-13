@@ -18,6 +18,8 @@ class N_GRADUATION_PROJECT_API UPieMenuWidget : public UUserWidget
 
 public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	virtual void NativeConstruct() override;
+
 	float CalculateMouseAngle();
 	void StandardPosition();
 	void CacheFinalMouseAngle();
@@ -25,12 +27,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetCachedMouseAngle() const { return CachedMouseFinalAngle; }
+
 private:
 	FVector2D InitialMousePosition; // 처음 마우스 위치
 	bool bIsReferencePointSet = false; // 초기화 여부 확인용
 	float CachedMouseAngle=0.2f;
 	float CachedMouseFinalAngle;
-
+	float Before_CachedMouseFinalAngle= 102.0f;
 public:
 	UPROPERTY()
 	TSet<FString> DeadMonsters;
@@ -41,6 +44,12 @@ public:
 	TArray<UScaleBox*> PieScaleBoxes;
 
 	void OpenCharacter(FString DeadMonsterName);
-
+private:
+	bool WildBoar_Ok = false;
+	bool Inpermon_OK = false;
+	bool SkeletonWarrior_OK = false;
+	bool StoneGolem_OK = false;
+	bool SkeletonArcher_OK = false;
+	bool Freezard_OK = false;
 
 };

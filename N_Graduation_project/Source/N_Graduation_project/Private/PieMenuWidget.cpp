@@ -12,16 +12,21 @@ void UPieMenuWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	float CalculatedAngle = CalculateMouseAngle();
 
-	if (CalculatedAngle >= 0.0f) // 유효한 경우만 갱신
+	if (CalculatedAngle > 0.0f) // 유효한 경우만 갱신
 	{
 		CachedMouseAngle = CalculatedAngle;
 	}
 
-
 	//	UE_LOG(LogTemp, Log, TEXT("현재 마우스 각도: %f / 회전 적용: %f"), CachedMouseAngle, CachedMouseFinalAngle);
-
+	//CachedMouseFinalAngle = 103.0f
 }
+void UPieMenuWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
 
+	// 파이 메뉴 열릴 때 초기 상태를 플레이어로 설정
+	CachedMouseFinalAngle = 102.0f;
+}
 void UPieMenuWidget::StandardPosition()
 {
 	//파이 메뉴 시작 시 마우스 위치를 기준점으로 저장
@@ -66,51 +71,96 @@ float UPieMenuWidget::CalculateMouseAngle()
 void UPieMenuWidget::CacheFinalMouseAngle()
 {
 	CachedMouseFinalAngle = CachedMouseAngle;
+
 	if (CachedMouseFinalAngle <= 25.0f)
 	{
-		CachedMouseFinalAngle = 0.0f;
+		if (SkeletonWarrior_OK)
+		{
+			CachedMouseFinalAngle = 0.0f;
+			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+
+			// "SkeletonWarrior";
+		}
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 77.0f)
 	{
-		CachedMouseFinalAngle = 309.0f;
-		//CachedMouseFinalAngle = 51.0f;
+		if (StoneGolem_OK) 
+		{
+			CachedMouseFinalAngle = 309.0f;
+			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+
+			// "StoneGolem";
+			//CachedMouseFinalAngle = 51.0f;
+		}
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 129.0f)
 	{
-		CachedMouseFinalAngle = 257.0f;
+		if (Freezard_OK) 
+		{
+			CachedMouseFinalAngle = 257.0f;
+			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 
-		//		CachedMouseFinalAngle = 103.0f;
+			//"Freezard";
+			//		CachedMouseFinalAngle = 103.0f;
+		}
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 181.0f)
 	{
-		CachedMouseFinalAngle = 206.0f;
+		if (StoneGolem_OK) 
+		{
+			CachedMouseFinalAngle = 206.0f;
+			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 
-		//		CachedMouseFinalAngle = 154.0f;
+			// "Inpermon";
+			//		CachedMouseFinalAngle = 154.0f;
+		}
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 233.0f)
 	{
-		CachedMouseFinalAngle = 154.0f;
+		if (WildBoar_Ok) 
+		{
+			CachedMouseFinalAngle = 154.0f;
+			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 
-		//		CachedMouseFinalAngle = 206.0f;
+			//"WildBoar";
+			//		CachedMouseFinalAngle = 206.0f;
+		}
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+
 	}
 	else if (CachedMouseFinalAngle <= 285.0f)
 	{
-		CachedMouseFinalAngle = 103.0f;
+		CachedMouseFinalAngle = 102.0f;
+		Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 
+		// "Player";
 		//CachedMouseFinalAngle = 257.0f;
 	}
 	else if (CachedMouseFinalAngle <= 337.0f)
 	{
-		CachedMouseFinalAngle = 51.0f;
-		//		CachedMouseFinalAngle = 309.0f;
+		if (SkeletonArcher_OK) 
+		{
+			CachedMouseFinalAngle = 51.0f;
+			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+
+			// "SkeletonArcher";
+			//CachedMouseFinalAngle = 309.0f;
+		}
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else
 	{
-
+	
 	}
+	//CachedMouseFinalAngle = GetFinalAngleForName(TargetName);
 
 	//	UE_LOG(LogTemp, Warning, TEXT("최종 선택된 각도: %f"), CachedMouseFinalAngle);
 }
+
 
 void UPieMenuWidget::OpenCharacter(FString DeadMonsterName)
 {
@@ -120,6 +170,7 @@ void UPieMenuWidget::OpenCharacter(FString DeadMonsterName)
 		UE_LOG(LogTemp, Log, TEXT("와일드 보어 해금 완료"));
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("boar_img"))))
 		{
+			WildBoar_Ok = true;
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
@@ -128,30 +179,35 @@ void UPieMenuWidget::OpenCharacter(FString DeadMonsterName)
 		UE_LOG(LogTemp, Log, TEXT("인페르몽 해금 완료"));
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("monkey_img"))))
 		{
+			Inpermon_OK = true;
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 	else if (DeadMonsterName == "SkeletonWarrior") {
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("Skeleton1_img"))))
 		{
+			SkeletonWarrior_OK = true;
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 	else if (DeadMonsterName == "StoneGolem") {
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("Golem_img"))))
 		{
+			StoneGolem_OK = true;
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 	else if (DeadMonsterName == "SkeletonArcher") {
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("Skeleton2_img"))))
 		{
+			SkeletonArcher_OK = true;
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 	else if (DeadMonsterName == "Freezard") {
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("lizard_img"))))
 		{
+			Freezard_OK = true;
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
