@@ -33,6 +33,14 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+
+	// 쿨타임 플래그
+	UPROPERTY(BlueprintReadOnly, Category = "Skill|Cooldown")
+	bool bCanUseNormalSkill;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Skill|Cooldown")
+	bool bCanUseSpecialSkill;
+
 private:
 	AEntityPreset* OwnerEntity;
 
@@ -49,4 +57,15 @@ private:
 	void ExecuteBuffTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData);
 
 	void ExecuteSkill_Charge(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData);
+
+	/* 쿨타임 관리 함수 */
+	void SetSkillTimer(float CooldownTime, FTimerDelegate TimerDelegate);
+	void NormalCooldown(); // 일반 스킬 쿨타임 끝남
+	void SpecialCooldown(); // 특수 스킬 쿨타임 끝남
+
+
+protected:
+	// 타이머 핸들 (일반, 특수 스킬 각각 필요 시 분리해서 관리)
+	FTimerHandle NormalSkillTimerHandle;
+	FTimerHandle SpecialSkillTimerHandle;
 };

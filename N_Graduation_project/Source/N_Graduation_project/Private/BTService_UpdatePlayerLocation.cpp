@@ -7,6 +7,8 @@
 #include "MyAI.h"
 #include "AIController.h"
 #include "ABEntityData.h"
+#include "EntityPreset.h"
+#include "EntitySkillComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/CapsuleComponent.h"
 
@@ -65,10 +67,6 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	// Blackboard로부터 값 읽어오기
 	float A_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_ASKILLRANGE);
 	float B_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_BSKILLRANGE);
-	//bool bASkillCondition = BlackboardComp->GetValueAsBool(BBKEY_BASKILLCONDITION);
-	//bool bBSkillCondition = BlackboardComp->GetValueAsBool(BBKEY_BBSKILLCONDITION);
-	//bool bA_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BASKILLAVAILABLE);
-	//bool bB_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BBSKILLAVAILABLE);
 
 	// 스킬 쿨타임이 구현 되어있지 않은 관계로 Range 비교 결과로만 스킬 시전 
 	// 조건 계산:
@@ -77,9 +75,23 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	/*bool bASkillCondition = (Distance <= A_SkillRange) && bA_SkillAvailable;
 	bool bBSkillCondition = (Distance <= B_SkillRange) && bB_SkillAvailable;*/
 
+	// 엔티티의 스킬 사용 가능 여부를 업데이트
+	AEntityPreset* Entity = Cast<AEntityPreset>(ControllingPawn);
+	if (Entity && Entity->EntitySkillComponent)
+	{
+		bool bNormalAvailable = Entity->EntitySkillComponent->bCanUseNormalSkill;
+		bool bSpecialAvailable = Entity->EntitySkillComponent->bCanUseSpecialSkill;
+
+		BlackboardComp->SetValueAsBool(BBKEY_BASKILLAVAILABLE, bNormalAvailable);
+		BlackboardComp->SetValueAsBool(BBKEY_BBSKILLAVAILABLE, bSpecialAvailable);
+	}
+
+	bool bA_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BASKILLAVAILABLE);
+	bool bB_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BBSKILLAVAILABLE);
+
 	// 거리 조건 계산: 조건을 매 틱마다 새로 설정
-	bool bASkillCondition = (DistanceToPlayer <= A_SkillRange);
-	bool bBSkillCondition = (!bASkillCondition && (DistanceToPlayer <= B_SkillRange));
+	bool bASkillCondition = (DistanceToPlayer <= A_SkillRange && bA_SkillAvailable);
+	bool bBSkillCondition = (!bASkillCondition && (DistanceToPlayer <= B_SkillRange) && bB_SkillAvailable);
 
 	// 블랙보드에 조건 결과 업데이트
 	BlackboardComp->SetValueAsBool(BBKEY_BASKILLCONDITION, bASkillCondition);

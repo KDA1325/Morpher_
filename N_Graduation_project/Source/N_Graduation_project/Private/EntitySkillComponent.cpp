@@ -13,6 +13,9 @@ UEntitySkillComponent::UEntitySkillComponent()
 
 	// ...
 	OwnerEntity = nullptr;
+
+	bCanUseNormalSkill = true;
+	bCanUseSpecialSkill = true;
 }
 
 // Called when the game starts
@@ -51,10 +54,26 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 
 	if (SkillID == "Skill_Charge")
 	{
+		if (!bCanUseSpecialSkill)
+		{
+			UE_LOG(LogTemp, Error, TEXT("skill is on cooldown"));
+			return;
+		}
+
 		ExecuteSkill_Charge(SkillData, EffectDataArray);
+
+		// 쿨타임 적용: 스킬 타입에 따라 타이머를 통해 재사용 가능 상태 복구
+		bCanUseSpecialSkill = false;
+		FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::SpecialCooldown);
+		SetSkillTimer(SkillData.SkillCoolTime, SpecialDelegate);
 	}
 	else
 	{
+		if (!bCanUseNormalSkill)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Normal skill %s is on cooldown"), *SkillID);
+			return;
+		}
 		// SkillType에 따라 스킬 실행(모듈화) 
 		switch (SkillData.SkillType)
 		{
@@ -68,6 +87,10 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 			ExecuteBuffTypeSkill(SkillData, EffectDataArray);
 			break;
 		}
+
+		bCanUseNormalSkill = false;
+		FTimerDelegate NormalDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::NormalCooldown);
+		SetSkillTimer(SkillData.SkillCoolTime, NormalDelegate);
 	}
 }
 
@@ -87,6 +110,27 @@ bool UEntitySkillComponent::LoadSkillDataBySkillID(const FString& SkillID, FSkil
 	}
 
 	return true;
+}
+
+void UEntitySkillComponent::SetSkillTimer(float CooldownTime, FTimerDelegate TimerDelegate)
+{
+	if (CooldownTime > 0)
+	{
+		GetWorld()->GetTimerManager().SetTimer((CooldownTime == CooldownTime) ? NormalSkillTimerHandle : SpecialSkillTimerHandle, TimerDelegate, CooldownTime, false);
+	}
+}
+
+void UEntitySkillComponent::NormalCooldown()
+{
+	bCanUseNormalSkill = true;
+
+	UE_LOG(LogTemp, Log, TEXT("Normal skill cooldown ended"));
+}
+
+void UEntitySkillComponent::SpecialCooldown()
+{
+	bCanUseSpecialSkill = true;
+	UE_LOG(LogTemp, Log, TEXT("Special skill cooldown ended"));
 }
 
 // 애님 몽타주 노티파이로 호출 
