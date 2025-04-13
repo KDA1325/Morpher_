@@ -59,7 +59,7 @@ private:
 	void ExecuteSkill_Charge(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData);
 
 	/* 쿨타임 관리 함수 */
-	void SetSkillTimer(float CooldownTime, FTimerDelegate TimerDelegate);
+	void SetSkillTimer(float CooldownTime, FTimerDelegate TimerDelegate, bool bIsSpecial);
 	void NormalCooldown(); // 일반 스킬 쿨타임 끝남
 	void SpecialCooldown(); // 특수 스킬 쿨타임 끝남
 

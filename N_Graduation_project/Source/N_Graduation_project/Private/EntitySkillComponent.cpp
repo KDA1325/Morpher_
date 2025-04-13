@@ -65,7 +65,7 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 		// 쿨타임 적용: 스킬 타입에 따라 타이머를 통해 재사용 가능 상태 복구
 		bCanUseSpecialSkill = false;
 		FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::SpecialCooldown);
-		SetSkillTimer(SkillData.SkillCoolTime, SpecialDelegate);
+		SetSkillTimer(SkillData.SkillCoolTime, SpecialDelegate, true);
 	}
 	else
 	{
@@ -90,7 +90,7 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 
 		bCanUseNormalSkill = false;
 		FTimerDelegate NormalDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::NormalCooldown);
-		SetSkillTimer(SkillData.SkillCoolTime, NormalDelegate);
+		SetSkillTimer(SkillData.SkillCoolTime, NormalDelegate, false);
 	}
 }
 
@@ -112,13 +112,29 @@ bool UEntitySkillComponent::LoadSkillDataBySkillID(const FString& SkillID, FSkil
 	return true;
 }
 
-void UEntitySkillComponent::SetSkillTimer(float CooldownTime, FTimerDelegate TimerDelegate)
+void UEntitySkillComponent::SetSkillTimer(float CooldownTime, FTimerDelegate TimerDelegate, bool bIsSpecial)
 {
 	if (CooldownTime > 0)
 	{
-		GetWorld()->GetTimerManager().SetTimer((CooldownTime == CooldownTime) ? NormalSkillTimerHandle : SpecialSkillTimerHandle, TimerDelegate, CooldownTime, false);
+		if (bIsSpecial)
+		{
+			GetWorld()->GetTimerManager().SetTimer(SpecialSkillTimerHandle, TimerDelegate, CooldownTime, false);
+		}
+		else
+		{
+			GetWorld()->GetTimerManager().SetTimer(NormalSkillTimerHandle, TimerDelegate, CooldownTime, false);
+		}
 	}
 }
+
+//void UEntitySkillComponent::SetSkillTimer(float CooldownTime, FTimerDelegate TimerDelegate)
+//{
+//
+//	if (CooldownTime > 0)
+//	{
+//		GetWorld()->GetTimerManager().SetTimer((CooldownTime == CooldownTime) ? NormalSkillTimerHandle : SpecialSkillTimerHandle, TimerDelegate, CooldownTime, false);
+//	}
+//}
 
 void UEntitySkillComponent::NormalCooldown()
 {
@@ -145,7 +161,7 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, 
 	bCanUseNormalSkill = false;
 
 	FTimerDelegate NormalDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::NormalCooldown);
-	SetSkillTimer(SkillData.SkillCoolTime, NormalDelegate);
+	SetSkillTimer(SkillData.SkillCoolTime, NormalDelegate, false);
 
 	if (OwnerEntity->NormalSkillMontage)
 	{
@@ -195,7 +211,7 @@ void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, con
 	bCanUseSpecialSkill = false;
 
 	FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::SpecialCooldown);
-	SetSkillTimer(SkillData.SkillCoolTime, SpecialDelegate);
+	SetSkillTimer(SkillData.SkillCoolTime, SpecialDelegate, true);
 
 	OwnerEntity->PerformSkill_Charge();
 }
