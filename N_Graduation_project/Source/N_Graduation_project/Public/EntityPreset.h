@@ -119,6 +119,15 @@ public:
 	//UFUNCTION()
 	//void OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	// 돌진 관련 상태 변수
+	bool bIsCharging = false;
+	FVector ChargeStartLocation;
+	FVector ChargeDirection;
+	float ChargeDistance = 0.0f;
+	FVector ChargeTargetLocation;
+
+	void StopMovement();
+
 	void DrawChargePath();
 
 protected:
