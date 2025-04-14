@@ -62,8 +62,6 @@ public:
 	void OffDefenseSkill();                    // 방어 스킬 비활성화 함수
 	void NomalCooldown();          // 스킬 쿨타임 초기화
 	void SpecialCooldown();          // 스킬 쿨타임 초기화
-	void SetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
-	void SpecialSetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
 	float GetDistanceTo(const AActor* OtherActor) const;    // 거리 계산 함수
 	// 히트박스 초기화 및 활성화 함수
 	void SettingHitBox(const FSkillData& SkillData); // 히트박스 초기화
@@ -73,6 +71,11 @@ public:
 	void SkillAnimation(const FString& EffectID);
 	void EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted);
 	void SkillEffect(const FString& SkillNameID);
+	//타이머
+	void SetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
+	void SpecialSetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
+	void ChargeSkillTimer(float Delay, FTimerDelegate Call);  // 타이머 설정 함수
+
 
 	UPROPERTY(BlueprintReadOnly)
 	float DamageAmount;
@@ -87,6 +90,7 @@ private:
 	// 타이머 핸들
 	FTimerHandle NomalSkillTimerHandle;
 	FTimerHandle SpecialSkillTimerHandle;
+	FTimerHandle ChargeSkillTimerHandle;
 
 	// 플레이어와의 거리
 	float distance;
@@ -96,7 +100,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	FVector StoredDashDirection;
 
-	void ExecuteChargeDash(float Chargedistance);
+	void ExecuteChargeDash(FVector Chargedistance);
 	void DrawChargePath();
 };
 

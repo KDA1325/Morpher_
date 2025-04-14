@@ -22,14 +22,7 @@ UActionAnimInstance::UActionAnimInstance()
 
 	// 애셋 로드
 	M_Bite = Cast<UAnimMontage>(BiteMontagePath.TryLoad());
-	if (M_Bite)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Successfully loaded Montage: %s"), *M_Bite->GetName());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load Montage from path: %s"), *BiteMontagePath.ToString());
-	}
+	
 
 }
 void UActionAnimInstance::PlayAnimation(const FString& EffectID)
@@ -52,11 +45,13 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *M_Bite->GetName());
 		UE_LOG(LogTemp, Warning, TEXT("Playing Skill_Bite 실행됨"));
 		Montage_Play(M_Bite);
-		float PlayResult = Montage_Play(M_Bite);
-		UE_LOG(LogTemp, Warning, TEXT("Montage_Play result: %f"), PlayResult);
+	//	float PlayResult = Montage_Play(M_Bite);
+	//	UE_LOG(LogTemp, Warning, TEXT("Montage_Play result: %f"), PlayResult);
+
 		// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 	}
+
 	else{
 		UE_LOG(LogTemp, Warning, TEXT("Playing Animation 해당하는 스킬 없음"));
 
@@ -73,7 +68,8 @@ void UActionAnimInstance::OnMontageEndCallback(UAnimMontage* Montage, bool bInte
 	AN_Graduation_projectCharacter* MyCharacter = Cast<AN_Graduation_projectCharacter>(OwnerActor);
 	if (MyCharacter)
 	{
-		MyCharacter->EndAction(); // EndAction 호출하여 속도 복구
+		MyCharacter->EndAction(); // EndAction 호출
+		UE_LOG(LogTemp, Warning, TEXT("OnMontageEndCallback EndAction실행됨 "));
 	}
 
 	// 델리게이트에서 바인딩 해제

@@ -65,10 +65,17 @@ void UPlayerSkillComponent::SpecialSetSkillTimer(float Count, FTimerDelegate End
 	if (GetWorld() && Count > 0)
 	{
 		GetWorld()->GetTimerManager().SetTimer(SpecialSkillTimerHandle, End, Count, false);
-		UE_LOG(LogTemp, Log, TEXT("hum SpecialSetSkillTimer사용됨"));
+		UE_LOG(LogTemp, Log, TEXT("OnMontag SpecialSetSkillTimer사용됨"));
 	}
 }
-
+void UPlayerSkillComponent::ChargeSkillTimer(float Delay, FTimerDelegate End)
+{
+	if (GetWorld() && Delay > 0)
+	{
+		GetWorld()->GetTimerManager().SetTimer(ChargeSkillTimerHandle, End, Delay, false);
+		UE_LOG(LogTemp, Log, TEXT("ChargeSkillTimer 사용됨"));
+	}
+}
 
 void UPlayerSkillComponent::NomalCooldown()
 {
@@ -259,16 +266,11 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		{
 			StatComponent->HUDWidget->UpdateNomalSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
 			StatComponent->HUDWidget->CanNomal = false;
-
-			UE_LOG(LogTemp, Log, TEXT("hum PS CanSpecial, CanNomal: %s %s"),
-				StatComponent->HUDWidget->CanSpecial ? TEXT("true") : TEXT("false"),
-				StatComponent->HUDWidget->CanNomal ? TEXT("true") : TEXT("false"));
-			UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
 		}
 
 		// 스킬 애니메이션
 		SkillAnimation(SkillID);
-		UE_LOG(LogTemp, Warning, TEXT("Playing %s"), *SkillID);
+		UE_LOG(LogTemp, Warning, TEXT("OnMontag Playing %s"), *SkillID);
 
 		// 쿨타임 타이머 설정
 		FTimerDelegate NomalCooldownEnd;
@@ -303,8 +305,18 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("kakao No distance, but playing skill anyway"));
 		}
+		if (SkillID == "Skill_Charge")
+		{
+			StoredDashDirection = MyChar->GetActorForwardVector().GetSafeNormal();
 
-		// 공통적으로 실행되는 로직
+			DrawChargePath(); // 돌진 선은 언제나 그림
+
+			float PrepTime = 1.0f;
+
+			FTimerDelegate ChargeEnd;
+			ChargeEnd.BindUObject(this, &UPlayerSkillComponent::ExecuteChargeDash, StoredDashDirection);
+			ChargeSkillTimer(PrepTime, ChargeEnd);
+		}
 		CanUseSpecialSkill = false;
 
 		auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
@@ -312,30 +324,11 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		{
 			StatComponent->HUDWidget->UpdateSpecialSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
 			StatComponent->HUDWidget->CanSpecial = false;
-			UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
 		}
 
+		// 스킬 애니메이션
 		SkillAnimation(SkillID);
-		UE_LOG(LogTemp, Warning, TEXT("Playing %s"), *SkillID);
-
-		if (SkillID == "Skill_Charge")
-		{
-			StoredDashDirection = MyChar->GetActorForwardVector().GetSafeNormal();
-			UE_LOG(LogTemp, Warning, TEXT("StoredDashDirection: X=%f, Y=%f, Z=%f"),
-				StoredDashDirection.X, StoredDashDirection.Y, StoredDashDirection.Z);
-
-			DrawChargePath(); // 돌진 선은 언제나 그림
-
-			float PrepTime = 1.0f;
-
-			UE_LOG(LogTemp, Log, TEXT("hum PS CanSpecial, CanNomal: %s %s"),
-				StatComponent->HUDWidget->CanSpecial ? TEXT("true") : TEXT("false"),
-				StatComponent->HUDWidget->CanNomal ? TEXT("true") : TEXT("false"));
-
-			//FTimerDelegate DashDelegate;
-			//DashDelegate.BindUObject(this, &UPlayerSkillComponent::ExecuteChargeDash, StoredDashDirection);
-			//SetSkillTimer(PrepTime, DashDelegate);
-		}
+		UE_LOG(LogTemp, Warning, TEXT("OnMontag Playing %s"), *SkillID);
 
 		FTimerDelegate SpecialCooldownEnd;
 		SpecialCooldownEnd.BindUObject(this, &UPlayerSkillComponent::SpecialCooldown);
@@ -358,7 +351,7 @@ void UPlayerSkillComponent::DrawChargePath()
 	UE_LOG(LogTemp, Warning, TEXT("DrawChargePath: Charge path drawn"));
 
 }
-void UPlayerSkillComponent::ExecuteChargeDash(float Chargedistance)
+void UPlayerSkillComponent::ExecuteChargeDash(FVector Chargedistance)
 {
 	// 준비 시간 동안 저장된 dash 방향을 사용
 	ACharacter* MyChar = Cast<ACharacter>(GetOwner());
