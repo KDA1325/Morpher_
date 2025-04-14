@@ -635,48 +635,10 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 	{
 		if (Effect.EffectType == EnumEffectType::KnockBack)
 		{
-			// LaunchCharacter 또는 AddImpulse 로 구현
-			FVector KnockbackDir = OtherActor->GetActorLocation() - GetActorLocation();
-			KnockbackDir.Normalize();
 			float KnockbackDistance = Effect.EffectValue01;
 			float KnockbackDuration = Effect.EffectValue02;
 
-			if (KnockbackDistance <= 0.01f)
-			{
-				KnockbackDuration = 0.1f; // 최소 보정
-			}
-
-			// 속도 = 거리/시간
-			float KnockbackSpeed = KnockbackDistance / KnockbackDuration;
-
-			FVector KnockbackVelocity = KnockbackDir * KnockbackSpeed;
-
-			ACharacter* HitCharacter = Cast<ACharacter>(OtherActor);
-			if (HitCharacter)
-			{
-				UCharacterMovementComponent* MoveComp = HitCharacter->GetCharacterMovement();
-				if (MoveComp)
-				{
-					// 기존 모멘텀 무시하고 새로운 속도로 밀기
-					HitCharacter->LaunchCharacter(KnockbackVelocity, true, true);
-
-					// 마찰력 없애서 정확하게 이동
-					MoveComp->BrakingFrictionFactor = 0.f;
-					MoveComp->GroundFriction = 0.f;
-
-					// 일정 시간 후 마찰력 복원 (안 그러면 계속 미끄러짐)
-					FTimerHandle FrictionRestoreHandle;
-					FTimerDelegate RestoreFriction;
-					RestoreFriction.BindLambda([=]() {
-						MoveComp->BrakingFrictionFactor = 2.f;
-						MoveComp->GroundFriction = 8.f;
-						});
-					OtherActor->GetWorldTimerManager().SetTimer(FrictionRestoreHandle, RestoreFriction, KnockbackDuration, false);
-				}
-			}
-
-			UE_LOG(LogTemp, Warning, TEXT("KnockBack to %s → Distance: %.1fcm in %.2fs (speed: %.1f)"),
-				*OtherActor->GetName(), KnockbackDistance, KnockbackDuration, KnockbackSpeed);
+			ApplyKnockbackEffect(PlayerCharacter, KnockbackDistance, KnockbackDuration);
 
 			/*UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
 			if (MoveComp)
@@ -874,6 +836,46 @@ void AEntityPreset::DrawChargePath()
 
 	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.5f, 0, 5.f);
 	UE_LOG(LogTemp, Warning, TEXT("DrawChargePath: Charge path drawn"));
+}
+
+void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target, float Distance, float Duration)
+{
+	// LaunchCharacter 로 구현
+	FVector KnockbackDir = Target->GetActorLocation() - GetActorLocation();
+	KnockbackDir.Normalize();
+			
+	// 최소 보정
+	if (Distance <= 0.01f)
+	{
+		Duration = 0.1f;
+	}
+
+	// 속도 = 거리/시간
+	float KnockbackSpeed = Distance / Duration;
+
+	FVector KnockbackVelocity = KnockbackDir * KnockbackSpeed;
+
+	UCharacterMovementComponent* MoveComp = Target->GetCharacterMovement();
+	if (MoveComp)
+	{
+		// 기존 모멘텀 무시하고 새로운 속도로 밀기
+		Target->LaunchCharacter(KnockbackVelocity, true, true);
+
+		// 마찰력 없애서 정확하게 이동
+		MoveComp->BrakingFrictionFactor = 0.f;
+		MoveComp->GroundFriction = 0.f;
+
+		// 일정 시간 후 마찰력 복원 (안 그러면 계속 미끄러짐)
+		FTimerHandle FrictionRestoreHandle;
+		FTimerDelegate RestoreFriction;
+		RestoreFriction.BindLambda([=]() {
+			MoveComp->BrakingFrictionFactor = 2.f;
+			MoveComp->GroundFriction = 8.f;
+			});
+		Target->GetWorldTimerManager().SetTimer(FrictionRestoreHandle, RestoreFriction, Duration, false);
+		
+		UE_LOG(LogTemp, Warning, TEXT("KnockBack to %s → Distance: %.1fcm in %.2fs (speed: %.1f)"), *Target->GetName(), Distance, Duration, KnockbackSpeed);
+	}
 }
 
 

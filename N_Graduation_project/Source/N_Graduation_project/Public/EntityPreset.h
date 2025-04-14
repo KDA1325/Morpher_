@@ -130,6 +130,9 @@ public:
 
 	void DrawChargePath();
 
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void ApplyKnockbackEffect(ACharacter* Target, float Distance, float Duration);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
