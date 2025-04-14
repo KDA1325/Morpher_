@@ -3,6 +3,7 @@
 #include "EntitySkillComponent.h"
 #include "MyAIController.h"
 #include "MyAI.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 AEntityPreset::AEntityPreset()
@@ -654,6 +655,18 @@ void AEntityPreset::PerformSkill_Charge()
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
 	bIsCastingSkill = true;
 
+	// AI 경로 추적 중지 
+	if (AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 중단
+			PathComp->Deactivate();
+
+			AIController->StopMovement();
+			UE_LOG(LogTemp, Warning, TEXT("AI movement forcibly stopped before LaunchCharacter"));
+		}
+	}
 	// 현재 전방 벡터를 저장 (처음 결정된 방향을 고정)
 	StoredDashDirection = GetActorForwardVector().GetSafeNormal();
 
@@ -689,13 +702,14 @@ void AEntityPreset::PerformSkill_Charge()
 		UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill_Charge: SpecialSkillMontage is not set"));
 	}
 }
+
 void AEntityPreset::ExecuteChargeDash()
 {
 	// 준비 시간 동안 저장된 dash 방향을 사용
 	FVector DashDirection = StoredDashDirection;
 
 	// SkillData에 정의된 SkillRange를 돌진 거리로 사용 
-	float DashDistance = SpecialSkillData.SkillRange;
+	//float DashDistance = SpecialSkillData.SkillRange;
 
 	//FVector StartLocation = GetActorLocation();
 	//FVector DashTarget = StartLocation + DashDirection * DashDistance;
@@ -723,6 +737,15 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted
 	// 스킬 종료 처리 
 	bIsCastingSkill = false;
 
+	// AI 경로 추적 활성화
+	if (AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 활성화 
+			PathComp->Activate();
+		}
+	}
 	//// 실제 돌진 동작: 빠른 이동 및 히트박스 생성
  //   // 예를 들어: 전방으로 특정 거리를 빠르게 이동 + ShowSpecialHitBox() 호출
  //   
@@ -767,7 +790,11 @@ void AEntityPreset::DrawChargePath()
 {
 	// 예시: 디버그 선을 이용해 경로 표시
 	FVector StartLocation = GetActorLocation();
-	FVector EndLocation = StartLocation + GetActorForwardVector() * 600.f; // 돌진 거리와 동일
+	//FVector EndLocation = StartLocation + GetActorForwardVector() * 600.f; // 돌진 거리와 동일
+	float DashSpeed = 2000.0f;
+	float DashDuration = 0.75f; // 돌진 지속 시간 추정 (0.5~1.0s 정도로 테스트)
+	FVector EndLocation = StartLocation + GetActorForwardVector() * DashSpeed * DashDuration;
+
 	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.5f, 0, 5.f);
 	UE_LOG(LogTemp, Warning, TEXT("DrawChargePath: Charge path drawn"));
 }

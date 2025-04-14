@@ -22,6 +22,7 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
+
 	APawn* playerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (playerPawn == nullptr)
 	{
@@ -39,6 +40,15 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	if (BlackboardComp == nullptr)
 	{
 		return;
+	}
+
+	if (AEntityPreset* Entity = Cast<AEntityPreset>(ControllingPawn))
+	{
+		if (Entity->bIsCastingSkill)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Skipping UpdatePlayerLocation - casting skill"));
+			return;
+		}
 	}
 
 	// 충돌 캡슐 반지름 (PC와 몬스터의 캡슐 반지름을 더해서 최소 거리 계산)
