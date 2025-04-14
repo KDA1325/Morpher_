@@ -510,7 +510,7 @@ void AEntityPreset::ShowNormalHitBox()
 
 	// HitBox 활성화 
 	NormalSkillHitBox->SetHiddenInGame(false);
-	NormalSkillHitBox->SetVisibility(true);
+	//NormalSkillHitBox->SetVisibility(true);
 	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기, 물리는 무시하지만 쿼리만 처리
 	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
 
@@ -534,7 +534,7 @@ void AEntityPreset::ShowSpecialHitBox()
 
 	// HitBox 활성화 
 	SpecialSkillHitBox->SetHiddenInGame(false);
-	SpecialSkillHitBox->SetVisibility(true);
+	//SpecialSkillHitBox->SetVisibility(true);
 	SpecialSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기
 	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
 
