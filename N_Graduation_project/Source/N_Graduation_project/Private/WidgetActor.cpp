@@ -99,7 +99,6 @@ void UWidgetActor::HidePieMenu()
 		if (Stat->Change == true) {
 			PieWidget->CacheFinalMouseAngle();
 			MyChar->ChangePreset(PieWidget->Monster);
-			//Stat->Change = false;
 		}
 
 		PieWidget->SetVisibility(ESlateVisibility::Hidden);

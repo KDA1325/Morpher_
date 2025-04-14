@@ -55,40 +55,30 @@ void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
 {
 	if (GetWorld() && Count > 0)
 	{
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, End, Count, false);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("SetSkillTimer: GetWorld() is null"));
+		GetWorld()->GetTimerManager().SetTimer(NomalSkillTimerHandle, End, Count, false);
+		UE_LOG(LogTemp, Log, TEXT("hum SetSkillTimer사용됨"));
 	}
 }
+
+void UPlayerSkillComponent::SpecialSetSkillTimer(float Count, FTimerDelegate End)
+{
+	if (GetWorld() && Count > 0)
+	{
+		GetWorld()->GetTimerManager().SetTimer(SpecialSkillTimerHandle, End, Count, false);
+		UE_LOG(LogTemp, Log, TEXT("hum SpecialSetSkillTimer사용됨"));
+	}
+}
+
 
 void UPlayerSkillComponent::NomalCooldown()
 {
 	CanUseNomalSkill = true;
-
-	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
-	if (StatComponent && StatComponent->HUDWidget)
-	{
-		StatComponent->HUDWidget->CanNomal = true;
-		UE_LOG(LogTemp, Log, TEXT("hum PSNomalT CanSpecial, CanNomal: %s %s"),
-			StatComponent->HUDWidget->CanSpecial ? TEXT("true") : TEXT("false"),
-			StatComponent->HUDWidget->CanNomal ? TEXT("true") : TEXT("false"));
-	}
 
 	UE_LOG(LogTemp, Log, TEXT("Kakao NomalCooldown"));
 }
 void UPlayerSkillComponent::SpecialCooldown()
 {
 	CanUseSpecialSkill = true;
-	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
-	if (StatComponent && StatComponent->HUDWidget)
-	{
-		StatComponent->HUDWidget->CanSpecial = true;
-		UE_LOG(LogTemp, Log, TEXT("hum PSSpecialT CanSpecial, CanNomal: %s %s"),
-			StatComponent->HUDWidget->CanSpecial ? TEXT("true") : TEXT("false"),
-			StatComponent->HUDWidget->CanNomal ? TEXT("true") : TEXT("false"));
-	}
 }
 
 void UPlayerSkillComponent::SettingHitBox(const FSkillData& SkillData)
@@ -236,128 +226,126 @@ void UPlayerSkillComponent::VisibleShapeBox(const FString& SkillID)
 void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 {
 	UE_LOG(LogTemp, Warning, TEXT("kakao On NomalSkillPlay"));
+
 	distance = MeasureDistanceToMonster();
 	UE_LOG(LogTemp, Warning, TEXT("Kakao Distance to Monster: %f"), distance);
-	if (CanUseNomalSkill == true) {
 
+	if (CanUseNomalSkill)
+	{
 		UE_LOG(LogTemp, Warning, TEXT("kakao On CanUseNomalSkill"));
 
 		FSkillData SkillData;
 		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData)) return;
 
+		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+		MyChar->StartAction();
+
 		if (distance <= SkillData.SkillRange)
 		{
-			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-			MyChar->StartAction();
-
 			UE_LOG(LogTemp, Warning, TEXT("kakao Yes distance"));
-
-			VisibleShapeBox(SkillID);
-			//스킬 쿨타임
-			CanUseNomalSkill = false;
-			auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
-			if (StatComponent && StatComponent->HUDWidget)
-			{
-				StatComponent->HUDWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
-				StatComponent->HUDWidget->CanNomal = false;
-				UE_LOG(LogTemp, Log, TEXT("hum PS CanSpecial, CanNomal: %s %s"),
-					StatComponent->HUDWidget->CanSpecial ? TEXT("true") : TEXT("false"),
-					StatComponent->HUDWidget->CanNomal ? TEXT("true") : TEXT("false"));
-				UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
-			}
-			SkillAnimation(SkillID);
-			UE_LOG(LogTemp, Warning, TEXT("Playing %s"), *SkillID);
-			//노말 스킬
-		/*	if (SkillID == "Skill_Slash") {
-				SkillAnimation(SkillID);
-				UE_LOG(LogTemp, Warning, TEXT("kakao On SkillSlash"));
-
-			}*/
-
-			//쿨타임
-			FTimerDelegate NomalCooldownEnd;
-			NomalCooldownEnd.BindUObject(this, &UPlayerSkillComponent::NomalCooldown);//바인딩
-			SetSkillTimer(SkillData.SkillCoolTime, NomalCooldownEnd);  // 쿨타임 설정
-			//SetSkillTimer(3.0f, NomalCooldownEnd);  // 슬래시 쿨타임 너무 짧아서 테스트용
+			VisibleShapeBox(SkillID); // 적중 범위 표시
 		}
-		else {
-
-			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-		//	MyChar->EndAction();
-			UE_LOG(LogTemp, Warning, TEXT("kakao no distance"));
-
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("kakao No distance, but playing skill anyway"));
+			// 원거리라도 스킬 발동. Hit 판정은 별도로 처리하거나 거리 체크를 통해 스킵 가능.
 		}
+
+		// 스킬 쿨타임 시작
+		CanUseNomalSkill = false;
+
+		auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
+		if (StatComponent && StatComponent->HUDWidget)
+		{
+			StatComponent->HUDWidget->UpdateNomalSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
+			StatComponent->HUDWidget->CanNomal = false;
+
+			UE_LOG(LogTemp, Log, TEXT("hum PS CanSpecial, CanNomal: %s %s"),
+				StatComponent->HUDWidget->CanSpecial ? TEXT("true") : TEXT("false"),
+				StatComponent->HUDWidget->CanNomal ? TEXT("true") : TEXT("false"));
+			UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
+		}
+
+		// 스킬 애니메이션
+		SkillAnimation(SkillID);
+		UE_LOG(LogTemp, Warning, TEXT("Playing %s"), *SkillID);
+
+		// 쿨타임 타이머 설정
+		FTimerDelegate NomalCooldownEnd;
+		NomalCooldownEnd.BindUObject(this, &UPlayerSkillComponent::NomalCooldown);
+		SetSkillTimer(SkillData.SkillCoolTime, NomalCooldownEnd);
 	}
-	else {
-
-		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-		//MyChar->EndAction();
+	else
+	{
 		UE_LOG(LogTemp, Warning, TEXT("kakao No CanUseNomalSkill"));
-
 	}
 }
 
 void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 {
+	UE_LOG(LogTemp, Warning, TEXT("kakao On SpecialSkillPlay"));
 	distance = MeasureDistanceToMonster();
-	if (CanUseSpecialSkill == true) {
 
+	if (CanUseSpecialSkill)
+	{
 		FSkillData SkillData;
 		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData)) return;
 
+		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+		MyChar->StartAction();
+
 		if (distance <= SkillData.SkillRange)
 		{
-			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-			MyChar->StartAction();
-
-			VisibleShapeBox(SkillID);
-			//스킬 쿨타임
-			CanUseNomalSkill = false;
-			auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
-			if (StatComponent && StatComponent->HUDWidget)
-			{
-				StatComponent->HUDWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
-				StatComponent->HUDWidget->CanSpecial = false;
-				UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
-			}
-			SkillAnimation(SkillID);
-			UE_LOG(LogTemp, Warning, TEXT("Playing %s"), *SkillID);
-
-
-			if (SkillID == "Skill_Charge")
-			{
-				StoredDashDirection = MyChar->GetActorForwardVector().GetSafeNormal();
-				DrawChargePath(); // 돌진 경로 표시
-
-				float PrepTime = 1.0f;
-
-				// 타이머 바인딩을 위한 델리게이트 생성
-				FTimerDelegate DashDelegate;
-				DashDelegate.BindUObject(this, &UPlayerSkillComponent::ExecuteChargeDash, SkillData.SkillRange);
-
-				SetSkillTimer(PrepTime, DashDelegate);
-			}
-
-			//쿨타임
-			FTimerDelegate SpecialCooldownEnd;
-			SpecialCooldownEnd.BindUObject(this, &UPlayerSkillComponent::SpecialCooldown);//바인딩
-			SetSkillTimer(SkillData.SkillCoolTime, SpecialCooldownEnd);  // 쿨타임 설정
-			//SetSkillTimer(3.0f, NomalCooldownEnd);  // 슬래시 쿨타임 너무 짧아서 테스트용
+			VisibleShapeBox(SkillID); // 범위 내일 때만 히트 판정 박스 표시
+			UE_LOG(LogTemp, Warning, TEXT("kakao Yes distance"));
 		}
-		else {
-
-			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-			//MyChar->EndAction();
-			UE_LOG(LogTemp, Warning, TEXT("kakao no distance"));
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("kakao No distance, but playing skill anyway"));
 		}
+
+		// 공통적으로 실행되는 로직
+		CanUseSpecialSkill = false;
+
+		auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
+		if (StatComponent && StatComponent->HUDWidget)
+		{
+			StatComponent->HUDWidget->UpdateSpecialSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
+			StatComponent->HUDWidget->CanSpecial = false;
+			UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
+		}
+
+		SkillAnimation(SkillID);
+		UE_LOG(LogTemp, Warning, TEXT("Playing %s"), *SkillID);
+
+		if (SkillID == "Skill_Charge")
+		{
+			StoredDashDirection = MyChar->GetActorForwardVector().GetSafeNormal();
+			UE_LOG(LogTemp, Warning, TEXT("StoredDashDirection: X=%f, Y=%f, Z=%f"),
+				StoredDashDirection.X, StoredDashDirection.Y, StoredDashDirection.Z);
+
+			DrawChargePath(); // 돌진 선은 언제나 그림
+
+			float PrepTime = 1.0f;
+
+			UE_LOG(LogTemp, Log, TEXT("hum PS CanSpecial, CanNomal: %s %s"),
+				StatComponent->HUDWidget->CanSpecial ? TEXT("true") : TEXT("false"),
+				StatComponent->HUDWidget->CanNomal ? TEXT("true") : TEXT("false"));
+
+			//FTimerDelegate DashDelegate;
+			//DashDelegate.BindUObject(this, &UPlayerSkillComponent::ExecuteChargeDash, StoredDashDirection);
+			//SetSkillTimer(PrepTime, DashDelegate);
+		}
+
+		FTimerDelegate SpecialCooldownEnd;
+		SpecialCooldownEnd.BindUObject(this, &UPlayerSkillComponent::SpecialCooldown);
+		SpecialSetSkillTimer(SkillData.SkillCoolTime, SpecialCooldownEnd);
 	}
-	else {
-		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-		//MyChar->EndAction();
-		UE_LOG(LogTemp, Warning, TEXT("kakao No CanUseNomalSkill"));
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("kakao No CanUseSpecialSkill"));
 	}
 }
-
 void UPlayerSkillComponent::DrawChargePath()
 {
 	// 예시: 디버그 선을 이용해 경로 표시
@@ -377,6 +365,7 @@ void UPlayerSkillComponent::ExecuteChargeDash(float Chargedistance)
 	if (!MyChar) return;
 
 	FVector DashDirection = StoredDashDirection;
+	
 	float DashSpeed = 2000.0f;
 
 	MyChar->LaunchCharacter(DashDirection * DashSpeed, true, true);

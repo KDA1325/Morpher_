@@ -98,19 +98,27 @@ void UMyCharacterWidget::ChangeIcon(const FString& MonsterName)
 	}
 }
 
-void UMyCharacterWidget::UpdateSkillCooldown(float cooltime, bool nomal, bool special)
+void UMyCharacterWidget::UpdateNomalSkillCooldown(float cooltime, bool nomal, bool special)
 {
-	SkillCoolTime = cooltime;
+	SkillCoolTimeNomal = cooltime;
 	CanNomal = nomal;
-	CanSpecial = special;
-	UE_LOG(LogTemp, Log, TEXT("toto widget CoolTime: %f"), SkillCoolTime);
-	UE_LOG(LogTemp, Log, TEXT("Widget UpdateSkillCooldown instance address: %p"), this);
+
 	SetSkillIcon();
+
 	// 쿨다운 시작 전, 완전히 찬 상태(1.0)로 초기화
-	PassedTime = 0.0f;
+	PassedTimeNomal = 0.0f;
 	CooldownMID1->SetScalarParameterValue(TEXT("percent"), 1.0f);
 }
+void UMyCharacterWidget::UpdateSpecialSkillCooldown(float cooltime, bool nomal, bool special)
+{
+	SkillCoolTimeSpecial = cooltime;
+	CanSpecial = special;
 
+	SetSkillIcon();
+
+	// 쿨다운 시작 전, 완전히 찬 상태(1.0)로 초기화
+	PassedTimeSpecial = 0.0f;
+}
 
 
 void UMyCharacterWidget::SetSkillIcon() {
@@ -129,6 +137,7 @@ void UMyCharacterWidget::SetSkillIcon() {
 			{
 				// 다이나믹 머티리얼 인스턴스 생성
 				CooldownMID1 = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+				CooldownMID2 = nullptr; // 초기화
 				// 브러시에 머티리얼 인스턴스 설정
 				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
 				//SkillIcon2->SetBrushFromMaterial(CooldownMID2);
@@ -152,38 +161,41 @@ void UMyCharacterWidget::SetSkillIcon() {
 			}
 		}
 	}
-}
-void UMyCharacterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+}void UMyCharacterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (!CooldownMID1 || SkillCoolTime <= 0.f)
-		return;
-
-	// 쿨다운이 진행 중일 때만 갱신
-	if (PassedTime < 1.0f)
+	// 노말 스킬 쿨다운 갱신
+	if (!CanNomal && SkillCoolTimeNomal > 0.f)
 	{
-		PassedTime += InDeltaTime / SkillCoolTime;
-		PassedTime = FMath::Clamp(PassedTime, 0.0f, 1.0f);
+		PassedTimeNomal += InDeltaTime / SkillCoolTimeNomal;
 
-		Percent = FMath::Clamp(PassedTime - 1.0, -1.0f, 0.0f);
-		if (CanSpecial == false)
+		if (PassedTimeNomal >= 1.0f)
 		{
-			CooldownMID2->SetScalarParameterValue(TEXT("percent"), Percent);
-			UE_LOG(LogTemp, Log, TEXT("hum CanSpecial, CanNomal: %s %s"),
-				CanSpecial ? TEXT("true") : TEXT("false"),
-				CanNomal ? TEXT("true") : TEXT("false"));
+			CanNomal = true;
+			PassedTimeNomal = 1.0f;
 		}
-		else if (CanNomal == false)
-		{
-			CooldownMID1->SetScalarParameterValue(TEXT("percent"), Percent);
-			UE_LOG(LogTemp, Log, TEXT("hum CanSpecial, CanNomal: %s %s"),
-				CanSpecial ? TEXT("true") : TEXT("false"),
-				CanNomal ? TEXT("true") : TEXT("false"));
-		}
+		PassedTimeNomal = FMath::Clamp(PassedTimeNomal, 0.0f, 1.0f);
+		float PercentNomal = FMath::Clamp(PassedTimeNomal - 1.0f, -1.0f, 0.0f);
+		CooldownMID1->SetScalarParameterValue(TEXT("percent"), PercentNomal);
+	
+	}
 
+	// 스페셜 스킬 쿨다운 갱신
+	if (!CanSpecial && SkillCoolTimeSpecial > 0.f)
+	{
+		PassedTimeSpecial += InDeltaTime / SkillCoolTimeSpecial;
+		if (PassedTimeSpecial >= 1.0f)
+		{
+			CanSpecial = true;
+			PassedTimeSpecial = 1.0f;
+		}
+		PassedTimeSpecial = FMath::Clamp(PassedTimeSpecial, 0.0f, 1.0f);
+		float PercentSpecial = FMath::Clamp(PassedTimeSpecial - 1.0f, -1.0f, 0.0f);
+		CooldownMID2->SetScalarParameterValue(TEXT("percent"), PercentSpecial);
 	}
 }
+
 
 void UMyCharacterWidget::OnCollection_Implementation(const FString& DeadMonsterName)
 {

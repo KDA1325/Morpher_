@@ -28,7 +28,10 @@ public:
 	void SetSkillIcon();
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateSkillCooldown(float CoolTime, bool nomal, bool special);
+	void UpdateNomalSkillCooldown(float CoolTime, bool nomal, bool special);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateSpecialSkillCooldown(float CoolTime, bool nomal, bool special);
 
 protected:
 	virtual void NativeConstruct() override;
@@ -41,16 +44,20 @@ protected:
 	TArray<UImage*> IconImages;
 
 public:
-	UPROPERTY(BlueprintReadOnly, Category = "SkillCoolTime")
-	float SkillCoolTime;
 
 	UPROPERTY(BlueprintReadOnly, Category = "SkillCoolTime")
 	bool CanNomal;
 
 	UPROPERTY(BlueprintReadOnly, Category = "SkillCoolTime")
 	bool CanSpecial;
+
 	float Percent;
-	float PassedTime = 0.0f;
+	float PassedTimeNomal = 0.0f;
+	float PassedTimeSpecial = 0.0f;
+
+	float SkillCoolTimeNomal = 0.0f;
+	float SkillCoolTimeSpecial = 0.0f;
+
 private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* CooldownMID1;
