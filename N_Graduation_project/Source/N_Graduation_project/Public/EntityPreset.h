@@ -74,6 +74,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void SetupHitBoxComponent(FSkillData& SkillData);
 
+	void ConfigureHitBox(UBoxComponent* HitBox);
+
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ShowNormalHitBox();
 

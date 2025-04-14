@@ -277,6 +277,8 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 					SpecialSkillHitBox->RegisterComponent();
 					SpecialSkillHitBox->AttachToComponent(Container, FAttachmentTransformRules::KeepRelativeTransform);
 					HideSpecialHitBox();
+
+					ConfigureHitBox(SpecialSkillHitBox);
 					SpecialSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnSpecialHitBoxOverlap);
 				}
 			}
@@ -310,6 +312,8 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 					NormalSkillHitBox->AttachToComponent(NormalHitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
 
 					HideNormalHitBox();
+
+					ConfigureHitBox(NormalSkillHitBox);
 
 					// Overlap 이벤트 바인딩 
 					NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnNormalHitBoxOverlap);
@@ -441,6 +445,20 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 	}
 }
 
+// 히트박스 충돌 세팅 
+void AEntityPreset::ConfigureHitBox(UBoxComponent* HitBox)
+{
+	if (!HitBox)
+	{
+		return;
+	}
+
+	HitBox->SetCollisionObjectType(ECC_WorldDynamic);
+	HitBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	HitBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	HitBox->SetGenerateOverlapEvents(true);
+}
+
 void AEntityPreset::ShowNormalHitBox()
 {
 	float Duration = NormalSkillData.SkillDuration;
@@ -448,7 +466,7 @@ void AEntityPreset::ShowNormalHitBox()
 	// HitBox 활성화 
 	NormalSkillHitBox->SetHiddenInGame(false);
 	NormalSkillHitBox->SetVisibility(true);
-	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기
+	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기, 물리는 무시하지만 쿼리만 처리
 	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
 
 	// 유지 시간 이후 HideHitBox 함수 호출  
@@ -600,7 +618,7 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 	{
 		if (Effect.EffectType == EnumEffectType::KnockBack)
 		{
-			// 예: LaunchCharacter 또는 AddImpulse 로 구현
+			// LaunchCharacter 또는 AddImpulse 로 구현
 			FVector KnockbackDir = OtherActor->GetActorLocation() - GetActorLocation();
 			KnockbackDir.Normalize();
 			float Force = Effect.EffectValue01;
@@ -687,7 +705,7 @@ void AEntityPreset::ExecuteChargeDash()
 
 	// 돌진
 	float DashSpeed = 2000.0f; 
-	LaunchCharacter(DashDirection * DashSpeed, true, true);
+	LaunchCharacter(DashDirection * DashSpeed, true, false);
 
 	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Dashing"));
 
