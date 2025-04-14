@@ -31,7 +31,6 @@ class AN_Graduation_projectCharacter : public ACharacter
 
 	//UFUNCTION()
 	//void OnHealthChanged();
-
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -72,7 +71,7 @@ class AN_Graduation_projectCharacter : public ACharacter
 public:
 	AN_Graduation_projectCharacter();
 	void ChangePreset(FString Name);
-
+	float Damage;
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);

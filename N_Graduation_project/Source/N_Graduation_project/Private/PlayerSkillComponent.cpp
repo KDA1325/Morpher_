@@ -8,6 +8,10 @@
 #include "EngineUtils.h"
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "EntitySkillComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "AIController.h"
+
+
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -36,7 +40,7 @@ void UPlayerSkillComponent::OnDefenseSkill(float Count)
 	IsDefending = true;
 	if (GEngine)
 	{
-	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill on"));
+		//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill on"));
 	}
 
 	// 방어 해제 타이머 설정
@@ -308,7 +312,7 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		{
 			StoredDashDirection = MyChar->GetActorForwardVector().GetSafeNormal();
 
-			DrawChargePath(); // 돌진 선은 언제나 그림
+			DrawChargePath(); // 돌진 선
 
 			float PrepTime = 1.0f;
 
@@ -357,11 +361,33 @@ void UPlayerSkillComponent::ExecuteChargeDash(FVector Chargedistance)
 	if (!MyChar) return;
 
 	FVector DashDirection = StoredDashDirection;
-	
+
 	float DashSpeed = 2000.0f;
 
 	MyChar->LaunchCharacter(DashDirection * DashSpeed, true, true);
 	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Dashing"));
+
+	// ⏱ 넉백 효과를 살짝 딜레이해서 실행 (0.2초 뒤)
+	FTimerHandle KnockbackTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(
+		KnockbackTimerHandle,
+		FTimerDelegate::CreateUObject(this, &UPlayerSkillComponent::DelayedKnockbackEffect),
+		0.2f,  // 대시 후 약간의 딜레이
+		false
+	);
+}
+void UPlayerSkillComponent::DelayedKnockbackEffect()
+{
+	// PlayerSkillComponent에서 관리하는 DamagedActors 목록을 사용
+	for (AActor* DamagedActor : DamagedActors)
+	{
+		if (IsValid(DamagedActor))
+		{
+			// 넉백 처리
+			SkillEffect("Skill_Charge", DamagedActor);  // Charge 스킬의 넉백 효과만 따로 적용
+			UE_LOG(LogTemp, Warning, TEXT("DelayedKnockbackEffect 실행됨: %s"), *DamagedActor->GetName());
+		}
+	}
 }
 
 
@@ -383,7 +409,7 @@ void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this, &UPlayerSkillComponent::EndSkillAnimation);
 			ActionAnimInstance->Montage_SetEndDelegate(EndDelegate);
-			SkillEffect(EffectID);
+			//SkillEffect(EffectID);
 			UCharacterStateComponent* StateComp = OwnerActor->FindComponentByClass<UCharacterStateComponent>();
 			if (StateComp)
 			{
@@ -408,7 +434,7 @@ void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage, bool bInter
 }
 
 
-void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
+void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID, AActor* TargetActor)
 {
 	TArray<FSkillEffectData> EffectData;
 	if (!UABGameSingleton::Get().GetSkillEffectDataBySkillID(SkillNameID, EffectData))
@@ -417,15 +443,65 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 		return;
 	}
 
-	DamageAmount = EffectData[0].EffectValue01;
-	UE_LOG(LogTemp, Warning, TEXT("SkillEffect 실행됨! DamageAmount: %f"), DamageAmount);
+	// 넉백 효과는 바로 적용
+	for (const FSkillEffectData& Effect : EffectData)
+	{
+		if (Effect.EffectType == EnumEffectType::KnockBack)
+		{
+			ApplyKnockback(TargetActor, 2000);  // 넉백 파워는 필요에 따라 설정
+		}
+	}
 
+	// 그 후 데미지 적용
+	for (const FSkillEffectData& Effect : EffectData)
+	{
+		if (Effect.EffectType == EnumEffectType::Damage)
+		{
+			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+			DamageAmount = Effect.EffectValue01;
+			MyChar->Damage = DamageAmount;
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("SkillEffect 실행됨! DamageAmount: %f"), DamageAmount);
 }
-//void UPlayerSkillComponent::OnHitboxOverlap_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-//{
-//	UE_LOG(LogTemp, Log, TEXT("%s"), *(OverlappedComponent->GetName()));
-//}
-//void UPlayerSkillComponent::SkillAnimation(const FString& EffectID) {
-//	if(CurrentSkillID==Skill_Slash)
-//
-//}
+
+
+void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor, float KnockbackPower)
+{
+	if (!IsValid(TargetActor)) return;
+
+	FVector KnockbackDir = TargetActor->GetActorLocation() - GetOwner()->GetActorLocation();
+	KnockbackDir.Z = 0.f; // 위로 튀지 않게 평면 넉백
+	KnockbackDir.Normalize();
+
+	if (ACharacter* TargetChar = Cast<ACharacter>(TargetActor))
+	{
+		UCharacterMovementComponent* MoveComp = TargetChar->GetCharacterMovement();
+
+		// AI 컨트롤러 얻기
+		AAIController* AICon = Cast<AAIController>(TargetChar->GetController());
+		if (AICon)
+		{
+			// 이동 중지
+			AICon->StopMovement();
+			MoveComp->StopMovementImmediately();
+
+			// 넉백 실행
+			TargetChar->LaunchCharacter(KnockbackDir * KnockbackPower, true, true);
+
+		}
+		else
+		{
+			// AI 없는 경우에도 넉백 적용
+			TargetChar->LaunchCharacter(KnockbackDir * KnockbackPower, true, true);
+
+		}
+		if (AController* Ctrl = TargetChar->GetController())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("넉백 Controller 클래스: %s"), *Ctrl->GetClass()->GetName());
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("넉백 성공: %s 방향 %s 파워 %f"), *TargetChar->GetName(), *KnockbackDir.ToString(), KnockbackPower);
+	}
+}

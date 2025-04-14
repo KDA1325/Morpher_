@@ -405,7 +405,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 	}
 	else
 	{
-		PlayerStatComponent->ApplyDamage(DamageAmount);
+		PlayerStatComponent->ApplyDamage(DamageAmount); 
 		On_invincibility_Implementation();
 		IsInvincible = false;
 		// 데미지 로그 출력	
@@ -650,13 +650,16 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 		{
 			if (!PlayerSkillComponent->DamagedActors.Contains(OtherActor)) //데미지를 받은 적 있는지 확인 후
 			{
-				float Damage = PlayerSkillComponent->DamageAmount;//데미지받은 몬스터 저장?
-				UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr);
-				if (PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false)
+				PlayerSkillComponent->SkillEffect(SpecialSkill, OtherActor);  // 넉백 처리 및 데미지 실행
+
+			//	PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
+				UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
+				if (PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false) 
 				{
-					PlayerSkillComponent->DamagedActors.Add(OtherActor);
+					PlayerSkillComponent->DamagedActors.Add(OtherActor);//중복 없이 데미지 받은 객체저장
 					UE_LOG(LogTemp, Warning, TEXT("DamagedActors에 추가된 액터: %s"), *OtherActor->GetName());
 				}
+				
 			}
 		}
 	}

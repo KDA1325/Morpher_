@@ -70,7 +70,7 @@ public:
 	void HideHitBox();     // 히트박스 비활성화
 	void SkillAnimation(const FString& EffectID);
 	void EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted);
-	void SkillEffect(const FString& SkillNameID);
+	void SkillEffect(const FString& SkillNameID, AActor* TargetActor);
 	//타이머
 	void SetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
 	void SpecialSetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
@@ -102,5 +102,7 @@ public:
 
 	void ExecuteChargeDash(FVector Chargedistance);
 	void DrawChargePath();
+	void DelayedKnockbackEffect();
+	void ApplyKnockback(AActor* TargetActor, float KnockbackPower);
 };
 
