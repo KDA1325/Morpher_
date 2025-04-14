@@ -227,7 +227,7 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 	if (PlayerSkillComponent->CanUseSpecialSkill == true) {
 		PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
 	}
-//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
+	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
 {
@@ -237,7 +237,7 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 	if (PlayerSkillComponent->CanUseNomalSkill == true) {
 		PlayerSkillComponent->NomalSkillPlay(NomalSkill);
 	}
-//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
+	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
 }
 
 void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
@@ -405,7 +405,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 	}
 	else
 	{
-		PlayerStatComponent->ApplyDamage(DamageAmount); 
+		PlayerStatComponent->ApplyDamage(DamageAmount);
 		On_invincibility_Implementation();
 		IsInvincible = false;
 		// 데미지 로그 출력	
@@ -558,12 +558,12 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/MyWildBoar_Skeleton_AnimBP.MyWildBoar_Skeleton_AnimBP_C"));
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 
-		if (LoadedMesh&& NewAnimBP)
+		if (LoadedMesh && NewAnimBP)
 		{
 			UMaterialInterface* NewMaterial = Cast<UMaterialInterface>(StaticLoadObject(
 				UMaterialInterface::StaticClass(),
 				nullptr,
-				TEXT("/Game/Gamin/Bore_UVW/Bore_axe_Mat.Bore_axe_Mat")  
+				TEXT("/Game/Gamin/Bore_UVW/Bore_axe_Mat.Bore_axe_Mat")
 			));
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
@@ -631,12 +631,12 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		HitBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 		HitBox->SetGenerateOverlapEvents(true);
 
-		HitBox->SetHiddenInGame(true);
+		HitBox->SetHiddenInGame(true); // 히트박스 안보이게-> true
 
 		PlayerSkillComponent->SetHitBox(HitBox);
 		UE_LOG(LogTemp, Warning, TEXT("papago hHitBox Address: %p"), HitBox);
 
-	//	PlayerSkillComponent->HideHitBox();
+		//	PlayerSkillComponent->HideHitBox();
 
 	}
 
@@ -648,18 +648,20 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 	{
 		if (OtherActor != MyCharacter)
 		{
+			PlayerSkillComponent->SkillEffect(SpecialSkill, OtherActor);  // 넉백 처리 및 데미지 실행
+			PlayerSkillComponent->SkillEffect(NomalSkill, NULL);  // 넉백 처리 및 데미지 실행
+
 			if (!PlayerSkillComponent->DamagedActors.Contains(OtherActor)) //데미지를 받은 적 있는지 확인 후
 			{
-				PlayerSkillComponent->SkillEffect(SpecialSkill, OtherActor);  // 넉백 처리 및 데미지 실행
 
-			//	PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
-				UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
-				if (PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false) 
+				//	PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
+					//UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
+				if (PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false)
 				{
 					PlayerSkillComponent->DamagedActors.Add(OtherActor);//중복 없이 데미지 받은 객체저장
 					UE_LOG(LogTemp, Warning, TEXT("DamagedActors에 추가된 액터: %s"), *OtherActor->GetName());
 				}
-				
+
 			}
 		}
 	}

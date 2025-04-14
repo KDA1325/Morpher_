@@ -10,6 +10,7 @@
 #include "EntitySkillComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
+#include "Kismet/GameplayStatics.h"
 
 
 UPlayerSkillComponent::UPlayerSkillComponent()
@@ -442,7 +443,16 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID, AActor* Targ
 		UE_LOG(LogTemp, Warning, TEXT("no Effect: %s"), *SkillNameID);
 		return;
 	}
+	for (const FSkillEffectData& Effect : EffectData)
+	{
+		if (Effect.EffectType == EnumEffectType::Damage)
+		{
+			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+			DamageAmount = Effect.EffectValue01;
+			UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, MyChar->GetController(), MyChar, nullptr);
 
+		}
+	}
 	// 넉백 효과는 바로 적용
 	for (const FSkillEffectData& Effect : EffectData)
 	{
@@ -453,15 +463,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID, AActor* Targ
 	}
 
 	// 그 후 데미지 적용
-	for (const FSkillEffectData& Effect : EffectData)
-	{
-		if (Effect.EffectType == EnumEffectType::Damage)
-		{
-			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-			DamageAmount = Effect.EffectValue01;
-			MyChar->Damage = DamageAmount;
-		}
-	}
+
 
 	UE_LOG(LogTemp, Warning, TEXT("SkillEffect 실행됨! DamageAmount: %f"), DamageAmount);
 }
@@ -472,7 +474,7 @@ void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor, float KnockbackP
 	if (!IsValid(TargetActor)) return;
 
 	FVector KnockbackDir = TargetActor->GetActorLocation() - GetOwner()->GetActorLocation();
-	KnockbackDir.Z = 0.f; // 위로 튀지 않게 평면 넉백
+	//KnockbackDir.Z = 0.f; // 위로 튀지 않게 평면 넉백
 	KnockbackDir.Normalize();
 
 	if (ACharacter* TargetChar = Cast<ACharacter>(TargetActor))
