@@ -68,24 +68,6 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	float A_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_ASKILLRANGE);
 	float B_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_BSKILLRANGE);
 
-	AEntityPreset* Entity = Cast<AEntityPreset>(ControllingPawn);
-
-	// 만약 현재 엔티티가 스킬 시전 중이라면, SelectedSkillID 등 업데이트를 건너뛰고 리턴
-	if (Entity && Entity->bIsCastingSkill)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("BTService: Entity is casting a skill, skipping update"));
-		return;
-	}
-
-	if (Entity && Entity->EntitySkillComponent)
-	{
-		bool bNormalAvailable = Entity->EntitySkillComponent->bCanUseNormalSkill;
-		bool bSpecialAvailable = Entity->EntitySkillComponent->bCanUseSpecialSkill;
-
-		BlackboardComp->SetValueAsBool(BBKEY_BASKILLAVAILABLE, bNormalAvailable);
-		BlackboardComp->SetValueAsBool(BBKEY_BBSKILLAVAILABLE, bSpecialAvailable);
-	}
-
 	bool bA_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BASKILLAVAILABLE);
 	bool bB_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BBSKILLAVAILABLE);
 
@@ -100,6 +82,36 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	UE_LOG(LogTemp, Warning, TEXT("bASkillCondition: %s"), bASkillCondition ? TEXT("True") : TEXT("False"));
 	UE_LOG(LogTemp, Warning, TEXT("bBSkillCondition: %s"), bBSkillCondition ? TEXT("True") : TEXT("False"));
 	
+	AEntityPreset* Entity = Cast<AEntityPreset>(ControllingPawn);
+
+	// 만약 현재 엔티티가 스킬 시전 중이라면, SelectedSkillID 등 업데이트를 건너뛰고 리턴
+	//if (!Entity->bIsCastingSkill)
+	//{
+	//	//// 거리 기반 스킬 조건 계산 및 SelectedSkillID 설정
+	//	//BlackboardComp->SetValueAsBool(BBKEY_BASKILLCONDITION, bASkillCondition);
+	//	//BlackboardComp->SetValueAsBool(BBKEY_BBSKILLCONDITION, bBSkillCondition);
+
+	//	//if (bASkillCondition)
+	//	//	BlackboardComp->SetValueAsString(BBKEY_SELECTEDSKILLID, TEXT("Skill_Bite"));
+	//	//else if (bBSkillCondition)
+	//	//	BlackboardComp->SetValueAsString(BBKEY_SELECTEDSKILLID, TEXT("Skill_Charge"));
+	//	//else
+	//	//	BlackboardComp->ClearValue(BBKEY_SELECTEDSKILLID);
+	//	
+	//	// 딜레이 주기? 
+	//	UE_LOG(LogTemp, Warning, TEXT("BTService: Entity is casting a skill, skipping update"));
+
+	//}
+
+	if (Entity && Entity->EntitySkillComponent)
+	{
+		bool bNormalAvailable = Entity->EntitySkillComponent->bCanUseNormalSkill;
+		bool bSpecialAvailable = Entity->EntitySkillComponent->bCanUseSpecialSkill;
+
+		BlackboardComp->SetValueAsBool(BBKEY_BASKILLAVAILABLE, bNormalAvailable);
+		BlackboardComp->SetValueAsBool(BBKEY_BBSKILLAVAILABLE, bSpecialAvailable);
+	}
+
 	// SelectedSkillID 키 설정: 
 	// A스킬 조건이 만족되면 "Skill_Bite", 
 	// B스킬 조건 만족시 "Skill_Charge", 
