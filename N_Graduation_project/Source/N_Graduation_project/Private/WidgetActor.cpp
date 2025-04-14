@@ -28,30 +28,18 @@ void UWidgetActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp, Warning, TEXT("UWidgetActor::BeginPlay Called"));
-
-	if (HUDClass)
+	if (!HUDWidget && HUDClass)
 	{
 		HUDWidget = Cast<UMyCharacterWidget>(CreateWidget(GetWorld()->GetFirstPlayerController(), HUDClass));
-		if (HUDWidget)
+		if (HUDWidget && !HUDWidget->IsInViewport())
 		{
 			HUDWidget->AddToViewport();
+				UE_LOG(LogTemp, Warning, TEXT("Widget in viewport: %s"), *HUDWidget->GetName());
 		}
 	}
+	UE_LOG(LogTemp, Warning, TEXT("BeginPlay: %s"), *GetOwner()->GetName());
 
-	if (PieClass)
-	{
-		PieWidget = Cast<UPieMenuWidget>(CreateWidget(GetWorld()->GetFirstPlayerController(), PieClass));
-		if (PieWidget)
-		{
-			PieWidget->AddToViewport();
-			PieWidget->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
-}
 
-void UWidgetActor::ShowPieMenu()
-{
 	// PieWidget이 아직 생성되지 않았다면 생성
 	if (!PieWidget && PieClass)
 	{
@@ -60,9 +48,14 @@ void UWidgetActor::ShowPieMenu()
 		if (PieWidget)
 		{
 			PieWidget->AddToViewport(120);
+			PieWidget->SetVisibility(ESlateVisibility::Hidden);
+
 		}
 	}
+}
 
+void UWidgetActor::ShowPieMenu()
+{
 	if (PieWidget)
 	{
 		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
