@@ -66,7 +66,7 @@ public:
 	float GetDistanceTo(const AActor* OtherActor) const;    // 거리 계산 함수
 	// 히트박스 초기화 및 활성화 함수
 	void SettingHitBox(const FSkillData& SkillData); // 히트박스 초기화
-	void OnHitBox(const FSkillData& SkillData);     
+	void OnHitBox(const FSkillData& SkillData);
 	// 히트박스 활성화
 	void HideHitBox();     // 히트박스 비활성화
 	void SkillAnimation(const FString& EffectID);
@@ -75,7 +75,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	float DamageAmount;
-	
+
 	UPROPERTY()
 	TSet<AActor*> DamagedActors; // 데미지를 받은 몬스터 저장
 
@@ -88,6 +88,13 @@ private:
 
 	// 플레이어와의 거리
 	float distance;
+public:
+	//돼지
+	// 돌진 스킬 실행 시 저장할 방향 (설정 후 변화 없이 유지)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
+	FVector StoredDashDirection;
 
+	void ExecuteChargeDash(float Chargedistance);
+	void DrawChargePath();
 };
 

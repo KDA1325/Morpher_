@@ -219,13 +219,15 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
-void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue& Value) 
+void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue& Value)
 {
 	if (CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
 		return;
 	}
+	if (PlayerSkillComponent->CanUseSpecialSkill == true) {
+		PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
+	}
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
-
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
 {

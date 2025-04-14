@@ -7,7 +7,7 @@
 #include "CharacterStateComponent.h" //state
 #include "EngineUtils.h"
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
-
+#include "EntitySkillComponent.h"
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -31,14 +31,6 @@ void UPlayerSkillComponent::SetHitBox(UBoxComponent* InHitBox)
 
 }
 /* 스킬 관련 */
-void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
-{
-	if (Count > 0)
-	{
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, End, Count, false);
-	}
-}
-
 void UPlayerSkillComponent::OnDefenseSkill(float Count)
 {
 	IsDefending = true;
@@ -59,6 +51,18 @@ void UPlayerSkillComponent::OffDefenseSkill()
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill off"));
 }
 
+void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
+{
+	if (GetWorld() && Count > 0)
+	{
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, End, Count, false);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("SetSkillTimer: GetWorld() is null"));
+	}
+}
+
 void UPlayerSkillComponent::NomalCooldown()
 {
 	CanUseNomalSkill = true;
@@ -66,7 +70,10 @@ void UPlayerSkillComponent::NomalCooldown()
 	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 	if (StatComponent && StatComponent->HUDWidget)
 	{
-		StatComponent->HUDWidget->CanNomal = CanUseNomalSkill;
+		StatComponent->HUDWidget->CanNomal = true;
+		UE_LOG(LogTemp, Log, TEXT("hum PSNomalT CanSpecial, CanNomal: %s %s"),
+			StatComponent->HUDWidget->CanSpecial ? TEXT("true") : TEXT("false"),
+			StatComponent->HUDWidget->CanNomal ? TEXT("true") : TEXT("false"));
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("Kakao NomalCooldown"));
@@ -77,7 +84,10 @@ void UPlayerSkillComponent::SpecialCooldown()
 	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 	if (StatComponent && StatComponent->HUDWidget)
 	{
-		StatComponent->HUDWidget->CanSpecial = CanUseNomalSkill;
+		StatComponent->HUDWidget->CanSpecial = true;
+		UE_LOG(LogTemp, Log, TEXT("hum PSSpecialT CanSpecial, CanNomal: %s %s"),
+			StatComponent->HUDWidget->CanSpecial ? TEXT("true") : TEXT("false"),
+			StatComponent->HUDWidget->CanNomal ? TEXT("true") : TEXT("false"));
 	}
 }
 
@@ -250,6 +260,9 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 			{
 				StatComponent->HUDWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
 				StatComponent->HUDWidget->CanNomal = false;
+				UE_LOG(LogTemp, Log, TEXT("hum PS CanSpecial, CanNomal: %s %s"),
+					StatComponent->HUDWidget->CanSpecial ? TEXT("true") : TEXT("false"),
+					StatComponent->HUDWidget->CanNomal ? TEXT("true") : TEXT("false"));
 				UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
 			}
 			SkillAnimation(SkillID);
@@ -270,7 +283,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		else {
 
 			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-			MyChar->EndAction();
+		//	MyChar->EndAction();
 			UE_LOG(LogTemp, Warning, TEXT("kakao no distance"));
 
 		}
@@ -278,7 +291,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 	else {
 
 		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-		MyChar->EndAction();
+		//MyChar->EndAction();
 		UE_LOG(LogTemp, Warning, TEXT("kakao No CanUseNomalSkill"));
 
 	}
@@ -287,7 +300,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 {
 	distance = MeasureDistanceToMonster();
-	if (CanUseNomalSkill == true) {
+	if (CanUseSpecialSkill == true) {
 
 		FSkillData SkillData;
 		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData)) return;
@@ -304,37 +317,72 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 			if (StatComponent && StatComponent->HUDWidget)
 			{
 				StatComponent->HUDWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
-				StatComponent->HUDWidget->CanNomal = false;
+				StatComponent->HUDWidget->CanSpecial = false;
 				UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
 			}
 			SkillAnimation(SkillID);
 			UE_LOG(LogTemp, Warning, TEXT("Playing %s"), *SkillID);
-			//노말 스킬
-		/*	if (SkillID == "Skill_Slash") {
-				SkillAnimation(SkillID);
-				UE_LOG(LogTemp, Warning, TEXT("kakao On SkillSlash"));
 
-			}*/
+
+			if (SkillID == "Skill_Charge")
+			{
+				StoredDashDirection = MyChar->GetActorForwardVector().GetSafeNormal();
+				DrawChargePath(); // 돌진 경로 표시
+
+				float PrepTime = 1.0f;
+
+				// 타이머 바인딩을 위한 델리게이트 생성
+				FTimerDelegate DashDelegate;
+				DashDelegate.BindUObject(this, &UPlayerSkillComponent::ExecuteChargeDash, SkillData.SkillRange);
+
+				SetSkillTimer(PrepTime, DashDelegate);
+			}
 
 			//쿨타임
-			FTimerDelegate NomalCooldownEnd;
-			NomalCooldownEnd.BindUObject(this, &UPlayerSkillComponent::NomalCooldown);//바인딩
-			SetSkillTimer(SkillData.SkillCoolTime, NomalCooldownEnd);  // 쿨타임 설정
+			FTimerDelegate SpecialCooldownEnd;
+			SpecialCooldownEnd.BindUObject(this, &UPlayerSkillComponent::SpecialCooldown);//바인딩
+			SetSkillTimer(SkillData.SkillCoolTime, SpecialCooldownEnd);  // 쿨타임 설정
 			//SetSkillTimer(3.0f, NomalCooldownEnd);  // 슬래시 쿨타임 너무 짧아서 테스트용
 		}
 		else {
 
 			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-			MyChar->EndAction();
+			//MyChar->EndAction();
 			UE_LOG(LogTemp, Warning, TEXT("kakao no distance"));
 		}
 	}
 	else {
 		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-		MyChar->EndAction();
+		//MyChar->EndAction();
 		UE_LOG(LogTemp, Warning, TEXT("kakao No CanUseNomalSkill"));
 	}
 }
+
+void UPlayerSkillComponent::DrawChargePath()
+{
+	// 예시: 디버그 선을 이용해 경로 표시
+	ACharacter* MyChar = Cast<ACharacter>(GetOwner());
+	if (!MyChar || !GetWorld()) return;
+
+	FVector StartLocation = MyChar->GetActorLocation();
+	FVector EndLocation = StartLocation + MyChar->GetActorForwardVector() * 600.f;
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.5f, 0, 5.f);
+	UE_LOG(LogTemp, Warning, TEXT("DrawChargePath: Charge path drawn"));
+
+}
+void UPlayerSkillComponent::ExecuteChargeDash(float Chargedistance)
+{
+	// 준비 시간 동안 저장된 dash 방향을 사용
+	ACharacter* MyChar = Cast<ACharacter>(GetOwner());
+	if (!MyChar) return;
+
+	FVector DashDirection = StoredDashDirection;
+	float DashSpeed = 2000.0f;
+
+	MyChar->LaunchCharacter(DashDirection * DashSpeed, true, true);
+	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Dashing"));
+}
+
 
 void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 {

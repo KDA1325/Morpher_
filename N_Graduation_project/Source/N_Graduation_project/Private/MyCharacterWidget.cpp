@@ -91,10 +91,10 @@ void UMyCharacterWidget::ChangeIcon(const FString& MonsterName)
 		{"SkeletonWarrior", 5},
 		{"SkeletonArcher", 6}
 	};
-	
+
 	if (IconMap.Contains(MonsterName) && IconImages.IsValidIndex(IconMap[MonsterName]))
 	{
-		IconImages[IconMap[MonsterName]]->SetVisibility(ESlateVisibility::Visible);		
+		IconImages[IconMap[MonsterName]]->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 
@@ -110,6 +110,8 @@ void UMyCharacterWidget::UpdateSkillCooldown(float cooltime, bool nomal, bool sp
 	PassedTime = 0.0f;
 	CooldownMID1->SetScalarParameterValue(TEXT("percent"), 1.0f);
 }
+
+
 
 void UMyCharacterWidget::SetSkillIcon() {
 	UImage* SkillIcon1 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_1")));
@@ -165,7 +167,21 @@ void UMyCharacterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 		PassedTime = FMath::Clamp(PassedTime, 0.0f, 1.0f);
 
 		Percent = FMath::Clamp(PassedTime - 1.0, -1.0f, 0.0f);
-		CooldownMID1->SetScalarParameterValue(TEXT("percent"), Percent);
+		if (CanSpecial == false)
+		{
+			CooldownMID2->SetScalarParameterValue(TEXT("percent"), Percent);
+			UE_LOG(LogTemp, Log, TEXT("hum CanSpecial, CanNomal: %s %s"),
+				CanSpecial ? TEXT("true") : TEXT("false"),
+				CanNomal ? TEXT("true") : TEXT("false"));
+		}
+		else if (CanNomal == false)
+		{
+			CooldownMID1->SetScalarParameterValue(TEXT("percent"), Percent);
+			UE_LOG(LogTemp, Log, TEXT("hum CanSpecial, CanNomal: %s %s"),
+				CanSpecial ? TEXT("true") : TEXT("false"),
+				CanNomal ? TEXT("true") : TEXT("false"));
+		}
+
 	}
 }
 

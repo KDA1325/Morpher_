@@ -48,7 +48,7 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 	//	// 애니메이션 종료 이벤트 바인딩
 	//	OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 	//}
-	if (EffectID == "Skill_Bite") {
+	if (EffectID == "Skill_Bite" || EffectID=="Skill_Charge") {
 		UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *M_Bite->GetName());
 		UE_LOG(LogTemp, Warning, TEXT("Playing Skill_Bite 실행됨"));
 		Montage_Play(M_Bite);
