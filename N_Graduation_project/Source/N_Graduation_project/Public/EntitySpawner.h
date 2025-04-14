@@ -43,7 +43,7 @@ public:
 	FString EntityGroupID;
 	
 	UFUNCTION(BlueprintCallable, Category = "Spawn")
-	void SpawnEntityCharacter();
+	AEntityPreset* SpawnEntityCharacter();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
 	TMap<FString, TSubclassOf<AEntityPreset>> EntityPresetPaths;

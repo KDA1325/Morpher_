@@ -27,7 +27,7 @@ void AEntitySpawner::Tick(float DeltaTime)
 }
 
 
-void AEntitySpawner::SpawnEntityCharacter()
+AEntityPreset* AEntitySpawner::SpawnEntityCharacter()
 {
     FVector SpawnLocation = GetActorLocation();
     FRotator SpawnRotation = GetActorRotation();
@@ -37,7 +37,7 @@ void AEntitySpawner::SpawnEntityCharacter()
     if (!UABGameSingleton::Get().GetEntityDataByGroupID(EntityGroupID, EntityData))
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to find entity data for Group ID: %s"), *EntityGroupID);
-        return;
+        return nullptr;
     }
 
     // EntityGroupID에 해당하는 EntityPreset 찾기 
@@ -45,7 +45,7 @@ void AEntitySpawner::SpawnEntityCharacter()
     if (MatchBPClass == nullptr)
     {
         UE_LOG(LogTemp, Error, TEXT("EntityPreset Class is not set"));
-        return;
+        return nullptr;
     }
 
     // EntityPreset 스폰 
@@ -56,12 +56,13 @@ void AEntitySpawner::SpawnEntityCharacter()
         SpawnedEntity->InitializeEntity(EntityData);
         UE_LOG(LogTemp, Warning, TEXT("Entity spawned with Group ID: %s"), *EntityGroupID);
 
-        // 스포너 액터 삭제 -> 블루프린트 노드로 처리 
-        //Destroy();
+        return SpawnedEntity;
     }
     else
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to spawn entity character"));
     }
+
+    return nullptr;
 }
 
