@@ -636,7 +636,7 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		PlayerSkillComponent->SetHitBox(HitBox);
 		UE_LOG(LogTemp, Warning, TEXT("papago hHitBox Address: %p"), HitBox);
 
-		PlayerSkillComponent->HideHitBox();
+	//	PlayerSkillComponent->HideHitBox();
 
 	}
 
