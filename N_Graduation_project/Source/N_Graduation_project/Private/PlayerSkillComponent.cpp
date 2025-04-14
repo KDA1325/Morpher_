@@ -255,7 +255,6 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("kakao No distance, but playing skill anyway"));
-			// 원거리라도 스킬 발동. Hit 판정은 별도로 처리하거나 거리 체크를 통해 스킵 가능.
 		}
 
 		// 스킬 쿨타임 시작

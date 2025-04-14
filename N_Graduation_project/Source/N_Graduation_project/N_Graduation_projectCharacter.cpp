@@ -535,14 +535,16 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	if (currentPreset == "PCPreset.uasset")
 	{
 		// 에디터 실행 시 문제없이 메시를 로드하기 위해 FSoftObjectPath를 사용해 비동기 로딩 
-		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Player/Player_Attack/Player_attack.Player_attack"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Player/Player_Attack/Player_Attack_UVW.Player_Attack_UVW"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/MyPlayerAnimBlueprint.MyPlayerAnimBlueprint_C"));
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		GetMesh()->SetSkeletalMesh(LoadedMesh);
-		PlayerSword->SetHiddenInGame(true);  
+		//PlayerSword->SetHiddenInGame(true);  
 		if (LoadedMesh)
 		{
+			PlayerSword->SetHiddenInGame(false);
+
 			// 스켈레탈 메시를 사용할 경우 SetSkeletalMesh() 사용
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
@@ -551,12 +553,18 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 
 	if (currentPreset == "WildBoarPreset.uasset")
 	{//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Gamin/Bore_attack_3.uasset
-		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Bore_attack_3.Bore_attack_3"));
-		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Animation/WildBoar_Skeleton_AnimBP.WildBoar_Skeleton_AnimBP_C"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Bore_UVW/Bore_attack_uvw.Bore_attack_uvw"));
+		//TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/WildBoar_Skeleton_AnimBP.WildBoar_Skeleton_AnimBP_C"));
+		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/MyWildBoar_Skeleton_AnimBP.MyWildBoar_Skeleton_AnimBP_C"));
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 
 		if (LoadedMesh&& NewAnimBP)
 		{
+			UMaterialInterface* NewMaterial = Cast<UMaterialInterface>(StaticLoadObject(
+				UMaterialInterface::StaticClass(),
+				nullptr,
+				TEXT("/Game/Gamin/Bore_UVW/Bore_axe_Mat.Bore_axe_Mat")  
+			));
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
@@ -658,7 +666,7 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 {
 	currentPreset = Name;
 	if (currentPreset != pastPreset) {
-		PlayerSword->SetHiddenInGame(false);
+		PlayerSword->SetHiddenInGame(true);
 		SetPreset(currentPreset);
 		UpdateEntityData();
 		pastPreset = currentPreset;
