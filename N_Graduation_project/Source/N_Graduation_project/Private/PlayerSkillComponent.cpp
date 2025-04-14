@@ -253,7 +253,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 				UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
 			}
 			SkillAnimation(SkillID);
-			UE_LOG(LogTemp, Warning, TEXT("Playing %s"),* SkillID);
+			UE_LOG(LogTemp, Warning, TEXT("Playing %s"), *SkillID);
 			//노말 스킬
 		/*	if (SkillID == "Skill_Slash") {
 				SkillAnimation(SkillID);
@@ -286,33 +286,53 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 {
-	if (CanUseSpecialSkill == true)
-	{
-		CanUseSpecialSkill = false;
+	distance = MeasureDistanceToMonster();
+	if (CanUseNomalSkill == true) {
 
 		FSkillData SkillData;
-		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData))
+		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData)) return;
+
+		if (distance <= SkillData.SkillRange)
 		{
-			//	UE_LOG(LogTemp, Warning, TEXT("No UABGameSingleton"));
+			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+			MyChar->StartAction();
 
-			return;
-		}
-
-		//스페셜 스킬
-		if (SkillID == "Skill_ShieldGuard") {
-			// 방어 스킬 처리 (범위 밖 스킬)
-			if (!CanUseSpecialSkill)
+			VisibleShapeBox(SkillID);
+			//스킬 쿨타임
+			CanUseNomalSkill = false;
+			auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
+			if (StatComponent && StatComponent->HUDWidget)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Defense skill is on cooldown!"));
-				return;  // 쿨타임 중이면 방어 스킬 실행하지 않음
+				StatComponent->HUDWidget->UpdateSkillCooldown(SkillData.SkillCoolTime, CanUseNomalSkill, CanUseSpecialSkill);
+				StatComponent->HUDWidget->CanNomal = false;
+				UE_LOG(LogTemp, Log, TEXT("StatComponent: %p, HUDWidget: %p"), StatComponent, StatComponent ? StatComponent->HUDWidget : nullptr);
 			}
-			OnDefenseSkill(3.0);  // 방어 스킬 실행
+			SkillAnimation(SkillID);
+			UE_LOG(LogTemp, Warning, TEXT("Playing %s"), *SkillID);
+			//노말 스킬
+		/*	if (SkillID == "Skill_Slash") {
+				SkillAnimation(SkillID);
+				UE_LOG(LogTemp, Warning, TEXT("kakao On SkillSlash"));
+
+			}*/
+
+			//쿨타임
+			FTimerDelegate NomalCooldownEnd;
+			NomalCooldownEnd.BindUObject(this, &UPlayerSkillComponent::NomalCooldown);//바인딩
+			SetSkillTimer(SkillData.SkillCoolTime, NomalCooldownEnd);  // 쿨타임 설정
+			//SetSkillTimer(3.0f, NomalCooldownEnd);  // 슬래시 쿨타임 너무 짧아서 테스트용
 		}
-		// 쿨타임 후 방어 스킬 사용 가능하게 설정
-		CanUseSpecialSkill = false;  // special 스킬 쿨타임 시작
-		FTimerDelegate SpecialCooldownEnd;
-		SpecialCooldownEnd.BindUObject(this, &UPlayerSkillComponent::SpecialCooldown);
-		SetSkillTimer(SkillData.SkillCoolTime, SpecialCooldownEnd);  // 쿨타임 설정
+		else {
+
+			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+			MyChar->EndAction();
+			UE_LOG(LogTemp, Warning, TEXT("kakao no distance"));
+		}
+	}
+	else {
+		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+		MyChar->EndAction();
+		UE_LOG(LogTemp, Warning, TEXT("kakao No CanUseNomalSkill"));
 	}
 }
 
@@ -328,7 +348,7 @@ void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 		UActionAnimInstance* ActionAnimInstance = Cast<UActionAnimInstance>(AnimInstance);
 		if (ActionAnimInstance)
 		{
-			ActionAnimInstance->PlayAnimation(EffectID); 
+			ActionAnimInstance->PlayAnimation(EffectID);
 
 			// 델리게이트 바인딩 추가
 			FOnMontageEnded EndDelegate;
