@@ -3,6 +3,7 @@
 #include "EntitySkillComponent.h"
 #include "MyAIController.h"
 #include "MyAI.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "WidgetActor.h"
 
@@ -25,6 +26,9 @@ AEntityPreset::AEntityPreset()
 
 	NormalHitBoxContainer = nullptr;
 	SpecialHitBoxContainer = nullptr;
+
+	GetCharacterMovement()->BrakingFrictionFactor = 0.0f; // 멈출 때 마찰 없음
+	GetCharacterMovement()->GroundFriction = 0.0f;
 }
 
 // Called when the game starts or when spawned
@@ -99,6 +103,19 @@ void AEntityPreset::BeginPlay()
 void AEntityPreset::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bIsCharging)
+	{
+		float TravelledDistance = FVector::Dist(ChargeStartLocation, GetActorLocation());
+		if (TravelledDistance >= ChargeDistance)
+		{
+			StopMovement();
+			bIsCharging = false;
+
+			HideSpecialHitBox(); // 돌진 끝났으면 히트박스 제거
+			UE_LOG(LogTemp, Warning, TEXT("Charge Finished — Distance Reached"));
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -305,6 +322,8 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 					SpecialSkillHitBox->RegisterComponent();
 					SpecialSkillHitBox->AttachToComponent(Container, FAttachmentTransformRules::KeepRelativeTransform);
 					HideSpecialHitBox();
+
+					ConfigureHitBox(SpecialSkillHitBox);
 					SpecialSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnSpecialHitBoxOverlap);
 				}
 			}
@@ -338,6 +357,8 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 					NormalSkillHitBox->AttachToComponent(NormalHitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
 
 					HideNormalHitBox();
+
+					ConfigureHitBox(NormalSkillHitBox);
 
 					// Overlap 이벤트 바인딩 
 					NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnNormalHitBoxOverlap);
@@ -469,6 +490,20 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 	}
 }
 
+// 히트박스 충돌 세팅 
+void AEntityPreset::ConfigureHitBox(UBoxComponent* HitBox)
+{
+	if (!HitBox)
+	{
+		return;
+	}
+
+	HitBox->SetCollisionObjectType(ECC_WorldDynamic);
+	HitBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	HitBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	HitBox->SetGenerateOverlapEvents(true);
+}
+
 void AEntityPreset::ShowNormalHitBox()
 {
 	float Duration = NormalSkillData.SkillDuration;
@@ -476,7 +511,7 @@ void AEntityPreset::ShowNormalHitBox()
 	// HitBox 활성화 
 	NormalSkillHitBox->SetHiddenInGame(false);
 	NormalSkillHitBox->SetVisibility(true);
-	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기
+	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기, 물리는 무시하지만 쿼리만 처리
 	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
 
 	// 유지 시간 이후 HideHitBox 함수 호출  
@@ -628,19 +663,18 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 	{
 		if (Effect.EffectType == EnumEffectType::KnockBack)
 		{
-			// 예: LaunchCharacter 또는 AddImpulse 로 구현
-			FVector KnockbackDir = OtherActor->GetActorLocation() - GetActorLocation();
-			KnockbackDir.Normalize();
-			float Force = Effect.EffectValue01;
-			float Duration = Effect.EffectValue02;
+			float KnockbackDistance = Effect.EffectValue01;
+			float KnockbackDuration = Effect.EffectValue02;
 
-			UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
+			ApplyKnockbackEffect(PlayerCharacter, KnockbackDistance, KnockbackDuration);
+
+			/*UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
 			if (MoveComp)
 			{
 				MoveComp->Launch(KnockbackDir * Force);
 			}
 
-			UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: KnockBack applied to %s with force %f"), *OtherActor->GetName(), Force);
+			UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: KnockBack applied to %s with force %f"), *OtherActor->GetName(), Force);*/
 		}
 	}
 
@@ -664,8 +698,26 @@ void AEntityPreset::PerformSkill_Charge()
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
 	bIsCastingSkill = true;
 
-	// 현재 전방 벡터를 저장 (처음 결정된 방향을 고정)
-	StoredDashDirection = GetActorForwardVector().GetSafeNormal();
+	// 저장된 전방 방향
+	ChargeDirection = GetActorForwardVector().GetSafeNormal();
+	ChargeStartLocation = GetActorLocation();
+	ChargeDistance = SpecialSkillData.SkillRange;
+	ChargeTargetLocation = ChargeStartLocation + ChargeDirection * ChargeDistance;
+
+	// AI 경로 추적 중지 
+	if (AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 중단
+			PathComp->Deactivate();
+
+			AIController->StopMovement();
+			UE_LOG(LogTemp, Warning, TEXT("AI movement forcibly stopped before LaunchCharacter"));
+		}
+	}
+	//// 현재 전방 벡터를 저장 (처음 결정된 방향을 고정)
+	//StoredDashDirection = GetActorForwardVector().GetSafeNormal();
 
 	if (SpecialSkillMontage)
 	{
@@ -675,19 +727,21 @@ void AEntityPreset::PerformSkill_Charge()
 			AnimInst->Montage_Play(SpecialSkillMontage);
 			UE_LOG(LogTemp, Warning, TEXT("PerformSpecialSkill_Charge: Montage played"));
 
-			// 돌진 경로 표시
-			DrawChargePath();
+			//// 돌진 경로 표시
+			//DrawChargePath();
 
-			// 준비 시간 후 돌진 실행
-			float PrepTime = 1.0f; 
-			FTimerHandle TimerHandle;
-			GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::ExecuteChargeDash, PrepTime, false);
-
+			// 경로 시각화 (기획 확인용)
+			DrawDebugLine(GetWorld(), ChargeStartLocation, ChargeTargetLocation, FColor::Red, false, 2.0f, 0, 3.0f);
 
 			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this, &AEntityPreset::OnSkillMontageEnded);
 			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
+
+			// 준비 시간 후 돌진 실행
+			float PrepTime = 1.0f; 
+			FTimerHandle TimerHandle;
+			GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::ExecuteChargeDash, PrepTime, false);
 		}
 		else
 		{
@@ -699,25 +753,37 @@ void AEntityPreset::PerformSkill_Charge()
 		UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill_Charge: SpecialSkillMontage is not set"));
 	}
 }
+
 void AEntityPreset::ExecuteChargeDash()
 {
-	// 준비 시간 동안 저장된 dash 방향을 사용
-	FVector DashDirection = StoredDashDirection;
+	float LaunchSpeed = 2000.0f;
 
-	// SkillData에 정의된 SkillRange를 돌진 거리로 사용 
-	float DashDistance = SpecialSkillData.SkillRange;
+	// 실제 돌진
+	LaunchCharacter(ChargeDirection * LaunchSpeed, true, true);
+	bIsCharging = true;
 
-	//FVector StartLocation = GetActorLocation();
-	//FVector DashTarget = StartLocation + DashDirection * DashDistance;
-
-	// 히트박스 활성화 
+	// 히트박스도 활성화
 	ShowSpecialHitBox();
 
-	// 돌진
-	float DashSpeed = 2000.0f; 
-	LaunchCharacter(DashDirection * DashSpeed, true, true);
+	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Launch Started"));
 
-	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Dashing"));
+	//// 준비 시간 동안 저장된 dash 방향을 사용
+	//FVector DashDirection = StoredDashDirection;
+
+	//// SkillData에 정의된 SkillRange를 돌진 거리로 사용 
+	////float DashDistance = SpecialSkillData.SkillRange;
+
+	////FVector StartLocation = GetActorLocation();
+	////FVector DashTarget = StartLocation + DashDirection * DashDistance;
+
+	//// 히트박스 활성화 
+	//ShowSpecialHitBox();
+
+	//// 돌진
+	//float DashSpeed = 2000.0f; 
+	//LaunchCharacter(DashDirection * DashSpeed, true, false);
+
+	//UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Dashing"));
 
 	// 스킬 종료 처리는 MontageEnded 콜백에서 처리 
 }
@@ -733,6 +799,15 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted
 	// 스킬 종료 처리 
 	bIsCastingSkill = false;
 
+	// AI 경로 추적 활성화
+	if (AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 활성화 
+			PathComp->Activate();
+		}
+	}
 	//// 실제 돌진 동작: 빠른 이동 및 히트박스 생성
  //   // 예를 들어: 전방으로 특정 거리를 빠르게 이동 + ShowSpecialHitBox() 호출
  //   
@@ -773,14 +848,64 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted
 //	//HideSpecialHitBox();
 //}
 
+void AEntityPreset::StopMovement()
+{
+	GetCharacterMovement()->StopMovementImmediately();
+}
+
 void AEntityPreset::DrawChargePath()
 {
 	// 예시: 디버그 선을 이용해 경로 표시
 	FVector StartLocation = GetActorLocation();
-	FVector EndLocation = StartLocation + GetActorForwardVector() * 600.f; // 돌진 거리와 동일
+	//FVector EndLocation = StartLocation + GetActorForwardVector() * 600.f; // 돌진 거리와 동일
+	float DashSpeed = 2000.0f;
+	float DashDuration = 0.75f; // 돌진 지속 시간 추정 (0.5~1.0s 정도로 테스트)
+	FVector EndLocation = StartLocation + GetActorForwardVector() * DashSpeed * DashDuration;
+
 	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.5f, 0, 5.f);
 	UE_LOG(LogTemp, Warning, TEXT("DrawChargePath: Charge path drawn"));
 }
+
+void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target, float Distance, float Duration)
+{
+	// LaunchCharacter 로 구현
+	FVector KnockbackDir = Target->GetActorLocation() - GetActorLocation();
+	KnockbackDir.Normalize();
+			
+	// 최소 보정
+	if (Distance <= 0.01f)
+	{
+		Duration = 0.1f;
+	}
+
+	// 속도 = 거리/시간
+	float KnockbackSpeed = Distance / Duration;
+
+	FVector KnockbackVelocity = KnockbackDir * KnockbackSpeed;
+
+	UCharacterMovementComponent* MoveComp = Target->GetCharacterMovement();
+	if (MoveComp)
+	{
+		// 기존 모멘텀 무시하고 새로운 속도로 밀기
+		Target->LaunchCharacter(KnockbackVelocity, true, true);
+
+		// 마찰력 없애서 정확하게 이동
+		MoveComp->BrakingFrictionFactor = 0.f;
+		MoveComp->GroundFriction = 0.f;
+
+		// 일정 시간 후 마찰력 복원 (안 그러면 계속 미끄러짐)
+		FTimerHandle FrictionRestoreHandle;
+		FTimerDelegate RestoreFriction;
+		RestoreFriction.BindLambda([=]() {
+			MoveComp->BrakingFrictionFactor = 2.f;
+			MoveComp->GroundFriction = 8.f;
+			});
+		Target->GetWorldTimerManager().SetTimer(FrictionRestoreHandle, RestoreFriction, Duration, false);
+		
+		UE_LOG(LogTemp, Warning, TEXT("KnockBack to %s → Distance: %.1fcm in %.2fs (speed: %.1f)"), *Target->GetName(), Distance, Duration, KnockbackSpeed);
+	}
+}
+
 
 //void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 //{

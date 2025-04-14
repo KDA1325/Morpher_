@@ -3,6 +3,7 @@
 #include "BTTask_MoveToPlayer.h"
 #include "MyAI.h"
 #include "AIController.h"
+#include "EntityPreset.h"
 #include "CharacterAllInterface.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
@@ -34,6 +35,13 @@ EBTNodeResult::Type UBTTask_MoveToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
     APawn* playerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
     if (playerPawn == nullptr)
     {
+        return EBTNodeResult::Failed;
+    }
+
+    AEntityPreset* Entity = Cast<AEntityPreset>(ControllingPawn);
+    if (Entity && Entity->bIsCastingSkill)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Skipping movement because skill is in progress"));
         return EBTNodeResult::Failed;
     }
 

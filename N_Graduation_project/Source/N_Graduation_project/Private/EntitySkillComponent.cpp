@@ -2,7 +2,10 @@
 
 #include "EntitySkillComponent.h"
 #include "EntityPreset.h"
+#include "AIController.h"
 #include "ABGameSingleton.h"
+#include "BrainComponent.h"
+#include "Navigation/PathFollowingComponent.h"
 
 // Sets default values for this component's properties
 UEntitySkillComponent::UEntitySkillComponent()
@@ -157,6 +160,16 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, 
 		return;
 	}
 
+	// AI 이동 비활성화
+	if (AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController()))
+	{
+		if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			PathComp->Deactivate();
+			UE_LOG(LogTemp, Warning, TEXT("PathFollowingComponent deactivated for Bite skill"));
+		}
+	}
+
 	OwnerEntity->bIsCastingSkill = true;
 	bCanUseNormalSkill = false;
 
@@ -210,8 +223,28 @@ void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, con
 
 	bCanUseSpecialSkill = false;
 
+	// AI BehaviorTree 멈춤
+	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
+	if (AIController && AIController->BrainComponent)
+	{
+		AIController->StopMovement(); // 혹시 이전 경로 남아있으면 정지
+		AIController->BrainComponent->StopLogic(TEXT("Charge Skill Start"));
+		UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->StopLogic called"));
+	}
+
 	FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::SpecialCooldown);
 	SetSkillTimer(SkillData.SkillCoolTime, SpecialDelegate, true);
 
 	OwnerEntity->PerformSkill_Charge();
+
+	// 스킬 끝나고 다시 AI 로직 재개 (1.5초 후 정도로 가정)
+	FTimerHandle ResumeAITimer;
+	GetWorld()->GetTimerManager().SetTimer(ResumeAITimer, [AIController]()
+		{
+			if (AIController && AIController->BrainComponent)
+			{
+				AIController->BrainComponent->RestartLogic();
+				UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->RestartLogic called"));
+			}
+		}, 2.0f, false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
 }

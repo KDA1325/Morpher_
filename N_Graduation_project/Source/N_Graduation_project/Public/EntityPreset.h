@@ -74,6 +74,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void SetupHitBoxComponent(FSkillData& SkillData);
 
+	void ConfigureHitBox(UBoxComponent* HitBox);
+
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ShowNormalHitBox();
 
@@ -117,7 +119,19 @@ public:
 	//UFUNCTION()
 	//void OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	// 돌진 관련 상태 변수
+	bool bIsCharging = false;
+	FVector ChargeStartLocation;
+	FVector ChargeDirection;
+	float ChargeDistance = 0.0f;
+	FVector ChargeTargetLocation;
+
+	void StopMovement();
+
 	void DrawChargePath();
+
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void ApplyKnockbackEffect(ACharacter* Target, float Distance, float Duration);
 
 protected:
 	// Called when the game starts or when spawned
