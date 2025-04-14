@@ -227,7 +227,7 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 	if (PlayerSkillComponent->CanUseSpecialSkill == true) {
 		PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
+//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
 {
@@ -237,7 +237,7 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 	if (PlayerSkillComponent->CanUseNomalSkill == true) {
 		PlayerSkillComponent->NomalSkillPlay(NomalSkill);
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
+//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
 }
 
 void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
@@ -623,7 +623,7 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		HitBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 		HitBox->SetGenerateOverlapEvents(true);
 
-		HitBox->SetHiddenInGame(false);
+		HitBox->SetHiddenInGame(true);
 
 		PlayerSkillComponent->SetHitBox(HitBox);
 		UE_LOG(LogTemp, Warning, TEXT("papago hHitBox Address: %p"), HitBox);

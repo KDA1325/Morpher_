@@ -36,7 +36,7 @@ void UPlayerSkillComponent::OnDefenseSkill(float Count)
 	IsDefending = true;
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill on"));
+	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill on"));
 	}
 
 	// 방어 해제 타이머 설정
@@ -48,7 +48,7 @@ void UPlayerSkillComponent::OnDefenseSkill(float Count)
 void UPlayerSkillComponent::OffDefenseSkill()
 {
 	IsDefending = false;
-	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill off"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill off"));
 }
 
 void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
