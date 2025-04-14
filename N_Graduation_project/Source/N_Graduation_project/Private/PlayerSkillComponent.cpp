@@ -443,13 +443,15 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID, AActor* Targ
 		UE_LOG(LogTemp, Warning, TEXT("no Effect: %s"), *SkillNameID);
 		return;
 	}
+	DamageAmount = EffectData[0].EffectValue01;
+
 	for (const FSkillEffectData& Effect : EffectData)
 	{
-		if (Effect.EffectType == EnumEffectType::Damage)
+		if (Effect.EffectType == EnumEffectType::Damage) 
 		{
 			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 			DamageAmount = Effect.EffectValue01;
-			UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, MyChar->GetController(), MyChar, nullptr);
+		//	UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, MyChar->GetController(), MyChar, nullptr);
 
 		}
 	}
@@ -483,7 +485,7 @@ void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor, float KnockbackP
 
 		// AI 컨트롤러 얻기
 		AAIController* AICon = Cast<AAIController>(TargetChar->GetController());
-		if (AICon)
+		if (AICon) 
 		{
 			// 이동 중지
 			AICon->StopMovement();

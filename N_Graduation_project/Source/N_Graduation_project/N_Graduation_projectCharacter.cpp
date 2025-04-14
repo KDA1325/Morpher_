@@ -654,8 +654,8 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 			if (!PlayerSkillComponent->DamagedActors.Contains(OtherActor)) //데미지를 받은 적 있는지 확인 후
 			{
 
-				//	PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
-					//UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
+					float Damage=PlayerSkillComponent->DamageAmount;
+					UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
 				if (PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false)
 				{
 					PlayerSkillComponent->DamagedActors.Add(OtherActor);//중복 없이 데미지 받은 객체저장

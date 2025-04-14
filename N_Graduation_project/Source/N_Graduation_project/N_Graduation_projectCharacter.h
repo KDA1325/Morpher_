@@ -71,7 +71,6 @@ class AN_Graduation_projectCharacter : public ACharacter
 public:
 	AN_Graduation_projectCharacter();
 	void ChangePreset(FString Name);
-	float Damage;
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
