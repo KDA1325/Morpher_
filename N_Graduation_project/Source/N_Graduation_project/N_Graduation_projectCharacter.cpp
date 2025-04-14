@@ -553,18 +553,13 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 
 	if (currentPreset == "WildBoarPreset.uasset")
 	{//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Gamin/Bore_attack_3.uasset
-		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Bore_UVW/Bore_attack_uvw.Bore_attack_uvw"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Bore_UVW/Bore_attack_uvw_2.Bore_attack_uvw_2"));
 		//TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/WildBoar_Skeleton_AnimBP.WildBoar_Skeleton_AnimBP_C"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/MyWildBoar_Skeleton_AnimBP.MyWildBoar_Skeleton_AnimBP_C"));
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 
 		if (LoadedMesh && NewAnimBP)
 		{
-			UMaterialInterface* NewMaterial = Cast<UMaterialInterface>(StaticLoadObject(
-				UMaterialInterface::StaticClass(),
-				nullptr,
-				TEXT("/Game/Gamin/Bore_UVW/Bore_axe_Mat.Bore_axe_Mat")
-			));
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
