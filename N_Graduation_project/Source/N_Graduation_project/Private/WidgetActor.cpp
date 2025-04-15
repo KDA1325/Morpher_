@@ -100,7 +100,7 @@ void UWidgetActor::HidePieMenu()
 		if (PC)
 		{
 			UWidgetBlueprintLibrary::SetInputMode_GameOnly(PC);
-			PC->bShowMouseCursor = false;
+			//PC->bShowMouseCursor = false;
 			UE_LOG(LogTemp, Log, TEXT("PieWidget->Monster %s"), *PieWidget->Monster);
 
 		}

@@ -145,7 +145,7 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
 	FVector Velocity = GetVelocity();
 	float Speed = Velocity.Size(); // 현재 속도
-	UE_LOG(LogTemp, Log, TEXT("IsInvincible: %s"), IsInvincible ? TEXT("true") : TEXT("false"));
+//	UE_LOG(LogTemp, Log, TEXT("IsInvincible: %s"), IsInvincible ? TEXT("true") : TEXT("false"));
 
 	/*if (GetMesh()->GetAnimInstance()) {
 		UE_LOG(LogTemp, Warning, TEXT("qoqo AnimInstance: %s"), *GetMesh()->GetAnimInstance()->GetName());
