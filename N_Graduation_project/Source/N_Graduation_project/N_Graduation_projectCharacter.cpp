@@ -584,6 +584,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		//PlayerSword->SetHiddenInGame(true);  
 		if (LoadedMesh)
 		{
+			GetMesh()->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
+
 			PlayerSword->SetHiddenInGame(false);
 
 			// 스켈레탈 메시를 사용할 경우 SetSkeletalMesh() 사용
@@ -598,7 +600,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		//TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/WildBoar_Skeleton_AnimBP.WildBoar_Skeleton_AnimBP_C"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/MyWildBoar_Skeleton_AnimBP.MyWildBoar_Skeleton_AnimBP_C"));
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
-
+		GetMesh()->SetRelativeScale3D(FVector(2.0f, 2.0f, 2.0f));
 		if (LoadedMesh && NewAnimBP)
 		{
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
@@ -613,6 +615,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if (LoadedMesh)
 		{
+			GetMesh()->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
+
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 		}
 	}
@@ -624,6 +628,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if (LoadedMesh)
 		{
+			GetMesh()->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
+
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 		}
 	}
@@ -635,6 +641,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if (LoadedMesh)
 		{
+			GetMesh()->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
+
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 		}
 	}
