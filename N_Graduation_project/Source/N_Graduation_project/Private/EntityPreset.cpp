@@ -3,6 +3,7 @@
 #include "EntitySkillComponent.h"
 #include "MyAIController.h"
 #include "MyAI.h"
+#include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "WidgetActor.h"
@@ -557,7 +558,7 @@ void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedCompone
 	if (OtherActor && OtherActor != this)
 	{
 		// 플레이어 캐릭터인지 확인
-		ACharacter* PlayerCharacter = Cast<ACharacter>(OtherActor);
+		AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(OtherActor);
 		if (PlayerCharacter)
 		{
 			// Normal 스킬에 부여된 모든 효과들을 반복 처리합니다.
@@ -643,7 +644,7 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 {
 	if (!OtherActor || OtherActor == this) return;
 
-	ACharacter* PlayerCharacter = Cast<ACharacter>(OtherActor);
+	AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(OtherActor);
 	if (!PlayerCharacter) return;
 
 	// 1. Damage를 먼저 처리
