@@ -145,6 +145,7 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
 	FVector Velocity = GetVelocity();
 	float Speed = Velocity.Size(); // 현재 속도
+	UE_LOG(LogTemp, Log, TEXT("IsInvincible: %s"), IsInvincible ? TEXT("true") : TEXT("false"));
 
 	/*if (GetMesh()->GetAnimInstance()) {
 		UE_LOG(LogTemp, Warning, TEXT("qoqo AnimInstance: %s"), *GetMesh()->GetAnimInstance()->GetName());
@@ -226,6 +227,7 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 	}
 	if (PlayerSkillComponent->CanUseSpecialSkill == true) {
 		PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
+		PlaySpecial = true;
 	}
 	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
 }
@@ -236,6 +238,7 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 	}
 	if (PlayerSkillComponent->CanUseNomalSkill == true) {
 		PlayerSkillComponent->NomalSkillPlay(NomalSkill);
+		PlayNomal = true;
 	}
 	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
 }
@@ -425,14 +428,52 @@ void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 		// 무적 상태 활성화
 		IsInvincible = true;
 		if (IsInvincible) {
-			UE_LOG(LogTemp, Log, TEXT("IsInvincible"));
+			//			UE_LOG(LogTemp, Log, TEXT("IsInvincible"));
 		}
 		// PlayerSkillComponent에서 방어 스킬을 실행
 		PlayerSkillComponent->OnDefenseSkill(1.0f);
 		// 깜박이기구현->BP
+		USkeletalMeshComponent* MeshComponent = GetMesh();
+
+		if (MeshComponent)
+		{
+			UMaterialInterface* OriginalMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("MaterialInterface'/Game/UI/Materials/OriginalMaterial.OriginalMaterial'"));
+			if (OriginalMaterial)
+			{
+				MeshComponent->SetMaterial(0, OriginalMaterial);
+			}
+			// 0.25초 간격으로 4번 깜박이기
+			for (int i = 0; i < 4; i++)
+			{
+				// 0.25초 후에 ToggleMaterial 함수 호출
+				FTimerHandle DelayTimerHandle;
+				GetWorld()->GetTimerManager().SetTimer(DelayTimerHandle, this, &AN_Graduation_projectCharacter::ToggleMaterial, 0.25f * i, false);
+			}
+		}
 	}
 }
 
+void AN_Graduation_projectCharacter::ToggleMaterial()
+{
+	static bool bIsFlashing = false;
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+
+	if (MeshComponent)
+	{
+		// Hit.Hit 머티리얼과 원래 머티리얼을 번갈아 변경
+		UMaterialInterface* HitMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("MaterialInterface'/Game/UI/Materials/Hit.Hit'"));
+		UMaterialInterface* OriginalMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("MaterialInterface'/Game/UI/Materials/OriginalMaterial.OriginalMaterial'"));
+
+		if (HitMaterial && OriginalMaterial)
+		{
+			// 깜박임 상태에 따라 머티리얼 변경
+			MeshComponent->SetMaterial(0, bIsFlashing ? HitMaterial : OriginalMaterial);
+
+			// 상태 토글
+			bIsFlashing = !bIsFlashing;
+		}
+	}
+}
 void AN_Graduation_projectCharacter::UpdateEntityData()
 {
 	if (UABGameSingleton::Get().GetEntityDataByGroupID(currentPreset, EntityData))
@@ -643,14 +684,20 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 	{
 		if (OtherActor != MyCharacter)
 		{
-			PlayerSkillComponent->SkillEffect(SpecialSkill, OtherActor);  // 넉백 처리 및 데미지 실행
-			PlayerSkillComponent->SkillEffect(NomalSkill, NULL);  // 넉백 처리 및 데미지 실행
+			if (PlaySpecial == true) 
+			{
+				//PlayerSkillComponent->SkillEffect(SpecialSkill, OtherActor);  // 넉백 처리 및 데미지 실행
 
+			}
+			if (PlayNomal == true) 
+			{
+				//PlayerSkillComponent->SkillEffect(NomalSkill, NULL);  // 넉백 처리 및 데미지 실행
+			}
 			if (!PlayerSkillComponent->DamagedActors.Contains(OtherActor)) //데미지를 받은 적 있는지 확인 후
 			{
 
-					float Damage=PlayerSkillComponent->DamageAmount;
-					UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
+				float Damage = PlayerSkillComponent->DamageAmount;
+				UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
 				if (PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false)
 				{
 					PlayerSkillComponent->DamagedActors.Add(OtherActor);//중복 없이 데미지 받은 객체저장

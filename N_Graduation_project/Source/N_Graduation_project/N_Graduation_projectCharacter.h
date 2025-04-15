@@ -71,6 +71,11 @@ class AN_Graduation_projectCharacter : public ACharacter
 public:
 	AN_Graduation_projectCharacter();
 	void ChangePreset(FString Name);
+	void ToggleMaterial();
+	bool PlaySpecial = false;
+	bool PlayNomal = false;
+
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);

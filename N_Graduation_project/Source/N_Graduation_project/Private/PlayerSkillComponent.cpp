@@ -251,6 +251,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 		MyChar->StartAction();
+		MyChar->PlayNomal = false;
 
 		if (distance <= SkillData.SkillRange)
 		{
@@ -299,27 +300,26 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 
 		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 		MyChar->StartAction();
-
-		if (distance <= SkillData.SkillRange)
+		MyChar->PlaySpecial = false;
+	//	if (distance <= SkillData.SkillRange)
 		{
-			VisibleShapeBox(SkillID); // 범위 내일 때만 히트 판정 박스 표시
 			UE_LOG(LogTemp, Warning, TEXT("kakao Yes distance"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("kakao No distance, but playing skill anyway"));
-		}
-		if (SkillID == "Skill_Charge")
-		{
-			StoredDashDirection = MyChar->GetActorForwardVector().GetSafeNormal();
 
-			DrawChargePath(); // 돌진 선
 
-			float PrepTime = 1.0f;
+			if (SkillID == "Skill_Charge")
+			{
+				StoredDashDirection = MyChar->GetActorForwardVector().GetSafeNormal();
 
-			FTimerDelegate ChargeEnd;
-			ChargeEnd.BindUObject(this, &UPlayerSkillComponent::ExecuteChargeDash, StoredDashDirection);
-			ChargeSkillTimer(PrepTime, ChargeEnd);
+				DrawChargePath(); // 돌진 선
+
+				float PrepTime = 1.0f;
+
+				FTimerDelegate ChargeEnd;
+				ChargeEnd.BindUObject(this, &UPlayerSkillComponent::ExecuteChargeDash, StoredDashDirection);
+				ChargeSkillTimer(PrepTime, ChargeEnd);
+				 // 범위 내일 때만 히트 판정 박스 표시
+
+			}
 		}
 		CanUseSpecialSkill = false;
 
@@ -333,7 +333,7 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		// 스킬 애니메이션
 		SkillAnimation(SkillID);
 		UE_LOG(LogTemp, Warning, TEXT("OnMontag Playing %s"), *SkillID);
-
+		
 		FTimerDelegate SpecialCooldownEnd;
 		SpecialCooldownEnd.BindUObject(this, &UPlayerSkillComponent::SpecialCooldown);
 		SpecialSetSkillTimer(SkillData.SkillCoolTime, SpecialCooldownEnd);
@@ -361,6 +361,8 @@ void UPlayerSkillComponent::ExecuteChargeDash(FVector Chargedistance)
 	ACharacter* MyChar = Cast<ACharacter>(GetOwner());
 	if (!MyChar) return;
 
+	VisibleShapeBox("Skill_Charge");
+
 	FVector DashDirection = StoredDashDirection;
 
 	float DashSpeed = 2000.0f;
@@ -376,6 +378,7 @@ void UPlayerSkillComponent::ExecuteChargeDash(FVector Chargedistance)
 		0.2f,  // 대시 후 약간의 딜레이
 		false
 	);
+	
 }
 void UPlayerSkillComponent::DelayedKnockbackEffect()
 {
@@ -387,6 +390,7 @@ void UPlayerSkillComponent::DelayedKnockbackEffect()
 			// 넉백 처리
 			SkillEffect("Skill_Charge", DamagedActor);  // Charge 스킬의 넉백 효과만 따로 적용
 			UE_LOG(LogTemp, Warning, TEXT("DelayedKnockbackEffect 실행됨: %s"), *DamagedActor->GetName());
+			
 		}
 	}
 }
@@ -447,11 +451,11 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID, AActor* Targ
 
 	for (const FSkillEffectData& Effect : EffectData)
 	{
-		if (Effect.EffectType == EnumEffectType::Damage) 
+		if (Effect.EffectType == EnumEffectType::Damage)
 		{
 			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 			DamageAmount = Effect.EffectValue01;
-		//	UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, MyChar->GetController(), MyChar, nullptr);
+			//	UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, MyChar->GetController(), MyChar, nullptr);
 
 		}
 	}
@@ -485,7 +489,7 @@ void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor, float KnockbackP
 
 		// AI 컨트롤러 얻기
 		AAIController* AICon = Cast<AAIController>(TargetChar->GetController());
-		if (AICon) 
+		if (AICon)
 		{
 			// 이동 중지
 			AICon->StopMovement();
