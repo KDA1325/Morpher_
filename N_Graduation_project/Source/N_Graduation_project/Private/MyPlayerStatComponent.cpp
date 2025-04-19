@@ -107,6 +107,16 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 			HUD->SkillName = MonsterName;
 			HUD->SetSkillIcon();
 			HUD->ChangeIcon(MonsterName);
+
+			HUD->PassedTimeNomal = 0.0f;
+			HUD->PassedTimeSpecial = 0.0f;
+			HUD->SkillCoolTimeNomal = 0.0f;
+			HUD->SkillCoolTimeSpecial = 0.0f;
+			HUD->CanNomal = true;
+			HUD->CanSpecial = true;
+
+			HUD->UpdateNomalSkillCooldown(0.0f, true, false);
+			HUD->UpdateSpecialSkillCooldown(0.0f, false, true);
 		}
 
 		if (CurrentHP == PastMaxHP)
