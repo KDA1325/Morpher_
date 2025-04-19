@@ -12,6 +12,7 @@ UMyPlayerStatComponent::UMyPlayerStatComponent()
 	NewMaxHP = 150;
 	PastMaxHP = 150;
 	CurrentHP = 150;
+	PastCurrentHP = 150;
 	MonsterName = "PlayerCharacter";
 	Change = true;
 }
@@ -47,6 +48,7 @@ void UMyPlayerStatComponent::BeginPlay()
 
 void UMyPlayerStatComponent::SetHP(float NewHP)
 {
+//	PastCurrentHP = CurrentHP;
 	CurrentHP = FMath::Max(0.0f, NewHP);
 
 	UpdateHUD();
@@ -59,7 +61,7 @@ void UMyPlayerStatComponent::SetHP(float NewHP)
 
 void UMyPlayerStatComponent::SetMaxHp(int MaxHp)
 {
-	PastMaxHP = NewMaxHP;
+	//PastMaxHP = NewMaxHP;
 	NewMaxHP = MaxHp;
 }
 
@@ -98,6 +100,11 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 	if (CurrentMana >= Mana)
 	{
 		Change = true;
+		PastMaxHP = NewMaxHP;
+		PastCurrentHP = CurrentHP;
+		UE_LOG(LogTemp, Log, TEXT("maxhp %f %f "), PastCurrentHP,PastMaxHP);
+
+	
 
 		if (UMyCharacterWidget* HUD = GetHUD())
 		{
@@ -119,7 +126,9 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 			HUD->UpdateSpecialSkillCooldown(0.0f, false, true);
 		}
 
-		if (CurrentHP == PastMaxHP)
+		
+		UE_LOG(LogTemp, Log, TEXT("maxhp2 %f %f %d "), PastCurrentHP, PastMaxHP, NewMaxHP);
+		if (PastCurrentHP == PastMaxHP)
 		{
 			SetMaxHp(HP);
 			UseMana(Mana);
