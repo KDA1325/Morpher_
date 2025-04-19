@@ -248,7 +248,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 		FSkillData SkillData;
 		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData)) return;
-
+		SkillEffect(SkillID);
 		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 		MyChar->StartAction();
 		MyChar->PlayNomal = false;
@@ -388,13 +388,11 @@ void UPlayerSkillComponent::DelayedKnockbackEffect()
 		if (IsValid(DamagedActor))
 		{
 			// 넉백 처리
-			SkillEffect("Skill_Charge", DamagedActor);  // Charge 스킬의 넉백 효과만 따로 적용
+			SkillEffect("Skill_Charge");  // Charge 스킬의 넉백 효과만 따로 적용
 			UE_LOG(LogTemp, Warning, TEXT("DelayedKnockbackEffect 실행됨: %s"), *DamagedActor->GetName());
-			
 		}
 	}
 }
-
 
 void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 {
@@ -439,7 +437,7 @@ void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage, bool bInter
 }
 
 
-void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID, AActor* TargetActor)
+void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 {
 	TArray<FSkillEffectData> EffectData;
 	if (!UABGameSingleton::Get().GetSkillEffectDataBySkillID(SkillNameID, EffectData))
@@ -447,33 +445,35 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID, AActor* Targ
 		UE_LOG(LogTemp, Warning, TEXT("no Effect: %s"), *SkillNameID);
 		return;
 	}
+	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+	if (!MyChar) return;
+
 	DamageAmount = EffectData[0].EffectValue01;
 
-	for (const FSkillEffectData& Effect : EffectData)
+	for (AActor* TargetActor : DamagedActors)
 	{
-		if (Effect.EffectType == EnumEffectType::Damage)
+		if (!IsValid(TargetActor)) continue;
+
+		for (const FSkillEffectData& Effect : EffectData)
 		{
-			AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-			DamageAmount = Effect.EffectValue01;
-			//	UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, MyChar->GetController(), MyChar, nullptr);
+			switch (Effect.EffectType)
+			{
+			case EnumEffectType::Damage:
+				DamageAmount = Effect.EffectValue01;
+				UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, MyChar->GetController(), MyChar, nullptr);
+				break;
 
+			case EnumEffectType::KnockBack:
+				ApplyKnockback(TargetActor, 2000); // 파워는 고정 값
+				break;
+
+				// 필요 시 다른 효과 타입도 여기에 추가
+			}
 		}
+		// 그 후 데미지 적용
+		UE_LOG(LogTemp, Warning, TEXT("SkillEffect 실행됨! DamageAmount: %f"), DamageAmount);
 	}
-	// 넉백 효과는 바로 적용
-	for (const FSkillEffectData& Effect : EffectData)
-	{
-		if (Effect.EffectType == EnumEffectType::KnockBack)
-		{
-			ApplyKnockback(TargetActor, 2000);  // 넉백 파워는 필요에 따라 설정
-		}
-	}
-
-	// 그 후 데미지 적용
-
-
-	UE_LOG(LogTemp, Warning, TEXT("SkillEffect 실행됨! DamageAmount: %f"), DamageAmount);
 }
-
 
 void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor, float KnockbackPower)
 {
@@ -497,19 +497,18 @@ void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor, float KnockbackP
 
 			// 넉백 실행
 			TargetChar->LaunchCharacter(KnockbackDir * KnockbackPower, true, true);
-
+			HideHitBox();
 		}
 		else
 		{
 			// AI 없는 경우에도 넉백 적용
 			TargetChar->LaunchCharacter(KnockbackDir * KnockbackPower, true, true);
-
 		}
 		if (AController* Ctrl = TargetChar->GetController())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("넉백 Controller 클래스: %s"), *Ctrl->GetClass()->GetName());
 		}
-
 		UE_LOG(LogTemp, Warning, TEXT("넉백 성공: %s 방향 %s 파워 %f"), *TargetChar->GetName(), *KnockbackDir.ToString(), KnockbackPower);
+
 	}
 }

@@ -675,15 +675,13 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		HitBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 		HitBox->SetGenerateOverlapEvents(true);
 
-		HitBox->SetHiddenInGame(true); // 히트박스 안보이게-> true
+		HitBox->SetHiddenInGame(false); // 히트박스 안보이게-> true
 
 		PlayerSkillComponent->SetHitBox(HitBox);
 		UE_LOG(LogTemp, Warning, TEXT("papago hHitBox Address: %p"), HitBox);
 
 		//	PlayerSkillComponent->HideHitBox();
-
 	}
-
 }
 void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -692,18 +690,8 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 	{
 		if (OtherActor != MyCharacter)
 		{
-			if (PlaySpecial == true) 
-			{
-				//PlayerSkillComponent->SkillEffect(SpecialSkill, OtherActor);  // 넉백 처리 및 데미지 실행
-
-			}
-			if (PlayNomal == true) 
-			{
-				//PlayerSkillComponent->SkillEffect(NomalSkill, NULL);  // 넉백 처리 및 데미지 실행
-			}
 			if (!PlayerSkillComponent->DamagedActors.Contains(OtherActor)) //데미지를 받은 적 있는지 확인 후
-			{
-
+			{    
 				float Damage = PlayerSkillComponent->DamageAmount;
 				UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
 				if (PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false)
@@ -711,7 +699,6 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 					PlayerSkillComponent->DamagedActors.Add(OtherActor);//중복 없이 데미지 받은 객체저장
 					UE_LOG(LogTemp, Warning, TEXT("DamagedActors에 추가된 액터: %s"), *OtherActor->GetName());
 				}
-
 			}
 		}
 	}
