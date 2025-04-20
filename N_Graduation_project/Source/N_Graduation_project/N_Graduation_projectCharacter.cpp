@@ -145,11 +145,11 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
 	FVector Velocity = GetVelocity();
 	float Speed = Velocity.Size(); // 현재 속도
-//	UE_LOG(LogTemp, Log, TEXT("IsInvincible: %s"), IsInvincible ? TEXT("true") : TEXT("false"));
+	//	UE_LOG(LogTemp, Log, TEXT("IsInvincible: %s"), IsInvincible ? TEXT("true") : TEXT("false"));
 
-	/*if (GetMesh()->GetAnimInstance()) {
-		UE_LOG(LogTemp, Warning, TEXT("qoqo AnimInstance: %s"), *GetMesh()->GetAnimInstance()->GetName());
-	}*/
+		/*if (GetMesh()->GetAnimInstance()) {
+			UE_LOG(LogTemp, Warning, TEXT("qoqo AnimInstance: %s"), *GetMesh()->GetAnimInstance()->GetName());
+		}*/
 
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	if (!StateComp)
@@ -239,10 +239,10 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 		return;
 	}
 	if (PlayerSkillComponent->CanUseNomalSkill == true) {
-		PlayerSkillComponent->NomalSkillPlay(NomalSkill);	
+		PlayerSkillComponent->NomalSkillPlay(NomalSkill);
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
 
-	//	PlayNomal = true;
+		//	PlayNomal = true;
 	}
 	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 클릭 실패"));
 
@@ -418,71 +418,75 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 		IsInvincible = false;
 		// 데미지 로그 출력	
 		float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-		//	UE_LOG(LogTemp, Error, TEXT("avocado take damage %f"), DamageAmount);
+			UE_LOG(LogTemp, Error, TEXT("Player take damage %f"), DamageAmount);
 
 			//PlayerSkillComponent->OnDefenseSkill(3.0);
 
 		return FinalDamage;
 	}
 }
-
 void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 {
 	if (PlayerSkillComponent && !IsInvincible)
 	{
-		// 무적 상태 활성화
 		IsInvincible = true;
-		if (IsInvincible) {
-			//			UE_LOG(LogTemp, Log, TEXT("IsInvincible"));
-		}
-		// PlayerSkillComponent에서 방어 스킬을 실행
-		PlayerSkillComponent->OnDefenseSkill(1.0f);
-		// 깜박이기구현->BP
-		USkeletalMeshComponent* MeshComponent = GetMesh();
 
+		PlayerSkillComponent->OnDefenseSkill(1.0f);
+
+		USkeletalMeshComponent* MeshComponent = GetMesh();
 		if (MeshComponent)
 		{
-			UMaterialInterface* OriginalMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("MaterialInterface'/Game/UI/Materials/OriginalMaterial.OriginalMaterial'"));
-			if (OriginalMaterial)
+			// 무적 상태에서 머터리얼을 변경할 때만 처리
+			if (InvincibleOriginalMaterial == nullptr)
 			{
-				MeshComponent->SetMaterial(0, OriginalMaterial);
+				// 현재 머터리얼 저장 (변신 시 머터리얼 저장과 구분)
+				InvincibleOriginalMaterial = MeshComponent->GetMaterial(0);
 			}
-			// 0.25초 간격으로 4번 깜박이기
-			for (int i = 0; i < 4; i++)
-			{
-				// 0.25초 후에 ToggleMaterial 함수 호출
-				FTimerHandle DelayTimerHandle;
-				GetWorld()->GetTimerManager().SetTimer(DelayTimerHandle, this, &AN_Graduation_projectCharacter::ToggleMaterial, 0.25f * i, false);
-			}
+
+			// 첫 번째 깜빡임 (HitMaterial로 바꾸기)
+			ToggleMaterial(true);
+
+			// 0.25초 후에 원래 색으로
+			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle1, [this]() { ToggleMaterial(false); }, 0.25f, false);
+
+			// 0.5초 후 다시 Hit로
+			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle2, [this]() { ToggleMaterial(true); }, 0.5f, false);
+
+			// 0.75초 후 다시 원래 색
+			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle3, [this]() { ToggleMaterial(false); }, 0.75f, false);
+
+			// 마지막으로 1초 후 무적 종료
+			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle4, [this]() { IsInvincible = false; }, 1.0f, false);
 		}
 	}
 }
 
-void AN_Graduation_projectCharacter::ToggleMaterial()
+void AN_Graduation_projectCharacter::ToggleMaterial(bool bUseHitMaterial)
 {
-	static bool bIsFlashing = false;
 	USkeletalMeshComponent* MeshComponent = GetMesh();
-
 	if (MeshComponent)
 	{
-		// Hit.Hit 머티리얼과 원래 머티리얼을 번갈아 변경
 		UMaterialInterface* HitMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("MaterialInterface'/Game/UI/Materials/Hit.Hit'"));
-		UMaterialInterface* OriginalMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("MaterialInterface'/Game/UI/Materials/OriginalMaterial.OriginalMaterial'"));
 
-		if (HitMaterial && OriginalMaterial)
+		if (HitMaterial && InvincibleOriginalMaterial)
 		{
-			// 깜박임 상태에 따라 머티리얼 변경
-			MeshComponent->SetMaterial(0, bIsFlashing ? HitMaterial : OriginalMaterial);
-
-			// 상태 토글
-			bIsFlashing = !bIsFlashing;
+			MeshComponent->SetMaterial(0, bUseHitMaterial ? HitMaterial : InvincibleOriginalMaterial);
+			Tcount++;
+			if (Tcount > 3)
+			{
+				MeshComponent->SetMaterial(0, InvincibleOriginalMaterial);
+				InvincibleOriginalMaterial = nullptr;
+				Tcount = 0;
+			}
 		}
 	}
 }
+
 void AN_Graduation_projectCharacter::UpdateEntityData()
 {
 	if (UABGameSingleton::Get().GetEntityDataByGroupID(currentPreset, EntityData))
 	{
+		InvincibleOriginalMaterial = nullptr;
 		SetActorLabel(EntityData.EntityName);
 		SetMoveSpeed(1000);
 		SetPreset(EntityData.PresetReference);
@@ -497,6 +501,7 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 		PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID, EntityData.HP, EntityData.TransManaCost);
 		pastPreset = currentPreset;
 	}
+	USkeletalMeshComponent* MeshComponent = GetMesh();
 }
 
 void AN_Graduation_projectCharacter::SetMoveSpeed(int32 MoveSpeed)
@@ -574,15 +579,20 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 }
 
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
-{
-	currentPreset = PresetReference;
+{		USkeletalMeshComponent* MeshComponent = GetMesh();
 
-	// 프리셋 이름마다 메시 에셋 파일 할당
+	currentPreset = PresetReference;
+	InvincibleOriginalMaterial = nullptr;	// 프리셋 이름마다 메시 에셋 파일 할당
 	if (currentPreset == "PCPreset.uasset")
 	{
-		// 에디터 실행 시 문제없이 메시를 로드하기 위해 FSoftObjectPath를 사용해 비동기 로딩 
+		//<변신을 위해 이거 2개 필수>
 		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Player/Player_Attack/Player_Attack_UVW.Player_Attack_UVW"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/MyPlayerAnimBlueprint.MyPlayerAnimBlueprint_C"));
+		
+		//<피격을 위해 이거 3개 필수>
+		UMaterialInterface* PlayerMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("MaterialInterface'/Game/Gamin/Player/Player_Attack/phong2.phong2'"));
+		InvincibleOriginalMaterial = PlayerMaterial;
+		MeshComponent->SetMaterial(0, InvincibleOriginalMaterial);
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		GetMesh()->SetSkeletalMesh(LoadedMesh);
@@ -600,10 +610,16 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	}
 
 	if (currentPreset == "WildBoarPreset.uasset")
-	{//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Gamin/Bore_attack_3.uasset
+	{
+		//<변신을 위해 이거 2개 필수>
 		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Bore_UVW/Bore_attack_uvw_2.Bore_attack_uvw_2"));
-		//TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/WildBoar_Skeleton_AnimBP.WildBoar_Skeleton_AnimBP_C"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/MyWildBoar_Skeleton_AnimBP.MyWildBoar_Skeleton_AnimBP_C"));
+		
+		//<피격을 위해 이거 3개 필수>
+		UMaterialInterface* BoarMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("MaterialInterface'/Game/Gamin/Bore_UVW/lambert2.lambert2'"));
+		InvincibleOriginalMaterial = BoarMaterial;
+		MeshComponent->SetMaterial(0, InvincibleOriginalMaterial); 
+
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		GetMesh()->SetRelativeScale3D(FVector(2.0f, 2.0f, 2.0f));
 		if (LoadedMesh && NewAnimBP)
@@ -696,7 +712,7 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 		if (OtherActor != MyCharacter)
 		{
 			if (!PlayerSkillComponent->DamagedActors.Contains(OtherActor)) //데미지를 받은 적 있는지 확인 후
-			{    
+			{
 				float Damage = PlayerSkillComponent->DamageAmount;
 				//UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
 				if (PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false)
