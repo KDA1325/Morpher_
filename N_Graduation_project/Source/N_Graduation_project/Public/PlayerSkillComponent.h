@@ -77,12 +77,13 @@ public:
 	void ChargeSkillTimer(float Delay, FTimerDelegate Call);  // 타이머 설정 함수
 
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	float DamageAmount;
 
 	UPROPERTY()
 	TSet<AActor*> DamagedActors; // 데미지를 받은 몬스터 저장
 
+	TArray<AActor*> SnapshotDamagedActors;
 protected:
 	virtual void BeginPlay() override;
 
@@ -100,9 +101,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	FVector StoredDashDirection;
 
-	void ExecuteChargeDash(FVector Chargedistance);
+	UFUNCTION()
+	void ExecuteChargeDash(FVector Chargedistance, FString SkillName);
+	UFUNCTION()
+	void DelayedKnockbackEffect(FString SkillName);
+
 	void DrawChargePath();
-	void DelayedKnockbackEffect();
 	void ApplyKnockback(AActor* TargetActor, float KnockbackPower);
 };
 

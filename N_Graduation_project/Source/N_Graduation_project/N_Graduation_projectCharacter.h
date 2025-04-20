@@ -144,6 +144,10 @@ private:
 	FVector DashVelocity;
 
 
+
+
+
+public:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UPlayerSkillComponent* PlayerSkillComponent;
 
@@ -153,10 +157,6 @@ private:
 	/** ü�� ������Ʈ */
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UMyPlayerStatComponent* PlayerStatComponent;
-
-
-public:
-
 	/** ������ �޴� �Լ� */
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;

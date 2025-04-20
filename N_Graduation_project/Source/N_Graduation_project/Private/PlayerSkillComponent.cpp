@@ -135,6 +135,7 @@ void UPlayerSkillComponent::HideHitBox()
 
 	// 데미지 체크 초기화
 	DamagedActors.Empty();
+	SnapshotDamagedActors.Empty();
 }
 
 AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
@@ -237,30 +238,28 @@ void UPlayerSkillComponent::VisibleShapeBox(const FString& SkillID)
 }
 void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 {
-	UE_LOG(LogTemp, Warning, TEXT("kakao On NomalSkillPlay"));
-
 	distance = MeasureDistanceToMonster();
-	UE_LOG(LogTemp, Warning, TEXT("Kakao Distance to Monster: %f"), distance);
 
 	if (CanUseNomalSkill)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("kakao On CanUseNomalSkill"));
-
 		FSkillData SkillData;
 		if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData)) return;
-		SkillEffect(SkillID);
+
 		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 		MyChar->StartAction();
-		MyChar->PlayNomal = false;
+		//		MyChar->PlayNomal = false;
 
-		if (distance <= SkillData.SkillRange)
+		if (distance > 0 && distance <= SkillData.SkillRange)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("kakao Yes distance"));
+			UE_LOG(LogTemp, Warning, TEXT("KKakao Distance to Monster: %f"), distance);
+
+			UE_LOG(LogTemp, Warning, TEXT("%f Kkakao Yes distance"), SkillData.SkillRange);
 			VisibleShapeBox(SkillID); // 적중 범위 표시
+			SkillEffect(SkillID);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("kakao No distance, but playing skill anyway"));
+			UE_LOG(LogTemp, Warning, TEXT("kkakao No distance, but playing skill anyway"));
 		}
 
 		// 스킬 쿨타임 시작
@@ -290,7 +289,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 {
-	UE_LOG(LogTemp, Warning, TEXT("kakao On SpecialSkillPlay"));
+	//UE_LOG(LogTemp, Warning, TEXT("kakao On SpecialSkillPlay"));
 	distance = MeasureDistanceToMonster();
 
 	if (CanUseSpecialSkill)
@@ -300,26 +299,20 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 
 		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 		MyChar->StartAction();
-		MyChar->PlaySpecial = false;
-	//	if (distance <= SkillData.SkillRange)
+
+		if (SkillID == "Skill_Charge")
 		{
-			UE_LOG(LogTemp, Warning, TEXT("kakao Yes distance"));
+			StoredDashDirection = MyChar->GetActorForwardVector().GetSafeNormal();
 
+			DrawChargePath(); // 돌진 선
 
-			if (SkillID == "Skill_Charge")
-			{
-				StoredDashDirection = MyChar->GetActorForwardVector().GetSafeNormal();
+			float PrepTime = 1.0f;
 
-				DrawChargePath(); // 돌진 선
+			FTimerDelegate ChargeEnd;
+			ChargeEnd.BindUFunction(this, FName("ExecuteChargeDash"), StoredDashDirection, SkillID);
+			ChargeSkillTimer(PrepTime, ChargeEnd);
+			// 범위 내일 때만 히트 판정 박스 표시
 
-				float PrepTime = 1.0f;
-
-				FTimerDelegate ChargeEnd;
-				ChargeEnd.BindUObject(this, &UPlayerSkillComponent::ExecuteChargeDash, StoredDashDirection);
-				ChargeSkillTimer(PrepTime, ChargeEnd);
-				 // 범위 내일 때만 히트 판정 박스 표시
-
-			}
 		}
 		CanUseSpecialSkill = false;
 
@@ -333,7 +326,7 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		// 스킬 애니메이션
 		SkillAnimation(SkillID);
 		UE_LOG(LogTemp, Warning, TEXT("OnMontag Playing %s"), *SkillID);
-		
+
 		FTimerDelegate SpecialCooldownEnd;
 		SpecialCooldownEnd.BindUObject(this, &UPlayerSkillComponent::SpecialCooldown);
 		SpecialSetSkillTimer(SkillData.SkillCoolTime, SpecialCooldownEnd);
@@ -355,32 +348,30 @@ void UPlayerSkillComponent::DrawChargePath()
 	UE_LOG(LogTemp, Warning, TEXT("DrawChargePath: Charge path drawn"));
 
 }
-void UPlayerSkillComponent::ExecuteChargeDash(FVector Chargedistance)
+void UPlayerSkillComponent::ExecuteChargeDash(FVector Chargedistance, FString SkillName)
 {
 	// 준비 시간 동안 저장된 dash 방향을 사용
 	ACharacter* MyChar = Cast<ACharacter>(GetOwner());
 	if (!MyChar) return;
 
-	VisibleShapeBox("Skill_Charge");
-
 	FVector DashDirection = StoredDashDirection;
+	VisibleShapeBox(SkillName);
+	// 현재 DamagedActors를 안전하게 복사해서 사용
+// ExecuteChargeDash 내부에서
 
+	SkillEffect(SkillName);
 	float DashSpeed = 2000.0f;
 
 	MyChar->LaunchCharacter(DashDirection * DashSpeed, true, true);
 	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Dashing"));
 
-	// ⏱ 넉백 효과를 살짝 딜레이해서 실행 (0.2초 뒤)
+	// 넉백 효과를 살짝 딜레이해서 실행 (0.2초 뒤)
 	FTimerHandle KnockbackTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(
 		KnockbackTimerHandle,
-		FTimerDelegate::CreateUObject(this, &UPlayerSkillComponent::DelayedKnockbackEffect),
-		0.2f,  // 대시 후 약간의 딜레이
-		false
-	);
-	
+		FTimerDelegate::CreateUObject(this, &UPlayerSkillComponent::DelayedKnockbackEffect, SkillName), 0.2f, false);
 }
-void UPlayerSkillComponent::DelayedKnockbackEffect()
+void UPlayerSkillComponent::DelayedKnockbackEffect(FString SkillName)
 {
 	// PlayerSkillComponent에서 관리하는 DamagedActors 목록을 사용
 	for (AActor* DamagedActor : DamagedActors)
@@ -388,8 +379,8 @@ void UPlayerSkillComponent::DelayedKnockbackEffect()
 		if (IsValid(DamagedActor))
 		{
 			// 넉백 처리
-			SkillEffect("Skill_Charge");  // Charge 스킬의 넉백 효과만 따로 적용
 			UE_LOG(LogTemp, Warning, TEXT("DelayedKnockbackEffect 실행됨: %s"), *DamagedActor->GetName());
+			
 		}
 	}
 }
@@ -439,6 +430,8 @@ void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage, bool bInter
 
 void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("SkillEffect 실행됨"));
+
 	TArray<FSkillEffectData> EffectData;
 	if (!UABGameSingleton::Get().GetSkillEffectDataBySkillID(SkillNameID, EffectData))
 	{
@@ -447,31 +440,47 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 	}
 	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 	if (!MyChar) return;
-
-	DamageAmount = EffectData[0].EffectValue01;
-
-	for (AActor* TargetActor : DamagedActors)
+	//DamageAmount = EffectData[0].EffectValue01;
+	SnapshotDamagedActors = DamagedActors.Array();
+	UE_LOG(LogTemp, Warning, TEXT("SkillEffect_ 실행 직전 SnapshotDamagedActors 수: %d"), SnapshotDamagedActors.Num());
+	for (AActor* TargetActor : SnapshotDamagedActors)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("SkillEffect_ 실행 후 SnapshotDamagedActors 수: %d"), SnapshotDamagedActors.Num());
+
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("AActor* TargetActor : DamagedActors이거 실행됨"));
 		if (!IsValid(TargetActor)) continue;
 
 		for (const FSkillEffectData& Effect : EffectData)
 		{
-			switch (Effect.EffectType)
+			UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, TEXT("EnumEffectType"), true);
+			if (EnumPtr)
 			{
-			case EnumEffectType::Damage:
+				FString EnumName = EnumPtr->GetNameStringByIndex((int32)Effect.EffectType);
+				UE_LOG(LogTemp, Warning, TEXT("EffectData : %s"), *EnumName);
+			}
+
+
+
+			if (Effect.EffectType == EnumEffectType::Damage)
+			{
+				// 데미지
 				DamageAmount = Effect.EffectValue01;
 				UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, MyChar->GetController(), MyChar, nullptr);
-				break;
+				UE_LOG(LogTemp, Warning, TEXT("ㅊㅊㅊ %s Damage: %f"), *TargetActor->GetName(), DamageAmount);
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Damage 실행됨"));
 
-			case EnumEffectType::KnockBack:
-				ApplyKnockback(TargetActor, 2000); // 파워는 고정 값
-				break;
+			}
+			if (Effect.EffectType == EnumEffectType::KnockBack)
+			{
+				// 넉백
+				ApplyKnockback(TargetActor, Effect.EffectValue01);
+				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("넉백 실행됨"));
 
-				// 필요 시 다른 효과 타입도 여기에 추가
 			}
 		}
 		// 그 후 데미지 적용
 		UE_LOG(LogTemp, Warning, TEXT("SkillEffect 실행됨! DamageAmount: %f"), DamageAmount);
+		HideHitBox();
 	}
 }
 

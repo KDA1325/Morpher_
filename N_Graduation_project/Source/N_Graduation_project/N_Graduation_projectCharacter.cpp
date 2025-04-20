@@ -227,9 +227,11 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 	}
 	if (PlayerSkillComponent->CanUseSpecialSkill == true) {
 		PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
-		PlaySpecial = true;
+		//PlaySpecial = true;	
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
 	}
-	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 클릭 실패"));
+
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
 {
@@ -237,10 +239,13 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 		return;
 	}
 	if (PlayerSkillComponent->CanUseNomalSkill == true) {
-		PlayerSkillComponent->NomalSkillPlay(NomalSkill);
-		PlayNomal = true;
+		PlayerSkillComponent->NomalSkillPlay(NomalSkill);	
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
+
+	//	PlayNomal = true;
 	}
-	//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
+	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 클릭 실패"));
+
 }
 
 void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
@@ -693,11 +698,12 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 			if (!PlayerSkillComponent->DamagedActors.Contains(OtherActor)) //데미지를 받은 적 있는지 확인 후
 			{    
 				float Damage = PlayerSkillComponent->DamageAmount;
-				UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
+				//UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
 				if (PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false)
 				{
 					PlayerSkillComponent->DamagedActors.Add(OtherActor);//중복 없이 데미지 받은 객체저장
 					UE_LOG(LogTemp, Warning, TEXT("DamagedActors에 추가된 액터: %s"), *OtherActor->GetName());
+					//PlayerSkillComponent->SnapshotDamagedActors = PlayerSkillComponent->DamagedActors.Array();
 				}
 			}
 		}
