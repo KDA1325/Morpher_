@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/Character.h"
 #include "EngineMinimal.h" // USkeletalMeshComponent를 사용하기 위해 변경
 #include "ABEntityData.h" // Entity Data 구조체
 #include "ABGameSingleton.h"
-#include "GameFramework/Character.h"
+#include "Components/TimelineComponent.h"
+#include "Components/DecalComponent.h" // 데칼 인디케이터용
 #include "Components/WidgetComponent.h"
-//#include "CharacterAllInterface.h"
+#include "Components/BoxComponent.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimBlueprint.h"
@@ -119,8 +121,35 @@ public:
 	//UFUNCTION()
 	//void OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	// Skill_Charge 타임라인
+	UPROPERTY()
+	UTimelineComponent* ChargeTimeline; // WildBoar_ChargeFloat
+
+	UPROPERTY(EditDefaultsOnly, Category = "Skill|Charge")
+	UCurveFloat* ChargeCurve;
+
+	void StartChargeMovement();
+
+	// 타임라인 델리게이트 함수 
+	UFUNCTION()
+	void Timeline_ChargeProgress(float Value);
+
+	UFUNCTION()
+	void Timeline_ChargeFinished();
+
+	UFUNCTION()
+	void SpawnChargeIndicator(FVector ChargeStartLocation, FVector ChargeTargetLocation);
+
+	// 데칼 표시용
+	UPROPERTY()
+	UDecalComponent* ChargeDecalComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Skill|Charge")
+	UMaterialInstance* ChargeDecalMaterial;
+
 	// 돌진 관련 상태 변수
 	bool bIsCharging = false;
+
 	FVector ChargeStartLocation;
 	FVector ChargeDirection;
 	float ChargeDistance = 0.0f;
