@@ -920,20 +920,6 @@ void AEntityPreset::SpawnChargeIndicator(FVector Start, FVector End)
 
 	ChargeDecalComponent->SetWorldLocation(MidPoint);
 	ChargeDecalComponent->SetWorldRotation(DecalRot);
-
-	//ChargeDecalComponent->SetWorldLocation(MidPoint);
-	//ChargeDecalComponent->SetWorldRotation(FRotator(-90.f, GetActorRotation().Yaw, 0.f));
-	//ChargeDecalComponent->DecalSize = FVector(Length * 0.5f, 100.f, 100.f);
-
-	// 방향 회전 설정
-	//FRotator DecalRotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
-	//DecalRotation.Pitch = -90.f; // Z축으로 투사
-	//DecalRotation.Roll = 0.f;
-
-	//// 데칼 사이즈 (X = 높이/투사거리, Y = 폭, Z = 깊이)
-	//ChargeDecalComponent->SetWorldLocation(MidPoint);
-	//ChargeDecalComponent->SetWorldRotation(DecalRotation);
-	//ChargeDecalComponent->DecalSize = FVector(100.f, Length * 0.5f, 100.f); // Y축이 길이
 }
 
 
