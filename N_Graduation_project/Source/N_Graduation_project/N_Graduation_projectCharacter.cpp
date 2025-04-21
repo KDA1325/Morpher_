@@ -221,30 +221,32 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 	}
 }
 void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue& Value)
-{
+{		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
+
 	if (CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
 		return;
 	}
 	if (PlayerSkillComponent->CanUseSpecialSkill == true) {
 		PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
 		//PlaySpecial = true;	
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
 	}
-	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 클릭 실패"));
+	else GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 클릭 실패"));
 
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
-{
+{		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
+
 	if (CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
 		return;
 	}
 	if (PlayerSkillComponent->CanUseNomalSkill == true) {
 		PlayerSkillComponent->NomalSkillPlay(NomalSkill);
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
+		UE_LOG(LogTemp, Warning, TEXT("CanUseNomalSkill: %s"), PlayerSkillComponent->CanUseNomalSkill ? TEXT("true") : TEXT("false"));
 
 		//	PlayNomal = true;
 	}
-	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 클릭 실패"));
+	else GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 클릭 실패"));
+//	UE_LOG(LogTemp, Warning, TEXT("CanUseNomalSkill: %s"), PlayerSkillComponent->CanUseNomalSkill ? TEXT("true") : TEXT("false"));
 
 }
 
@@ -406,6 +408,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 {
 	UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
 	if (PlayerSkillComponent->IsDefending == true) {
+		UE_LOG(LogTemp, Error, TEXT("Player TakeDamage 데미지 받지 않음"));
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 		IsInvincible = true;
 		return 0.0f;//무적상태라면 리턴.
@@ -418,7 +421,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 		IsInvincible = false;
 		// 데미지 로그 출력	
 		float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-			UE_LOG(LogTemp, Error, TEXT("Player take damage %f"), DamageAmount);
+			UE_LOG(LogTemp, Error, TEXT("Player TakeDamage  %f"), DamageAmount);
 
 			//PlayerSkillComponent->OnDefenseSkill(3.0);
 
@@ -456,7 +459,7 @@ void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle3, [this]() { ToggleMaterial(false); }, 0.75f, false);
 
 			// 마지막으로 1초 후 무적 종료
-			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle4, [this]() { IsInvincible = false; }, 1.0f, false);
+			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle4, [this]() { IsInvincible = false; PlayerSkillComponent->IsDefending = false; }, 1.0f, false);
 		}
 	}
 }

@@ -247,20 +247,20 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 		MyChar->StartAction();
-		//		MyChar->PlayNomal = false;
 
-		if (distance > 0 && distance <= SkillData.SkillRange)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("KKakao Distance to Monster: %f"), distance);
 
-			UE_LOG(LogTemp, Warning, TEXT("%f Kkakao Yes distance"), SkillData.SkillRange);
-			VisibleShapeBox(SkillID); // 적중 범위 표시
-			SkillEffect(SkillID);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("kkakao No distance, but playing skill anyway"));
-		}
+		//if (distance > 0 && distance <= SkillData.SkillRange)
+
+		UE_LOG(LogTemp, Warning, TEXT("KKakao Distance to Monster: %f"), distance);
+
+		UE_LOG(LogTemp, Warning, TEXT("%f Kkakao Yes distance"), SkillData.SkillRange);
+		VisibleShapeBox(SkillID); // 적중 범위 표시
+		SkillEffect(SkillID);
+
+		//else
+	//	{
+		//	UE_LOG(LogTemp, Warning, TEXT("kkakao No distance, but playing skill anyway"));
+		//}
 
 		// 스킬 쿨타임 시작
 		CanUseNomalSkill = false;
@@ -275,6 +275,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		// 스킬 애니메이션
 		SkillAnimation(SkillID);
 		UE_LOG(LogTemp, Warning, TEXT("OnMontag Playing %s"), *SkillID);
+
 
 		// 쿨타임 타이머 설정
 		FTimerDelegate NomalCooldownEnd;
@@ -373,6 +374,7 @@ void UPlayerSkillComponent::ExecuteChargeDash(FVector Chargedistance, FString Sk
 }
 void UPlayerSkillComponent::DelayedKnockbackEffect(FString SkillName)
 {
+	HideHitBox();
 	// PlayerSkillComponent에서 관리하는 DamagedActors 목록을 사용
 	for (AActor* DamagedActor : DamagedActors)
 	{
@@ -380,7 +382,6 @@ void UPlayerSkillComponent::DelayedKnockbackEffect(FString SkillName)
 		{
 			// 넉백 처리
 			UE_LOG(LogTemp, Warning, TEXT("DelayedKnockbackEffect 실행됨: %s"), *DamagedActor->GetName());
-			
 		}
 	}
 }
@@ -475,12 +476,12 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 				// 넉백
 				ApplyKnockback(TargetActor, Effect.EffectValue01);
 				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("넉백 실행됨"));
-
+				
 			}
 		}
 		// 그 후 데미지 적용
 		UE_LOG(LogTemp, Warning, TEXT("SkillEffect 실행됨! DamageAmount: %f"), DamageAmount);
-		HideHitBox();
+
 	}
 }
 
@@ -506,7 +507,7 @@ void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor, float KnockbackP
 
 			// 넉백 실행
 			TargetChar->LaunchCharacter(KnockbackDir * KnockbackPower, true, true);
-			HideHitBox();
+			
 		}
 		else
 		{
@@ -518,6 +519,6 @@ void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor, float KnockbackP
 			UE_LOG(LogTemp, Warning, TEXT("넉백 Controller 클래스: %s"), *Ctrl->GetClass()->GetName());
 		}
 		UE_LOG(LogTemp, Warning, TEXT("넉백 성공: %s 방향 %s 파워 %f"), *TargetChar->GetName(), *KnockbackDir.ToString(), KnockbackPower);
-
+		HideHitBox();
 	}
 }
