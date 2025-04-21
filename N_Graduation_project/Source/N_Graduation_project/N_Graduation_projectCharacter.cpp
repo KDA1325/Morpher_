@@ -221,7 +221,8 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 	}
 }
 void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue& Value)
-{		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 우클릭"));
 
 	if (CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
 		return;
@@ -234,7 +235,8 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
-{		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("마우스 좌클릭"));
 
 	if (CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
 		return;
@@ -246,7 +248,7 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 		//	PlayNomal = true;
 	}
 	else GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 클릭 실패"));
-//	UE_LOG(LogTemp, Warning, TEXT("CanUseNomalSkill: %s"), PlayerSkillComponent->CanUseNomalSkill ? TEXT("true") : TEXT("false"));
+	//	UE_LOG(LogTemp, Warning, TEXT("CanUseNomalSkill: %s"), PlayerSkillComponent->CanUseNomalSkill ? TEXT("true") : TEXT("false"));
 
 }
 
@@ -421,9 +423,9 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 		IsInvincible = false;
 		// 데미지 로그 출력	
 		float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-			UE_LOG(LogTemp, Error, TEXT("Player TakeDamage  %f"), DamageAmount);
+		UE_LOG(LogTemp, Error, TEXT("Player TakeDamage  %f"), DamageAmount);
 
-			//PlayerSkillComponent->OnDefenseSkill(3.0);
+		//PlayerSkillComponent->OnDefenseSkill(3.0);
 
 		return FinalDamage;
 	}
@@ -489,10 +491,12 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 {
 	if (UABGameSingleton::Get().GetEntityDataByGroupID(currentPreset, EntityData))
 	{
+		if (PlayerStatComponent->CurrentMana >= EntityData.TransManaCost) 		OkTrans = true;
+		if (!(PlayerStatComponent->CurrentMana >= EntityData.TransManaCost))		OkTrans = false;
+
 		InvincibleOriginalMaterial = nullptr;
 		SetActorLabel(EntityData.EntityName);
 		SetMoveSpeed(1000);
-		SetPreset(EntityData.PresetReference);
 		NomalSkill = EntityData.NormalSkill;
 		SpecialSkill = EntityData.SpecialSkill;
 		UE_LOG(LogTemp, Error, TEXT("!Entity Name: %s, HP: %d, Move Speed: %d"),
@@ -500,10 +504,12 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 	}
 	// currentPreset!=클릭한 버튼의 캐릭터이름 이면..
 	if (pastPreset != currentPreset) {
+		
 		UE_LOG(LogTemp, Error, TEXT("= pastPreset != currentPreset"));
 		PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID, EntityData.HP, EntityData.TransManaCost);
 		pastPreset = currentPreset;
 	}
+
 	USkeletalMeshComponent* MeshComponent = GetMesh();
 }
 
@@ -582,7 +588,8 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 }
 
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
-{		USkeletalMeshComponent* MeshComponent = GetMesh();
+{
+	USkeletalMeshComponent* MeshComponent = GetMesh();
 
 	currentPreset = PresetReference;
 	InvincibleOriginalMaterial = nullptr;	// 프리셋 이름마다 메시 에셋 파일 할당
@@ -591,7 +598,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		//<변신을 위해 이거 2개 필수>
 		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Player/Player_Attack/Player_Attack_UVW.Player_Attack_UVW"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/MyPlayerAnimBlueprint.MyPlayerAnimBlueprint_C"));
-		
+
 		//<피격을 위해 이거 3개 필수>
 		UMaterialInterface* PlayerMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("MaterialInterface'/Game/Gamin/Player/Player_Attack/phong2.phong2'"));
 		InvincibleOriginalMaterial = PlayerMaterial;
@@ -617,11 +624,11 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		//<변신을 위해 이거 2개 필수>
 		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Bore_UVW/Bore_attack_uvw_2.Bore_attack_uvw_2"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/MyWildBoar_Skeleton_AnimBP.MyWildBoar_Skeleton_AnimBP_C"));
-		
+
 		//<피격을 위해 이거 3개 필수>
 		UMaterialInterface* BoarMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("MaterialInterface'/Game/Gamin/Bore_UVW/lambert2.lambert2'"));
 		InvincibleOriginalMaterial = BoarMaterial;
-		MeshComponent->SetMaterial(0, InvincibleOriginalMaterial); 
+		MeshComponent->SetMaterial(0, InvincibleOriginalMaterial);
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		GetMesh()->SetRelativeScale3D(FVector(2.0f, 2.0f, 2.0f));
@@ -734,8 +741,13 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 	currentPreset = Name;
 	if (currentPreset != pastPreset) {
 		PlayerSword->SetHiddenInGame(true);
-		SetPreset(currentPreset);
 		UpdateEntityData();
+		if (OkTrans) {
+			SetPreset(EntityData.PresetReference);
+			;
+		UE_LOG(LogTemp, Warning, TEXT("OkTrans true"));
+
+		}
 		pastPreset = currentPreset;
 	}
 }

@@ -74,7 +74,7 @@ public:
 	void ToggleMaterial(bool bUseHitMaterial);
 	bool PlaySpecial = false;
 	bool PlayNomal = false;
-
+	bool OkTrans = true;
 
 protected:
 	/** Called for movement input */
