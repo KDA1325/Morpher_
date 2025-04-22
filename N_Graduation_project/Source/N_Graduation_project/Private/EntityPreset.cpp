@@ -1,4 +1,4 @@
-﻿#include "EntityPreset.h"
+#include "EntityPreset.h"
 #include "EntityWidget.h"
 #include "EntitySkillComponent.h"
 #include "MyAIController.h"
