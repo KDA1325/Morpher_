@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -149,6 +149,9 @@ public:
 
 	// 돌진 관련 상태 변수
 	bool bIsCharging = false;
+
+	UPROPERTY()
+	float WildBoar_ChargeFloat;
 
 	FVector ChargeStartLocation;
 	FVector ChargeDirection;

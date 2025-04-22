@@ -106,13 +106,13 @@ void AEntityPreset::BeginPlay()
 		ChargeTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
 		ChargeTimeline->SetNetAddressable();
 		ChargeTimeline->SetPropertySetObject(this);
-		ChargeTimeline->SetDirectionPropertyName(FName("ChargeTimelineDirection"));
+		//ChargeTimeline->SetDirectionPropertyName(FName("ChargeTimelineDirection"));
 		ChargeTimeline->SetLooping(false);
 		ChargeTimeline->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
 
 		FOnTimelineFloat ProgressFunction;
 		ProgressFunction.BindUFunction(this, FName("Timeline_ChargeProgress"));
-		ChargeTimeline->AddInterpFloat(ChargeCurve, ProgressFunction);
+		ChargeTimeline->AddInterpFloat(ChargeCurve, ProgressFunction, FName("WildBoar_ChargeFloat"));
 
 		//FOnTimelineEvent FinishedFunction;
 		//FinishedFunction.BindUFunction(this, FName("Timeline_ChargeFinished"));
