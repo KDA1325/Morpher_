@@ -744,14 +744,15 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 		UpdateEntityData();
 		if (OkTrans) {
 			SetPreset(EntityData.PresetReference);
-			;
-		UE_LOG(LogTemp, Warning, TEXT("OkTrans true"));
-
+			WidgetActor->Back_CacheFinalMouseAngle = false;
+			UE_LOG(LogTemp, Warning, TEXT("OkTrans true"));
+		}
+		else {
+			WidgetActor->Back_CacheFinalMouseAngle = true;
 		}
 		pastPreset = currentPreset;
 	}
 }
-
 /* //나중에 테스터에
 void AN_Graduation_projectCharacter::DealDamageToPlayer()
 {

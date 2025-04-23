@@ -18,6 +18,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	bool Back_CacheFinalMouseAngle;
+	float Before_Select = 0.0f;
+
 	void HidePieMenu();
 	void ShowPieMenu();
 	UPROPERTY(EditAnywhere, Category = "UI")

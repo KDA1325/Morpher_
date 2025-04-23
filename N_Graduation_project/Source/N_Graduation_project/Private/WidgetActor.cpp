@@ -92,6 +92,10 @@ void UWidgetActor::HidePieMenu()
 		if (Stat->Change == true) {
 			PieWidget->CacheFinalMouseAngle();
 			MyChar->ChangePreset(PieWidget->Monster);
+			if (Back_CacheFinalMouseAngle == true) {
+				PieWidget->CachedMouseFinalAngle = Before_Select;
+			}
+			 Before_Select = PieWidget->CachedMouseFinalAngle;
 		}
 
 		PieWidget->SetVisibility(ESlateVisibility::Hidden);
