@@ -706,7 +706,7 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		HitBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 		HitBox->SetGenerateOverlapEvents(true);
 
-		HitBox->SetHiddenInGame(false); // 히트박스 안보이게-> true
+		HitBox->SetHiddenInGame(true); // 히트박스 안보이게-> true
 
 		PlayerSkillComponent->SetHitBox(HitBox);
 		UE_LOG(LogTemp, Warning, TEXT("papago hHitBox Address: %p"), HitBox);
