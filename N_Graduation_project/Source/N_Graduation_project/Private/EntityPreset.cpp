@@ -3,6 +3,7 @@
 #include "EntitySkillComponent.h"
 #include "MyAIController.h"
 #include "MyAI.h"
+#include "EntityProjectile.h"
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -1069,6 +1070,49 @@ void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target, float Distance, flo
 		
 		UE_LOG(LogTemp, Warning, TEXT("KnockBack to %s → Distance: %.1fcm in %.2fs (speed: %.1f)"), *Target->GetName(), Distance, Duration, KnockbackSpeed);
 	}
+}
+
+void AEntityPreset::SpawnProjectile_ThrowRock()
+{
+	if(!ProjectileClass) // 스폰할 프로젝타일 클래스가 설정돼야 함
+	{
+		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
+		return;
+	}
+
+	// 스폰 위치는 메시에 설정한 소켓 위치 기준
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ThrowSocket"));
+	FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("ThrowSocket"));
+
+	// 스폰 파라미터
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	// 투사체 생성
+	AEntityProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AEntityProjectile>(ProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+
+	//if(SpawnedProjectile)
+	//{
+	//	// Skill 데이터 테이블에서 "Skill_ThrowRock" 데이터 가져오기
+	//	FSkillData SkillData;
+	//	TArray<FSkillEffectData> EffectDataArray;
+
+	//	if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_ThrowRock",SkillData) &&
+	//		UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_ThrowRock",EffectDataArray))
+	//	{
+	//		// 초기화
+	//		SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
+
+	//		// 발사
+	//		FVector LaunchDirection = GetActorForwardVector(); // 정면 발사
+	//		SpawnedProjectile->FireInDirection(LaunchDirection);
+	//	} else
+	//	{
+	//		UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_ThrowRock data!"));
+	//	}
+	//}
 }
 
 

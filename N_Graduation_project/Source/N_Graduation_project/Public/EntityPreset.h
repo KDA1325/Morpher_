@@ -128,6 +128,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Skill|Charge")
 	UCurveFloat* ChargeCurve;
 
+	UPROPERTY(EditDefaultsOnly,Category = "Skill")
+	TSubclassOf<class AEntityProjectile> ProjectileClass;
+
 	void StartChargeMovement();
 
 	// 타임라인 델리게이트 함수 
@@ -164,6 +167,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ApplyKnockbackEffect(ACharacter* Target, float Distance, float Duration);
+
+	UFUNCTION()
+	void SpawnProjectile_ThrowRock();
 
 protected:
 	// Called when the game starts or when spawned

@@ -4,6 +4,7 @@
 #include "EntityPreset.h"
 #include "AIController.h"
 #include "ABGameSingleton.h"
+#include "EntityProjectile.h"
 #include "BrainComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 
@@ -203,9 +204,83 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, 
 	OwnerEntity->ShowNormalHitBox();
 }
 
+// Projectile 타입 스킬 구현 = 쿨타임 타이머 실행 및 스킬 애니메이션 재생 
 void UEntitySkillComponent::ExecuteProjectileTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
 {
-	// Projectile 스킬 구현 
+	if(!OwnerEntity)
+	{
+		UE_LOG(LogTemp,Error,TEXT("Owner entity is null"));
+		return;
+	}
+
+	// AI 이동 비활성화
+	if(AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController()))
+	{
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			PathComp->Deactivate();
+			UE_LOG(LogTemp,Warning,TEXT("PathFollowingComponent deactivated for Bite skill"));
+		}
+	}
+
+	OwnerEntity->bIsCastingSkill = true;
+	bCanUseNormalSkill = false;
+
+	FTimerDelegate NormalDelegate = FTimerDelegate::CreateUObject(this,&UEntitySkillComponent::NormalCooldown);
+	SetSkillTimer(SkillData.SkillCoolTime,NormalDelegate,false);
+
+	if(OwnerEntity->NormalSkillMontage)
+	{
+		if(UAnimInstance* AnimInst = OwnerEntity->GetMesh()->GetAnimInstance())
+		{
+			// 노멀 스킬 몽타주 재생 
+			AnimInst->Montage_Play(OwnerEntity->NormalSkillMontage);
+			UE_LOG(LogTemp,Warning,TEXT("Normal Skill Montage played"));
+
+
+			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(OwnerEntity,&AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate,OwnerEntity->NormalSkillMontage);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("Normal Skill AnimInstance not found"));
+		}
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("NormalSkillMontage is not set"));
+	}
+
+	//// 소켓에서 발사 위치와 방향 얻기
+	//FName LaunchSocketName = TEXT("ThrowSocket"); 
+	//FVector SpawnLocation = OwnerEntity->GetMesh()->GetSocketLocation(LaunchSocketName);
+	//FRotator SpawnRotation = OwnerEntity->GetActorRotation(); // 필요시 조정
+
+	//if(!ProjectileClass)
+	//{
+	//	UE_LOG(LogTemp,Error,TEXT("ProjectileClass is not set in EntitySkillComponent"));
+	//	return;
+	//}
+
+	//// 투사체 생성
+	//AEntityProjectile* Projectile = GetWorld()->SpawnActor<AEntityProjectile>(ProjectileClass,SpawnLocation,SpawnRotation);
+	//if(Projectile)
+	//{
+	//	// InitProjectile을 SkillData, EffectData로 자동 세팅
+	//	Projectile->InitProjectile(SkillData,EffectData);
+
+	//	//// 발사 방향 설정 (앞으로 쏘기)
+	//	//if(Projectile->ProjectileMovement)
+	//	//{
+	//	//	FVector LaunchDirection = OwnerEntity->GetActorForwardVector();
+	//	//	Projectile->ProjectileMovement->Velocity = LaunchDirection * SkillData.ProjectileSpeed;
+	//	//}
+
+	//	UE_LOG(LogTemp,Warning,TEXT("Spawned and launched projectile for skill %s"),*SkillData.SkillNameID);
+	//} else
+	//{
+	//	UE_LOG(LogTemp,Error,TEXT("Failed to spawn projectile"));
+	//}
 }
 
 void UEntitySkillComponent::ExecuteBuffTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
