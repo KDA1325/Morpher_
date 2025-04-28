@@ -413,19 +413,20 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 		UE_LOG(LogTemp, Error, TEXT("Player TakeDamage 데미지 받지 않음"));
 		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 		IsInvincible = true;
+		PlayerSkillComponent->CanUseNomalSkill = true;
+
 		return 0.0f;//무적상태라면 리턴.
 
 	}
 	else
 	{
+		PlayerSkillComponent -> CanUseNomalSkill = true;
 		PlayerStatComponent->ApplyDamage(DamageAmount);
 		On_invincibility_Implementation();
 		IsInvincible = false;
 		// 데미지 로그 출력	
 		float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 		UE_LOG(LogTemp, Error, TEXT("Player TakeDamage  %f"), DamageAmount);
-
-		//PlayerSkillComponent->OnDefenseSkill(3.0);
 
 		return FinalDamage;
 	}
