@@ -464,19 +464,27 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 
 			if (Effect.EffectType == EnumEffectType::Damage)
 			{
-				// 데미지
-				DamageAmount = Effect.EffectValue01;
-				UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, MyChar->GetController(), MyChar, nullptr);
-				UE_LOG(LogTemp, Warning, TEXT("ㅊㅊㅊ %s Damage: %f"), *TargetActor->GetName(), DamageAmount);
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Damage 실행됨"));
+				if (MyChar->TestMode == false) {
+					// 데미지
+					DamageAmount = Effect.EffectValue01;
+					UGameplayStatics::ApplyDamage(TargetActor, DamageAmount, MyChar->GetController(), MyChar, nullptr);
+					UE_LOG(LogTemp, Warning, TEXT("ㅊㅊㅊ %s Damage: %f"), *TargetActor->GetName(), DamageAmount);
+					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Damage 실행됨"));
+				}
+				else {
+					DamageAmount = Effect.EffectValue01;
+					UGameplayStatics::ApplyDamage(TargetActor, 10000, MyChar->GetController(), MyChar, nullptr);
+					UE_LOG(LogTemp, Warning, TEXT("ㅊㅊㅊ %s Damage: %f"), *TargetActor->GetName(), DamageAmount);
+					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("Damage 실행됨"));
 
+				}
 			}
 			if (Effect.EffectType == EnumEffectType::KnockBack)
 			{
 				// 넉백
 				ApplyKnockback(TargetActor, Effect.EffectValue01);
 				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("넉백 실행됨"));
-				
+
 			}
 		}
 		// 그 후 데미지 적용
@@ -507,7 +515,7 @@ void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor, float KnockbackP
 
 			// 넉백 실행
 			TargetChar->LaunchCharacter(KnockbackDir * KnockbackPower, true, true);
-			
+
 		}
 		else
 		{

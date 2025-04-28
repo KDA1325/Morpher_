@@ -167,6 +167,8 @@ public:
 	//DamageCauser//�������� �� ���� ��ü
 
 	// ���� ���� Ȱ��ȭ
+	UPROPERTY(BlueprintReadWrite)
+	bool TestMode = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool IsInvincible;

@@ -408,20 +408,32 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
-	if (PlayerSkillComponent->IsDefending == true) {
-		UE_LOG(LogTemp, Error, TEXT("Player TakeDamage 데미지 받지 않음"));
-		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
-		IsInvincible = true;
-		PlayerSkillComponent->CanUseNomalSkill = true;
+	if (TestMode == false) {
+		UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
+		if (PlayerSkillComponent->IsDefending == true) {
+			UE_LOG(LogTemp, Error, TEXT("Player TakeDamage 데미지 받지 않음"));
+			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
+			IsInvincible = true;
+			PlayerSkillComponent->CanUseNomalSkill = true;
 
-		return 0.0f;//무적상태라면 리턴.
+			return 0.0f;//무적상태라면 리턴.
 
+		}
+		else
+		{
+			PlayerSkillComponent->CanUseNomalSkill = true;
+			PlayerStatComponent->ApplyDamage(DamageAmount);
+			On_invincibility_Implementation();
+			IsInvincible = false;
+			// 데미지 로그 출력	
+			float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+			UE_LOG(LogTemp, Error, TEXT("Player TakeDamage  %f"), DamageAmount);
+
+			return FinalDamage;
+		}
 	}
-	else
-	{
-		PlayerSkillComponent -> CanUseNomalSkill = true;
-		PlayerStatComponent->ApplyDamage(DamageAmount);
+	else{
+		PlayerSkillComponent->CanUseNomalSkill = true;
 		On_invincibility_Implementation();
 		IsInvincible = false;
 		// 데미지 로그 출력	
@@ -505,7 +517,7 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 	}
 	// currentPreset!=클릭한 버튼의 캐릭터이름 이면..
 	if (pastPreset != currentPreset) {
-		
+
 		UE_LOG(LogTemp, Error, TEXT("= pastPreset != currentPreset"));
 		PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID, EntityData.HP, EntityData.TransManaCost);
 		pastPreset = currentPreset;
