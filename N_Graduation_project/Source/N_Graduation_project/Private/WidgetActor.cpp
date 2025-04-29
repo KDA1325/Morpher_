@@ -87,11 +87,19 @@ void UWidgetActor::HidePieMenu()
 
 	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 	UMyPlayerStatComponent* Stat = MyChar->FindComponentByClass<UMyPlayerStatComponent>();
+	
+	PC->SetShowMouseCursor(false);
+	PC->SetInputMode(FInputModeGameOnly());
+
 	if (PieWidget)
 	{
 		if (Stat->Change == true) {
 			PieWidget->CacheFinalMouseAngle();
 			MyChar->ChangePreset(PieWidget->Monster);
+			if (Back_CacheFinalMouseAngle == true) {
+				PieWidget->CachedMouseFinalAngle = Before_Select;
+			}
+			 Before_Select = PieWidget->CachedMouseFinalAngle;
 		}
 
 		PieWidget->SetVisibility(ESlateVisibility::Hidden);

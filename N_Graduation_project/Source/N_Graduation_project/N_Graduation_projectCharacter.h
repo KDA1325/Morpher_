@@ -74,7 +74,7 @@ public:
 	void ToggleMaterial(bool bUseHitMaterial);
 	bool PlaySpecial = false;
 	bool PlayNomal = false;
-
+	bool OkTrans = true;
 
 protected:
 	/** Called for movement input */
@@ -167,6 +167,8 @@ public:
 	//DamageCauser//�������� �� ���� ��ü
 
 	// ���� ���� Ȱ��ȭ
+	UPROPERTY(BlueprintReadWrite)
+	bool TestMode = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool IsInvincible;

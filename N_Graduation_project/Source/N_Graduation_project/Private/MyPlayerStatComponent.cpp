@@ -49,9 +49,9 @@ void UMyPlayerStatComponent::BeginPlay()
 void UMyPlayerStatComponent::SetHP(float NewHP)
 {
 //	PastCurrentHP = CurrentHP;
-	CurrentHP = FMath::Max(0.0f, NewHP);
-
+	CurrentHP = FMath::Clamp(NewHP, 0.0f, NewMaxHP); // 이게 핵심!
 	UpdateHUD();
+
 
 	if (CurrentHP == 0)
 	{

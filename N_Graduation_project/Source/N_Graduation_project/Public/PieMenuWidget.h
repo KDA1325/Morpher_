@@ -28,13 +28,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float GetCachedMouseAngle() const { return CachedMouseFinalAngle; }
 
-private:
 	FVector2D InitialMousePosition; // 처음 마우스 위치
 	bool bIsReferencePointSet = false; // 초기화 여부 확인용
 	float CachedMouseAngle=0.2f;
 	float CachedMouseFinalAngle;
 	float Before_CachedMouseFinalAngle= 102.0f;
-public:
+
 	UPROPERTY()
 	TSet<FString> DeadMonsters;
 
