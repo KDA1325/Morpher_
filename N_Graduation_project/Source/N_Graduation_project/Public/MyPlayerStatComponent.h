@@ -47,7 +47,9 @@ public:
 	int NewMaxHP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
-	int PastMaxHP;
+	float PastMaxHP;	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
+	float PastCurrentHP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	FString MonsterName;

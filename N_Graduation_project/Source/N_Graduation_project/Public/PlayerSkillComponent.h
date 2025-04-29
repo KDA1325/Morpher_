@@ -70,19 +70,20 @@ public:
 	void HideHitBox();     // 히트박스 비활성화
 	void SkillAnimation(const FString& EffectID);
 	void EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted);
-	void SkillEffect(const FString& SkillNameID, AActor* TargetActor);
+	void SkillEffect(const FString& SkillNameID);
 	//타이머
 	void SetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
 	void SpecialSetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
 	void ChargeSkillTimer(float Delay, FTimerDelegate Call);  // 타이머 설정 함수
 
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	float DamageAmount;
 
 	UPROPERTY()
 	TSet<AActor*> DamagedActors; // 데미지를 받은 몬스터 저장
 
+	TArray<AActor*> SnapshotDamagedActors;
 protected:
 	virtual void BeginPlay() override;
 
@@ -100,9 +101,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	FVector StoredDashDirection;
 
-	void ExecuteChargeDash(FVector Chargedistance);
+	UFUNCTION()
+	void ExecuteChargeDash(FVector Chargedistance, FString SkillName);
+	UFUNCTION()
+	void DelayedKnockbackEffect(FString SkillName);
+
 	void DrawChargePath();
-	void DelayedKnockbackEffect();
 	void ApplyKnockback(AActor* TargetActor, float KnockbackPower);
 };
 

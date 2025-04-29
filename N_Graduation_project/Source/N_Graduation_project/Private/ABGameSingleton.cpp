@@ -4,18 +4,18 @@ DEFINE_LOG_CATEGORY(LogABGameSingleton);
 
 UABGameSingleton::UABGameSingleton()
 {
-	// ¸¸µç DataTable ÁÖ¼Ò¸¦ °¡Á®¿Â´Ù.
-	// DataTableÀº ¸Ê ÇüÅÂ·Î Key,Value °ªÀ¸·Î µé¾î¿Â´Ù.
+	// ë§Œë“  DataTable ì£¼ì†Œë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+	// DataTableì€ ë§µ í˜•íƒœë¡œ Key,Value ê°’ìœ¼ë¡œ ë“¤ì–´ì˜¨ë‹¤.
 	static ConstructorHelpers::FObjectFinder<UDataTable> EntityDataTableRef(TEXT("/Game/DataTable/EntityDataTable.EntityDataTable"));
 	static ConstructorHelpers::FObjectFinder<UDataTable> SkillDataTableRef(TEXT("/Game/DataTable/SkillDataTable.SkillDataTable"));
 	static ConstructorHelpers::FObjectFinder<UDataTable> SkillEffectDataTableRef(TEXT("/Game/DataTable/SkillEffectDataTable.SkillEffectDataTable"));
 
 	//if (nullptr != DataTableRef.Object)
 	//{
-	//	// °¹¼ö°¡ ¸Â´ÂÁö Ã¼Å©
+	//	// ê°¯ìˆ˜ê°€ ë§ëŠ”ì§€ ì²´í¬
 	//	const UDataTable* DataTable = DataTableRef.Object;
 	//	check(DataTable->GetRowMap().Num() > 0);
-	//	// Key°ªÀº ¼øÂ÷ÀûÀ¸·Î ¿À±â ¶§¹®¿¡ Key°ªÀº ÇÊ¿ä¾ø°í, Value°ª¸¸ Array¿¡ ÀúÀå
+	//	// Keyê°’ì€ ìˆœì°¨ì ìœ¼ë¡œ ì˜¤ê¸° ë•Œë¬¸ì— Keyê°’ì€ í•„ìš”ì—†ê³ , Valueê°’ë§Œ Arrayì— ì €ì¥
 	//	TArray<uint8*> ValueArray;
 	//	DataTable->GetRowMap().GenerateValueArray(ValueArray);
 	//	Algo::Transform(ValueArray, EntityDataTable,
@@ -26,7 +26,7 @@ UABGameSingleton::UABGameSingleton()
 	//	);
 	//}
 
-	// DataTable, DataMap¿¡ µ¥ÀÌÅÍ ÀúÀå
+	// DataTable, DataMapì— ë°ì´í„° ì €ì¥
 	if (EntityDataTableRef.Succeeded())
 	{
 		UDataTable* DataTable = EntityDataTableRef.Object;
@@ -46,16 +46,16 @@ UABGameSingleton::UABGameSingleton()
 			UE_LOG(LogABGameSingleton, Error, TEXT("Entity Name: %s, HP: %d, Move Speed: %d, Normal Skill: %s, Special Skill: %s"),
 				*EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed, *EntityData.NormalSkill, *EntityData.SpecialSkill);
 		}
-	*/ //Àß Ãâ·ÂµÊ
-	// ¹è¿­ÀÇ °¹¼ö°¡ 0º¸´Ù Å«Áö È®ÀÎ
+	*/ //ì˜ ì¶œë ¥ë¨
+	// ë°°ì—´ì˜ ê°¯ìˆ˜ê°€ 0ë³´ë‹¤ í°ì§€ í™•ì¸
 	HowManyEntity = EntityDataTable.Num();
-	// EntityDataTable¿¡ ÀúÀåµÈ µ¥ÀÌÅÍ¸¦ ÄÜ¼Ö¿¡ Ãâ·Â
+	// EntityDataTableì— ì €ì¥ëœ ë°ì´í„°ë¥¼ ì½˜ì†”ì— ì¶œë ¥
 	ensure(HowManyEntity > 0);
 	UE_LOG(LogABGameSingleton, Error, TEXT("HowManyEntity: %d"), HowManyEntity);
 	//-> LogABGameSingleton: Error: HowManyEntity: 7
 
 
-	// DataTable, DataMap¿¡ µ¥ÀÌÅÍ ÀúÀå
+	// DataTable, DataMapì— ë°ì´í„° ì €ì¥
 	if (SkillDataTableRef.Succeeded())
 	{
 		UDataTable* DataTable = SkillDataTableRef.Object;
@@ -69,21 +69,21 @@ UABGameSingleton::UABGameSingleton()
 		}
 	}
 
-	// È®ÀÎ ¿Ï·á 
+	// í™•ì¸ ì™„ë£Œ 
 	//for (const FSkillData& SkillData : SkillDataTable)
 	//{
 	//	UE_LOG(LogABGameSingleton, Error, TEXT("SkilNamelID: %s, SkillName: %s, SkillType: %s, SkillRange: %.1f, SkillDuration: %.1f, SkillCoolTime: %.1f, SkillTypeShape: %s, SkillTypeSizeX: %.1f, SkillTypeSizeY: %.1f, ProjectileSpeed: %.1f"),
 	//		*SkillData.SkillNameID, *SkillData.SkillName, *SkillData.SkillType, SkillData.SkillRange, SkillData.SkillDuration, SkillData.SkillCoolTime, *SkillData.SkillTypeShape, SkillData.SkillTypeSizeX, SkillData.SkillTypeSizeY, SkillData.ProjectileSpeed);
 	//}
 
-	// ¹è¿­ÀÇ °¹¼ö°¡ 0º¸´Ù Å«Áö È®ÀÎ
+	// ë°°ì—´ì˜ ê°¯ìˆ˜ê°€ 0ë³´ë‹¤ í°ì§€ í™•ì¸
 	HowManySkill = SkillDataTable.Num();
-	// SkillDataTable¿¡ ÀúÀåµÈ µ¥ÀÌÅÍ¸¦ ÄÜ¼Ö¿¡ Ãâ·Â
+	// SkillDataTableì— ì €ì¥ëœ ë°ì´í„°ë¥¼ ì½˜ì†”ì— ì¶œë ¥
 	ensure(HowManySkill > 0);
 	UE_LOG(LogABGameSingleton, Error, TEXT("HowManySkill: %d"), HowManySkill);
 
 
-	// DataTable, DataMap¿¡ µ¥ÀÌÅÍ ÀúÀå
+	// DataTable, DataMapì— ë°ì´í„° ì €ì¥
 	if (SkillEffectDataTableRef.Succeeded())
 	{
 		UDataTable* DataTable = SkillEffectDataTableRef.Object;
@@ -94,13 +94,13 @@ UABGameSingleton::UABGameSingleton()
 		{
 			if (Row)
 			{
-				// ¹è¿­ÀÌ ¾øÀ¸¸é »õ·Î ¸¸µé°í
+				// ë°°ì—´ì´ ì—†ìœ¼ë©´ ìƒˆë¡œ ë§Œë“¤ê³ 
 				if (!SkillEffectDataMap.Contains(Row->SkillNameID))
 				{
 					SkillEffectDataMap.Add(Row->SkillNameID, TArray<FSkillEffectData>());
 				}
 
-				// ÇØ´ç SkillNameID¿¡ È¿°ú Ãß°¡
+				// í•´ë‹¹ SkillNameIDì— íš¨ê³¼ ì¶”ê°€
 				SkillEffectDataMap[Row->SkillNameID].Add(*Row);
 			}
 		}
@@ -119,35 +119,35 @@ UABGameSingleton::UABGameSingleton()
 	//	}
 	//}
 
-	// È®ÀÎ ¿Ï·á 
+	// í™•ì¸ ì™„ë£Œ 
 	/*for (const FSkillEffectData& SkillEffectData : SkillEffectDataTable)
 	{
 		UE_LOG(LogABGameSingleton, Error, TEXT("SkillNameID: %s, EffectID: %s, EffectType: %s, EffectValue01: %.1f, EffectValue02: %.1f"),
 			*SkillEffectData.SkillNameID, *SkillEffectData.EffectID, *SkillEffectData.EffectType, SkillEffectData.EffectValue01, SkillEffectData.EffectValue02);
 	}*/
-	// ¹è¿­ÀÇ °¹¼ö°¡ 0º¸´Ù Å«Áö È®ÀÎ
+	// ë°°ì—´ì˜ ê°¯ìˆ˜ê°€ 0ë³´ë‹¤ í°ì§€ í™•ì¸
 	HowManySkillEffect = SkillEffectDataTable.Num();
-	// SkillDataTable¿¡ ÀúÀåµÈ µ¥ÀÌÅÍ¸¦ ÄÜ¼Ö¿¡ Ãâ·Â
+	// SkillDataTableì— ì €ì¥ëœ ë°ì´í„°ë¥¼ ì½˜ì†”ì— ì¶œë ¥
 	ensure(HowManySkillEffect > 0);
 	UE_LOG(LogABGameSingleton, Error, TEXT("HowManySkillEffect: %d"), HowManySkillEffect);
 }
 
-// Singleton Get() ÇÔ¼ö
+// Singleton Get() í•¨ìˆ˜
 UABGameSingleton& UABGameSingleton::Get()
 {
-	// CastChecked·Î °­·ÂÇÏ°Ô °Ë»ç, GEngine¿¡ ÀÖ´Â ¾Æ±î Àû¿ëÇÑ GameSingletonÀ» °¡Á®¿À±â
+	// CastCheckedë¡œ ê°•ë ¥í•˜ê²Œ ê²€ì‚¬, GEngineì— ìˆëŠ” ì•„ê¹Œ ì ìš©í•œ GameSingletonì„ ê°€ì ¸ì˜¤ê¸°
 	UABGameSingleton* Singleton = CastChecked<UABGameSingleton>(GEngine->GameSingleton);
 	if (Singleton)
 	{
 		return *Singleton;
 	}
-	// È¤½Ã ¸ô¶ó¼­ ¸¸¾à SingletonÀÌ null °ªÀÌ¶ó¸é ¿¡·¯¸¦ ¶ç¿ìµµ·Ï ÇÔ
-	// ÄÚµåÀÇ Èå¸§À» À§ÇØ¼­ return°ªÀÇ ÀÎ½ºÅÏ½º¸¦ »ı¼ºÇÏ°í ¸®ÅÏÇÔ
+	// í˜¹ì‹œ ëª°ë¼ì„œ ë§Œì•½ Singletonì´ null ê°’ì´ë¼ë©´ ì—ëŸ¬ë¥¼ ë„ìš°ë„ë¡ í•¨
+	// ì½”ë“œì˜ íë¦„ì„ ìœ„í•´ì„œ returnê°’ì˜ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìƒì„±í•˜ê³  ë¦¬í„´í•¨
 	UE_LOG(LogABGameSingleton, Error, TEXT("Invalide Game Singleton"));
 	return *NewObject<UABGameSingleton>();
 }
 
-// Entity GroupID¸¦ Å° °ªÀ¸·Î Data °Ë»ö 
+// Entity GroupIDë¥¼ í‚¤ ê°’ìœ¼ë¡œ Data ê²€ìƒ‰ 
 bool UABGameSingleton::GetEntityDataByGroupID(const FString& GroupID, FABEntityData& OutEntityData) const
 {
 	if (const FABEntityData* FoundData = EntityDataMap.Find(GroupID))
@@ -158,10 +158,10 @@ bool UABGameSingleton::GetEntityDataByGroupID(const FString& GroupID, FABEntityD
 	return false;
 }
 
-//SkillID¸¦ ±âÁØÀ¸·Î SkillData °Ë»ö
+//SkillIDë¥¼ ê¸°ì¤€ìœ¼ë¡œ SkillData ê²€ìƒ‰
 bool UABGameSingleton::GetSkillDataBySkillID(const FString& SkillID, FSkillData& SkillData) const
 {
-	// SkillID°¡ Á¤È®È÷ ¾î¶² °ªÀÌ Àü´ŞµÇ¾ú´ÂÁö ·Î±×·Î È®ÀÎ
+	// SkillIDê°€ ì •í™•íˆ ì–´ë–¤ ê°’ì´ ì „ë‹¬ë˜ì—ˆëŠ”ì§€ ë¡œê·¸ë¡œ í™•ì¸
 	UE_LOG(LogABGameSingleton, Warning, TEXT("Searching for SkillID: %s"), *SkillID);
 	if (const FSkillData* FoundData = SkillDataMap.Find(SkillID))
 	{
@@ -188,7 +188,7 @@ bool UABGameSingleton::GetSkillEffectDataBySkillID(const FString& SkillNameID, T
 
 //bool UABGameSingleton::GetSkillEffectDataBySkillID(const FString& SkillNameID, TArray<FSkillEffectData>& EffectData) const
 //{
-//	// SkillID°¡ Á¤È®È÷ ¾î¶² °ªÀÌ Àü´ŞµÇ¾ú´ÂÁö ·Î±×·Î È®ÀÎ
+//	// SkillIDê°€ ì •í™•íˆ ì–´ë–¤ ê°’ì´ ì „ë‹¬ë˜ì—ˆëŠ”ì§€ ë¡œê·¸ë¡œ í™•ì¸
 //	UE_LOG(LogABGameSingleton, Warning, TEXT("Searching for EffectID: %s"), *SkillNameID);
 //	//if (const FSkillEffectData* FoundData = SkillEffectDataMap.Find(SkillNameID))
 //	//{

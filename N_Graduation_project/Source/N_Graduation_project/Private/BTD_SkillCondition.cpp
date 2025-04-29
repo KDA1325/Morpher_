@@ -17,17 +17,17 @@ bool UBTD_SkillCondition::CalculateRawConditionValue(UBehaviorTreeComponent& Own
 {
     if (UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent())
     {
-        // Blackboard·ÎºÎÅÍ °ª ÀÐ¾î¿À±â
+        // Blackboardë¡œë¶€í„° ê°’ ì½ì–´ì˜¤ê¸°
         float Distance = BlackboardComp->GetValueAsFloat(BBKEY_DISTANCE);
         float A_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_ASKILLRANGE);
         float B_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_BSKILLRANGE);
         //bool bA_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BASKILLAVAILABLE);
         //bool bB_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BBSKILLAVAILABLE);
 
-        // ½ºÅ³ ÄðÅ¸ÀÓÀÌ ±¸Çö µÇ¾îÀÖÁö ¾ÊÀº °ü°è·Î Range ºñ±³ °á°ú·Î¸¸ ½ºÅ³ ½ÃÀü 
-        // Á¶°Ç °è»ê:
-        // A½ºÅ³ Á¶°Ç: Distance <= ARange AND AAvailable true
-        // B½ºÅ³ Á¶°Ç: Distance <= BRange AND BAvailable true
+        // ìŠ¤í‚¬ ì¿¨íƒ€ìž„ì´ êµ¬í˜„ ë˜ì–´ìžˆì§€ ì•Šì€ ê´€ê³„ë¡œ Range ë¹„êµ ê²°ê³¼ë¡œë§Œ ìŠ¤í‚¬ ì‹œì „ 
+        // ì¡°ê±´ ê³„ì‚°:
+        // AìŠ¤í‚¬ ì¡°ê±´: Distance <= ARange AND AAvailable true
+        // BìŠ¤í‚¬ ì¡°ê±´: Distance <= BRange AND BAvailable true
         /*bool bASkillCondition = (Distance <= A_SkillRange) && bA_SkillAvailable;
         bool bBSkillCondition = (Distance <= B_SkillRange) && bB_SkillAvailable;*/
         

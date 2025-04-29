@@ -1,4 +1,4 @@
-﻿#include "MyCharacterWidget.h"
+#include "MyCharacterWidget.h"
 #include "Components/Image.h"
 #include "Components/ScaleBox.h"
 #include "Engine/Texture2D.h"
@@ -159,9 +159,80 @@ void UMyCharacterWidget::SetSkillIcon() {
 				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
 				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
 			}
+		}	
+		else if (SkillName == "Inpermon") {
+			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_bite.Skill_bite"));
+			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_charge.Skill_charge"));
+
+			if (BaseMaterial)
+			{
+				// 다이나믹 머티리얼 인스턴스 생성
+				CooldownMID1 = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+				CooldownMID2 = UMaterialInstanceDynamic::Create(BaseMaterial2, this);
+				// 브러시에 머티리얼 인스턴스 설정
+				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
+				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
+			}
+		}
+		else if (SkillName == "Freezard") {
+			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_bite.Skill_bite"));
+			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_charge.Skill_charge"));
+
+			if (BaseMaterial)
+			{
+				// 다이나믹 머티리얼 인스턴스 생성
+				CooldownMID1 = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+				CooldownMID2 = UMaterialInstanceDynamic::Create(BaseMaterial2, this);
+				// 브러시에 머티리얼 인스턴스 설정
+				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
+				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
+			}
+		}
+		else if (SkillName == "StoneGolem") {
+			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_bite.Skill_bite"));
+			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_Slash.Skill_Slash"));
+
+			if (BaseMaterial)
+			{
+				// 다이나믹 머티리얼 인스턴스 생성
+				CooldownMID1 = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+				CooldownMID2 = UMaterialInstanceDynamic::Create(BaseMaterial2, this);
+				// 브러시에 머티리얼 인스턴스 설정
+				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
+				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
+			}
+		}
+		else if (SkillName == "SkeletonWarrior") {
+			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_bite.Skill_bite"));
+			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_charge.Skill_charge"));
+
+			if (BaseMaterial)
+			{
+				// 다이나믹 머티리얼 인스턴스 생성
+				CooldownMID1 = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+				CooldownMID2 = UMaterialInstanceDynamic::Create(BaseMaterial2, this);
+				// 브러시에 머티리얼 인스턴스 설정
+				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
+				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
+			}
+		}		
+		else if (SkillName == "SkeletonArcher") {
+			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_bite.Skill_bite"));
+			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_charge.Skill_charge"));
+
+			if (BaseMaterial)
+			{
+				// 다이나믹 머티리얼 인스턴스 생성
+				CooldownMID1 = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+				CooldownMID2 = UMaterialInstanceDynamic::Create(BaseMaterial2, this);
+				// 브러시에 머티리얼 인스턴스 설정
+				SkillIcon1->SetBrushFromMaterial(CooldownMID1);
+				SkillIcon2->SetBrushFromMaterial(CooldownMID2);
+			}
 		}
 	}
-}void UMyCharacterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+}
+void UMyCharacterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 

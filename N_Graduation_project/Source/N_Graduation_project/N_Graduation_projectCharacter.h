@@ -71,7 +71,7 @@ class AN_Graduation_projectCharacter : public ACharacter
 public:
 	AN_Graduation_projectCharacter();
 	void ChangePreset(FString Name);
-	void ToggleMaterial();
+	void ToggleMaterial(bool bUseHitMaterial);
 	bool PlaySpecial = false;
 	bool PlayNomal = false;
 
@@ -144,6 +144,10 @@ private:
 	FVector DashVelocity;
 
 
+
+
+
+public:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UPlayerSkillComponent* PlayerSkillComponent;
 
@@ -153,10 +157,6 @@ private:
 	/** ü�� ������Ʈ */
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UMyPlayerStatComponent* PlayerStatComponent;
-
-
-public:
-
 	/** ������ �޴� �Լ� */
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
@@ -245,13 +245,19 @@ void TransformToEntity(int32 EntityID);*/
 	void SpawnHitBoxAtSocket(FName SocketName);
 
 	UFUNCTION()
-	void OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex,
-		bool bFromSweep,
-		const FHitResult& SweepResult);
+	void OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+private:
+	//UPROPERTY()
+	//UMaterialInterface* OriginalMaterial = nullptr;
 
+	UPROPERTY()
+	UMaterialInterface* InvincibleOriginalMaterial = nullptr;
+	int Tcount;
+	//감박이 타이머
+	FTimerHandle FlashTimerHandle1;
+	FTimerHandle FlashTimerHandle2;
+	FTimerHandle FlashTimerHandle3;
+	FTimerHandle FlashTimerHandle4;
 };
 

@@ -1,12 +1,15 @@
-﻿#include "EntityPreset.h"
+#include "EntityPreset.h"
 #include "EntityWidget.h"
 #include "EntitySkillComponent.h"
 #include "MyAIController.h"
 #include "MyAI.h"
+#include "EntityProjectile.h"
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "WidgetActor.h"
+
 
 AEntityPreset::AEntityPreset()
 {
@@ -96,6 +99,27 @@ void AEntityPreset::BeginPlay()
 			// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
 			SpecialHitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("ChargeHitBox"));
 		}
+	}
+
+	if (ChargeCurve)
+	{
+		ChargeTimeline = NewObject<UTimelineComponent>(this, FName("WildBoar_ChargeFloat"));
+		ChargeTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
+		ChargeTimeline->SetNetAddressable();
+		ChargeTimeline->SetPropertySetObject(this);
+		//ChargeTimeline->SetDirectionPropertyName(FName("ChargeTimelineDirection"));
+		ChargeTimeline->SetLooping(false);
+		ChargeTimeline->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
+
+		FOnTimelineFloat ProgressFunction;
+		ProgressFunction.BindUFunction(this, FName("Timeline_ChargeProgress"));
+		ChargeTimeline->AddInterpFloat(ChargeCurve, ProgressFunction, FName("WildBoar_ChargeFloat"));
+
+		//FOnTimelineEvent FinishedFunction;
+		//FinishedFunction.BindUFunction(this, FName("Timeline_ChargeFinished"));
+		//ChargeTimeline->SetTimelineFinishedFunc(FinishedFunction);
+
+		ChargeTimeline->RegisterComponent();
 	}
 
 }
@@ -695,15 +719,33 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 
 void AEntityPreset::PerformSkill_Charge()
 {
+	if (!SpecialSkillMontage) return;
+
 	// 스킬 시전 플래그 설정
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
 	bIsCastingSkill = true;
 
-	// 저장된 전방 방향
 	ChargeDirection = GetActorForwardVector().GetSafeNormal();
 	ChargeStartLocation = GetActorLocation();
 	ChargeDistance = SpecialSkillData.SkillRange;
 	ChargeTargetLocation = ChargeStartLocation + ChargeDirection * ChargeDistance;
+	/*ChargeStartLocation = GetActorLocation();
+	ChargeDirection = GetActorForwardVector().GetSafeNormal();
+	ChargeTargetLocation = ChargeStartLocation + ChargeDirection * SpecialSkillData.SkillRange;*/
+
+	// 인디케이터 표시
+	SpawnChargeIndicator(ChargeStartLocation, ChargeTargetLocation); 
+
+	// 1초 뒤 데칼 제거
+	FTimerHandle DecalTimerHandle;
+	GetWorldTimerManager().SetTimer(DecalTimerHandle, [this]()
+		{
+			if (ChargeDecalComponent)
+			{
+				ChargeDecalComponent->DestroyComponent();
+				ChargeDecalComponent = nullptr;
+			}
+		}, 1.0f, false);
 
 	// AI 경로 추적 중지 
 	if (AAIController* AIController = Cast<AAIController>(GetController()))
@@ -717,8 +759,6 @@ void AEntityPreset::PerformSkill_Charge()
 			UE_LOG(LogTemp, Warning, TEXT("AI movement forcibly stopped before LaunchCharacter"));
 		}
 	}
-	//// 현재 전방 벡터를 저장 (처음 결정된 방향을 고정)
-	//StoredDashDirection = GetActorForwardVector().GetSafeNormal();
 
 	if (SpecialSkillMontage)
 	{
@@ -727,9 +767,6 @@ void AEntityPreset::PerformSkill_Charge()
 			// 스페셜 스킬 몽타주에 플레이어에게 돌진하기 전, 준비 애니메이션(1초) 포함
 			AnimInst->Montage_Play(SpecialSkillMontage);
 			UE_LOG(LogTemp, Warning, TEXT("PerformSpecialSkill_Charge: Montage played"));
-
-			//// 돌진 경로 표시
-			//DrawChargePath();
 
 			// 경로 시각화 (기획 확인용)
 			DrawDebugLine(GetWorld(), ChargeStartLocation, ChargeTargetLocation, FColor::Red, false, 2.0f, 0, 3.0f);
@@ -742,7 +779,7 @@ void AEntityPreset::PerformSkill_Charge()
 			// 준비 시간 후 돌진 실행
 			float PrepTime = 1.0f; 
 			FTimerHandle TimerHandle;
-			GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::ExecuteChargeDash, PrepTime, false);
+			GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::StartChargeMovement, PrepTime, false);
 		}
 		else
 		{
@@ -753,6 +790,78 @@ void AEntityPreset::PerformSkill_Charge()
 	{
 		UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill_Charge: SpecialSkillMontage is not set"));
 	}
+	 
+	//// 애니메이션
+	//if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+	//{
+	//	AnimInst->Montage_Play(SpecialSkillMontage);
+
+	//	// 경로 미리 시각화 (데칼은 여기에 맞춰서 깔림)
+	//	DrawDebugLine(GetWorld(), ChargeStartLocation, ChargeTargetLocation, FColor::Red, false, 2.0f, 0, 5.0f);
+
+	//	// 애니메이션 끝나는 시점에 돌진 시작
+	//	float PrepTime = 1.0f; // 애니메이션 준비 시간
+	//	FTimerHandle TimerHandle;
+	//	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::StartChargeMovement, PrepTime, false);
+	//}
+	//// 스킬 시전 플래그 설정
+	//// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
+	//bIsCastingSkill = true;
+
+	//// 저장된 전방 방향
+	//ChargeDirection = GetActorForwardVector().GetSafeNormal();
+	//ChargeStartLocation = GetActorLocation();
+	//ChargeDistance = SpecialSkillData.SkillRange;
+	//ChargeTargetLocation = ChargeStartLocation + ChargeDirection * ChargeDistance;
+
+	//// AI 경로 추적 중지 
+	//if (AAIController* AIController = Cast<AAIController>(GetController()))
+	//{
+	//	if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+	//	{
+	//		// 경로 추적 중단
+	//		PathComp->Deactivate();
+
+	//		AIController->StopMovement();
+	//		UE_LOG(LogTemp, Warning, TEXT("AI movement forcibly stopped before LaunchCharacter"));
+	//	}
+	//}
+	////// 현재 전방 벡터를 저장 (처음 결정된 방향을 고정)
+	////StoredDashDirection = GetActorForwardVector().GetSafeNormal();
+
+	//if (SpecialSkillMontage)
+	//{
+	//	if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+	//	{
+	//		// 스페셜 스킬 몽타주에 플레이어에게 돌진하기 전, 준비 애니메이션(1초) 포함
+	//		AnimInst->Montage_Play(SpecialSkillMontage);
+	//		UE_LOG(LogTemp, Warning, TEXT("PerformSpecialSkill_Charge: Montage played"));
+
+	//		//// 돌진 경로 표시
+	//		//DrawChargePath();
+
+	//		// 경로 시각화 (기획 확인용)
+	//		DrawDebugLine(GetWorld(), ChargeStartLocation, ChargeTargetLocation, FColor::Red, false, 2.0f, 0, 3.0f);
+
+	//		// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
+	//		FOnMontageEnded EndDelegate;
+	//		EndDelegate.BindUObject(this, &AEntityPreset::OnSkillMontageEnded);
+	//		AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
+
+	//		// 준비 시간 후 돌진 실행
+	//		float PrepTime = 1.0f; 
+	//		FTimerHandle TimerHandle;
+	//		GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::ExecuteChargeDash, PrepTime, false);
+	//	}
+	//	else
+	//	{
+	//		UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill_Charge: AnimInstance not found"));
+	//	}
+	//}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill_Charge: SpecialSkillMontage is not set"));
+	//}
 }
 
 void AEntityPreset::ExecuteChargeDash()
@@ -787,6 +896,62 @@ void AEntityPreset::ExecuteChargeDash()
 	//UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Dashing"));
 
 	// 스킬 종료 처리는 MontageEnded 콜백에서 처리 
+}
+
+void AEntityPreset::SpawnChargeIndicator(FVector Start, FVector End)
+{
+	if (!ChargeDecalComponent)
+	{
+		ChargeDecalComponent = NewObject<UDecalComponent>(this);
+		ChargeDecalComponent->RegisterComponent();
+		ChargeDecalComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+		ChargeDecalComponent->SetDecalMaterial(ChargeDecalMaterial);
+	}
+
+	FVector MidPoint = (Start + End) * 0.5f;
+	float Length = FVector::Distance(Start, End);
+
+	// 데칼 크기: Y축 방향으로 돌진 경로 길이 반영
+	ChargeDecalComponent->DecalSize = FVector(100.f, Length * 0.5f, 100.f);  // (높이, Y폭, 깊이)
+
+	// 데칼 방향: 돌진 방향으로 정렬 (Pitch -90은 지면 투사)
+	// Z축 투사, Y축 방향 보정 (Yaw + 90도)
+	FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(Start, End);
+	FRotator DecalRot = FRotator(-90.f, LookAtRot.Yaw + 90.f, 0.f);
+
+	ChargeDecalComponent->SetWorldLocation(MidPoint);
+	ChargeDecalComponent->SetWorldRotation(DecalRot);
+}
+
+
+void AEntityPreset::StartChargeMovement()
+{
+	if (ChargeTimeline)
+	{
+		ChargeTimeline->PlayFromStart();
+		ShowSpecialHitBox(); // 충돌 체크 시작
+	}
+}
+
+void AEntityPreset::Timeline_ChargeProgress(float Value)
+{
+	FVector NewLocation = FMath::Lerp(ChargeStartLocation, ChargeTargetLocation, Value);
+	SetActorLocation(NewLocation);
+}
+
+void AEntityPreset::Timeline_ChargeFinished()
+{
+	bIsCastingSkill = false;
+	HideSpecialHitBox();
+
+	// AI 재시작 (필요 시)
+	//if (AAIController* AIController = Cast<AAIController>(GetController()))
+	//{
+	//	if (AIController->BrainComponent)
+	//	{
+	//		AIController->BrainComponent->RestartLogic();
+	//	}
+	//}
 }
 
 void AEntityPreset::ClearCastingSkill()
@@ -905,6 +1070,49 @@ void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target, float Distance, flo
 		
 		UE_LOG(LogTemp, Warning, TEXT("KnockBack to %s → Distance: %.1fcm in %.2fs (speed: %.1f)"), *Target->GetName(), Distance, Duration, KnockbackSpeed);
 	}
+}
+
+void AEntityPreset::SpawnProjectile_ThrowRock()
+{
+	if(!ProjectileClass) // 스폰할 프로젝타일 클래스가 설정돼야 함
+	{
+		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
+		return;
+	}
+
+	// 스폰 위치는 메시에 설정한 소켓 위치 기준
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ThrowSocket"));
+	FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("ThrowSocket"));
+
+	// 스폰 파라미터
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	// 투사체 생성
+	AEntityProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AEntityProjectile>(ProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+
+	//if(SpawnedProjectile)
+	//{
+	//	// Skill 데이터 테이블에서 "Skill_ThrowRock" 데이터 가져오기
+	//	FSkillData SkillData;
+	//	TArray<FSkillEffectData> EffectDataArray;
+
+	//	if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_ThrowRock",SkillData) &&
+	//		UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_ThrowRock",EffectDataArray))
+	//	{
+	//		// 초기화
+	//		SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
+
+	//		// 발사
+	//		FVector LaunchDirection = GetActorForwardVector(); // 정면 발사
+	//		SpawnedProjectile->FireInDirection(LaunchDirection);
+	//	} else
+	//	{
+	//		UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_ThrowRock data!"));
+	//	}
+	//}
 }
 
 

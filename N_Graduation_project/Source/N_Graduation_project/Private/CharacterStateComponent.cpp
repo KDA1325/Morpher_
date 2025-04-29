@@ -1,4 +1,4 @@
-//À¯ÇÑ»óÅÂ±â°è(FSM)
+//ìœ í•œìƒíƒœê¸°ê³„(FSM)
 #include "CharacterStateComponent.h"
 #include <N_Graduation_project/N_Graduation_projectCharacter.h>
 
@@ -6,17 +6,17 @@ UCharacterStateComponent::UCharacterStateComponent()
 {
 	CurrentState = ECharacterState::Idle;
 }
-// Ä³¸¯ÅÍ Tcik¿¡¼­ È£ÃâÇÏ±â -> ChangeState();
+// ìºë¦­í„° Tcikì—ì„œ í˜¸ì¶œí•˜ê¸° -> ChangeState();
 void UCharacterStateComponent::ChangeState(ECharacterState NewState)
-{	// »óÅÂ ÀüÈ¯ ½Ã ÃÊ±âÈ­ ÀÛ¾÷ ¼öÇà °¡´É
-	 // Action »óÅÂÀÏ ¶§´Â ´Ù¸¥ »óÅÂ·Î º¯°æÇÒ ¼ö ¾øµµ·Ï
+{	// ìƒíƒœ ì „í™˜ ì‹œ ì´ˆê¸°í™” ì‘ì—… ìˆ˜í–‰ ê°€ëŠ¥
+	 // Action ìƒíƒœì¼ ë•ŒëŠ” ë‹¤ë¥¸ ìƒíƒœë¡œ ë³€ê²½í•  ìˆ˜ ì—†ë„ë¡
 	if (CurrentState == ECharacterState::Action) 
 	{
 		if (isAction == true)
 		{
 			if (NewState == ECharacterState::Move || NewState == ECharacterState::Idle || NewState == ECharacterState::Dash)
 			{
-				return; // ÀÌµ¿ ¹× Idle »óÅÂ·Î º¯°æ ¾ÈµÊ
+				return; // ì´ë™ ë° Idle ìƒíƒœë¡œ ë³€ê²½ ì•ˆë¨
 			}
 		}
 	}
@@ -27,7 +27,7 @@ void UCharacterStateComponent::ChangeState(ECharacterState NewState)
 		{
 			if (NewState == ECharacterState::Move || NewState == ECharacterState::Idle || NewState == ECharacterState::Action)
 			{
-				return; // ÀÌµ¿ ¹× Idle »óÅÂ·Î º¯°æ ¾ÈµÊ
+				return; // ì´ë™ ë° Idle ìƒíƒœë¡œ ë³€ê²½ ì•ˆë¨
 			}
 		}
 	}
@@ -38,7 +38,7 @@ void UCharacterStateComponent::ChangeState(ECharacterState NewState)
 	//	{
 	//		if (NewState == ECharacterState::Move || NewState == ECharacterState::Idle || NewState == ECharacterState::Action || NewState == ECharacterState::Dash)
 	//		{
-	//			return; // ÀÌµ¿ ¹× Idle »óÅÂ·Î º¯°æ ¾ÈµÊ
+	//			return; // ì´ë™ ë° Idle ìƒíƒœë¡œ ë³€ê²½ ì•ˆë¨
 	//		}
 	//	}
 	//}
@@ -53,26 +53,26 @@ void UCharacterStateComponent::ChangeState(ECharacterState NewState)
 
 void UCharacterStateComponent::ApplyActionRestrictions()
 {
-	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner()); // UCharacterStateComponent°¡ ºÙ¾î ÀÖ´Â Ä³¸¯ÅÍ ÀÎ½ºÅÏ½º¸¦ °¡Á®¿È
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner()); // UCharacterStateComponentê°€ ë¶™ì–´ ìˆëŠ” ìºë¦­í„° ì¸ìŠ¤í„´ìŠ¤ë¥¼ ê°€ì ¸ì˜´
 	if (OwnerCharacter)
 	{
 		AN_Graduation_projectCharacter* MyCharacter = Cast<AN_Graduation_projectCharacter>(OwnerCharacter);
-		// Æ¯Á¤ Ä³¸¯ÅÍ Å¸ÀÔÀ¸·Î Ä³½ºÆÃ
+		// íŠ¹ì • ìºë¦­í„° íƒ€ì…ìœ¼ë¡œ ìºìŠ¤íŒ…
 		switch (CurrentState)
 		{
 		case ECharacterState::Idle:
 			break;
 		case ECharacterState::Action:
-			// ÀÌµ¿ Á¶ÀÛX, ½ºÅ³ Á¶ÀÛX, º¯½Å Á¶ÀÛX
+			// ì´ë™ ì¡°ì‘X, ìŠ¤í‚¬ ì¡°ì‘X, ë³€ì‹  ì¡°ì‘X
 			isAction = true;
 			break;
 		case ECharacterState::Dash:
-			// ÀÌµ¿ Á¶ÀÛX, ½ºÅ³ Á¶ÀÛX, º¯½Å Á¶ÀÛX
+			// ì´ë™ ì¡°ì‘X, ìŠ¤í‚¬ ì¡°ì‘X, ë³€ì‹  ì¡°ì‘X
 			break;
 		case ECharacterState::Move:
 			break;
 		case ECharacterState::Dead:
-			// ¸ğµç Çàµ¿
+			// ëª¨ë“  í–‰ë™
 			break;
 		default:
 			break;

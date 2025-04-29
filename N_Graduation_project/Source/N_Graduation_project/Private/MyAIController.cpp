@@ -64,22 +64,22 @@ void AMyAIController::OnPossess(APawn* InPawn)
     {
         AEntityPreset* PossessedCharacter = Cast<AEntityPreset>(InPawn);
        
-        // Ä³½ºÆÃ ½ÇÆĞ ½Ã ³Î Ã¼Å©
+        // ìºìŠ¤íŒ… ì‹¤íŒ¨ ì‹œ ë„ ì²´í¬
         if (PossessedCharacter)
         {
-            // Blackboard ÃÊ±âÈ­ ÈÄ Å° °ª ¼³Á¤
+            // Blackboard ì´ˆê¸°í™” í›„ í‚¤ ê°’ ì„¤ì •
             if (UseBlackboard(BBMonster, BlackboardComp) && BlackboardComp)
             {
-                // ÂªÀº Áö¿¬ ÈÄ BlackBoard ¾÷µ¥ÀÌÆ®  
+                // ì§§ì€ ì§€ì—° í›„ BlackBoard ì—…ë°ì´íŠ¸  
                 FTimerHandle TempHandle;
                 GetWorld()->GetTimerManager().SetTimer(TempHandle, [this, PossessedCharacter]() {
 
-                    // Å° °ªÀ» Blackboard¿¡ ÀúÀå
+                    // í‚¤ ê°’ì„ Blackboardì— ì €ì¥
                     BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
                     BlackboardComp->SetValueAsFloat(BBKEY_NORMALSKILLRANGE, PossessedCharacter->GetNormalSkillRange());
                     BlackboardComp->SetValueAsFloat(BBKEY_SPECIALSKILLRANGE, PossessedCharacter->GetSpecialSkillRange());
 
-                    // ½ºÅ³ »ç¿ë Á¶°Ç ÇÃ·Î¿ì¿¡ »ç¿ëÇÒ A ½ºÅ³, B ½ºÅ³ Á¤ÀÇ
+                    // ìŠ¤í‚¬ ì‚¬ìš© ì¡°ê±´ í”Œë¡œìš°ì— ì‚¬ìš©í•  A ìŠ¤í‚¬, B ìŠ¤í‚¬ ì •ì˜
                     DefineSkillPriority(PossessedCharacter);
                     }, 0.1f, false);
             }
@@ -89,19 +89,19 @@ void AMyAIController::OnPossess(APawn* InPawn)
             }
             
 
-            //// Possess ÈÄ ÂªÀº Áö¿¬ ÈÄ BlackBoard ¾÷µ¥ÀÌÆ®  
+            //// Possess í›„ ì§§ì€ ì§€ì—° í›„ BlackBoard ì—…ë°ì´íŠ¸  
             //FTimerHandle TempHandle;
             //GetWorld()->GetTimerManager().SetTimer(TempHandle, [this, PossessedCharacter]()
             //{
-            //        // Blackboard ÃÊ±âÈ­ ÈÄ Å° °ª ¼³Á¤
+            //        // Blackboard ì´ˆê¸°í™” í›„ í‚¤ ê°’ ì„¤ì •
             //        if (UseBlackboard(BBMonster, BlackboardComp) && BlackboardComp)
             //        {
-            //            // Å° °ªÀ» Blackboard¿¡ ÀúÀå
+            //            // í‚¤ ê°’ì„ Blackboardì— ì €ì¥
             //            BlackboardComp->SetValueAsInt(BBKEY_ATTACKTYPE, (uint8)PossessedCharacter->GetAttackType());
             //            BlackboardComp->SetValueAsFloat(BBKEY_NORMALSKILLRANGE, PossessedCharacter->GetNormalSkillRange());
             //            BlackboardComp->SetValueAsFloat(BBKEY_SPECIALSKILLRANGE, PossessedCharacter->GetSpecialSkillRange());
 
-            //            // ½ºÅ³ »ç¿ë Á¶°Ç ÇÃ·Î¿ì¿¡ »ç¿ëÇÒ A ½ºÅ³, B ½ºÅ³ Á¤ÀÇ
+            //            // ìŠ¤í‚¬ ì‚¬ìš© ì¡°ê±´ í”Œë¡œìš°ì— ì‚¬ìš©í•  A ìŠ¤í‚¬, B ìŠ¤í‚¬ ì •ì˜
             //            DefineSkillPriority(PossessedCharacter);
 
             //        }
@@ -132,7 +132,7 @@ void AMyAIController::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 }
 
-// ½ºÅ³ »ç¿ë Á¶°Ç ÇÃ·Î¿ì¿¡ »ç¿ëÇÒ A ½ºÅ³, B ½ºÅ³ Á¤ÀÇ
+// ìŠ¤í‚¬ ì‚¬ìš© ì¡°ê±´ í”Œë¡œìš°ì— ì‚¬ìš©í•  A ìŠ¤í‚¬, B ìŠ¤í‚¬ ì •ì˜
 void AMyAIController::DefineSkillPriority(AEntityPreset* PossessedCharacter)
 {
     float NormalSkillRange = BlackboardComp->GetValueAsFloat(BBKEY_NORMALSKILLRANGE);
@@ -141,7 +141,7 @@ void AMyAIController::DefineSkillPriority(AEntityPreset* PossessedCharacter)
     //FString ASkillID, BSkillID;
     float A_SkillRange, B_SkillRange;
 
-    // A½ºÅ³, B½ºÅ³ Á¤ÀÇ¸¦ À§ÇÑ Skill Range ºñ±³ 
+    // AìŠ¤í‚¬, BìŠ¤í‚¬ ì •ì˜ë¥¼ ìœ„í•œ Skill Range ë¹„êµ 
     if (NormalSkillRange <= SpecialSkillRange)
     {
         A_SkillRange = NormalSkillRange;
