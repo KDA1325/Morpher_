@@ -104,8 +104,6 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 		PastCurrentHP = CurrentHP;
 		UE_LOG(LogTemp, Log, TEXT("maxhp %f %f "), PastCurrentHP,PastMaxHP);
 
-	
-
 		if (UMyCharacterWidget* HUD = GetHUD())
 		{
 			GetWorld()->GetTimerManager().SetTimer(ManaRegenTimerHandle, this, &UMyPlayerStatComponent::RegenerateMana, 4.0f, true);
@@ -158,4 +156,3 @@ void UMyPlayerStatComponent::UpdateHUD()
 		HUD->ChangeIcon(MonsterName);
 	}
 }
-

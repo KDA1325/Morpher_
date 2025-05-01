@@ -229,11 +229,7 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 		return;
 	}
 	if (PlayerSkillComponent->CanUseSpecialSkill == true) {
-		if (SpecialSkill == "Skill_ShieldGuard") {
-			PlayerSkillComponent->OnDefenseSkill();
-			CharacterStateComponent->CurrentState == ECharacterState::Action;
-		}
-		else { PlayerSkillComponent->SpecialSkillPlay(SpecialSkill); }
+		 PlayerSkillComponent->SpecialSkillPlay(SpecialSkill); 
 		//PlaySpecial = true;	
 
 	}
@@ -241,7 +237,8 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 }
 void AN_Graduation_projectCharacter::EndShield() 
 {
-	CharacterStateComponent->CurrentState == ECharacterState::Idle;
+//	CharacterStateComponent->ChangeState(ECharacterState::Idle);
+	//애니메이션은 어떡하지..
 	PlayerSkillComponent->OffDefenseSkill();
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
@@ -612,6 +609,7 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 {
 	USkeletalMeshComponent* MeshComponent = GetMesh();
+	currentPreset = PresetReference.TrimStartAndEnd(); //공백 제거
 
 	currentPreset = PresetReference;
 	InvincibleOriginalMaterial = nullptr;	// 프리셋 이름마다 메시 에셋 파일 할당
@@ -641,7 +639,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		}
 	}
 
-	if (currentPreset == "WildBoarPreset.uasset")
+	else if (currentPreset == "WildBoarPreset.uasset")
 	{
 		//<변신을 위해 이거 2개 필수>
 		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Bore_UVW/Bore_attack_uvw_2.Bore_attack_uvw_2"));
@@ -661,7 +659,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		}
 	}
 
-	if (currentPreset == "InpermonPreset.uasset")
+	else if (currentPreset == "InpermonPreset.uasset")
 	{
 		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_TableRound.SM_TableRound'"));
 
@@ -674,7 +672,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		}
 	}
 
-	if (currentPreset == "FreezardPreset.uasset")
+	else if (currentPreset == "FreezardPreset.uasset")
 	{
 		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_Statue.SM_Statue'"));
 
@@ -684,19 +682,26 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			GetMesh()->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
 
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
+			//GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
 	}
 
-	if (currentPreset == "StoneGolem")
-	{//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/SyntyAsset/PolygonFantasyRivals/Meshes/New_Characters/SK_BR_Character_ElementalGolem_01.uasset
-		FSoftObjectPath MeshPath(TEXT("/Game/SyntyAsset/PolygonFantasyRivals/Meshes/New_Characters/SK_BR_Character_ElementalGolem_01.SK_BR_Character_ElementalGolem_01"));
+	else if (currentPreset == "StoneGolemPreset.uasset")
+	{
+		FSoftObjectPath MeshPath(TEXT("/Game/Asset/SyntyAsset/PolygonFantasyRivals/Meshes/New_Characters/SK_BR_Character_ElementalGolem_01.SK_BR_Character_ElementalGolem_01"));
+		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr, TEXT("/Game/Characters/MyGameCharacter/ThirdPerson_AnimBP.ThirdPerson_AnimBP_C"));
+
+		//<피격을 위해 이거 3개 필수>
+		UMaterialInterface* GolemMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("MaterialInterface'/Game/Asset/SyntyAsset/PolygonFantasyRivals/Materials/M_FantasyRivals_01_A.M_FantasyRivals_01_A.lambert2'"));
+		InvincibleOriginalMaterial = GolemMaterial;
+		MeshComponent->SetMaterial(0, InvincibleOriginalMaterial);
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if (LoadedMesh)
 		{
 			GetMesh()->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
-
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
+			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
 	}
 }

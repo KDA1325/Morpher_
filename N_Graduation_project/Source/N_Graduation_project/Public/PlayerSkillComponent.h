@@ -109,4 +109,3 @@ public:
 	void DrawChargePath();
 	void ApplyKnockback(AActor* TargetActor, float KnockbackPower);
 };
-

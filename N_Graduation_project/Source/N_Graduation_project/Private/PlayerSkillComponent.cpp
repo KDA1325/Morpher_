@@ -280,7 +280,10 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 			ChargeEnd.BindUFunction(this, FName("ExecuteChargeDash"), StoredDashDirection, SkillID);
 			ChargeSkillTimer(PrepTime, ChargeEnd);
 			// 범위 내일 때만 히트 판정 박스 표시
-
+		}
+		if (SkillID == "Skill_ShieldGuard") {
+			//VisibleShapeBox(SkillID);
+			OnDefenseSkill();
 		}
 		CanUseSpecialSkill = false;
 
