@@ -29,7 +29,7 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 		return;
 	}
 
-	// Áö±İ Á¦¾îÇÏ°í ÀÖ´Â Æù Á¤º¸ °¡Á®¿È
+	// ì§€ê¸ˆ ì œì–´í•˜ê³  ìˆëŠ” í° ì •ë³´ ê°€ì ¸ì˜´
 	APawn* ControllingPawn = OwnerComp.GetAIOwner()->GetPawn();
 	if (nullptr == ControllingPawn)
 	{
@@ -52,7 +52,7 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 
 	//}
 
-	// Ãæµ¹ Ä¸½¶ ¹İÁö¸§ (PC¿Í ¸ó½ºÅÍÀÇ Ä¸½¶ ¹İÁö¸§À» ´õÇØ¼­ ÃÖ¼Ò °Å¸® °è»ê)
+	// ì¶©ëŒ ìº¡ìŠ ë°˜ì§€ë¦„ (PCì™€ ëª¬ìŠ¤í„°ì˜ ìº¡ìŠ ë°˜ì§€ë¦„ì„ ë”í•´ì„œ ìµœì†Œ ê±°ë¦¬ ê³„ì‚°)
 	UCapsuleComponent* PlayerCapsuleComp = playerPawn->FindComponentByClass<UCapsuleComponent>();
 	float PlayerCapsuleRadius = PlayerCapsuleComp->GetScaledCapsuleRadius();
 	BlackboardComp->SetValueAsFloat(BBKEY_PLAYERRADIUS, PlayerCapsuleRadius);
@@ -75,18 +75,18 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	BlackboardComp->SetValueAsVector(BBKEY_PLAYERLOCATION, PlayerLocation);
 	BlackboardComp->SetValueAsFloat(BBKEY_DISTANCE, DistanceToPlayer);
 
-	// Blackboard·ÎºÎÅÍ °ª ÀĞ¾î¿À±â
+	// Blackboardë¡œë¶€í„° ê°’ ì½ì–´ì˜¤ê¸°
 	float A_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_ASKILLRANGE);
 	float B_SkillRange = BlackboardComp->GetValueAsFloat(BBKEY_BSKILLRANGE);
 
 	bool bA_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BASKILLAVAILABLE);
 	bool bB_SkillAvailable = BlackboardComp->GetValueAsBool(BBKEY_BBSKILLAVAILABLE);
 
-	// °Å¸® Á¶°Ç °è»ê: Á¶°ÇÀ» ¸Å Æ½¸¶´Ù »õ·Î ¼³Á¤
+	// ê±°ë¦¬ ì¡°ê±´ ê³„ì‚°: ì¡°ê±´ì„ ë§¤ í‹±ë§ˆë‹¤ ìƒˆë¡œ ì„¤ì •
 	bool bASkillCondition = (DistanceToPlayer <= A_SkillRange) && bA_SkillAvailable;
 	bool bBSkillCondition = ((DistanceToPlayer > A_SkillRange) && (DistanceToPlayer <= B_SkillRange)) && bB_SkillAvailable;
 
-	// ºí·¢º¸µå¿¡ Á¶°Ç °á°ú ¾÷µ¥ÀÌÆ®
+	// ë¸”ë™ë³´ë“œì— ì¡°ê±´ ê²°ê³¼ ì—…ë°ì´íŠ¸
 	BlackboardComp->SetValueAsBool(BBKEY_BASKILLCONDITION, bASkillCondition);
 	BlackboardComp->SetValueAsBool(BBKEY_BBSKILLCONDITION, bBSkillCondition);
 
@@ -95,10 +95,10 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	
 	AEntityPreset* Entity = Cast<AEntityPreset>(ControllingPawn);
 
-	// ¸¸¾à ÇöÀç ¿£Æ¼Æ¼°¡ ½ºÅ³ ½ÃÀü ÁßÀÌ¶ó¸é, SelectedSkillID µî ¾÷µ¥ÀÌÆ®¸¦ °Ç³Ê¶Ù°í ¸®ÅÏ
+	// ë§Œì•½ í˜„ì¬ ì—”í‹°í‹°ê°€ ìŠ¤í‚¬ ì‹œì „ ì¤‘ì´ë¼ë©´, SelectedSkillID ë“± ì—…ë°ì´íŠ¸ë¥¼ ê±´ë„ˆë›°ê³  ë¦¬í„´
 	//if (!Entity->bIsCastingSkill)
 	//{
-	//	//// °Å¸® ±â¹İ ½ºÅ³ Á¶°Ç °è»ê ¹× SelectedSkillID ¼³Á¤
+	//	//// ê±°ë¦¬ ê¸°ë°˜ ìŠ¤í‚¬ ì¡°ê±´ ê³„ì‚° ë° SelectedSkillID ì„¤ì •
 	//	//BlackboardComp->SetValueAsBool(BBKEY_BASKILLCONDITION, bASkillCondition);
 	//	//BlackboardComp->SetValueAsBool(BBKEY_BBSKILLCONDITION, bBSkillCondition);
 
@@ -109,7 +109,7 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	//	//else
 	//	//	BlackboardComp->ClearValue(BBKEY_SELECTEDSKILLID);
 	//	
-	//	// µô·¹ÀÌ ÁÖ±â? 
+	//	// ë”œë ˆì´ ì£¼ê¸°? 
 	//	UE_LOG(LogTemp, Warning, TEXT("BTService: Entity is casting a skill, skipping update"));
 
 	//}
@@ -123,10 +123,10 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 		BlackboardComp->SetValueAsBool(BBKEY_BBSKILLAVAILABLE, bSpecialAvailable);
 	}
 
-	// SelectedSkillID Å° ¼³Á¤: 
-	// A½ºÅ³ Á¶°ÇÀÌ ¸¸Á·µÇ¸é "Skill_Bite", 
-	// B½ºÅ³ Á¶°Ç ¸¸Á·½Ã "Skill_Charge", 
-	// µÑ ´Ù ¾Æ´Ï¸é ÇØ´ç Å°¸¦ Å¬¸®¾î
+	// SelectedSkillID í‚¤ ì„¤ì •: 
+	// AìŠ¤í‚¬ ì¡°ê±´ì´ ë§Œì¡±ë˜ë©´ "Skill_Bite", 
+	// BìŠ¤í‚¬ ì¡°ê±´ ë§Œì¡±ì‹œ "Skill_Charge", 
+	// ë‘˜ ë‹¤ ì•„ë‹ˆë©´ í•´ë‹¹ í‚¤ë¥¼ í´ë¦¬ì–´
 	if (bASkillCondition)
 	{
 		BlackboardComp->SetValueAsString(BBKEY_SELECTEDSKILLID, TEXT("Skill_Bite"));
@@ -141,10 +141,10 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	}
 
 
-	// ½ºÅ³ ÄğÅ¸ÀÓÀÌ ±¸Çö µÇ¾îÀÖÁö ¾ÊÀº °ü°è·Î Range ºñ±³ °á°ú·Î¸¸ ½ºÅ³ ½ÃÀü 
-	// Á¶°Ç °è»ê:
-	// A½ºÅ³ Á¶°Ç: Distance <= ARange AND AAvailable true
-	// B½ºÅ³ Á¶°Ç: Distance <= BRange AND BAvailable true
+	// ìŠ¤í‚¬ ì¿¨íƒ€ì„ì´ êµ¬í˜„ ë˜ì–´ìˆì§€ ì•Šì€ ê´€ê³„ë¡œ Range ë¹„êµ ê²°ê³¼ë¡œë§Œ ìŠ¤í‚¬ ì‹œì „ 
+	// ì¡°ê±´ ê³„ì‚°:
+	// AìŠ¤í‚¬ ì¡°ê±´: Distance <= ARange AND AAvailable true
+	// BìŠ¤í‚¬ ì¡°ê±´: Distance <= BRange AND BAvailable true
 	/*bool bASkillCondition = (Distance <= A_SkillRange) && bA_SkillAvailable;
 	bool bBSkillCondition = (Distance <= B_SkillRange) && bB_SkillAvailable;*/
 
@@ -169,18 +169,18 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	//BlackboardComp->SetValueAsBool(BBKEY_BASKILLCONDITION, bASkillCondition);
 	//BlackboardComp->SetValueAsBool(BBKEY_BBSKILLCONDITION, bBSkillCondition);
 
-	//// AttackType¿¡ µû¶ó ÃÖ¼Ò °Å¸® °ª ¼³Á¤
+	//// AttackTypeì— ë”°ë¼ ìµœì†Œ ê±°ë¦¬ ê°’ ì„¤ì •
 	//uint8 AttackType = BlackboardComp->GetValueAsInt(BBKEY_ATTACKTYPE);
 
-	//// ÃÖ¼Ò °Å¸®
+	//// ìµœì†Œ ê±°ë¦¬
 	//float MinDistance = BlackboardComp->GetValueAsFloat(BBKEY_MINDISTANCE);
 
-	//// ½ÇÁ¦ ÃÖ¼Ò °Å¸® °è»ê
+	//// ì‹¤ì œ ìµœì†Œ ê±°ë¦¬ ê³„ì‚°
 	//float CalculatedMinDistance = MinDistance + PlayerCapsuleRadius + MonsterCapsuleRadius;
 
 	//UWorld* World = ControllingPawn->GetWorld();
 
-	// ÃÖ¼Ò °Å¸® ¿ø ½Ã°¢È­ (¸ó½ºÅÍ ±âÁØ)
+	// ìµœì†Œ ê±°ë¦¬ ì› ì‹œê°í™” (ëª¬ìŠ¤í„° ê¸°ì¤€)
 	//DrawDebugSphere(
 	//	World,
 	//	ControllingPawn->GetActorLocation(),
@@ -191,7 +191,7 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	//	0.5f
 	//);
 
-	//// PC¿Í ¸ó½ºÅÍ »çÀÌÀÇ °Å¸® ½Ã°¢È­
+	//// PCì™€ ëª¬ìŠ¤í„° ì‚¬ì´ì˜ ê±°ë¦¬ ì‹œê°í™”
 	//DrawDebugLine(
 	//	World,
 	//	ControllingPawn->GetActorLocation(),
@@ -203,7 +203,7 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	//	3.0f
 	//);
 
-	//// °Å¸® °ª ½Ã°¢È­
+	//// ê±°ë¦¬ ê°’ ì‹œê°í™”
 	//FVector MidPoint = (ControllingPawn->GetActorLocation() + PlayerLocation) * 0.5f;
 	//DrawDebugString(
 	//	World,

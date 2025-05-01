@@ -1,4 +1,4 @@
-﻿#include "MyCharacterWidget.h"
+#include "MyCharacterWidget.h"
 #include "Components/Image.h"
 #include "Components/ScaleBox.h"
 #include "Engine/Texture2D.h"

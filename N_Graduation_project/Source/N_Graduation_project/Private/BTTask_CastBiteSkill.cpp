@@ -13,7 +13,7 @@ UBTTask_CastBiteSkill::UBTTask_CastBiteSkill()
 
 EBTNodeResult::Type UBTTask_CastBiteSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// Ä³½Ã ÀúÀå
+	// ìºì‹œ ì €ì¥
 	CachedOwnerComp = &OwnerComp;
 
 	APawn* ControllingPawn = OwnerComp.GetAIOwner()->GetPawn();
@@ -26,31 +26,31 @@ EBTNodeResult::Type UBTTask_CastBiteSkill::ExecuteTask(UBehaviorTreeComponent& O
 	if (!Entity)
 		return EBTNodeResult::Failed;
 
-	// ÀÌ¹Ì ½ºÅ³ ½ÇÇà ÁßÀÌ¸é Áßº¹ ½ÇÇàÇÏÁö ¾ÊÀ½
+	// ì´ë¯¸ ìŠ¤í‚¬ ì‹¤í–‰ ì¤‘ì´ë©´ ì¤‘ë³µ ì‹¤í–‰í•˜ì§€ ì•ŠìŒ
 	if (Entity->bIsCastingSkill)
 		return EBTNodeResult::Failed;
 
-	//Entity->bIsCastingSkill = true; // ½ºÅ³ ÁøÇà Áß »óÅÂ ¼³Á¤
+	//Entity->bIsCastingSkill = true; // ìŠ¤í‚¬ ì§„í–‰ ì¤‘ ìƒíƒœ ì„¤ì •
 	Entity->EntitySkillComponent->ExecuteSkill("Skill_Bite");
 
 
-	//// Bite ½ºÅ³ ½ÇÇà
+	//// Bite ìŠ¤í‚¬ ì‹¤í–‰
 	//if (Entity->NormalSkillMontage)
 	//{
 	//	if (UAnimInstance* AnimInst = Entity->GetMesh()->GetAnimInstance())
 	//	{
-	//		// ½ºÅ³ ½ÇÇà ½ÃÀÛ ÇÃ·¡±× ¼³Á¤ (¾÷µ¥ÀÌÆ® ¼­ºñ½º¿¡¼­ Á¶°ÇÀ» °»½ÅÇÏÁö ¾Êµµ·Ï)
+	//		// ìŠ¤í‚¬ ì‹¤í–‰ ì‹œì‘ í”Œë˜ê·¸ ì„¤ì • (ì—…ë°ì´íŠ¸ ì„œë¹„ìŠ¤ì—ì„œ ì¡°ê±´ì„ ê°±ì‹ í•˜ì§€ ì•Šë„ë¡)
 	//		Entity->bIsCastingSkill = true;
-	//		// ¸ùÅ¸ÁÖ Àç»ı
+	//		// ëª½íƒ€ì£¼ ì¬ìƒ
 	//		AnimInst->Montage_Play(Entity->NormalSkillMontage);
 	//		UE_LOG(LogTemp, Warning, TEXT("BTTask_CastBiteSkill: Bite Montage played"));
 
-	//		// ¸ùÅ¸ÁÖ Á¾·á µ¨¸®°ÔÀÌÆ® ¹ÙÀÎµù
+	//		// ëª½íƒ€ì£¼ ì¢…ë£Œ ë¸ë¦¬ê²Œì´íŠ¸ ë°”ì¸ë”©
 	//		FOnMontageEnded EndDelegate;
 	//		EndDelegate.BindUObject(Entity, &AEntityPreset::OnSkillMontageEnded);
 	//		AnimInst->Montage_SetEndDelegate(EndDelegate, Entity->NormalSkillMontage);
 
-	//		// Bite ½ºÅ³ÀÇ HitBoxµµ È°¼ºÈ­
+	//		// Bite ìŠ¤í‚¬ì˜ HitBoxë„ í™œì„±í™”
 	//		Entity->ShowNormalHitBox();
 
 	//		return EBTNodeResult::InProgress;
@@ -59,7 +59,7 @@ EBTNodeResult::Type UBTTask_CastBiteSkill::ExecuteTask(UBehaviorTreeComponent& O
 	return EBTNodeResult::InProgress;
 }
 
-// ¸ùÅ¸ÁÖ Á¾·á ½Ã È£ÃâµÇ¸ç ½ºÅ³ ½ÇÇà »óÅÂ¸¦ ÇØÁ¦
+// ëª½íƒ€ì£¼ ì¢…ë£Œ ì‹œ í˜¸ì¶œë˜ë©° ìŠ¤í‚¬ ì‹¤í–‰ ìƒíƒœë¥¼ í•´ì œ
 void UBTTask_CastBiteSkill::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (CachedOwnerComp)

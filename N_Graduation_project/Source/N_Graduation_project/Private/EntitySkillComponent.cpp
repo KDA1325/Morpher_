@@ -4,6 +4,7 @@
 #include "EntityPreset.h"
 #include "AIController.h"
 #include "ABGameSingleton.h"
+#include "EntityProjectile.h"
 #include "BrainComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 
@@ -65,7 +66,7 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 
 		ExecuteSkill_Charge(SkillData, EffectDataArray);
 
-		// ÄğÅ¸ÀÓ Àû¿ë: ½ºÅ³ Å¸ÀÔ¿¡ µû¶ó Å¸ÀÌ¸Ó¸¦ ÅëÇØ Àç»ç¿ë °¡´É »óÅÂ º¹±¸
+		// ì¿¨íƒ€ì„ ì ìš©: ìŠ¤í‚¬ íƒ€ì…ì— ë”°ë¼ íƒ€ì´ë¨¸ë¥¼ í†µí•´ ì¬ì‚¬ìš© ê°€ëŠ¥ ìƒíƒœ ë³µêµ¬
 		bCanUseSpecialSkill = false;
 		FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::SpecialCooldown);
 		SetSkillTimer(SkillData.SkillCoolTime, SpecialDelegate, true);
@@ -77,7 +78,7 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 			UE_LOG(LogTemp, Warning, TEXT("Normal skill %s is on cooldown"), *SkillID);
 			return;
 		}
-		// SkillType¿¡ µû¶ó ½ºÅ³ ½ÇÇà(¸ğµâÈ­) 
+		// SkillTypeì— ë”°ë¼ ìŠ¤í‚¬ ì‹¤í–‰(ëª¨ë“ˆí™”) 
 		switch (SkillData.SkillType)
 		{
 		case EnumSkillType::HitBox:
@@ -97,7 +98,7 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 	}
 }
 
-// Skill Data¿Í Skill Effect Data ºÒ·¯¿È
+// Skill Dataì™€ Skill Effect Data ë¶ˆëŸ¬ì˜´
 bool UEntitySkillComponent::LoadSkillDataBySkillID(const FString& SkillID, FSkillData& OutSkillData, TArray<FSkillEffectData>& OutEffectData)
 {
 	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, OutSkillData))
@@ -160,7 +161,7 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, 
 		return;
 	}
 
-	// AI ÀÌµ¿ ºñÈ°¼ºÈ­
+	// AI ì´ë™ ë¹„í™œì„±í™”
 	if (AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController()))
 	{
 		if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
@@ -180,12 +181,12 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, 
 	{
 		if (UAnimInstance* AnimInst = OwnerEntity->GetMesh()->GetAnimInstance())
 		{
-			// ³ë¸Ö ½ºÅ³ ¸ùÅ¸ÁÖ Àç»ı 
+			// ë…¸ë©€ ìŠ¤í‚¬ ëª½íƒ€ì£¼ ì¬ìƒ 
 			AnimInst->Montage_Play(OwnerEntity->NormalSkillMontage);
 			UE_LOG(LogTemp, Warning, TEXT("Normal Skill Montage played"));
 
 
-			// ¸ùÅ¸ÁÖ Á¾·á µ¨¸®°ÔÀÌÆ® ¹ÙÀÎµù (¸ùÅ¸ÁÖ Á¾·á = ½ºÅ³ Á¾·á)
+			// ëª½íƒ€ì£¼ ì¢…ë£Œ ë¸ë¦¬ê²Œì´íŠ¸ ë°”ì¸ë”© (ëª½íƒ€ì£¼ ì¢…ë£Œ = ìŠ¤í‚¬ ì¢…ë£Œ)
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(OwnerEntity, &AEntityPreset::OnSkillMontageEnded);
 			AnimInst->Montage_SetEndDelegate(EndDelegate, OwnerEntity->NormalSkillMontage);
@@ -203,14 +204,88 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, 
 	OwnerEntity->ShowNormalHitBox();
 }
 
+// Projectile íƒ€ì… ìŠ¤í‚¬ êµ¬í˜„ = ì¿¨íƒ€ì„ íƒ€ì´ë¨¸ ì‹¤í–‰ ë° ìŠ¤í‚¬ ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ 
 void UEntitySkillComponent::ExecuteProjectileTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
 {
-	// Projectile ½ºÅ³ ±¸Çö 
+	if(!OwnerEntity)
+	{
+		UE_LOG(LogTemp,Error,TEXT("Owner entity is null"));
+		return;
+	}
+
+	// AI ì´ë™ ë¹„í™œì„±í™”
+	if(AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController()))
+	{
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			PathComp->Deactivate();
+			UE_LOG(LogTemp,Warning,TEXT("PathFollowingComponent deactivated for Bite skill"));
+		}
+	}
+
+	OwnerEntity->bIsCastingSkill = true;
+	bCanUseNormalSkill = false;
+
+	FTimerDelegate NormalDelegate = FTimerDelegate::CreateUObject(this,&UEntitySkillComponent::NormalCooldown);
+	SetSkillTimer(SkillData.SkillCoolTime,NormalDelegate,false);
+
+	if(OwnerEntity->NormalSkillMontage)
+	{
+		if(UAnimInstance* AnimInst = OwnerEntity->GetMesh()->GetAnimInstance())
+		{
+			// ë…¸ë©€ ìŠ¤í‚¬ ëª½íƒ€ì£¼ ì¬ìƒ 
+			AnimInst->Montage_Play(OwnerEntity->NormalSkillMontage);
+			UE_LOG(LogTemp,Warning,TEXT("Normal Skill Montage played"));
+
+
+			// ëª½íƒ€ì£¼ ì¢…ë£Œ ë¸ë¦¬ê²Œì´íŠ¸ ë°”ì¸ë”© (ëª½íƒ€ì£¼ ì¢…ë£Œ = ìŠ¤í‚¬ ì¢…ë£Œ)
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(OwnerEntity,&AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate,OwnerEntity->NormalSkillMontage);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("Normal Skill AnimInstance not found"));
+		}
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("NormalSkillMontage is not set"));
+	}
+
+	//// ì†Œì¼“ì—ì„œ ë°œì‚¬ ìœ„ì¹˜ì™€ ë°©í–¥ ì–»ê¸°
+	//FName LaunchSocketName = TEXT("ThrowSocket"); 
+	//FVector SpawnLocation = OwnerEntity->GetMesh()->GetSocketLocation(LaunchSocketName);
+	//FRotator SpawnRotation = OwnerEntity->GetActorRotation(); // í•„ìš”ì‹œ ì¡°ì •
+
+	//if(!ProjectileClass)
+	//{
+	//	UE_LOG(LogTemp,Error,TEXT("ProjectileClass is not set in EntitySkillComponent"));
+	//	return;
+	//}
+
+	//// íˆ¬ì‚¬ì²´ ìƒì„±
+	//AEntityProjectile* Projectile = GetWorld()->SpawnActor<AEntityProjectile>(ProjectileClass,SpawnLocation,SpawnRotation);
+	//if(Projectile)
+	//{
+	//	// InitProjectileì„ SkillData, EffectDataë¡œ ìë™ ì„¸íŒ…
+	//	Projectile->InitProjectile(SkillData,EffectData);
+
+	//	//// ë°œì‚¬ ë°©í–¥ ì„¤ì • (ì•ìœ¼ë¡œ ì˜ê¸°)
+	//	//if(Projectile->ProjectileMovement)
+	//	//{
+	//	//	FVector LaunchDirection = OwnerEntity->GetActorForwardVector();
+	//	//	Projectile->ProjectileMovement->Velocity = LaunchDirection * SkillData.ProjectileSpeed;
+	//	//}
+
+	//	UE_LOG(LogTemp,Warning,TEXT("Spawned and launched projectile for skill %s"),*SkillData.SkillNameID);
+	//} else
+	//{
+	//	UE_LOG(LogTemp,Error,TEXT("Failed to spawn projectile"));
+	//}
 }
 
 void UEntitySkillComponent::ExecuteBuffTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
 {
-	// Buff ½ºÅ³ ±¸Çö 
+	// Buff ìŠ¤í‚¬ êµ¬í˜„ 
 }
 
 void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
@@ -223,11 +298,11 @@ void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, con
 
 	bCanUseSpecialSkill = false;
 
-	// AI BehaviorTree ¸ØÃã
+	// AI BehaviorTree ë©ˆì¶¤
 	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
 	if (AIController && AIController->BrainComponent)
 	{
-		AIController->StopMovement(); // È¤½Ã ÀÌÀü °æ·Î ³²¾ÆÀÖÀ¸¸é Á¤Áö
+		AIController->StopMovement(); // í˜¹ì‹œ ì´ì „ ê²½ë¡œ ë‚¨ì•„ìˆìœ¼ë©´ ì •ì§€
 		AIController->BrainComponent->StopLogic(TEXT("Charge Skill Start"));
 		UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->StopLogic called"));
 	}
@@ -237,7 +312,7 @@ void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, con
 
 	OwnerEntity->PerformSkill_Charge();
 
-	// ½ºÅ³ ³¡³ª°í ´Ù½Ã AI ·ÎÁ÷ Àç°³ (1.5ÃÊ ÈÄ Á¤µµ·Î °¡Á¤)
+	// ìŠ¤í‚¬ ëë‚˜ê³  ë‹¤ì‹œ AI ë¡œì§ ì¬ê°œ (1.5ì´ˆ í›„ ì •ë„ë¡œ ê°€ì •)
 	FTimerHandle ResumeAITimer;
 	GetWorld()->GetTimerManager().SetTimer(ResumeAITimer, [AIController]()
 		{
@@ -246,5 +321,5 @@ void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, con
 				AIController->BrainComponent->RestartLogic();
 				UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->RestartLogic called"));
 			}
-		}, 2.0f, false);  // ½Ã°£Àº ¾Ö´Ï¸ŞÀÌ¼Ç ±æÀÌ¿¡ ¸ÂÃç Á¶Àı °¡´É
+		}, 2.0f, false);  // ì‹œê°„ì€ ì• ë‹ˆë©”ì´ì…˜ ê¸¸ì´ì— ë§ì¶° ì¡°ì ˆ ê°€ëŠ¥
 }

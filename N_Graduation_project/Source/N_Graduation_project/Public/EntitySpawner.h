@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ABEntityData.h" // Entity Data ±¸Á¶Ã¼
+#include "ABEntityData.h" // Entity Data êµ¬ì¡°ì²´
 #include "ABGameSingleton.h"
-#include "EntityCharacter.h"
+//#include "EntityCharacter.h"
 #include "EntityPreset.h"
 #include "GameFramework/Actor.h"
 #include "EntitySpawner.generated.h"
@@ -27,18 +27,18 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	AEntityCharacter* EntityCharacter;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	//AEntityCharacter* EntityCharacter;
 
-	// EntityCharacterClass Å¬·¡½º¸¦ ÂüÁ¶ÇÏ´Â º¯¼ö 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Entity")
-	TSubclassOf<AEntityCharacter> EntityCharacterClass;
+	// EntityCharacterClass í´ë˜ìŠ¤ë¥¼ ì°¸ì¡°í•˜ëŠ” ë³€ìˆ˜ 
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Entity")
+	//TSubclassOf<AEntityCharacter> EntityCharacterClass;
 
-	// ABEntityData ±¸Á¶Ã¼ »ç¿ë
+	// ABEntityData êµ¬ì¡°ì²´ ì‚¬ìš©
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
 	FABEntityData EntityData;
 
-	// ¿¡µğÅÍ¿¡¼­ ¼³Á¤ÇÒ GroupID
+	// ì—ë””í„°ì—ì„œ ì„¤ì •í•  GroupID
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	FString EntityGroupID;
 	

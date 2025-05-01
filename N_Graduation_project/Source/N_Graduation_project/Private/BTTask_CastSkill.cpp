@@ -13,12 +13,12 @@ UBTTask_CastSkill::UBTTask_CastSkill()
     NodeName = TEXT("Cast Skill");
 }
 
-// ºñµ¿±â ´ë±â Ã³¸® 
+// ë¹„ë™ê¸° ëŒ€ê¸° ì²˜ë¦¬ 
 EBTNodeResult::Type UBTTask_CastSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
     EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
-    // Ä³½Ã(ÀÓ½Ã ÀúÀå)
+    // ìºì‹œ(ì„ì‹œ ì €ì¥)
     CachedOwnerComp = &OwnerComp;
 
     APawn* ControllingPawn = OwnerComp.GetAIOwner()->GetPawn();
@@ -54,35 +54,35 @@ EBTNodeResult::Type UBTTask_CastSkill::ExecuteTask(UBehaviorTreeComponent& Owner
         return EBTNodeResult::InProgress;
     }
 
-    ////// ³ë¸Ö ½ºÅ³ ½ÃÀü ÇÔ¼ö È£Ãâ (¸ùÅ¸ÁÖ Àç»ı, ¾Ö´Ô ³ëÆ¼ÆÄÀÌ µî)
+    ////// ë…¸ë©€ ìŠ¤í‚¬ ì‹œì „ í•¨ìˆ˜ í˜¸ì¶œ (ëª½íƒ€ì£¼ ì¬ìƒ, ì• ë‹˜ ë…¸í‹°íŒŒì´ ë“±)
     ////PossessedEntity->PerformNormalSkill();
     ////return EBTNodeResult::Succeeded;
 
-    //// ¾Ö´Ï¸ŞÀÌ¼Ç ÀÎ½ºÅÏ½º¸¦ °¡Á®¿È
+    //// ì• ë‹ˆë©”ì´ì…˜ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ê°€ì ¸ì˜´
     //if (UAnimInstance* AnimInst = PossessedEntity->GetMesh()->GetAnimInstance())
     //{
-    //    // ¸ùÅ¸ÁÖ Á¾·á µ¨¸®°ÔÀÌÆ® ¹ÙÀÎµù
+    //    // ëª½íƒ€ì£¼ ì¢…ë£Œ ë¸ë¦¬ê²Œì´íŠ¸ ë°”ì¸ë”©
     //    FOnMontageEnded EndDelegate;
     //    EndDelegate.BindUObject(this, &UBTTask_CastSkill::OnMontageEnded);
     //    AnimInst->Montage_SetEndDelegate(EndDelegate, PossessedEntity->NormalSkillMontage);
 
-    //    // ³ë¸Ö ½ºÅ³ ¸ùÅ¸ÁÖ Àç»ı (ÀÌ ÇÔ¼ö ³»ºÎ¿¡¼­ ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı°ú °ü·ÃµÈ Ãß°¡ ·ÎÁ÷À» ¼öÇàÇÒ ¼ö ÀÖ½À´Ï´Ù.)
+    //    // ë…¸ë©€ ìŠ¤í‚¬ ëª½íƒ€ì£¼ ì¬ìƒ (ì´ í•¨ìˆ˜ ë‚´ë¶€ì—ì„œ ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒê³¼ ê´€ë ¨ëœ ì¶”ê°€ ë¡œì§ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.)
     //    AnimInst->Montage_Play(PossessedEntity->NormalSkillMontage);
 
-    //    // ¸ùÅ¸ÁÖ Á¾·á±îÁö "ÁøÇà Áß" »óÅÂ·Î ¹İÈ¯
+    //    // ëª½íƒ€ì£¼ ì¢…ë£Œê¹Œì§€ "ì§„í–‰ ì¤‘" ìƒíƒœë¡œ ë°˜í™˜
     //    return EBTNodeResult::InProgress;
     //}
 
     return EBTNodeResult::Failed;
 }
 
-//// ¸ùÅ¸ÁÖ Á¾·á µ¨¸®°ÔÀÌÆ® Äİ¹é ÇÔ¼ö
+//// ëª½íƒ€ì£¼ ì¢…ë£Œ ë¸ë¦¬ê²Œì´íŠ¸ ì½œë°± í•¨ìˆ˜
 //void UBTTask_CastSkill::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 //{
-//    // ¾Ö´Ï¸ŞÀÌ¼Ç ¸ùÅ¸ÁÖ°¡ Á¾·áµÇ¾úÀ¸¸é FinishLatentTask()¸¦ È£ÃâÇÏ¿© ÅÂ½ºÅ©¸¦ ¿Ï·á Ã³¸®
+//    // ì• ë‹ˆë©”ì´ì…˜ ëª½íƒ€ì£¼ê°€ ì¢…ë£Œë˜ì—ˆìœ¼ë©´ FinishLatentTask()ë¥¼ í˜¸ì¶œí•˜ì—¬ íƒœìŠ¤í¬ë¥¼ ì™„ë£Œ ì²˜ë¦¬
 //    if (CachedOwnerComp)
 //    {
 //        FinishLatentTask(*CachedOwnerComp, EBTNodeResult::Succeeded);
-//        CachedOwnerComp = nullptr; // Ä³½Ã º¯¼ö ÃÊ±âÈ­
+//        CachedOwnerComp = nullptr; // ìºì‹œ ë³€ìˆ˜ ì´ˆê¸°í™”
 //    }
 //}

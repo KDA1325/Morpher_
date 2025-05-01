@@ -20,7 +20,7 @@ public:
 	// Sets default values for this component's properties
 	UEntitySkillComponent();
 
-	// Skill ID °ªÀ» ¹Ş¾Æ ½ºÅ³À» ½ÇÇàÇÏ´Â ÇÔ¼ö 
+	// Skill ID ê°’ì„ ë°›ì•„ ìŠ¤í‚¬ì„ ì‹¤í–‰í•˜ëŠ” í•¨ìˆ˜ 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ExecuteSkill(const FString& SkillID);
 
@@ -34,38 +34,39 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 
-	// ÄğÅ¸ÀÓ ÇÃ·¡±×
+	// ì¿¨íƒ€ì„ í”Œë˜ê·¸
 	UPROPERTY(BlueprintReadOnly, Category = "Skill|Cooldown")
 	bool bCanUseNormalSkill;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Skill|Cooldown")
 	bool bCanUseSpecialSkill;
 
+
 private:
 	AEntityPreset* OwnerEntity;
 
-	// Skill ID °ªÀ» ÅëÇØ SkillData¿Í SKillEffectData¸¦ ºÒ·¯¿À´Â ÇÔ¼ö
+	// Skill ID ê°’ì„ í†µí•´ SkillDataì™€ SKillEffectDataë¥¼ ë¶ˆëŸ¬ì˜¤ëŠ” í•¨ìˆ˜
 	bool LoadSkillDataBySkillID(const FString& SkillID, FSkillData& OutSkillData, TArray<FSkillEffectData>& OutEffectData);
 
-	// SkillType: HitBox ÀÎ ½ºÅ³À» ½ÇÇàÇÏ´Â ÇÔ¼ö 
+	// SkillType: HitBox ì¸ ìŠ¤í‚¬ì„ ì‹¤í–‰í•˜ëŠ” í•¨ìˆ˜ 
 	void ExecuteHitBoxTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData);
 
-	// SkillType: Projectile ÀÎ ½ºÅ³À» ½ÇÇàÇÏ´Â ÇÔ¼ö 
+	// SkillType: Projectile ì¸ ìŠ¤í‚¬ì„ ì‹¤í–‰í•˜ëŠ” í•¨ìˆ˜ 
 	void ExecuteProjectileTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData);
 
-	// SkillType: Buff ÀÎ ½ºÅ³À» ½ÇÇàÇÏ´Â ÇÔ¼ö 
+	// SkillType: Buff ì¸ ìŠ¤í‚¬ì„ ì‹¤í–‰í•˜ëŠ” í•¨ìˆ˜ 
 	void ExecuteBuffTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData);
 
 	void ExecuteSkill_Charge(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData);
 
-	/* ÄğÅ¸ÀÓ °ü¸® ÇÔ¼ö */
+	/* ì¿¨íƒ€ì„ ê´€ë¦¬ í•¨ìˆ˜ */
 	void SetSkillTimer(float CooldownTime, FTimerDelegate TimerDelegate, bool bIsSpecial);
-	void NormalCooldown(); // ÀÏ¹İ ½ºÅ³ ÄğÅ¸ÀÓ ³¡³²
-	void SpecialCooldown(); // Æ¯¼ö ½ºÅ³ ÄğÅ¸ÀÓ ³¡³²
+	void NormalCooldown(); // ì¼ë°˜ ìŠ¤í‚¬ ì¿¨íƒ€ì„ ëë‚¨
+	void SpecialCooldown(); // íŠ¹ìˆ˜ ìŠ¤í‚¬ ì¿¨íƒ€ì„ ëë‚¨
 
 
 protected:
-	// Å¸ÀÌ¸Ó ÇÚµé (ÀÏ¹İ, Æ¯¼ö ½ºÅ³ °¢°¢ ÇÊ¿ä ½Ã ºĞ¸®ÇØ¼­ °ü¸®)
+	// íƒ€ì´ë¨¸ í•¸ë“¤ (ì¼ë°˜, íŠ¹ìˆ˜ ìŠ¤í‚¬ ê°ê° í•„ìš” ì‹œ ë¶„ë¦¬í•´ì„œ ê´€ë¦¬)
 	FTimerHandle NormalSkillTimerHandle;
 	FTimerHandle SpecialSkillTimerHandle;
 };

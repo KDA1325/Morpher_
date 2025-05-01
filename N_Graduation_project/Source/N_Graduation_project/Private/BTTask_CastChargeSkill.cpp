@@ -27,14 +27,14 @@ EBTNodeResult::Type UBTTask_CastChargeSkill::ExecuteTask(UBehaviorTreeComponent&
 	if (Entity->bIsCastingSkill)
 		return EBTNodeResult::Failed;
 
-	// Charge ½ºÅ³ ½ÇÇà : Charge ½ºÅ³Àº AEntityPresetÀÇ PerformSkill_Charge()¿¡¼­ ÀüÃ¼ Charge ·ÎÁ÷À» Ã³¸®ÇÕ´Ï´Ù.
-	//Entity->bIsCastingSkill = true; // ½ºÅ³ ÁøÇà Áß »óÅÂ ¼³Á¤
+	// Charge ìŠ¤í‚¬ ì‹¤í–‰ : Charge ìŠ¤í‚¬ì€ AEntityPresetì˜ PerformSkill_Charge()ì—ì„œ ì „ì²´ Charge ë¡œì§ì„ ì²˜ë¦¬í•©ë‹ˆë‹¤.
+	//Entity->bIsCastingSkill = true; // ìŠ¤í‚¬ ì§„í–‰ ì¤‘ ìƒíƒœ ì„¤ì •
 	Entity->EntitySkillComponent->ExecuteSkill("Skill_Charge");
 
 	// Entity->PerformSkill_Charge();
 
-	// Charge ½ºÅ³ÀÌ ³»ºÎÀûÀ¸·Î ¸ùÅ¸ÁÖ Á¾·á µ¨¸®°ÔÀÌÆ®¸¦ ÅëÇØ bIsCastingSkillÀ» false·Î Å¬¸®¾îÇÏ¸é,
-	// ÀÌ ÅÂ½ºÅ©´Â InProgress »óÅÂ¿¡¼­ OnMontageEnded¿¡¼­ ¿Ï·á Ã³¸®ÇÕ´Ï´Ù.
+	// Charge ìŠ¤í‚¬ì´ ë‚´ë¶€ì ìœ¼ë¡œ ëª½íƒ€ì£¼ ì¢…ë£Œ ë¸ë¦¬ê²Œì´íŠ¸ë¥¼ í†µí•´ bIsCastingSkillì„ falseë¡œ í´ë¦¬ì–´í•˜ë©´,
+	// ì´ íƒœìŠ¤í¬ëŠ” InProgress ìƒíƒœì—ì„œ OnMontageEndedì—ì„œ ì™„ë£Œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 	return EBTNodeResult::InProgress;
 }
 

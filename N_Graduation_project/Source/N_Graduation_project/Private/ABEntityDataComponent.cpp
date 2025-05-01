@@ -9,7 +9,7 @@ UABEntityDataComponent::UABEntityDataComponent()
 	MaxHP = 200.0f;
 	CurrentHP = MaxHP;
 
-	bWantsInitializeComponent = true; // InitializeComponentÇÔ¼ö¸¦ È£Ãâ ÇÒ ¼ö ÀÖµµ·Ï ÇÏ±â À§ÇØ¼­
+	bWantsInitializeComponent = true; // InitializeComponentí•¨ìˆ˜ë¥¼ í˜¸ì¶œ í•  ìˆ˜ ìˆë„ë¡ í•˜ê¸° ìœ„í•´ì„œ
 }
 
 // Called when the game starts
@@ -41,7 +41,7 @@ void UABEntityDataComponent::SetHP(float NewHP)
 }
 
 float UABEntityDataComponent::GetHpPercentage() const
-{   // ÇöÀç HP ºñÀ²À» °è»ê (0~1 »çÀÌÀÇ °ª)
+{   // í˜„ì¬ HP ë¹„ìœ¨ì„ ê³„ì‚° (0~1 ì‚¬ì´ì˜ ê°’)
 	if (MaxHP == 0)
 	{
 		return 0.0f;
@@ -49,18 +49,18 @@ float UABEntityDataComponent::GetHpPercentage() const
 	return CurrentHP / MaxHP;
 }
 void UABEntityDataComponent::TransformEntity(float NewMaxHP)
-{   // º¯½Å ÈÄ »õ·Î¿î MaxHP¿¡ ¸ÂÃç ÇöÀç HP¸¦ Àç¼³Á¤
+{   // ë³€ì‹  í›„ ìƒˆë¡œìš´ MaxHPì— ë§ì¶° í˜„ì¬ HPë¥¼ ì¬ì„¤ì •
 
-	// ÇöÀç HP ºñÀ²À» °è»ê
+	// í˜„ì¬ HP ë¹„ìœ¨ì„ ê³„ì‚°
 	float HPPercentage = GetHpPercentage(); 
 
-	// »õ·Î¿î MaxHP¿¡ ¸ÂÃç¼­ ¹Ù²ï CurrentHP¸¦ °è»ê
+	// ìƒˆë¡œìš´ MaxHPì— ë§ì¶°ì„œ ë°”ë€ CurrentHPë¥¼ ê³„ì‚°
 	float TransformedCurrentHP = NewMaxHP * HPPercentage;
 
-	// ¹Ù²ï CurrentHP °ªÀ» SetHP ÇÔ¼ö·Î Àû¿ë
+	// ë°”ë€ CurrentHP ê°’ì„ SetHP í•¨ìˆ˜ë¡œ ì ìš©
 	SetHP(TransformedCurrentHP);
 
-	// »õ MaxHP °ªÀ¸·Î ¾÷µ¥ÀÌÆ®
+	// ìƒˆ MaxHP ê°’ìœ¼ë¡œ ì—…ë°ì´íŠ¸
 	MaxHP = NewMaxHP;
 }
 

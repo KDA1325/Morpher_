@@ -33,14 +33,14 @@ AEntityPreset* AEntitySpawner::SpawnEntityCharacter()
     FRotator SpawnRotation = GetActorRotation();
 
 
-    // ±×·ì ID¸¦ ÀÌ¿ëÇØ ¿£Æ¼Æ¼ µ¥ÀÌÅÍ¸¦ ¸ÕÀú ºÒ·¯¿À±â
+    // ê·¸ë£¹ IDë¥¼ ì´ìš©í•´ ì—”í‹°í‹° ë°ì´í„°ë¥¼ ë¨¼ì € ë¶ˆëŸ¬ì˜¤ê¸°
     if (!UABGameSingleton::Get().GetEntityDataByGroupID(EntityGroupID, EntityData))
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to find entity data for Group ID: %s"), *EntityGroupID);
         return nullptr;
     }
 
-    // EntityGroupID¿¡ ÇØ´çÇÏ´Â EntityPreset Ã£±â 
+    // EntityGroupIDì— í•´ë‹¹í•˜ëŠ” EntityPreset ì°¾ê¸° 
     TSubclassOf<AEntityPreset>* MatchBPClass = EntityPresetPaths.Find(EntityGroupID);
     if (MatchBPClass == nullptr)
     {
@@ -48,11 +48,11 @@ AEntityPreset* AEntitySpawner::SpawnEntityCharacter()
         return nullptr;
     }
 
-    // EntityPreset ½ºÆù 
+    // EntityPreset ìŠ¤í° 
     AEntityPreset* SpawnedEntity = GetWorld()->SpawnActor<AEntityPreset>(*MatchBPClass, SpawnLocation, SpawnRotation);
     if (SpawnedEntity)
     {
-        // ½ºÆù Á÷ÈÄ µ¥ÀÌÅÍ ¼¼ÆÃ
+        // ìŠ¤í° ì§í›„ ë°ì´í„° ì„¸íŒ…
         SpawnedEntity->InitializeEntity(EntityData);
         UE_LOG(LogTemp, Warning, TEXT("Entity spawned with Group ID: %s"), *EntityGroupID);
 

@@ -3,20 +3,20 @@
 #include "Components/TextBlock.h"
 #include "EntityPreset.h"
 
-// NativeConstruct¿¡¼­ Å¸ÀÌ¸Ó ¼³Á¤
+// NativeConstructì—ì„œ íƒ€ì´ë¨¸ ì„¤ì •
 void UEntityWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
 }
 
-// HP ¾÷µ¥ÀÌÆ®
+// HP ì—…ë°ì´íŠ¸
 void UEntityWidget::UpdateHealthBar(float NewHealth)
 {
 	if (HealthBar)
 	{
 		float HealthRatio = EntityPreset->GetHPRatio();
-		// ProgressBar¿¡ Å¬·¥ÇÁµÈ Ã¼·Â ºñÀ² ¼³Á¤ (0 ~ 1 »çÀÌ)
+		// ProgressBarì— í´ë¨í”„ëœ ì²´ë ¥ ë¹„ìœ¨ ì„¤ì • (0 ~ 1 ì‚¬ì´)
 		HealthBar->SetPercent(FMath::Clamp(HealthRatio, 0.0f, 1.0f));
 		UE_LOG(LogTemp, Log, TEXT("banana UpdateHealthBar: %f"), HealthRatio);
 	}
@@ -27,7 +27,7 @@ void UEntityWidget::UpdateHealthBar(float NewHealth)
 	}
 }
 
-// NativeTick ÇÔ¼ö¿¡¼­ HP °¨¼Ò È®ÀÎ
+// NativeTick í•¨ìˆ˜ì—ì„œ HP ê°ì†Œ í™•ì¸
 void UEntityWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);

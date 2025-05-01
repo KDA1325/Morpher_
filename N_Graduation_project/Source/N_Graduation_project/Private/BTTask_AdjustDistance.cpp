@@ -50,7 +50,7 @@ EBTNodeResult::Type UBTTask_AdjustDistance::ExecuteTask(UBehaviorTreeComponent& 
 
     float MinDistance = BlackboardComp->GetValueAsFloat(BBKEY_ADJUSTMINDISTANCE);
 
-    // ½ÇÁ¦ ÃÖ¼Ò °Å¸® °è»ê
+    // ì‹¤ì œ ìµœì†Œ ê±°ë¦¬ ê³„ì‚°
     float CalculatedMinDistance = MinDistance + PlayerCapsuleRadius + MonsterCapsuleRadius;
     
     FVector MonsterLocation = ControllingPawn->GetActorLocation();
@@ -69,19 +69,19 @@ EBTNodeResult::Type UBTTask_AdjustDistance::ExecuteTask(UBehaviorTreeComponent& 
     else if (DistanceToPlayer < CalculatedMinDistance)
     {
         OwnerComp.GetAIOwner()->SetFocus(playerPawn);
-        // (¸ó½ºÅÍ - ÇÃ·¹ÀÌ¾î) ¹æÇâ ¡æ ÇÃ·¹ÀÌ¾îÀÇ ¹Ý´ë ¹æÇâ
+        // (ëª¬ìŠ¤í„° - í”Œë ˆì´ì–´) ë°©í–¥ â†’ í”Œë ˆì´ì–´ì˜ ë°˜ëŒ€ ë°©í–¥
         FVector FleeDirection = (MonsterLocation - PlayerLocation).GetSafeNormal();
 
-        // µµ¸Á ¸ñÇ¥ ÁöÁ¡: ÇÃ·¹ÀÌ¾î À§Ä¡¿¡¼­ FleeDirectionÀ¸·Î CalcMinDistance¸¸Å­ ¶³¾îÁø °÷
+        // ë„ë§ ëª©í‘œ ì§€ì : í”Œë ˆì´ì–´ ìœ„ì¹˜ì—ì„œ FleeDirectionìœ¼ë¡œ CalcMinDistanceë§Œí¼ ë–¨ì–´ì§„ ê³³
         FVector FleeLocation = PlayerLocation + FleeDirection * CalculatedMinDistance;
 
-        // AcceptanceRadius´Â ³Ê¹« Å©°Ô ÀâÁö ¾Êµµ·Ï ÀûÀýÈ÷ ¼³Á¤
+        // AcceptanceRadiusëŠ” ë„ˆë¬´ í¬ê²Œ ìž¡ì§€ ì•Šë„ë¡ ì ì ˆížˆ ì„¤ì •
         OwnerComp.GetAIOwner()->MoveToLocation(FleeLocation, /*AcceptanceRadius=*/5.0f, false);
 
-        //// ÇÃ·¹ÀÌ¾î·ÎºÎÅÍ º¤ÅÍ¸¦ °è»êÇÏ¿© ¹Ý´ë ¹æÇâ(µµ¸Á ¹æÇâ)À¸·Î Á¤±ÔÈ­
+        //// í”Œë ˆì´ì–´ë¡œë¶€í„° ë²¡í„°ë¥¼ ê³„ì‚°í•˜ì—¬ ë°˜ëŒ€ ë°©í–¥(ë„ë§ ë°©í–¥)ìœ¼ë¡œ ì •ê·œí™”
         //FVector RunAwayDirection = (MonsterLocation - PlayerLocation).GetSafeNormal();
 
-        //// µµ¸Á ¸ñÇ¥ À§Ä¡: ÇÃ·¹ÀÌ¾î À§Ä¡¿¡¼­ RunAwayDirectionÀ¸·Î MinDistance¸¸Å­ ¶³¾îÁø ÁöÁ¡
+        //// ë„ë§ ëª©í‘œ ìœ„ì¹˜: í”Œë ˆì´ì–´ ìœ„ì¹˜ì—ì„œ RunAwayDirectionìœ¼ë¡œ MinDistanceë§Œí¼ ë–¨ì–´ì§„ ì§€ì 
         //FVector AdjustLocation = PlayerLocation + RunAwayDirection * MinDistance;
 
         //OwnerComp.GetAIOwner()->MoveToLocation(AdjustLocation);
