@@ -207,9 +207,10 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::DashCheck);
 
 		// NomalSkill
-		EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::NomalSkillAction);
+		EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Started, this, &AN_Graduation_projectCharacter::NomalSkillAction);
 		//special Skill
 		EnhancedInputComponent->BindAction(RightClickAction, ETriggerEvent::Triggered, this, &AN_Graduation_projectCharacter::SpecialSkillAction);
+		EnhancedInputComponent->BindAction(RightClickAction, ETriggerEvent::Completed, this, &AN_Graduation_projectCharacter::EndShield);
 
 		EnhancedInputComponent->BindAction(PieMenuAction, ETriggerEvent::Started, this, &AN_Graduation_projectCharacter::OnPieMenuPressed);
 		EnhancedInputComponent->BindAction(PieMenuAction, ETriggerEvent::Completed, this, &AN_Graduation_projectCharacter::OnPieMenuReleased);
@@ -228,11 +229,20 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 		return;
 	}
 	if (PlayerSkillComponent->CanUseSpecialSkill == true) {
-		PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
+		if (SpecialSkill == "Skill_ShieldGuard") {
+			PlayerSkillComponent->OnDefenseSkill();
+			CharacterStateComponent->CurrentState == ECharacterState::Action;
+		}
+		else { PlayerSkillComponent->SpecialSkillPlay(SpecialSkill); }
 		//PlaySpecial = true;	
+
 	}
 	else GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, TEXT("마우스 클릭 실패"));
-
+}
+void AN_Graduation_projectCharacter::EndShield() 
+{
+	CharacterStateComponent->CurrentState == ECharacterState::Idle;
+	PlayerSkillComponent->OffDefenseSkill();
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
 {
@@ -409,7 +419,7 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	if (TestMode == false) {
-		UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
+		//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
 		if (PlayerSkillComponent->IsDefending == true) {
 			UE_LOG(LogTemp, Error, TEXT("Player TakeDamage 데미지 받지 않음"));
 			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
@@ -432,7 +442,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount, FDamageEven
 			return FinalDamage;
 		}
 	}
-	else{
+	else {
 		PlayerSkillComponent->CanUseNomalSkill = true;
 		On_invincibility_Implementation();
 		IsInvincible = false;
@@ -449,7 +459,7 @@ void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 	{
 		IsInvincible = true;
 
-		PlayerSkillComponent->OnDefenseSkill(1.0f);
+		PlayerSkillComponent->OnDefenseSkill();
 
 		USkeletalMeshComponent* MeshComponent = GetMesh();
 		if (MeshComponent)
@@ -474,7 +484,8 @@ void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle3, [this]() { ToggleMaterial(false); }, 0.75f, false);
 
 			// 마지막으로 1초 후 무적 종료
-			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle4, [this]() { IsInvincible = false; PlayerSkillComponent->IsDefending = false; }, 1.0f, false);
+			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle4, [this]() {
+				IsInvincible = false; PlayerSkillComponent->OffDefenseSkill(); }, 1.0f, false);
 		}
 	}
 }
@@ -517,12 +528,10 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 	}
 	// currentPreset!=클릭한 버튼의 캐릭터이름 이면..
 	if (pastPreset != currentPreset) {
-
-		UE_LOG(LogTemp, Error, TEXT("= pastPreset != currentPreset"));
 		PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID, EntityData.HP, EntityData.TransManaCost);
-		pastPreset = currentPreset;
+		pastPreset = currentPreset;		
+		UE_LOG(LogTemp, Error, TEXT("= pastPreset %s != currentPreset %s"), *pastPreset, *currentPreset);
 	}
-
 	USkeletalMeshComponent* MeshComponent = GetMesh();
 }
 
@@ -763,7 +772,6 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 		else {
 			WidgetActor->Back_CacheFinalMouseAngle = true;
 		}
-		pastPreset = currentPreset;
 	}
 }
 /* //나중에 테스터에

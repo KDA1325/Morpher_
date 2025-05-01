@@ -58,7 +58,7 @@ public:
 	void NomalSkillPlay(const FString& SkillID);    // 스킬
 	void SpecialSkillPlay(const FString& SkillID);    // 스킬
 	// 함수들
-	void OnDefenseSkill(float Count);          // 방어 스킬 활성화 함수
+	void OnDefenseSkill();          // 방어 스킬 활성화 함수
 	void OffDefenseSkill();                    // 방어 스킬 비활성화 함수
 	void NomalCooldown();          // 스킬 쿨타임 초기화
 	void SpecialCooldown();          // 스킬 쿨타임 초기화

@@ -21,7 +21,7 @@ UWidgetActor::UWidgetActor()
 	{
 		PieClass = Pie.Class;
 	}
-
+	Before_Select= 102.0f;
 }
 
 void UWidgetActor::BeginPlay()

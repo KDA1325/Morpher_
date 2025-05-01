@@ -97,6 +97,7 @@ protected:
 	//���콺 ��Ŭ��
 	void NomalSkillAction(const FInputActionValue& Value);
 	void SpecialSkillAction(const FInputActionValue& Value);
+	void EndShield();
 
 protected:
 	// APawn interface

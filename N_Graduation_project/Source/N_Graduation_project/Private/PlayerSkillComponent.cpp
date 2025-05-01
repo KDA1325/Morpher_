@@ -36,7 +36,7 @@ void UPlayerSkillComponent::SetHitBox(UBoxComponent* InHitBox)
 
 }
 /* 스킬 관련 */
-void UPlayerSkillComponent::OnDefenseSkill(float Count)
+void UPlayerSkillComponent::OnDefenseSkill()
 {
 	IsDefending = true;
 	if (GEngine)
@@ -44,16 +44,11 @@ void UPlayerSkillComponent::OnDefenseSkill(float Count)
 		//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill on"));
 	}
 
-	// 방어 해제 타이머 설정
-	FTimerDelegate DefenseEnd;
-	DefenseEnd.BindUObject(this, &UPlayerSkillComponent::OffDefenseSkill);
-	SetSkillTimer(Count, DefenseEnd);
 }
 
 void UPlayerSkillComponent::OffDefenseSkill()
 {
 	IsDefending = false;
-	//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill off"));
 }
 
 void UPlayerSkillComponent::SetSkillTimer(float Count, FTimerDelegate End)
@@ -82,6 +77,7 @@ void UPlayerSkillComponent::ChargeSkillTimer(float Delay, FTimerDelegate End)
 	}
 }
 
+//쿨타임
 void UPlayerSkillComponent::NomalCooldown()
 {
 	CanUseNomalSkill = true;
@@ -93,6 +89,7 @@ void UPlayerSkillComponent::SpecialCooldown()
 	CanUseSpecialSkill = true;
 }
 
+//히트박스
 void UPlayerSkillComponent::SettingHitBox(const FSkillData& SkillData)
 {
 	if (!OnceHitBox && PlayerHitBox)
@@ -166,40 +163,6 @@ AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
 	}
 
 	return ClosestMonster;
-	////정면방향 몬스터 거리
-	//if (!GetWorld()) return nullptr;
-
-	//AActor* ClosestMonster = nullptr;//몬스터를 담을 변수
-	//float MinDistance = FLT_MAX;//현재까지 찾은 몬스터 중 가장 가까운 거리
-	//float MaxDotProduct = -1.0f; // 정면(1에 가까울수록 정면 방향)
-
-	//AActor* Owner = GetOwner();
-	//if (!Owner) return nullptr;
-
-	//FVector PlayerLocation = Owner->GetActorLocation();
-	//FVector PlayerForward = Owner->GetActorForwardVector(); // 플레이어 정면 방향
-
-	//for (TActorIterator<AActor> It(GetWorld()); It; ++It) //월드에 존재하는 모든 AActor를 순회하며 Monster 태그 확인
-	//{
-	//	AActor* Actor = *It;
-	//	if (Actor && Actor->ActorHasTag(FName("Monster")))
-	//	{
-	//		FVector ToMonster = (Actor->GetActorLocation() - PlayerLocation).GetSafeNormal();
-	//		float DotProduct = FVector::DotProduct(PlayerForward, ToMonster); // 정면과의 유사도 계산
-
-	//		float CurrentDistance = FVector::Dist(PlayerLocation, Actor->GetActorLocation());
-
-	//		// 정면 방향이고, 기존보다 가까운 몬스터를 선택
-	//		if (DotProduct > MaxDotProduct || (DotProduct == MaxDotProduct && CurrentDistance < MinDistance))
-	//		{
-	//			MaxDotProduct = DotProduct;
-	//			MinDistance = CurrentDistance;
-	//			ClosestMonster = Actor;
-	//		}
-	//	}
-	//}
-
-	//return ClosestMonster;
 }
 
 float UPlayerSkillComponent::GetDistanceTo(const AActor* OtherActor) const
@@ -224,17 +187,26 @@ void UPlayerSkillComponent::VisibleShapeBox(const FString& SkillID)
 {
 	FSkillData SkillData;
 	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, SkillData)) return;
-
-	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
+	if (SkillData.SkillType == EnumSkillType::HitBox)
 	{
-		SettingHitBox(SkillData);  // 히트박스 초기화
-		OnHitBox(SkillData);    // 히트박스 활성화
+		if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
+		{
+			SettingHitBox(SkillData);  // 히트박스 초기화
+			OnHitBox(SkillData);    // 히트박스 활성화
+		}
+		else if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
+		{
+			//	 Sphere 관련 처리 추가
+		}
 	}
-	else if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
+	else if (SkillData.SkillType == EnumSkillType::Projectile) 
 	{
-		//	 Sphere 관련 처리 추가
-	}
 
+	}
+	else 
+	{
+		//OnDefenseSkill();
+	}
 }
 void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 {
@@ -256,11 +228,6 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		UE_LOG(LogTemp, Warning, TEXT("%f Kkakao Yes distance"), SkillData.SkillRange);
 		VisibleShapeBox(SkillID); // 적중 범위 표시
 		SkillEffect(SkillID);
-
-		//else
-	//	{
-		//	UE_LOG(LogTemp, Warning, TEXT("kkakao No distance, but playing skill anyway"));
-		//}
 
 		// 스킬 쿨타임 시작
 		CanUseNomalSkill = false;
@@ -404,7 +371,6 @@ void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this, &UPlayerSkillComponent::EndSkillAnimation);
 			ActionAnimInstance->Montage_SetEndDelegate(EndDelegate);
-			//SkillEffect(EffectID);
 			UCharacterStateComponent* StateComp = OwnerActor->FindComponentByClass<UCharacterStateComponent>();
 			if (StateComp)
 			{

@@ -76,20 +76,20 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 
 	if (CachedMouseFinalAngle <= 25.0f)
 	{
-		if (SkeletonWarrior_OK)
+		//if (SkeletonWarrior_OK)
 		{
-			CachedMouseFinalAngle = 0.0f;
+			CachedMouseFinalAngle = -2.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 
 			UE_LOG(LogTemp, Log, TEXT("전사 선택"));
 
 			BeforeMonster = "SkeletonWarrior";
 		}
-		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+	//	else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 77.0f)
 	{
-		//if (StoneGolem_OK)
+		if (StoneGolem_OK)
 		{
 			CachedMouseFinalAngle = 306.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -98,7 +98,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "StoneGolem";
 			//CachedMouseFinalAngle = 51.0f;
 		}
-		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 129.0f)
 	{
@@ -127,7 +127,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	}
 	else if (CachedMouseFinalAngle <= 233.0f)
 	{
-		//if (WildBoar_Ok)
+		if (WildBoar_Ok)
 		{
 			CachedMouseFinalAngle = 154.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -136,7 +136,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "WildBoar";
 			//	CachedMouseFinalAngle = 206.0f;
 		}
-		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 
 	}
 	else if (CachedMouseFinalAngle <= 285.0f)
