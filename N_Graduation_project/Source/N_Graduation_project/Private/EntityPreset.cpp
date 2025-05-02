@@ -242,7 +242,7 @@ void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 {	
 	// Entity 데이터에 따라 초기화 
 	MaxHp = InEntityData.HP;
-	SetActorLabel(InEntityData.EntityName);
+	///SetActorLabel(InEntityData.EntityName);
 	SetMoveSpeed(InEntityData.MoveSpeed);
 	SetHP(InEntityData.HP);
 	currentPreset = InEntityData.EntityGroupID;

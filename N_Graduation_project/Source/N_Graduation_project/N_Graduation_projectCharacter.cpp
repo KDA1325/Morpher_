@@ -1,4 +1,4 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "N_Graduation_projectCharacter.h"
 #include "Engine/LocalPlayer.h"
@@ -516,7 +516,7 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 		if (!(PlayerStatComponent->CurrentMana >= EntityData.TransManaCost))		OkTrans = false;
 
 		InvincibleOriginalMaterial = nullptr;
-		SetActorLabel(EntityData.EntityName);
+		//SetActorLabel(EntityData.EntityName);
 		SetMoveSpeed(1000);
 		NomalSkill = EntityData.NormalSkill;
 		SpecialSkill = EntityData.SpecialSkill;

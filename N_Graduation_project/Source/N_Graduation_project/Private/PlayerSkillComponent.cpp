@@ -1,4 +1,4 @@
-﻿#include "PlayerSkillComponent.h"
+#include "PlayerSkillComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/Character.h"
 #include "MyPlayerStatComponent.h"
@@ -422,11 +422,11 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 
 		for (const FSkillEffectData& Effect : EffectData)
 		{
-			UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, TEXT("EnumEffectType"), true);
-			if (EnumPtr)
+			UEnum* EnumPtr = StaticEnum<EnumEffectType>();
+			if(EnumPtr)
 			{
-				FString EnumName = EnumPtr->GetNameStringByIndex((int32)Effect.EffectType);
-				UE_LOG(LogTemp, Warning, TEXT("EffectData : %s"), *EnumName);
+				FString EnumName = EnumPtr->GetNameStringByIndex(static_cast<int32>(Effect.EffectType));
+				UE_LOG(LogTemp,Warning,TEXT("EffectData : %s"),*EnumName);
 			}
 
 

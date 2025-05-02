@@ -12,11 +12,11 @@ ATester::ATester()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// UStaticMeshComponentÀ» »ı¼ºÀÚ¿¡¼­ CreateDefaultSubobject·Î »ı¼º
-	// »ı¼ºÀÚ¿¡¼­ ¹Ì¸® »ı¼ºÇØÁà¾ß nullptr ¿À·ù°¡ ¶ßÁö ¾ÊÀ½ 
+	// UStaticMeshComponentì„ ìƒì„±ìì—ì„œ CreateDefaultSubobjectë¡œ ìƒì„±
+	// ìƒì„±ìì—ì„œ ë¯¸ë¦¬ ìƒì„±í•´ì¤˜ì•¼ nullptr ì˜¤ë¥˜ê°€ ëœ¨ì§€ ì•ŠìŒ 
 	m_pMeshCom = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
 
-	// RootComponent ¼³Á¤ -> ¾È ÇÏ¸é m_pMeshCom nullptr ¿À·ù ¹ß»ı
+	// RootComponent ì„¤ì • -> ì•ˆ í•˜ë©´ m_pMeshCom nullptr ì˜¤ë¥˜ ë°œìƒ
 	if (!m_pMeshCom)
 	{
 		m_pMeshCom = NewObject<USkeletalMeshComponent>(this, TEXT("MeshComponent"));
@@ -30,15 +30,15 @@ void ATester::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!m_pMeshCom)
-	{
-		m_pMeshCom = NewObject<USkeletalMeshComponent>(this, TEXT("MeshComponent"));
-		m_pMeshCom->RegisterComponent();
-		RootComponent = m_pMeshCom;
-	}
+	//if (!m_pMeshCom)
+	//{
+	//	m_pMeshCom = NewObject<USkeletalMeshComponent>(this, TEXT("MeshComponent"));
+	//	m_pMeshCom->RegisterComponent();
+	//	RootComponent = m_pMeshCom;
+	//}
 
-	UpdateEntityData();
-	//SpawnEntityPreset();
+	//UpdateEntityData();
+	////SpawnEntityPreset();
 }
 
 // Called every frame
@@ -49,28 +49,28 @@ void ATester::Tick(float DeltaTime)
 
 void ATester::UpdateEntityData()
 {
-	if (UABGameSingleton::Get().GetEntityDataByGroupID(EntityGroupID, EntityData))
-	{
-		SetActorLabel(EntityData.EntityName);
-		SetMaxHp(EntityData.HP);
-		SetMoveSpeed(EntityData.MoveSpeed);
-		//SetPreset(EntityData.PresetReference);
+	//if (UABGameSingleton::Get().GetEntityDataByGroupID(EntityGroupID, EntityData))
+	//{
+	//	SetActorLabel(EntityData.EntityName);
+	//	SetMaxHp(EntityData.HP);
+	//	SetMoveSpeed(EntityData.MoveSpeed);
+	//	//SetPreset(EntityData.PresetReference);
 
-		UE_LOG(LogABGameSingleton, Error, TEXT("Entity Name: %s, HP: %d, Move Speed: %d"),
-			*EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed);
+	//	UE_LOG(LogABGameSingleton, Error, TEXT("Entity Name: %s, HP: %d, Move Speed: %d"),
+	//		*EntityData.EntityName, EntityData.HP, EntityData.MoveSpeed);
 
-		//SpawnEntityPreset();
-	}
+	//	//SpawnEntityPreset();
+	//}
 
 }
 /*void ATester::SpawnEntityPreset()
 {
-	//null¿À·ù ÀæÀ½ null È®ÀÎ ÄÚµå ÇÊ¿ä(³»ÀÏ²ÀÇÏ±â)
-	//µÎ¹øÂ° ½ÇÇàºÎÅÍ ¹®Á¦»ı±è
+	//nullì˜¤ë¥˜ ì¦ìŒ null í™•ì¸ ì½”ë“œ í•„ìš”(ë‚´ì¼ê¼­í•˜ê¸°)
+	//ë‘ë²ˆì§¸ ì‹¤í–‰ë¶€í„° ë¬¸ì œìƒê¹€
 	if (EntityPresetClass)
 	{
 		AActor* SpawnedEntityPreset = GetWorld()->SpawnActor<AActor>(EntityPresetClass, GetActorLocation(), GetActorRotation());
-		// EntityPreset¿¡¼­ WidgetComponent¿¡ Á¢±Ù
+		// EntityPresetì—ì„œ WidgetComponentì— ì ‘ê·¼
 		if (UWidgetComponent* WidgetComponent = SpawnedEntityPreset->FindComponentByClass<UWidgetComponent>())
 		{
 			if (UEntityWidget* MyEntityWidget = Cast<UEntityWidget>(WidgetComponent->GetWidget()))
@@ -85,7 +85,7 @@ void ATester::UpdateEntityData()
 ///**/
 void ATester::SpawnEntityPreset()
 {
-//	// Entityº° ¸Ş½Ã ¼¼ÆÃ 
+//	// Entityë³„ ë©”ì‹œ ì„¸íŒ… 
 //	SetPreset(EntityData.PresetReference);
 //
 //	if (EntityPresetClass)
@@ -94,31 +94,31 @@ void ATester::SpawnEntityPreset()
 //
 //		if (SpawnedEntityPreset)
 //		{
-//			// UWidgetComponent°¡ nullÀÌ¸é ¼öµ¿À¸·Î ÃÊ±âÈ­
+//			// UWidgetComponentê°€ nullì´ë©´ ìˆ˜ë™ìœ¼ë¡œ ì´ˆê¸°í™”
 //			UWidgetComponent* WidgetComponent = SpawnedEntityPreset->FindComponentByClass<UWidgetComponent>();
 //
 //			if (!WidgetComponent)
 //			{
-//				// UWidgetComponent°¡ ¾øÀ¸¸é »õ·Î¿î ÄÄÆ÷³ÍÆ®¸¦ Ãß°¡
+//				// UWidgetComponentê°€ ì—†ìœ¼ë©´ ìƒˆë¡œìš´ ì»´í¬ë„ŒíŠ¸ë¥¼ ì¶”ê°€
 //				WidgetComponent = NewObject<UWidgetComponent>(SpawnedEntityPreset);
 //				if (WidgetComponent)
 //				{
-//					// WidgetComponent¸¦ ºÎ¸ğ¿¡ Ã·ºÎÇÏ°í µî·Ï
-//					WidgetComponent->SetupAttachment(SpawnedEntityPreset->GetRootComponent()); // ºÎ¸ğ ÄÄÆ÷³ÍÆ®¿¡ ³Ö°í
-//					WidgetComponent->RegisterComponent();  // ÄÄÆ÷³ÍÆ®¸¦ ¿ùµå¿¡
+//					// WidgetComponentë¥¼ ë¶€ëª¨ì— ì²¨ë¶€í•˜ê³  ë“±ë¡
+//					WidgetComponent->SetupAttachment(SpawnedEntityPreset->GetRootComponent()); // ë¶€ëª¨ ì»´í¬ë„ŒíŠ¸ì— ë„£ê³ 
+//					WidgetComponent->RegisterComponent();  // ì»´í¬ë„ŒíŠ¸ë¥¼ ì›”ë“œì—
 //				}
 //			}
 //
-//			// WidgetComponent°¡ Á¦´ë·Î ÃÊ±âÈ­µÇ¾ú´ÂÁö È®ÀÎ
+//			// WidgetComponentê°€ ì œëŒ€ë¡œ ì´ˆê¸°í™”ë˜ì—ˆëŠ”ì§€ í™•ì¸
 //			if (WidgetComponent)
 //			{
-//				// À§Á¬À» °¡Á®¿Í¼­ ¾÷µ¥ÀÌÆ®
+//				// ìœ„ì ¯ì„ ê°€ì ¸ì™€ì„œ ì—…ë°ì´íŠ¸
 //				UUserWidget* UserWidget = WidgetComponent->GetWidget();
 //				if (UEntityWidget* MyEntityWidget = Cast<UEntityWidget>(UserWidget))
 //				{
-//					// À§Á¬¿¡¼­ Á¤º¸¸¦ °»½Å
+//					// ìœ„ì ¯ì—ì„œ ì •ë³´ë¥¼ ê°±ì‹ 
 //					MyEntityWidget->UpdateHealthBar(EntityData.HP);
-//					// ÀÌ¸§°ú ¼Óµµ °ªÀ» EntityWidget¿¡ Àü´Ş
+//					// ì´ë¦„ê³¼ ì†ë„ ê°’ì„ EntityWidgetì— ì „ë‹¬
 //					MyEntityWidget->ReceiveEntityName(FText::FromString(EntityData.EntityName));
 //					MyEntityWidget->ReceiveEntitySpeed(EntityData.MoveSpeed);
 //				}
@@ -143,12 +143,12 @@ void ATester::SetPreset(FString PresetReference)
 {
 	currentPreset = PresetReference;
 
-	// ÇÁ¸®¼Â ÀÌ¸§¸¶´Ù ¸Ş½Ã ¿¡¼Â ÆÄÀÏ ÇÒ´ç
+	// í”„ë¦¬ì…‹ ì´ë¦„ë§ˆë‹¤ ë©”ì‹œ ì—ì…‹ íŒŒì¼ í• ë‹¹
 	if (currentPreset == "PCPreset.uasset")
 	{
-		// ¾ğ¸®¾ó ÄÜÅÙÃ÷ ºê¶ó¿ìÀú¿¡¼­ ¿¡¼Â ÆÄÀÏ ¿ìÅ¬¸¯ ->  !!·¹ÆÛ·±½º!! º¹»ç -> ÅØ½ºÆ®·Î ³Ö¾îÁÖ±â
+		// ì–¸ë¦¬ì–¼ ì½˜í…ì¸  ë¸Œë¼ìš°ì €ì—ì„œ ì—ì…‹ íŒŒì¼ ìš°í´ë¦­ ->  !!ë ˆí¼ëŸ°ìŠ¤!! ë³µì‚¬ -> í…ìŠ¤íŠ¸ë¡œ ë„£ì–´ì£¼ê¸°
 
-		// FObjectFinder´Â ¹İµå½Ã »ı¼ºÀÚ¿¡¼­¸¸ »ç¿ë °¡´É, ÇÔ¼ö ³»¿¡¼­ »ç¿ëÇÒ ½Ã ¹Ù·Î Å©·¡½Ã ¹ß»ı
+		// FObjectFinderëŠ” ë°˜ë“œì‹œ ìƒì„±ìì—ì„œë§Œ ì‚¬ìš© ê°€ëŠ¥, í•¨ìˆ˜ ë‚´ì—ì„œ ì‚¬ìš©í•  ì‹œ ë°”ë¡œ í¬ë˜ì‹œ ë°œìƒ
 		//ConstructorHelpers::FObjectFinder<UStaticMesh> BodyMesh(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_Chair.SM_Chair'"));
 		/*if (BodyMesh.Succeeded())
 		{
@@ -160,110 +160,31 @@ void ATester::SetPreset(FString PresetReference)
 		//FString MeshPath = TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_Chair.SM_Chair'");
 		//UStaticMesh* LoadedMesh = LoadObject<UStaticMesh>(nullptr, *MeshPath);
 
-		// ¿¡µğÅÍ ½ÇÇà ½Ã ¹®Á¦¾øÀÌ ¸Ş½Ã¸¦ ·ÎµåÇÏ±â À§ÇØ FSoftObjectPath¸¦ »ç¿ëÇØ ºñµ¿±â ·Îµù 
-		FSoftObjectPath MeshPath(TEXT("/Script/Engine.SkeletalMesh'/Game/Animation/Boar/Boar_idle_test3s_3.Boar_idle_test3s_3'"));
-		FSoftObjectPath AnimPath(TEXT("/Script/Engine.AnimSequence'/Game/Animation/Boar/Boar_idle_test3s_2_Anim.Boar_idle_test3s_2_Anim'"));
+		// ì—ë””í„° ì‹¤í–‰ ì‹œ ë¬¸ì œì—†ì´ ë©”ì‹œë¥¼ ë¡œë“œí•˜ê¸° ìœ„í•´ FSoftObjectPathë¥¼ ì‚¬ìš©í•´ ë¹„ë™ê¸° ë¡œë”© 
+		//FSoftObjectPath MeshPath(TEXT("/Script/Engine.SkeletalMesh'/Game/Animation/Boar/Boar_idle_test3s_3.Boar_idle_test3s_3'"));
+		//FSoftObjectPath AnimPath(TEXT("/Script/Engine.AnimSequence'/Game/Animation/Boar/Boar_idle_test3s_2_Anim.Boar_idle_test3s_2_Anim'"));
 
-		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
-		UAnimSequence* LoadedAnim = Cast<UAnimSequence>(AnimPath.TryLoad());
+		//USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+		//UAnimSequence* LoadedAnim = Cast<UAnimSequence>(AnimPath.TryLoad());
 
-		if (LoadedMesh)
-		{
-			// ½ºÄÌ·¹Å» ¸Ş½Ã¸¦ »ç¿ëÇÒ °æ¿ì SetSkeletalMesh() »ç¿ë
-			m_pMeshCom->SetSkeletalMesh(LoadedMesh); 
-			if (LoadedAnim)
-			{
-				m_pMeshCom->SetAnimationMode(EAnimationMode::AnimationSingleNode);
-				m_pMeshCom->SetAnimation(LoadedAnim);
-				m_pMeshCom->Play(true);
+		//if (LoadedMesh)
+		//{
+		//	// ìŠ¤ì¼ˆë ˆíƒˆ ë©”ì‹œë¥¼ ì‚¬ìš©í•  ê²½ìš° SetSkeletalMesh() ì‚¬ìš©
+		//	m_pMeshCom->SetSkeletalMesh(LoadedMesh); 
+		//	if (LoadedAnim)
+		//	{
+		//		m_pMeshCom->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+		//		m_pMeshCom->SetAnimation(LoadedAnim);
+		//		m_pMeshCom->Play(true);
 
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load")));
-			}
-			else
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load Failed ")));
-			}
-		}
+		//		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load")));
+		//	}
+		//	else
+		//	{
+		//		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load Failed ")));
+		//	}
+		//}
 	}
 
-	if(currentPreset == "WildBoarPreset.uasset")
-	{
-		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Boar/Boar_idle_test3s_2.Boar_idle_test3s_2"));
-		FSoftObjectPath AnimPath(TEXT("/Script/Engine.AnimSequence'/Game/Animation/Boar/Boar_idle_test3s_2_Anim.Boar_idle_test3s_2_Anim'"));
-
-		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
-		UAnimSequence* LoadedAnim = Cast<UAnimSequence>(AnimPath.TryLoad());
-
-		if (LoadedMesh)
-		{
-			m_pMeshCom->SetSkeletalMesh(LoadedMesh);  // SkeletalMesh´Â Skel_MeshComÀ» »ç¿ë
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Mesh Load")));
-
-			if (LoadedAnim)
-			{
-				m_pMeshCom->SetAnimationMode(EAnimationMode::AnimationSingleNode);
-				m_pMeshCom->SetAnimation(LoadedAnim);
-				m_pMeshCom->Play(true);
-				
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load")));
-			}
-			else
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load Failed ")));
-			}
-		//	
-		//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("I'm Here")));
-		}
-		else {
-			GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Mesh Load Failed ")));
-		}
-	}
 	
-	if (currentPreset == "InpermonPreset.uasset")
-	{
-		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_TableRound.SM_TableRound'"));
-
-		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
-		if (LoadedMesh)
-		{
-			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
-		}
-	}
-	
-	if (currentPreset == "FreezardPreset.uasset")
-	{
-		FSoftObjectPath MeshPath(TEXT("/Script/Engine.SkeletalMesh'/Game/Animation/Boar/Boar_idle_test3s_4.Boar_idle_test3s_4'"));
-		FSoftObjectPath AnimPath(TEXT("/Script/Engine.AnimSequence'/Game/Animation/Boar/Boar_idle_test3s_2_Anim.Boar_idle_test3s_2_Anim'"));
-
-		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
-		UAnimSequence* LoadedAnim = Cast<UAnimSequence>(AnimPath.TryLoad());
-
-		if (LoadedMesh)
-		{
-			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
-			if (LoadedAnim)
-			{
-				m_pMeshCom->SetAnimationMode(EAnimationMode::AnimationSingleNode);
-				m_pMeshCom->SetAnimation(LoadedAnim);
-				m_pMeshCom->Play(true);
-
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load")));
-			}
-			else
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("Animation Load Failed ")));
-			}
-		}
-	}
-	
-	if (currentPreset == "StoneGolemPreset.uasset")
-	{
-		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_Lamp_Ceiling.SM_Lamp_Ceiling'"));
-
-		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
-		if (LoadedMesh)
-		{
-			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
-		}
-	}
 }
