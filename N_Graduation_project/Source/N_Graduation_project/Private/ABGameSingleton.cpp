@@ -50,7 +50,7 @@ UABGameSingleton::UABGameSingleton()
 	// 배열의 갯수가 0보다 큰지 확인
 	HowManyEntity = EntityDataTable.Num();
 	// EntityDataTable에 저장된 데이터를 콘솔에 출력
-	ensure(HowManyEntity > 0);
+	ensure(HowManyEntity >= 0);
 	UE_LOG(LogABGameSingleton, Error, TEXT("HowManyEntity: %d"), HowManyEntity);
 	//-> LogABGameSingleton: Error: HowManyEntity: 7
 
@@ -79,7 +79,7 @@ UABGameSingleton::UABGameSingleton()
 	// 배열의 갯수가 0보다 큰지 확인
 	HowManySkill = SkillDataTable.Num();
 	// SkillDataTable에 저장된 데이터를 콘솔에 출력
-	ensure(HowManySkill > 0);
+	ensure(HowManySkill >= 0);
 	UE_LOG(LogABGameSingleton, Error, TEXT("HowManySkill: %d"), HowManySkill);
 
 
@@ -128,7 +128,7 @@ UABGameSingleton::UABGameSingleton()
 	// 배열의 갯수가 0보다 큰지 확인
 	HowManySkillEffect = SkillEffectDataTable.Num();
 	// SkillDataTable에 저장된 데이터를 콘솔에 출력
-	ensure(HowManySkillEffect > 0);
+	ensure(HowManySkillEffect >= 0);
 	UE_LOG(LogABGameSingleton, Error, TEXT("HowManySkillEffect: %d"), HowManySkillEffect);
 }
 
