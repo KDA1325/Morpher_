@@ -1,4 +1,4 @@
-﻿#include "WidgetActor.h"
+#include "WidgetActor.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -88,7 +88,7 @@ void UWidgetActor::HidePieMenu()
 	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 	UMyPlayerStatComponent* Stat = MyChar->FindComponentByClass<UMyPlayerStatComponent>();
 	
-	PC->SetShowMouseCursor(false);
+	PC->SetShowMouseCursor(true);
 	PC->SetInputMode(FInputModeGameOnly());
 
 	if (PieWidget)

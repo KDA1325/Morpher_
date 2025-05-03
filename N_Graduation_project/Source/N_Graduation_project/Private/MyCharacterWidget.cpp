@@ -21,7 +21,7 @@ void UMyCharacterWidget::NativeConstruct()
 	}
 	if (SkillIcon2)
 	{
-		CooldownMID1 = SkillIcon2->GetDynamicMaterial();
+		CooldownMID2 = SkillIcon2->GetDynamicMaterial();
 		if (CooldownMID2)
 		{
 			CooldownMID2->SetScalarParameterValue(TEXT("percent"), 1.0f);
