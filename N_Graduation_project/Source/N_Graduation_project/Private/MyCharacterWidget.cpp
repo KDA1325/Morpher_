@@ -7,27 +7,27 @@ void UMyCharacterWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	// 머티리얼 초기화
-	UImage* SkillIcon1 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_1")));
-	UImage* SkillIcon2 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_2")));
-	SkillIcon2->SetVisibility(ESlateVisibility::Hidden);
+	//UImage* SkillIcon1 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_1")));
+	//UImage* SkillIcon2 = Cast<UImage>(GetWidgetFromName(TEXT("Skill_Icon_2")));
+	//SkillIcon2->SetVisibility(ESlateVisibility::Hidden);
 
-	if (SkillIcon1)
-	{
-		CooldownMID1 = SkillIcon1->GetDynamicMaterial();
-		if (CooldownMID1)
-		{
-			CooldownMID1->SetScalarParameterValue(TEXT("percent"), 1.0f);
-		}
-	}
-	if (SkillIcon2)
-	{
-		CooldownMID2 = SkillIcon2->GetDynamicMaterial();
-		if (CooldownMID2)
-		{
-			CooldownMID2->SetScalarParameterValue(TEXT("percent"), 1.0f);
+	//if (SkillIcon1)
+	//{
+	//	CooldownMID1 = SkillIcon1->GetDynamicMaterial();
+	//	if (CooldownMID1)
+	//	{
+	//		CooldownMID1->SetScalarParameterValue(TEXT("percent"), 1.0f);
+	//	}
+	//}
+	//if (SkillIcon2)
+	//{
+	//	CooldownMID2 = SkillIcon2->GetDynamicMaterial();
+	//	if (CooldownMID2)
+	//	{
+	//		CooldownMID2->SetScalarParameterValue(TEXT("percent"), 1.0f);
 
-		}
-	}
+	//	}
+	//}
 
 	//마나
 	for (int i = 0; i < 10; i++)
