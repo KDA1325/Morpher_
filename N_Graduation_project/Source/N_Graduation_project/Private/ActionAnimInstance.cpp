@@ -5,7 +5,7 @@
 UActionAnimInstance::UActionAnimInstance()
 {
 
-	FSoftObjectPath SlashMontagePath(TEXT("/Game/Gamin/Player/Player_Attack/Player_attack_Anim_Montage.Player_attack_Anim_Montage"));
+	FSoftObjectPath SlashMontagePath(TEXT("/Game/Gamin/Player/Player_Attack/Player_Attack_Anim_Montage.Player_Attack_Anim_Montage"));
 
 	// 애셋 로드
 	M_Slash = Cast<UAnimMontage>(SlashMontagePath.TryLoad());
