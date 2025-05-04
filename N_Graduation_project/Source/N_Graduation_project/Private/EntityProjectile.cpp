@@ -81,7 +81,7 @@ void AEntityProjectile::Tick(float DeltaTime)
 //		}
 //	}
 //
-//	// 발사 속도 설정
+//	
 //	if(ProjectileMovement)
 //	{
 //		ProjectileMovement->InitialSpeed = SkillData.ProjectileSpeed;
@@ -94,6 +94,7 @@ void AEntityProjectile::InitProjectileBySkillData(const FSkillData & InSkillData
 	SkillData = InSkillData;
 	EffectDataArray = InEffectData;
 
+	// 발사 속도 설정
 	if(ProjectileMovement)
 	{
 		ProjectileMovement->InitialSpeed = SkillData.ProjectileSpeed;

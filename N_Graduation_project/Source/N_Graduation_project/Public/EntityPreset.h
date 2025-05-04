@@ -89,6 +89,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void HideSpecialHitBox();
 
+	void ShowHitBox();
+
+	void AnimNotify_ShowHitBox();
+
 	// 히트박스 Overlap 이벤트 처리 함수
 	UFUNCTION()
 	void OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -111,6 +115,9 @@ public:
 	void PerformSkill_Charge();
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ExecuteChargeDash();
+
+	UFUNCTION(BlueprintCallable,Category = "Skill")
+	void SpawnProjectile_ThrowRock();
 
 	void ClearCastingSkill();
 
@@ -167,9 +174,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ApplyKnockbackEffect(ACharacter* Target, float Distance, float Duration);
-
-	UFUNCTION()
-	void SpawnProjectile_ThrowRock();
 
 protected:
 	// Called when the game starts or when spawned

@@ -408,6 +408,7 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 				*HalfExtent.ToString(), *NewRelativeLocation.ToString());
 		}
 
+
 		//// 1. HitBoxContainer 생성 및 소켓에 부착
 		//if (!NormalHitBoxContainer)
 		//{
@@ -513,6 +514,19 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Sphere"));
 	}
+
+
+	if(NormalSkillHitBox)
+	{
+		NormalSkillHitBox->OnComponentBeginOverlap.RemoveAll(this);
+		NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this,&AEntityPreset::OnNormalHitBoxOverlap);
+	}
+
+	if(SpecialSkillHitBox)
+	{
+		SpecialSkillHitBox->OnComponentBeginOverlap.RemoveAll(this); // 중복 방지
+		SpecialSkillHitBox->OnComponentBeginOverlap.AddDynamic(this,&AEntityPreset::OnSpecialHitBoxOverlap);
+	}
 }
 
 // 히트박스 충돌 세팅 
@@ -575,6 +589,42 @@ void AEntityPreset::HideSpecialHitBox()
 	SpecialSkillHitBox->SetVisibility(false);
 	SpecialSkillHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 끄기
 	UE_LOG(LogTemp, Warning, TEXT("Hide HitBox"));
+}
+
+void AEntityPreset::ShowHitBox()
+{
+	if(bIsCharging)
+	{
+		ShowSpecialHitBox();
+	} else
+	{
+		ShowNormalHitBox();
+	}
+}
+
+// AnimNotify로 호출될 함수 정의 (Anim BP에서 사용 가능)
+void AEntityPreset::AnimNotify_ShowHitBox()
+{
+	ShowHitBox();
+
+	// Duration 기반으로 히트박스 숨기기 예약
+	if(bIsCharging)
+	{
+		float Duration = SpecialSkillData.SkillDuration;
+		GetWorldTimerManager().SetTimerForNextTick([this,Duration]()
+		{
+			FTimerHandle TimerHandle;
+			GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideSpecialHitBox,Duration,false);
+		});
+	} else
+	{
+		float Duration = NormalSkillData.SkillDuration;
+		GetWorldTimerManager().SetTimerForNextTick([this,Duration]()
+		{
+			FTimerHandle TimerHandle;
+			GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideNormalHitBox,Duration,false);
+		});
+	}
 }
 
 void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -769,7 +819,7 @@ void AEntityPreset::PerformSkill_Charge()
 			UE_LOG(LogTemp, Warning, TEXT("PerformSpecialSkill_Charge: Montage played"));
 
 			// 경로 시각화 (기획 확인용)
-			DrawDebugLine(GetWorld(), ChargeStartLocation, ChargeTargetLocation, FColor::Red, false, 2.0f, 0, 3.0f);
+			//DrawDebugLine(GetWorld(), ChargeStartLocation, ChargeTargetLocation, FColor::Red, false, 2.0f, 0, 3.0f);
 
 			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
 			FOnMontageEnded EndDelegate;
@@ -873,7 +923,7 @@ void AEntityPreset::ExecuteChargeDash()
 	bIsCharging = true;
 
 	// 히트박스도 활성화
-	ShowSpecialHitBox();
+	//ShowSpecialHitBox();
 
 	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Launch Started"));
 
@@ -929,7 +979,7 @@ void AEntityPreset::StartChargeMovement()
 	if (ChargeTimeline)
 	{
 		ChargeTimeline->PlayFromStart();
-		ShowSpecialHitBox(); // 충돌 체크 시작
+		//ShowSpecialHitBox(); // 충돌 체크 시작
 	}
 }
 
@@ -1028,7 +1078,7 @@ void AEntityPreset::DrawChargePath()
 	float DashDuration = 0.75f; // 돌진 지속 시간 추정 (0.5~1.0s 정도로 테스트)
 	FVector EndLocation = StartLocation + GetActorForwardVector() * DashSpeed * DashDuration;
 
-	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.5f, 0, 5.f);
+	//DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.5f, 0, 5.f);
 	UE_LOG(LogTemp, Warning, TEXT("DrawChargePath: Charge path drawn"));
 }
 
@@ -1081,8 +1131,8 @@ void AEntityPreset::SpawnProjectile_ThrowRock()
 	}
 
 	// 스폰 위치는 메시에 설정한 소켓 위치 기준
-	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ThrowSocket"));
-	FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("ThrowSocket"));
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ThrowRockSocket"));
+	FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("ThrowRockSocket"));
 
 	// 스폰 파라미터
 	FActorSpawnParameters SpawnParams;
@@ -1093,26 +1143,27 @@ void AEntityPreset::SpawnProjectile_ThrowRock()
 	// 투사체 생성
 	AEntityProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AEntityProjectile>(ProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
 
-	//if(SpawnedProjectile)
-	//{
-	//	// Skill 데이터 테이블에서 "Skill_ThrowRock" 데이터 가져오기
-	//	FSkillData SkillData;
-	//	TArray<FSkillEffectData> EffectDataArray;
+	if(SpawnedProjectile)
+	{
+		// Skill 데이터 테이블에서 "Skill_ThrowRock" 데이터 가져오기
+		FSkillData SkillData;
+		TArray<FSkillEffectData> EffectDataArray;
 
-	//	if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_ThrowRock",SkillData) &&
-	//		UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_ThrowRock",EffectDataArray))
-	//	{
-	//		// 초기화
-	//		SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
+		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_ThrowRock",SkillData) &&
+			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_ThrowRock",EffectDataArray))
+		{
+			// 초기화
+			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
 
-	//		// 발사
-	//		FVector LaunchDirection = GetActorForwardVector(); // 정면 발사
-	//		SpawnedProjectile->FireInDirection(LaunchDirection);
-	//	} else
-	//	{
-	//		UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_ThrowRock data!"));
-	//	}
-	//}
+			UE_LOG(LogTemp,Error,TEXT("Spawned ThrowRock Projectile"));
+			// 발사
+			//FVector LaunchDirection = GetActorForwardVector(); // 정면 발사
+			//SpawnedProjectile->FireInDirection(LaunchDirection);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_ThrowRock data!"));
+		}
+	}
 }
 
 
