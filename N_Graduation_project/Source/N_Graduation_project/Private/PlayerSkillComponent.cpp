@@ -366,7 +366,7 @@ void UPlayerSkillComponent::SpawnChargeIndicator(FVector Start,FVector End)
 	}
 	FVector MidPoint = (Start + End) * 0.5f;
 	float Length = FVector::Distance(Start,End);
-	ChargeDecalComponent->DecalSize = FVector(100.f,Length * 0.5f,100.f);
+	ChargeDecalComponent->DecalSize = FVector(150.f,Length * 0.5f,100.f); //데칼의 두께, 길이, 넓이
 
 	// 데칼 방향: 돌진 방향으로 정렬 (Pitch -90은 지면 투사)
 		// Z축 투사, Y축 방향 보정 (Yaw + 90도)
