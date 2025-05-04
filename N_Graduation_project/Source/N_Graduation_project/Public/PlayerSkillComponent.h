@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -101,11 +101,21 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	FVector StoredDashDirection;
 
+	// 데칼 표시용 
+	UPROPERTY()
+		UDecalComponent* ChargeDecalComponent;
+
+	UPROPERTY(EditDefaultsOnly,Category = "Skill|Charge")
+		UMaterialInstance* ChargeDecalMaterial;
+
+
+
 	UFUNCTION()
 	void ExecuteChargeDash(FVector Chargedistance, FString SkillName);
 	UFUNCTION()
 	void DelayedKnockbackEffect(FString SkillName);
 
 	void DrawChargePath();
+	void SpawnChargeIndicator(FVector Start,FVector End);
 	void ApplyKnockback(AActor* TargetActor, float KnockbackPower);
 };

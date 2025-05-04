@@ -11,6 +11,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/DecalComponent.h"            // UDecalComponent
+#include "Kismet/KismetMathLibrary.h"             // UKismetMathLibrary::FindLookAtRotation
 
 
 UPlayerSkillComponent::UPlayerSkillComponent()
@@ -27,7 +29,18 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 void UPlayerSkillComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+  // UMaterialInstance를 로드
+	ChargeDecalMaterial = LoadObject<UMaterialInstance>(nullptr,TEXT("MaterialInstance'/Game/Entity/M_WildBoarChargeDecal1.M_WildBoarChargeDecal1'"));
+	ChargeDecalComponent = NewObject<UDecalComponent>(this);
+	if(ChargeDecalComponent)
+	{
+		ChargeDecalComponent->RegisterComponent();  // 컴포넌트 등록
+		ChargeDecalComponent->AttachToComponent(Cast<AActor>(GetOwner())->GetRootComponent(),FAttachmentTransformRules::KeepWorldTransform);
+		ChargeDecalComponent->SetDecalMaterial(ChargeDecalMaterial);  // 데칼 머티리얼 설정
+	} else
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Failed to create ChargeDecalComponent"));
+	}
 }
 void UPlayerSkillComponent::SetHitBox(UBoxComponent* InHitBox)
 {
@@ -43,7 +56,6 @@ void UPlayerSkillComponent::OnDefenseSkill()
 	{
 		//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill on"));
 	}
-
 }
 
 void UPlayerSkillComponent::OffDefenseSkill()
@@ -307,17 +319,62 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		UE_LOG(LogTemp, Warning, TEXT("kakao No CanUseSpecialSkill"));
 	}
 }
+//<돌진>
+
 void UPlayerSkillComponent::DrawChargePath()
 {
-	// 예시: 디버그 선을 이용해 경로 표시
 	ACharacter* MyChar = Cast<ACharacter>(GetOwner());
-	if (!MyChar || !GetWorld()) return;
+	if(!MyChar || !GetWorld()) return;
 
 	FVector StartLocation = MyChar->GetActorLocation();
+	//float DashSpeed = 2000.0f;
+	//float DashDuration = 0.75f;
+	//FVector EndLocation = StartLocation + MyChar->GetActorForwardVector() * DashSpeed * DashDuration;
 	FVector EndLocation = StartLocation + MyChar->GetActorForwardVector() * 600.f;
-	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.5f, 0, 5.f);
-	UE_LOG(LogTemp, Warning, TEXT("DrawChargePath: Charge path drawn"));
 
+	//DrawDebugLine(GetWorld(),StartLocation,EndLocation,FColor::Red,false,1.5f,0,5.f);
+	SpawnChargeIndicator(StartLocation,EndLocation);  // 디버그 라인 대신 데칼 사용
+
+	// 1초 후 자동 제거
+	FTimerHandle DecalTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(DecalTimerHandle,[this]()
+	{
+		if(ChargeDecalComponent)
+		{
+			ChargeDecalComponent->DestroyComponent();
+			ChargeDecalComponent = nullptr;
+		}
+	},1.0f,false);
+
+	UE_LOG(LogTemp,Warning,TEXT("DrawChargePath: Charge indicator spawned"));
+}
+void UPlayerSkillComponent::SpawnChargeIndicator(FVector Start,FVector End)
+{
+	if(!ChargeDecalMaterial)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("ChargeDecalMaterial is nullptr!"));
+		return;
+	} 
+	if(!ChargeDecalComponent)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("ChargeDecalComponent is nullptr!"));
+
+		ChargeDecalComponent = NewObject<UDecalComponent>(this);
+		ChargeDecalComponent->RegisterComponent();
+		ChargeDecalComponent->AttachToComponent(Cast<AActor>(GetOwner())->GetRootComponent(),FAttachmentTransformRules::KeepWorldTransform);
+		ChargeDecalComponent->SetDecalMaterial(ChargeDecalMaterial);
+	}
+	FVector MidPoint = (Start + End) * 0.5f;
+	float Length = FVector::Distance(Start,End);
+	ChargeDecalComponent->DecalSize = FVector(100.f,Length * 0.5f,100.f);
+
+	// 데칼 방향: 돌진 방향으로 정렬 (Pitch -90은 지면 투사)
+		// Z축 투사, Y축 방향 보정 (Yaw + 90도)
+	FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(Start,End);
+	FRotator DecalRot = FRotator(-90.f,LookAtRot.Yaw + 90.f,0.f);
+	
+	ChargeDecalComponent->SetWorldLocation(MidPoint);
+	ChargeDecalComponent->SetWorldRotation(DecalRot);
 }
 void UPlayerSkillComponent::ExecuteChargeDash(FVector Chargedistance, FString SkillName)
 {
@@ -342,6 +399,7 @@ void UPlayerSkillComponent::ExecuteChargeDash(FVector Chargedistance, FString Sk
 		KnockbackTimerHandle,
 		FTimerDelegate::CreateUObject(this, &UPlayerSkillComponent::DelayedKnockbackEffect, SkillName), 0.2f, false);
 }
+
 void UPlayerSkillComponent::DelayedKnockbackEffect(FString SkillName)
 {
 	HideHitBox();
