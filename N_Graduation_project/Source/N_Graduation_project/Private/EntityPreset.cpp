@@ -627,6 +627,12 @@ void AEntityPreset::AnimNotify_ShowHitBox()
 	}
 }
 
+void AEntityPreset::AnimNotify_SpawnProjectile()
+{
+	// 투사체 발사 함수
+	SpawnProjectile_ThrowRock();
+}
+
 void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != this)
@@ -1124,13 +1130,14 @@ void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target, float Distance, flo
 
 void AEntityPreset::SpawnProjectile_ThrowRock()
 {
-	if(!ProjectileClass) // 스폰할 프로젝타일 클래스가 설정돼야 함
+	// 스폰할 투사체 클래스 설정 확인
+	if(!NormalProjectileClass)
 	{
 		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
 		return;
 	}
 
-	// 스폰 위치는 메시에 설정한 소켓 위치 기준
+	// 스폰 위치, 방향 설정 
 	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ThrowRockSocket"));
 	FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("ThrowRockSocket"));
 
@@ -1140,8 +1147,9 @@ void AEntityPreset::SpawnProjectile_ThrowRock()
 	SpawnParams.Owner = this;
 	SpawnParams.Instigator = GetInstigator();
 
-	// 투사체 생성
-	AEntityProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AEntityProjectile>(ProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+	// 투사체 액터 스폰 
+	AEntityProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+	//AActor* SpawnedProjectile = GetWorld()->SpawnActor<AActor>(NormalProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
 
 	if(SpawnedProjectile)
 	{
@@ -1156,16 +1164,16 @@ void AEntityPreset::SpawnProjectile_ThrowRock()
 			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
 
 			UE_LOG(LogTemp,Error,TEXT("Spawned ThrowRock Projectile"));
+
 			// 발사
-			//FVector LaunchDirection = GetActorForwardVector(); // 정면 발사
-			//SpawnedProjectile->FireInDirection(LaunchDirection);
+			FVector Direction = GetActorForwardVector();
+			SpawnedProjectile->FireInDirection(Direction);
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_ThrowRock data!"));
 		}
 	}
 }
-
 
 //void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 //{

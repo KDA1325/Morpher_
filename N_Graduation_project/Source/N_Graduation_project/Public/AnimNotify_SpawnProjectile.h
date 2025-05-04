@@ -6,12 +6,12 @@
 #include "Animation/AnimNotifies/AnimNotify.h"
 #include "AnimNotify_SpawnProjectile.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
-class N_GRADUATION_PROJECT_API UAnimNotify_SpawnProjectile : public UAnimNotify
+class N_GRADUATION_PROJECT_API UAnimNotify_SpawnProjectile: public UAnimNotify
 {
 	GENERATED_BODY()
-	
+
+public:
+	virtual void Notify(USkeletalMeshComponent* MeshComp,UAnimSequenceBase* Animation) override;
 };

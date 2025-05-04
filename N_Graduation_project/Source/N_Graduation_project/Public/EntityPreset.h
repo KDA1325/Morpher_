@@ -72,6 +72,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	UAnimMontage* SpecialSkillMontage;
 
+
+	//UPROPERTY(EditDefaultsOnly,Category = "Skill")
+	//TSubclassOf<class AEntityProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
+	TSubclassOf<class AEntityProjectile> NormalProjectileClass;
+
+	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
+	//TSubclassOf<AActor> NormalProjectileClass;
+	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
+	//TSubclassOf<AEntityProjectile> SpecialProjectileClass;
+
 	//스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void SetupHitBoxComponent(FSkillData& SkillData);
@@ -92,6 +104,7 @@ public:
 	void ShowHitBox();
 
 	void AnimNotify_ShowHitBox();
+	void AnimNotify_SpawnProjectile();
 
 	// 히트박스 Overlap 이벤트 처리 함수
 	UFUNCTION()
@@ -134,9 +147,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Skill|Charge")
 	UCurveFloat* ChargeCurve;
-
-	UPROPERTY(EditDefaultsOnly,Category = "Skill")
-	TSubclassOf<class AEntityProjectile> ProjectileClass;
 
 	void StartChargeMovement();
 

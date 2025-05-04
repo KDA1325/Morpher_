@@ -13,19 +13,19 @@ AEntityProjectile::AEntityProjectile()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	CollisionComp->InitSphereRadius(15.0f);
-	CollisionComp->SetCollisionProfileName("BlockAllDynamic");
-	RootComponent = CollisionComp;
+	//CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
+	//CollisionComp->InitSphereRadius(15.0f);
+	//CollisionComp->SetCollisionProfileName("BlockAllDynamic");
+	//RootComponent = CollisionComp;
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
-	ProjectileMovement->UpdatedComponent = CollisionComp;
+	//ProjectileMovement->UpdatedComponent = CollisionComp;
 	ProjectileMovement->InitialSpeed = 600.f;
 	ProjectileMovement->MaxSpeed = 600.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
 
-	CollisionComp->OnComponentHit.AddDynamic(this,&AEntityProjectile::OnHit);
+	//CollisionComp->OnComponentHit.AddDynamic(this,&AEntityProjectile::OnHit);
 
 	Damage = 0.f;
 	AOERadius = 0.f;
@@ -39,6 +39,14 @@ void AEntityProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if(CollisionComp)
+	{
+		ProjectileMovement->UpdatedComponent = CollisionComp;
+		CollisionComp->OnComponentHit.AddDynamic(this,&AEntityProjectile::OnHit);
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("CollisionComp is null in BeginPlay! Check BP binding."));
+	}
 }
 
 // Called every frame
@@ -119,6 +127,14 @@ void AEntityProjectile::OnHit(UPrimitiveComponent* HitComp,AActor* OtherActor,UP
 		// 불 디버프 적용
 		break;
 		}
+	}
+}
+
+void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
+{
+	if(ProjectileMovement)
+	{
+		ProjectileMovement->Velocity = ShootDirection * ProjectileMovement->InitialSpeed;
 	}
 }
 
