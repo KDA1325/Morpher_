@@ -72,7 +72,7 @@ void UWidgetActor::ShowPieMenu()
 			PieWidget->SetPositionInViewport(FinalPosition, false);
 			PieWidget->SetVisibility(ESlateVisibility::Visible);
 			PieWidget->StandardPosition();
-			PC->bShowMouseCursor = true;
+		//	PC->bShowMouseCursor = true;
 
 			UE_LOG(LogTemp, Log, TEXT("Pie 메뉴 보임, 계산된 위치: %s"), *FinalPosition.ToString());
 		}
@@ -90,12 +90,13 @@ void UWidgetActor::HidePieMenu()
 	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 	UMyPlayerStatComponent* Stat = MyChar->FindComponentByClass<UMyPlayerStatComponent>();
 		
-	PC->SetShowMouseCursor(false); 
-	PC->SetInputMode(FInputModeGameOnly()); 
-
+	//PC->SetShowMouseCursor(false); 
 	if (PieWidget)
-	{
+	{			PC->SetInputMode(FInputModeGameAndUI());
+
 		if (Stat->Change == true) {
+			
+
 			PieWidget->CacheFinalMouseAngle();
 			MyChar->ChangePreset(PieWidget->Monster);
 			if (Back_CacheFinalMouseAngle == true) {
@@ -109,7 +110,7 @@ void UWidgetActor::HidePieMenu()
 
 		if (PC)
 		{
-			UWidgetBlueprintLibrary::SetInputMode_GameOnly(PC);
+			//UWidgetBlueprintLibrary::SetInputMode_GameOnly(PC);
 			//PC->bShowMouseCursor = false;
 			UE_LOG(LogTemp, Log, TEXT("PieWidget->Monster %s"), *PieWidget->Monster);
 
@@ -122,3 +123,4 @@ void UWidgetActor::HidePieMenu()
 		UE_LOG(LogTemp, Warning, TEXT("PieWidget이 nullptr입니다."));
 	}
 }
+ 
