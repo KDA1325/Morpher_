@@ -201,7 +201,7 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, 
 		UE_LOG(LogTemp, Error, TEXT("NormalSkillMontage is not set"));
 	}
 
-	OwnerEntity->ShowNormalHitBox();
+	//OwnerEntity->ShowNormalHitBox();
 }
 
 // Projectile 타입 스킬 구현 = 쿨타임 타이머 실행 및 스킬 애니메이션 재생 

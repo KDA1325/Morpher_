@@ -27,7 +27,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	
 	// Components
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Components")
+	//UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Components")
+	//class USphereComponent* CollisionComp;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Collision")
 	class USphereComponent* CollisionComp;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Components")
@@ -47,7 +50,7 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")
 	FSkillData SkillData;
 
-	// 투사체가 사용할 스킬 이펙트 데이터 (여러 개 가능)
+	// 투사체에 적용될 스킬 효과 데이터 (여러 개 가능)
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")
 	TArray<FSkillEffectData> EffectDataArray;
 
@@ -57,6 +60,9 @@ public:
 	// 투사체가 충돌했을 때 호출 (스킬 효과 Damage, AOE, Fire 등 적용)
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp,AActor* OtherActor,UPrimitiveComponent* OtherComp,FVector NormalImpulse,const FHitResult& Hit);
+
+	// ProjectileMovementComponent 사용을 위한 함수(투사체 발사) 
+	void FireInDirection(const FVector & ShootDirection);
 
 	//// Collision handling
 	//UFUNCTION()

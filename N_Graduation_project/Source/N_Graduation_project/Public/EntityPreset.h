@@ -72,6 +72,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	UAnimMontage* SpecialSkillMontage;
 
+
+	//UPROPERTY(EditDefaultsOnly,Category = "Skill")
+	//TSubclassOf<class AEntityProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
+	TSubclassOf<class AEntityProjectile> NormalProjectileClass;
+
+	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
+	//TSubclassOf<AActor> NormalProjectileClass;
+	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
+	//TSubclassOf<AEntityProjectile> SpecialProjectileClass;
+
 	//스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void SetupHitBoxComponent(FSkillData& SkillData);
@@ -88,6 +100,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void HideSpecialHitBox();
+
+	void ShowHitBox();
+
+	void AnimNotify_ShowHitBox();
+	void AnimNotify_SpawnProjectile();
 
 	// 히트박스 Overlap 이벤트 처리 함수
 	UFUNCTION()
@@ -112,6 +129,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ExecuteChargeDash();
 
+	UFUNCTION(BlueprintCallable,Category = "Skill")
+	void SpawnProjectile_ThrowRock();
+
 	void ClearCastingSkill();
 
 	// Skill 몽타주 종료 콜백 
@@ -127,9 +147,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Skill|Charge")
 	UCurveFloat* ChargeCurve;
-
-	UPROPERTY(EditDefaultsOnly,Category = "Skill")
-	TSubclassOf<class AEntityProjectile> ProjectileClass;
 
 	void StartChargeMovement();
 
@@ -167,9 +184,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ApplyKnockbackEffect(ACharacter* Target, float Distance, float Duration);
-
-	UFUNCTION()
-	void SpawnProjectile_ThrowRock();
 
 protected:
 	// Called when the game starts or when spawned
