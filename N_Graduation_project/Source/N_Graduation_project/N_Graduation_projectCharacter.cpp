@@ -658,14 +658,21 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 
 	else if(currentPreset == "InpermonPreset.uasset")
 	{
-		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_TableRound.SM_TableRound'"));
+			//<변신을 위해 이거 2개 필수>
+			FSoftObjectPath MeshPath(TEXT("/Game/Gamin/InferMon/InferMon_idle.InferMon_idle"));
+		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/InferMon/Infermon_Skeleton_AnimBP.Infermon_Skeleton_AnimBP_C"));
+
+		//<피격을 위해 이거 3개 필수>
+		UMaterialInterface* InpermonMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Gamin/InferMon/standardSurface1.standardSurface1'"));
+		InvincibleOriginalMaterial = InpermonMaterial;
+		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
-		if(LoadedMesh)
+		GetMesh()->SetRelativeScale3D(FVector(2.0f,2.0f,2.0f));
+		if(LoadedMesh && NewAnimBP)
 		{
-			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
-
-			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
+			GetMesh()->SetSkeletalMesh(LoadedMesh);
+			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
 	}
 

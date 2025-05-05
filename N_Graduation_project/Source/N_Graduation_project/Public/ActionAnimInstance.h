@@ -24,12 +24,12 @@ public:
 
 
 protected:
-	// ¾Ö´Ï¸ŞÀÌ¼Ç Á¾·á Äİ¹é ÇÔ¼ö
+	// ì• ë‹ˆë©”ì´ì…˜ ì¢…ë£Œ ì½œë°± í•¨ìˆ˜
 	UFUNCTION()
 	void OnMontageEndCallback(UAnimMontage* Montage, bool bInterrupted);
 
 private:
 	UAnimMontage* M_Slash;
 	UAnimMontage* M_Bite;
-
+	UAnimMontage* m_Inpermon1;
 };

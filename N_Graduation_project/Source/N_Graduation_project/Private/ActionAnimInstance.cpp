@@ -23,15 +23,24 @@ UActionAnimInstance::UActionAnimInstance()
 
 	// 애셋 로드
 	M_Bite = Cast<UAnimMontage>(BiteMontagePath.TryLoad());
-	if (M_Bite)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Successfully loaded Montage: %s"), *M_Bite->GetName());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load Montage from path: %s"), *BiteMontagePath.ToString());
-	}
+	//if (M_Bite)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("Successfully loaded Montage: %s"), *M_Bite->GetName());
+	//}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Error, TEXT("Failed to load Montage from path: %s"), *BiteMontagePath.ToString());
+	//}
 
+	FSoftObjectPath Nomal_InpermonMontagePath(TEXT("/Game/Gamin/InferMon/InferMon_attack_Anim_Montage.InferMon_attack_Anim_Montage"));
+	m_Inpermon1 = Cast<UAnimMontage>(Nomal_InpermonMontagePath.TryLoad());
+	if(m_Inpermon1)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Successfully loaded Montage: %s"),*m_Inpermon1->GetName());
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("Failed to load Montage from path: %s"),*Nomal_InpermonMontagePath.ToString());
+	}
 }
 void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 {
@@ -43,12 +52,6 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 	}
-	//if (EffectID == "Skill_FireBall") {
-	//	UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *M_Slash->GetName());
-	//	Montage_Play(M_Slash);
-	//	// 애니메이션 종료 이벤트 바인딩
-	//	OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
-	//}
 	if (EffectID == "Skill_Bite" || EffectID=="Skill_Charge") {
 		UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *M_Bite->GetName());
 		UE_LOG(LogTemp, Warning, TEXT("Playing Skill_Bite 실행됨"));
@@ -59,6 +62,13 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 	}
+	if (EffectID == "Skill_ThrowRock"&&EffectID == "Skill_FireBall") {
+	UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *m_Inpermon1->GetName());
+	Montage_Play(m_Inpermon1);
+	// 애니메이션 종료 이벤트 바인딩
+	OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
+}
+
 
 	else{
 		UE_LOG(LogTemp, Warning, TEXT("Playing Animation 해당하는 스킬 없음"));
