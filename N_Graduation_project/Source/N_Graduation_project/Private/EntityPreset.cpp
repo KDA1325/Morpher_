@@ -1139,7 +1139,10 @@ void AEntityPreset::SpawnProjectile_ThrowRock()
 
 	// 스폰 위치, 방향 설정 
 	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ThrowRockSocket"));
-	FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("ThrowRockSocket"));
+	FVector Direction = GetMesh()->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
+	//FVector Direction = GetMesh()->GetForwardVector();
+
+	//FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("ThrowRockSocket"));
 
 	// 스폰 파라미터
 	FActorSpawnParameters SpawnParams;
@@ -1148,7 +1151,8 @@ void AEntityPreset::SpawnProjectile_ThrowRock()
 	SpawnParams.Instigator = GetInstigator();
 
 	// 투사체 액터 스폰 
-	AEntityProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+	FRotator DumyRotation = Direction.Rotation();
+	AEntityProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,DumyRotation,SpawnParams);
 	//AActor* SpawnedProjectile = GetWorld()->SpawnActor<AActor>(NormalProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
 
 	if(SpawnedProjectile)
@@ -1163,10 +1167,12 @@ void AEntityPreset::SpawnProjectile_ThrowRock()
 			// 초기화
 			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
 
+			//SpawnedProjectile->IgnoreActorWhenMoving(this,true);
+
 			UE_LOG(LogTemp,Error,TEXT("Spawned ThrowRock Projectile"));
 
 			// 발사
-			FVector Direction = GetActorForwardVector();
+			//FVector Direction = GetMesh()->GetForwardVector();
 			SpawnedProjectile->FireInDirection(Direction);
 		} else
 		{

@@ -30,7 +30,7 @@ public:
 	//UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Components")
 	//class USphereComponent* CollisionComp;
 
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Collision")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Collision")
 	class USphereComponent* CollisionComp;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Components")
@@ -59,7 +59,9 @@ public:
 
 	// 투사체가 충돌했을 때 호출 (스킬 효과 Damage, AOE, Fire 등 적용)
 	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComp,AActor* OtherActor,UPrimitiveComponent* OtherComp,FVector NormalImpulse,const FHitResult& Hit);
+	//void OnHit(UPrimitiveComponent* HitComp,AActor* OtherActor,UPrimitiveComponent* OtherComp,FVector NormalImpulse,const FHitResult& Hit);
+
+	void OnOverlap(UPrimitiveComponent * OverlappedComp,AActor * OtherActor,UPrimitiveComponent * OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult & SweepResult);
 
 	// ProjectileMovementComponent 사용을 위한 함수(투사체 발사) 
 	void FireInDirection(const FVector & ShootDirection);
