@@ -161,8 +161,8 @@ void UMyCharacterWidget::SetSkillIcon() {
 			}
 		}	
 		else if (SkillName == "Inpermon") {
-			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_bite.Skill_bite"));
-			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_charge.Skill_charge"));
+			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_ThrowRock.Skill_ThrowRock"));
+			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_FireBall.Skill_FireBall"));
 
 			if (BaseMaterial)
 			{
@@ -175,8 +175,8 @@ void UMyCharacterWidget::SetSkillIcon() {
 			}
 		}
 		else if (SkillName == "Freezard") {
-			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_bite.Skill_bite"));
-			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_charge.Skill_charge"));
+			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_TailSwing.Skill_TailSwing"));
+			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_FreezeBreath.Skill_FreezeBreath"));
 
 			if (BaseMaterial)
 			{
@@ -189,8 +189,8 @@ void UMyCharacterWidget::SetSkillIcon() {
 			}
 		}
 		else if (SkillName == "StoneGolem") {
-			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_bite.Skill_bite"));
-			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_Slash.Skill_Slash"));
+			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_ArmSwing.Skill_ArmSwing"));
+			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_EarthBreaker.Skill_EarthBreaker"));
 
 			if (BaseMaterial)
 			{
@@ -203,8 +203,8 @@ void UMyCharacterWidget::SetSkillIcon() {
 			}
 		}
 		else if (SkillName == "SkeletonWarrior") {
-			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_bite.Skill_bite"));
-			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_charge.Skill_charge"));
+			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_Slash.Skill_Slash"));
+			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_ShieldGuard.Skill_ShieldGuard"));
 
 			if (BaseMaterial)
 			{
@@ -217,8 +217,8 @@ void UMyCharacterWidget::SetSkillIcon() {
 			}
 		}		
 		else if (SkillName == "SkeletonArcher") {
-			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_bite.Skill_bite"));
-			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_charge.Skill_charge"));
+			UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_Arrow.Skill_Arrow"));
+			UMaterialInterface* BaseMaterial2 = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/UI/Image/Skill/Skill_Instance/Skill_ShockArrow.Skill_ShockArrow"));
 
 			if (BaseMaterial)
 			{
