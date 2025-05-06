@@ -22,7 +22,7 @@ AEntityProjectile::AEntityProjectile()
 	ProjectileMovement->ProjectileGravityScale = 0.f;
 	//ProjectileMovement->Activate();
 
-	// 기타 설정
+	// 변수 초기화 
 	Damage = 0.f;
 	AOERadius = 0.f;
 	bApplyFireDot = false;
@@ -69,6 +69,7 @@ void AEntityProjectile::InitProjectileBySkillData(const FSkillData & InSkillData
 {
 	SkillData = InSkillData;
 	EffectDataArray = InEffectData;
+	SkillRange = InSkillData.SkillRange;
 
 	// 발사 속도 설정
 	if(ProjectileMovement)
@@ -86,6 +87,19 @@ void AEntityProjectile::InitProjectileBySkillData(const FSkillData & InSkillData
 	if(CollisionComp && GetOwner())
 	{
 		CollisionComp->IgnoreActorWhenMoving(GetOwner(),true);
+	}
+
+	// SkillRange까지 도달 후 투사체 삭제를 위한 타이머 
+	if(SkillData.ProjectileSpeed > 0.f)
+	{
+		float LifeTime = SkillData.SkillRange / SkillData.ProjectileSpeed;
+		GetWorld()->GetTimerManager().SetTimer(
+			DestroyTimerHandle,
+			this,
+			&AEntityProjectile::OnLifetimeExpired,
+			LifeTime,
+			false
+		);
 	}
 }
 
@@ -114,6 +128,7 @@ void AEntityProjectile::InitProjectileBySkillData(const FSkillData & InSkillData
 //
 //	
 //}
+
 void AEntityProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
 {
 	if(!OtherActor) return;
@@ -166,6 +181,12 @@ void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
 		UE_LOG(LogTemp,Warning,TEXT("FireInDirection called! Velocity = %s"),*ProjectileMovement->Velocity.ToString());
 	}
 }
+
+void AEntityProjectile::OnLifetimeExpired()
+{
+	Destroy(); // 또는 ReturnToPool();
+}
+
 //void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
 //{
 //	if(ProjectileMovement && CollisionComp)
