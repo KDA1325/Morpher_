@@ -13,20 +13,16 @@ AEntityProjectile::AEntityProjectile()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	//CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	//CollisionComp->InitSphereRadius(15.0f);
-	//CollisionComp->SetCollisionProfileName("BlockAllDynamic");
-	//RootComponent = CollisionComp;
-
+	// 발사체 이동 컴포넌트 설정
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
-	//ProjectileMovement->UpdatedComponent = CollisionComp;
 	ProjectileMovement->InitialSpeed = 600.f;
 	ProjectileMovement->MaxSpeed = 600.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
+	ProjectileMovement->ProjectileGravityScale = 0.f;
+	//ProjectileMovement->Activate();
 
-	//CollisionComp->OnComponentHit.AddDynamic(this,&AEntityProjectile::OnHit);
-
+	// 기타 설정
 	Damage = 0.f;
 	AOERadius = 0.f;
 	bApplyFireDot = false;
@@ -38,14 +34,28 @@ AEntityProjectile::AEntityProjectile()
 void AEntityProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if(CollisionComp)
+
+
+	if(!CollisionComp)
 	{
-		ProjectileMovement->UpdatedComponent = CollisionComp;
-		CollisionComp->OnComponentHit.AddDynamic(this,&AEntityProjectile::OnHit);
-	} else
+		CollisionComp = FindComponentByClass<USphereComponent>();
+	}
+
+	if(CollisionComp && ProjectileMovement)
 	{
-		UE_LOG(LogTemp,Error,TEXT("CollisionComp is null in BeginPlay! Check BP binding."));
+		UE_LOG(LogTemp,Warning,TEXT("CollisionComp found: %s"),*CollisionComp->GetName());
+
+		RootComponent = CollisionComp;
+
+		ProjectileMovement->SetUpdatedComponent(CollisionComp);
+		ProjectileMovement->Activate(true);
+
+		//CollisionComp->OnComponentHit.AddDynamic(this,&AEntityProjectile::OnHit);
+		CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AEntityProjectile::OnOverlap);
+	}
+	else
+	{
+		UE_LOG(LogTemp,Error,TEXT("Hitbox is null in BeginPlay! Check BP binding."));
 	}
 }
 
@@ -54,48 +64,6 @@ void AEntityProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
-//
-//void AEntityProjectile::InitProjectile(const FSkillData& SkillData,const TArray<FSkillEffectData>& EffectData)
-//{
-//	// 기본으로 들어갈 데이터 -> 데이터를 불러왔는데도 값이 0이면 해당 효과 부여 X
-//	Damage = 0.0f;
-//	AOERadius = 0.0f;
-//	bApplyFireDot = false;
-//	FireDamage = 0.0f;
-//	FireDuration = 0.0f;
-//
-//	// SkillEffectData를 분석해서 적용
-//	for(const FSkillEffectData& Effect : EffectData)
-//	{
-//		switch(Effect.EffectType)
-//		{
-//		case EnumEffectType::Damage:
-//		Damage = Effect.EffectValue01;
-//		break;
-//
-//		case EnumEffectType::AOEDamage:
-//		Damage = Effect.EffectValue01;
-//		AOERadius = Effect.EffectValue02;
-//		break;
-//
-//		case EnumEffectType::Fire:
-//		bApplyFireDot = true;
-//		FireDamage = Effect.EffectValue01;
-//		FireDuration = Effect.EffectValue02;
-//		break;
-//
-//		default:
-//		break;
-//		}
-//	}
-//
-//	
-//	if(ProjectileMovement)
-//	{
-//		ProjectileMovement->InitialSpeed = SkillData.ProjectileSpeed;
-//		ProjectileMovement->MaxSpeed = SkillData.ProjectileSpeed;
-//	}
-//}
 
 void AEntityProjectile::InitProjectileBySkillData(const FSkillData & InSkillData, const TArray<FSkillEffectData>& InEffectData)
 {
@@ -107,58 +75,123 @@ void AEntityProjectile::InitProjectileBySkillData(const FSkillData & InSkillData
 	{
 		ProjectileMovement->InitialSpeed = SkillData.ProjectileSpeed;
 		ProjectileMovement->MaxSpeed = SkillData.ProjectileSpeed;
-	}
-}
 
-void AEntityProjectile::OnHit(UPrimitiveComponent* HitComp,AActor* OtherActor,UPrimitiveComponent* OtherComp,FVector NormalImpulse,const FHitResult& Hit)
-{
-	// 충돌시, EffectDataArray를 순회해서
-	for(const FSkillEffectData& Effect : EffectDataArray)
+		//// 충돌 무시 설정
+		//if(GetOwner())
+		//{
+		//	ProjectileMovement->IgnoreActorWhenMoving(GetOwner(),true);
+		//}
+	}
+
+	if(CollisionComp && GetOwner())
 	{
-		switch(Effect.EffectType)
-		{
-		case EnumEffectType::Damage:
-		UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
-		break;
-		//case EnumEffectType::AOEDamage:
-		//// 광역 대미지 처리
-		//break;
-		case EnumEffectType::Fire:
-		// 불 디버프 적용
-		break;
-		}
+		CollisionComp->IgnoreActorWhenMoving(GetOwner(),true);
 	}
 }
 
-void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
-{
-	if(ProjectileMovement)
-	{
-		ProjectileMovement->Velocity = ShootDirection * ProjectileMovement->InitialSpeed;
-	}
-}
-
-//void AEntityProjectile::OnProjectileHit(UPrimitiveComponent* HitComp,AActor* OtherActor,UPrimitiveComponent* OtherComp,FVector NormalImpulse,const FHitResult& Hit)
+//void AEntityProjectile::OnHit(UPrimitiveComponent* HitComp,AActor* OtherActor,UPrimitiveComponent* OtherComp,FVector NormalImpulse,const FHitResult& Hit)
 //{
-//	// 데미지 적용
-//	if(Damage > 0 && OtherActor && OtherActor != this)
+//	if(OtherActor && OtherActor->ActorHasTag("Player")) 
 //	{
-//		if(AOERadius > 0)
+//		for(const FSkillEffectData& Effect : EffectDataArray)
 //		{
-//			// AOE 데미지 처리
-//			UGameplayStatics::ApplyRadialDamage(this,Damage,GetActorLocation(),AOERadius,nullptr,TArray<AActor*>(),this,GetInstigatorController(),true);
-//		} else
-//		{
-//			UGameplayStatics::ApplyDamage(OtherActor,Damage,GetInstigatorController(),this,nullptr);
+//			switch(Effect.EffectType)
+//			{
+//			case EnumEffectType::Damage:
+//			UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+//			break;
+//			//case EnumEffectType::AOEDamage:
+//			//// 광역 대미지 처리
+//			//break;
+//			case EnumEffectType::Fire:
+//			// 불 디버프 적용
+//			break;
+//			}
+//
+//			Destroy(); // 플레이어에 닿았으면 투사체 제거
 //		}
 //	}
 //
-//	// Fire DoT 적용 예정 (추가 구현)
-//	if(bApplyFireDot && OtherActor)
+//	
+//}
+void AEntityProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
+{
+	if(!OtherActor) return;
+
+	// 플레이어만 적용
+	if(OtherActor->ActorHasTag("Player"))
+	{
+		// 충돌시, EffectDataArray를 순회해서
+		for(const FSkillEffectData& Effect : EffectDataArray)
+		{
+			switch(Effect.EffectType)
+			{
+			case EnumEffectType::Damage:
+			UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+			break;
+			//case EnumEffectType::AOEDamage:
+			//// 광역 대미지 처리
+			//break;
+			case EnumEffectType::Fire:
+			// 불 디버프 적용
+			break;
+			}
+		}
+
+		Destroy(); // 플레이어에 닿았으면 투사체 제거
+	} else
+	{
+		// 인페르몽이나 다른 Pawn과는 무시
+		return;
+	}
+}
+
+//void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
+//{
+//	if(ProjectileMovement)
 //	{
-//		// 예: 커스텀 인터페이스, 상태이상 컴포넌트 등을 통해 화상 상태 부여
-//		// 이 부분은 추후 캐릭터에 상태이상 시스템이 있으면 구현
+//		UE_LOG(LogTemp,Warning,TEXT("FireInDirection called!"));
+//		ProjectileMovement->Velocity = ShootDirection * ProjectileMovement->InitialSpeed;
 //	}
+//}
+void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
+{
+	if(ProjectileMovement && CollisionComp)
+	{
+		ProjectileMovement->StopMovementImmediately();
+		ProjectileMovement->SetUpdatedComponent(CollisionComp);  // <-- 여기에 명시
+		ProjectileMovement->SetVelocityInLocalSpace(ShootDirection * ProjectileMovement->InitialSpeed);
+		ProjectileMovement->Activate(true);
+
+		UE_LOG(LogTemp,Warning,TEXT("FireInDirection called! Velocity = %s"),*ProjectileMovement->Velocity.ToString());
+	}
+}
+//void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
+//{
+//	if(ProjectileMovement && CollisionComp)
+//	{
+//		// 발사 직전 일시적으로 Overlap Only로 설정
+//		CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+//		CollisionComp->SetCollisionResponseToAllChannels(ECR_Overlap);
 //
-//	Destroy();
+//		// 물리 초기화
+//		ProjectileMovement->StopMovementImmediately();
+//		ProjectileMovement->SetUpdatedComponent(CollisionComp);
+//		ProjectileMovement->SetVelocityInLocalSpace(ShootDirection * ProjectileMovement->InitialSpeed);
+//		ProjectileMovement->Activate(true);
+//
+//		UE_LOG(LogTemp,Warning,TEXT("FireInDirection called! Velocity = %s"),*ProjectileMovement->Velocity.ToString());
+//
+//		// 딜레이 후 원래 콜리전 Preset 복원 (타이머 사용)
+//		FTimerHandle TimerHandle;
+//		GetWorldTimerManager().SetTimer(TimerHandle,[this]()
+//		{
+//			if(CollisionComp)
+//			{
+//				CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+//				CollisionComp->SetCollisionResponseToAllChannels(ECR_Block);
+//				CollisionComp->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap); // 필요 시 세부 조정
+//			}
+//		},0.05f,false); // 0.05초 후 복원
+//	}
 //}
