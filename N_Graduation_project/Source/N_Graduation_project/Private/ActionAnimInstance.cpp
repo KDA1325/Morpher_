@@ -6,7 +6,6 @@ UActionAnimInstance::UActionAnimInstance()
 {
 
 	FSoftObjectPath SlashMontagePath(TEXT("/Game/Gamin/Player/Player_Attack/Player_Attack_Anim_Montage.Player_Attack_Anim_Montage"));
-
 	// 애셋 로드
 	M_Slash = Cast<UAnimMontage>(SlashMontagePath.TryLoad());
 	//if (M_Slash)
@@ -20,27 +19,18 @@ UActionAnimInstance::UActionAnimInstance()
 	
 	//FSoftObjectPath BiteMontagePath(TEXT("/Game/Animation/WildBoar_Bite_Anim_Montage.WildBoar_Bite_Anim_Montage")); //기존 몽타주
 	FSoftObjectPath BiteMontagePath(TEXT("/Game/Gamin/Bore_UVW/Bore_attack_uvw_Anim_Montage.Bore_attack_uvw_Anim_Montage"));
-
-	// 애셋 로드
 	M_Bite = Cast<UAnimMontage>(BiteMontagePath.TryLoad());
-	//if (M_Bite)
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("Successfully loaded Montage: %s"), *M_Bite->GetName());
-	//}
-	//else
-	//{
-	//	UE_LOG(LogTemp, Error, TEXT("Failed to load Montage from path: %s"), *BiteMontagePath.ToString());
-	//}
+
 
 	FSoftObjectPath Nomal_InpermonMontagePath(TEXT("/Game/Gamin/InferMon/InferMon_attack_Anim_Montage.InferMon_attack_Anim_Montage"));
 	m_Inpermon1 = Cast<UAnimMontage>(Nomal_InpermonMontagePath.TryLoad());
-	if(m_Inpermon1)
-	{
-		UE_LOG(LogTemp,Warning,TEXT("Successfully loaded Montage: %s"),*m_Inpermon1->GetName());
-	} else
-	{
-		UE_LOG(LogTemp,Error,TEXT("Failed to load Montage from path: %s"),*Nomal_InpermonMontagePath.ToString());
-	}
+	//if(m_Inpermon1)
+	//{
+	//	UE_LOG(LogTemp,Warning,TEXT("Successfully loaded Montage: %s"),*m_Inpermon1->GetName());
+	//} else
+	//{
+	//	UE_LOG(LogTemp,Error,TEXT("Failed to load Montage from path: %s"),*Nomal_InpermonMontagePath.ToString());
+	//}
 }
 void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 {
