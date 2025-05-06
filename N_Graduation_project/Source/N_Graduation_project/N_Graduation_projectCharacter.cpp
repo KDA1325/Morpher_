@@ -708,6 +708,42 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
 	}
+	else if(currentPreset == "SkeletonWarriorPreset.uasset")
+	{//Content/Animation/Skeleton/SK_Chr_Skeleton_Ranger_01.uasset
+		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Skeleton/SK_Chr_Skeleton_Ranger_01.SK_Chr_Skeleton_Ranger_01"));
+		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Characters/MyGameCharacter/SkeletonWarrior_AnimBP.SkeletonWarrior_AnimBP_C"));
+		//Content/Characters/MyGameCharacter/SkeletonWarrior_AnimBP.uasset
+		//<피격을 위해 이거 3개 필수>
+		UMaterialInterface* WarriorMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Asset/SyntyAsset/PolygonFantasyRivals/Materials/M_FantasyRivals_01_A.M_FantasyRivals_01_A"));
+		InvincibleOriginalMaterial = WarriorMaterial;
+		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
+
+		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+		if(LoadedMesh)
+		{
+			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
+			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
+			GetMesh()->SetAnimInstanceClass(NewAnimBP);
+		}
+	}
+	else if(currentPreset == "SkeletonArcherPreset.uasset")
+	{
+		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Skeleton/SK_Chr_Skeleton_LightArmor_01.SK_Chr_Skeleton_LightArmor_01"));
+		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Characters/MyGameCharacter/SkeletonArcher_AnimBP.SkeletonArcher_AnimBP_C"));
+		//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Animation/Skeleton/M_PolygonDarkFantasy_01_A.uasset
+		//<피격을 위해 이거 3개 필수>
+		UMaterialInterface* ArcherMaterial =  LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Asset/SyntyAsset/PolygonFantasyRivals/Materials/M_FantasyRivals_01_A.M_FantasyRivals_01_A"));
+		InvincibleOriginalMaterial = ArcherMaterial;
+		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
+
+		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+		if(LoadedMesh)
+		{
+			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
+			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
+			GetMesh()->SetAnimInstanceClass(NewAnimBP);
+		}
+		}
 }
 //히트박스 동적 생성
 void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)

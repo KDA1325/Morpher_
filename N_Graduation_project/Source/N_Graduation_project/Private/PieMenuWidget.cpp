@@ -76,7 +76,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 
 	if (CachedMouseFinalAngle <= 25.0f)
 	{
-		if (SkeletonWarrior_OK)
+		//if (SkeletonWarrior_OK)
 		{
 			CachedMouseFinalAngle = -2.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -85,7 +85,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 
 			BeforeMonster = "SkeletonWarrior";
 		}
-		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 77.0f)
 	{
@@ -151,7 +151,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	}
 	else if (CachedMouseFinalAngle <= 337.0f)
 	{
-		if (SkeletonArcher_OK)
+		//if (SkeletonArcher_OK)
 		{
 			UE_LOG(LogTemp, Log, TEXT("궁수 선택"));
 
@@ -161,9 +161,9 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "SkeletonArcher";
 			//CachedMouseFinalAngle = 309.0f;
 		}
-		else { 
+		//else { 
 	//		CachedMouseFinalAngle = Before_CachedMouseFinalAngle; 
-		}
+		//}
 	}
 	else
 	{
