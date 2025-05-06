@@ -13,7 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/DecalComponent.h"            // UDecalComponent
 #include "Kismet/KismetMathLibrary.h"             // UKismetMathLibrary::FindLookAtRotation
-
+#include "PlayerProjectile.h"
 
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
@@ -24,12 +24,17 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	CanUseSpecialSkill = true;
 	DamageAmount = 50;
 
+	static ConstructorHelpers::FClassFinder<APlayerProjectile> ProjectileBP(TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_ThrowRock"));
+	if(ProjectileBP.Succeeded())
+	{
+		NomalProjectileClass = ProjectileBP.Class;
+	}
 }
 
 void UPlayerSkillComponent::BeginPlay()
 {
 	Super::BeginPlay();
-  // UMaterialInstance를 로드
+	// UMaterialInstance를 로드
 	ChargeDecalMaterial = LoadObject<UMaterialInstance>(nullptr,TEXT("MaterialInstance'/Game/Entity/M_WildBoarChargeDecal1.M_WildBoarChargeDecal1'"));
 	ChargeDecalComponent = NewObject<UDecalComponent>(this);
 	if(ChargeDecalComponent)
@@ -213,7 +218,8 @@ void UPlayerSkillComponent::VisibleShapeBox(const FString& SkillID)
 	}
 	else if (SkillData.SkillType == EnumSkillType::Projectile) 
 	{
-
+		UE_LOG(LogTemp,Warning,TEXT("Projectile 실행됨"));
+	
 	}
 	else 
 	{
@@ -253,7 +259,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 		// 스킬 애니메이션
 		SkillAnimation(SkillID);
-		UE_LOG(LogTemp, Warning, TEXT("OnMontag Playing %s"), *SkillID);
+		UE_LOG(LogTemp, Warning, TEXT("amam OnMontag Playing %s"), *SkillID);
 
 
 		// 쿨타임 타이머 설정
@@ -320,7 +326,6 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 	}
 }
 //<돌진>
-
 void UPlayerSkillComponent::DrawChargePath()
 {
 	ACharacter* MyChar = Cast<ACharacter>(GetOwner());
@@ -399,7 +404,6 @@ void UPlayerSkillComponent::ExecuteChargeDash(FVector Chargedistance, FString Sk
 		KnockbackTimerHandle,
 		FTimerDelegate::CreateUObject(this, &UPlayerSkillComponent::DelayedKnockbackEffect, SkillName), 0.2f, false);
 }
-
 void UPlayerSkillComponent::DelayedKnockbackEffect(FString SkillName)
 {
 	HideHitBox();
@@ -411,6 +415,57 @@ void UPlayerSkillComponent::DelayedKnockbackEffect(FString SkillName)
 			// 넉백 처리
 			UE_LOG(LogTemp, Warning, TEXT("DelayedKnockbackEffect 실행됨: %s"), *DamagedActor->GetName());
 		}
+	}
+}
+//<원숭이>
+void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
+{
+	// 스폰할 투사체 클래스 설정 확인
+	if(!NomalProjectileClass)
+	{
+		UE_LOG(LogTemp,Error,TEXT("NomalProjectileClass not set!"));
+		return;
+	}
+
+	// 소켓에서 스폰 위치 및 방향 획득
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if(!OwnerCharacter) return;
+
+	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
+	if(!MeshComp) return;
+
+	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	FVector Direction = MeshComp->GetRightVector(); // 메시 기준 전방이 RightVector라고 하셨으므로
+
+	// 스폰 파라미터
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = OwnerCharacter;
+	SpawnParams.Instigator = OwnerCharacter;
+
+	// 투사체 스폰
+	APlayerProjectile* SpawnedProjectile = GetWorld()->SpawnActor<APlayerProjectile>(
+		NomalProjectileClass,SpawnLocation,Direction.Rotation(),SpawnParams
+	);
+
+	if(SpawnedProjectile)
+	{
+		FSkillData SkillData;
+		TArray<FSkillEffectData> EffectDataArray;
+
+		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_ThrowRock",SkillData) &&
+			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_ThrowRock",EffectDataArray))
+		{
+			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
+			SpawnedProjectile->FireInDirection(Direction);
+			UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_ThrowRock"));
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_ThrowRock data!"));
+		}
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
 	}
 }
 

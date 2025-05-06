@@ -20,13 +20,12 @@ class UArrowComponent;
 DECLARE_MULTICAST_DELEGATE(FOnAction);
 
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class N_GRADUATION_PROJECT_API UPlayerSkillComponent : public UActorComponent
+UCLASS(ClassGroup = (Custom),meta = (BlueprintSpawnableComponent))
+class N_GRADUATION_PROJECT_API UPlayerSkillComponent: public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-
 
 	// Sets default values for this component's properties
 	UPlayerSkillComponent();
@@ -43,13 +42,13 @@ public:
 
 	// 히트박스 관련 변수들
 	UPROPERTY()
-	UBoxComponent* PlayerHitBox;
+		UBoxComponent* PlayerHitBox;
 
 	void SetHitBox(UBoxComponent* NewHitBox);
 
 	// 거리 감지
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	float MeasureDistanceToMonster() const;
+	UFUNCTION(BlueprintCallable,Category = "Skill")
+		float MeasureDistanceToMonster() const;
 	//몬스터감지
 	AActor* FindFrontMonsterTarget() const;
 
@@ -69,19 +68,19 @@ public:
 	// 히트박스 활성화
 	void HideHitBox();     // 히트박스 비활성화
 	void SkillAnimation(const FString& EffectID);
-	void EndSkillAnimation(UAnimMontage* Montage, bool bInterrupted);
+	void EndSkillAnimation(UAnimMontage* Montage,bool bInterrupted);
 	void SkillEffect(const FString& SkillNameID);
 	//타이머
-	void SetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
-	void SpecialSetSkillTimer(float Count, FTimerDelegate Call);  // 타이머 설정 함수
-	void ChargeSkillTimer(float Delay, FTimerDelegate Call);  // 타이머 설정 함수
+	void SetSkillTimer(float Count,FTimerDelegate Call);  // 타이머 설정 함수
+	void SpecialSetSkillTimer(float Count,FTimerDelegate Call);  // 타이머 설정 함수
+	void ChargeSkillTimer(float Delay,FTimerDelegate Call);  // 타이머 설정 함수
 
 
 	UPROPERTY(BlueprintReadWrite)
-	float DamageAmount;
+		float DamageAmount;
 
 	UPROPERTY()
-	TSet<AActor*> DamagedActors; // 데미지를 받은 몬스터 저장
+		TSet<AActor*> DamagedActors; // 데미지를 받은 몬스터 저장
 
 	TArray<AActor*> SnapshotDamagedActors;
 protected:
@@ -98,8 +97,8 @@ private:
 public:
 	//돼지
 	// 돌진 스킬 실행 시 저장할 방향 (설정 후 변화 없이 유지)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
-	FVector StoredDashDirection;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")
+		FVector StoredDashDirection;
 
 	// 데칼 표시용 
 	UPROPERTY()
@@ -111,11 +110,20 @@ public:
 
 
 	UFUNCTION()
-	void ExecuteChargeDash(FVector Chargedistance, FString SkillName);
+		void ExecuteChargeDash(FVector Chargedistance,FString SkillName);
 	UFUNCTION()
-	void DelayedKnockbackEffect(FString SkillName);
+		void DelayedKnockbackEffect(FString SkillName);
 
 	void DrawChargePath();
 	void SpawnChargeIndicator(FVector Start,FVector End);
-	void ApplyKnockback(AActor* TargetActor, float KnockbackPower);
+	void ApplyKnockback(AActor* TargetActor,float KnockbackPower);
+
+	void SpawnProjectile_ThrowRock();
+
+	UPROPERTY(BlueprintReadWrite)
+		bool Notify_Player_Projectile;
+
+	UPROPERTY(EditDefaultsOnly,Category="Projectile")
+		TSubclassOf<class APlayerProjectile> NomalProjectileClass;
+
 };

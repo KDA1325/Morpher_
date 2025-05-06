@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "PieMenuWidget.h"
@@ -76,7 +76,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 
 	if (CachedMouseFinalAngle <= 25.0f)
 	{
-		//if (SkeletonWarrior_OK)
+		if (SkeletonWarrior_OK)
 		{
 			CachedMouseFinalAngle = -2.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -85,11 +85,11 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 
 			BeforeMonster = "SkeletonWarrior";
 		}
-	//	else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 77.0f)
 	{
-	//	if (StoneGolem_OK)
+		if (StoneGolem_OK)
 		{
 			CachedMouseFinalAngle = 306.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -98,7 +98,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "StoneGolem";
 			//CachedMouseFinalAngle = 51.0f;
 		}
-	//	else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 129.0f)
 	{

@@ -668,7 +668,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
-		GetMesh()->SetRelativeScale3D(FVector(2.0f,2.0f,2.0f));
+		GetMesh()->SetRelativeScale3D(FVector(3.f,3.0f,3.0f));
 		if(LoadedMesh && NewAnimBP)
 		{
 			GetMesh()->SetSkeletalMesh(LoadedMesh);

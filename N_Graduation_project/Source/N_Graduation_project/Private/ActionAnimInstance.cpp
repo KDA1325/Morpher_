@@ -44,7 +44,7 @@ UActionAnimInstance::UActionAnimInstance()
 }
 void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Playing Animation 함수 실행됨, EffectID: %s"), *EffectID);
+	UE_LOG(LogTemp, Warning, TEXT("amam Playing Animation 함수 실행됨, EffectID: %s"), *EffectID);
 	if (EffectID == "Skill_Slash")
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *M_Slash->GetName());
@@ -52,7 +52,7 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 	}
-	if (EffectID == "Skill_Bite" || EffectID=="Skill_Charge") {
+	else if (EffectID == "Skill_Bite" || EffectID=="Skill_Charge") {
 		UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *M_Bite->GetName());
 		UE_LOG(LogTemp, Warning, TEXT("Playing Skill_Bite 실행됨"));
 		Montage_Play(M_Bite);
@@ -62,8 +62,10 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 	}
-	if (EffectID == "Skill_ThrowRock"&&EffectID == "Skill_FireBall") {
+	else if (EffectID == "Skill_ThrowRock" || EffectID == "Skill_FireBall") {
 	UE_LOG(LogTemp, Warning, TEXT("Playing Animation: %s"), *m_Inpermon1->GetName());
+	UE_LOG(LogTemp,Warning,TEXT("amam Skill_ThrowRock  스킬 실행됨"));
+
 	Montage_Play(m_Inpermon1);
 	// 애니메이션 종료 이벤트 바인딩
 	OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
@@ -71,7 +73,7 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 
 
 	else{
-		UE_LOG(LogTemp, Warning, TEXT("Playing Animation 해당하는 스킬 없음"));
+		UE_LOG(LogTemp, Warning, TEXT("amam Playing Animation 해당하는 스킬 없음"));
 
 	}
 }
