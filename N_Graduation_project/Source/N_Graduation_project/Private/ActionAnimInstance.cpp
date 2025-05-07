@@ -24,13 +24,10 @@ UActionAnimInstance::UActionAnimInstance()
 
 	FSoftObjectPath Nomal_InpermonMontagePath(TEXT("/Game/Gamin/InferMon/InferMon_attack_Anim_Montage.InferMon_attack_Anim_Montage"));
 	m_Inpermon1 = Cast<UAnimMontage>(Nomal_InpermonMontagePath.TryLoad());
-	//if(m_Inpermon1)
-	//{
-	//	UE_LOG(LogTemp,Warning,TEXT("Successfully loaded Montage: %s"),*m_Inpermon1->GetName());
-	//} else
-	//{
-	//	UE_LOG(LogTemp,Error,TEXT("Failed to load Montage from path: %s"),*Nomal_InpermonMontagePath.ToString());
-	//}
+	
+	FSoftObjectPath SkeletonSlashMontagePath(TEXT("/Game/Animation/Skeleton/Skeletion_attack_Montage.Skeletion_attack_Montage"));
+	m_SkeletonSlash = Cast<UAnimMontage>(Nomal_InpermonMontagePath.TryLoad());
+
 }
 void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 {
@@ -60,7 +57,14 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 	// 애니메이션 종료 이벤트 바인딩
 	OnMontageEnded.AddDynamic(this, &UActionAnimInstance::OnMontageEndCallback);
 }
+	else if(EffectID==m_SkeletonSlash)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Inpermon1->GetName());
+		UE_LOG(LogTemp,Warning,TEXT("amam Skill_ThrowRock  스킬 실행됨"));
 
+		Montage_Play(m_Inpermon1);
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+	}
 
 	else{
 		UE_LOG(LogTemp, Warning, TEXT("amam Playing Animation 해당하는 스킬 없음"));

@@ -32,4 +32,5 @@ private:
 	UAnimMontage* M_Slash;
 	UAnimMontage* M_Bite;
 	UAnimMontage* m_Inpermon1;
+	UAnimMontage* m_SkeletonSlash;
 };
