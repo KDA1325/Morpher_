@@ -34,8 +34,8 @@ void UWidgetActor::BeginPlay()
 		if(HUDWidget && !HUDWidget->IsInViewport())
 		{
 			HUDWidget->AddToViewport();
-			HUDWidget->UpdateNomalSkillCooldown(0,true,true);
-			HUDWidget->UpdateSpecialSkillCooldown(0,true,true);
+			HUDWidget->UpdateNomalSkillCooldown(0,true,true); //스킬 깜박이던 오류 해결
+			HUDWidget->UpdateSpecialSkillCooldown(0,true,true); //스킬 깜박이던 오류 해결
 			UE_LOG(LogTemp,Warning,TEXT("Widget in viewport: %s"),*HUDWidget->GetName());
 
 		}

@@ -68,14 +68,26 @@ void UPlayerSkillComponent::OnDefenseSkill()
 void UPlayerSkillComponent::OffDefenseSkill()
 {
 	IsDefending = false;
+	UE_LOG(LogTemp,Warning,TEXT("OffDefenseSkill실행됨"));
+
 	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 	if(StatComponent && StatComponent->HUDWidget)
 	{
 		StatComponent->HUDWidget->UpdateSpecialSkillCooldown(0.5,CanUseNomalSkill,CanUseSpecialSkill);
 		StatComponent->HUDWidget->CanSpecial = false;
 	}
-}
+	AActor* OwnerActor = GetOwner();
+	if(OwnerActor && OwnerActor->IsA<ACharacter>())
+	{
+		ACharacter* CharacterOwner = Cast<ACharacter>(OwnerActor);
+		UAnimInstance* AnimInstance = CharacterOwner->GetMesh()->GetAnimInstance();
 
+		UActionAnimInstance* ActionAnimInstance = Cast<UActionAnimInstance>(AnimInstance);
+		if(ActionAnimInstance){
+			ActionAnimInstance->End_Shiled();
+		}
+	}
+}
 void UPlayerSkillComponent::SetSkillTimer(float Count,FTimerDelegate End)
 {
 	if(GetWorld() && Count > 0)
@@ -490,10 +502,6 @@ void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 		{
 			ActionAnimInstance->PlayAnimation(EffectID);
 
-			// 델리게이트 바인딩 추가
-			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this,&UPlayerSkillComponent::EndSkillAnimation);
-			ActionAnimInstance->Montage_SetEndDelegate(EndDelegate);
 			UCharacterStateComponent* StateComp = OwnerActor->FindComponentByClass<UCharacterStateComponent>();
 			if(StateComp)
 			{

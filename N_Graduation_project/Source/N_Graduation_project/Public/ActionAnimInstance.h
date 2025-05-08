@@ -25,7 +25,7 @@ public:
 	// 애니메이션 종료 콜백 함수
 	UFUNCTION()
 	void OnMontageEndCallback(UAnimMontage* Montage, bool bInterrupted);
-
+	void End_Shiled();
 private:
 	UAnimMontage* M_Slash;
 	UAnimMontage* M_Bite;

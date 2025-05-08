@@ -241,10 +241,10 @@ void AN_Graduation_projectCharacter::EndShield()
 {
 	//	CharacterStateComponent->ChangeState(ECharacterState::Idle);
 		//애니메이션은 어떡하지..
-	if(SpecialSkill=="Skill_ShiledGuard"){
+	if(currentPreset == "SkeletonWarriorPreset.uasset"){
 		PlayerSkillComponent->OffDefenseSkill();
-	}		UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
-
+		UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
+	}
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
 {
