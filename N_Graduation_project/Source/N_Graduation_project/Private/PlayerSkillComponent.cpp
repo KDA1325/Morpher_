@@ -219,7 +219,6 @@ void UPlayerSkillComponent::VisibleShapeBox(const FString& SkillID)
 	else if (SkillData.SkillType == EnumSkillType::Projectile) 
 	{
 		UE_LOG(LogTemp,Warning,TEXT("Projectile 실행됨"));
-	
 	}
 	else 
 	{
