@@ -27,6 +27,9 @@ UActionAnimInstance::UActionAnimInstance()
 
 	FSoftObjectPath SkeletonSlashMontagePath(TEXT("/Game/Animation/Skeleton/Skeletion_attack_Montage.Skeletion_attack_Montage"));
 	m_SkeletonSlash = Cast<UAnimMontage>(SkeletonSlashMontagePath.TryLoad());
+
+	FSoftObjectPath SkeletonGaurdMontagePath(TEXT("/Game/Animation/Skeleton/Retarget_Shield_Anim__Montage.Retarget_Shield_Anim__Montage"));
+	m_Gaurd= Cast<UAnimMontage>(SkeletonGaurdMontagePath.TryLoad());
 }
 void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 {
@@ -62,11 +65,16 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		UE_LOG(LogTemp,Warning,TEXT("amam Skill_SkeletonSlash  스킬 실행됨"));
 
 		Montage_Play(m_SkeletonSlash);
-		float Result = Montage_Play(m_SkeletonSlash,1.0f);
-		UE_LOG(LogTemp,Warning,TEXT("m_SkeletonSlash Play Result: %f"),Result);
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
 	}
+	else if(EffectID=="Skill_ShieldGuard"){
+		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Gaurd->GetName());
+		UE_LOG(LogTemp,Warning,TEXT("amam Skill_SkeletonSlash  스킬 실행됨"));
 
+		Montage_Play(m_Gaurd);
+		
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+	}
 	else{
 		UE_LOG(LogTemp,Warning,TEXT("amam Playing Animation 해당하는 스킬 없음"));
 

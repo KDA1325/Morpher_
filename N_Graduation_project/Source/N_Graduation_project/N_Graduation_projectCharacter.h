@@ -66,6 +66,9 @@ class AN_Graduation_projectCharacter : public ACharacter
 	UInputAction* RightClickAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* RightReleasedClickAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PieMenuAction;
 
 public:
@@ -75,7 +78,7 @@ public:
 	bool PlaySpecial = false;
 	bool PlayNomal = false;
 	bool OkTrans = true;
-
+	bool bCanMove = true;
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -151,7 +154,7 @@ private:
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UPlayerSkillComponent* PlayerSkillComponent;
-
+		
 	UPROPERTY(VisibleAnywhere)
 	UCharacterStateComponent* CharacterStateComponent;
 

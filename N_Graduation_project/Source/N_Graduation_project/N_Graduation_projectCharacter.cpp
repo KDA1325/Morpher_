@@ -71,6 +71,11 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	{
 		RightClickAction = MouseRightClick.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> MouseRightReleased = TEXT("/Script/EnhancedInput.InputAction'/Game/ThirdPerson/Input/Actions/RightReleasedClickAction.RightReleasedClickAction'");
+	if(MouseRightReleased.Object)
+	{
+		RightReleasedClickAction = MouseRightReleased.Object;
+	}
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> Tab = TEXT("/Script/EnhancedInput.InputAction'/Game/ThirdPerson/Input/Actions/IA_Tab.IA_Tab'");
 	if(Tab.Object)
@@ -103,7 +108,6 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	PlayerStatComponent = CreateDefaultSubobject<UMyPlayerStatComponent>(TEXT("PlayerStatComponent"));
 	PlayerSkillComponent = CreateDefaultSubobject<UPlayerSkillComponent>(TEXT("PlayerSkillComponent"));
 	CharacterStateComponent = CreateDefaultSubobject<UCharacterStateComponent>(TEXT("CharacterStateComponent"));
-
 	m_pMeshCom = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComponent"));
 
 	// RootComponent 설정 -> 안 하면 m_pMeshCom nullptr 오류 발생
@@ -185,7 +189,7 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 	{
 		if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
-			Subsystem->AddMappingContext(DefaultMappingContext,0);
+			Subsystem->AddMappingContext(DefaultMappingContext,3);
 		}
 	}
 
@@ -209,7 +213,7 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 		EnhancedInputComponent->BindAction(LeftClickAction,ETriggerEvent::Started,this,&AN_Graduation_projectCharacter::NomalSkillAction);
 		//special Skill
 		EnhancedInputComponent->BindAction(RightClickAction,ETriggerEvent::Triggered,this,&AN_Graduation_projectCharacter::SpecialSkillAction);
-		EnhancedInputComponent->BindAction(RightClickAction,ETriggerEvent::Completed,this,&AN_Graduation_projectCharacter::EndShield);
+		EnhancedInputComponent->BindAction(RightReleasedClickAction,ETriggerEvent::Completed,this,&AN_Graduation_projectCharacter::EndShield);
 
 		EnhancedInputComponent->BindAction(PieMenuAction,ETriggerEvent::Started,this,&AN_Graduation_projectCharacter::OnPieMenuPressed);
 		EnhancedInputComponent->BindAction(PieMenuAction,ETriggerEvent::Completed,this,&AN_Graduation_projectCharacter::OnPieMenuReleased);
@@ -231,12 +235,16 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 		//PlaySpecial = true;	
 
 	} else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
+	UE_LOG(LogTemp,Warning,TEXT("실드 우클릭"));
 }
 void AN_Graduation_projectCharacter::EndShield()
 {
 	//	CharacterStateComponent->ChangeState(ECharacterState::Idle);
 		//애니메이션은 어떡하지..
-	PlayerSkillComponent->OffDefenseSkill();
+	if(SpecialSkill=="Skill_ShiledGuard"){
+		PlayerSkillComponent->OffDefenseSkill();
+	}		UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
+
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
 {
@@ -257,38 +265,40 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 
 void AN_Graduation_projectCharacter::Move(const FInputActionValue& Value)
 {
-	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
+	if(bCanMove){
+		UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 
-	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+		// input is a Vector2D
+		FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if(Controller != nullptr)
-	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0,Rotation.Yaw,0);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-		// get right vector
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// add movement 
-		AddMovementInput(ForwardDirection,MovementVector.Y);
-		AddMovementInput(RightDirection,MovementVector.X);
-
-		if(StateComp)
+		if(Controller != nullptr)
 		{
-			FString StateString = UEnum::GetValueAsString(StateComp->CurrentState);
-			StateComp->ChangeState(ECharacterState::Move);
+			// find out which way is forward
+			const FRotator Rotation = Controller->GetControlRotation();
+			const FRotator YawRotation(0,Rotation.Yaw,0);
+
+			// get forward vector
+			const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+			// get right vector
+			const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+			// add movement 
+			AddMovementInput(ForwardDirection,MovementVector.Y);
+			AddMovementInput(RightDirection,MovementVector.X);
+
+			if(StateComp)
+			{
+				FString StateString = UEnum::GetValueAsString(StateComp->CurrentState);
+				StateComp->ChangeState(ECharacterState::Move);
+			}
 		}
 	}
 }
 
 void AN_Graduation_projectCharacter::OnPieMenuPressed()
 {
-	if(WidgetActor)
+	if(WidgetActor&&bCanMove)
 	{
 		WidgetActor->ShowPieMenu();
 
@@ -297,7 +307,7 @@ void AN_Graduation_projectCharacter::OnPieMenuPressed()
 
 void AN_Graduation_projectCharacter::OnPieMenuReleased()
 {
-	if(WidgetActor)
+	if(WidgetActor&&bCanMove)
 	{
 		WidgetActor->HidePieMenu();
 	}
@@ -321,7 +331,7 @@ void AN_Graduation_projectCharacter::RotateCharacterToCursor()
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if(!PlayerController) return;
 
-	if(!(CharacterStateComponent->CurrentState == ECharacterState::Action)) 
+	if(!(CharacterStateComponent->CurrentState == ECharacterState::Action))
 	{
 		if(PlayerController->DeprojectMousePositionToWorld(MouseWorldPosition,MouseWorldDirection))
 		{
@@ -543,28 +553,18 @@ void AN_Graduation_projectCharacter::SetMoveSpeed(int32 MoveSpeed)
 void AN_Graduation_projectCharacter::StartAction()
 {
 	UE_LOG(LogTemp,Error,TEXT("!StartAction"));
-
+	bCanMove = false;
 	// 플레이어 컨트롤러 가져오기
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	//APlayerController* PlayerController = Cast<APlayerController>(GetController());
 
-	//if (PlayerController)
+	//if(PlayerController)
 	//{
-	//	//PlayerController->DisableInput(PlayerController); // 입력 비활성화
-	//	GetCharacterMovement()->MaxWalkSpeed = 0;
-	//	UE_LOG(LogTemp, Error, TEXT("Yes PlayerController!"));
+	//	if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	//	{
+	//		Subsystem->RemoveMappingContext(DefaultMappingContext);
+	//		UE_LOG(LogTemp,Error,TEXT("Input Mapping Context Removed"));
+	//	} 
 	//}
-	//else
-	//{
-	//	UE_LOG(LogTemp, Error, TEXT("No PlayerController"));
-	//}   
-	if(PlayerController)
-	{
-		if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->RemoveMappingContext(DefaultMappingContext);
-			UE_LOG(LogTemp,Error,TEXT("Input Mapping Context Removed"));
-		}
-	}
 
 }
 void AN_Graduation_projectCharacter::EndAction()
@@ -572,21 +572,21 @@ void AN_Graduation_projectCharacter::EndAction()
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	StateComp->ChangeState(ECharacterState::Idle);
 	CharacterStateComponent->isAction = false;
-
+	bCanMove=true;
 	// 기존 속도로 이동 
 	UE_LOG(LogTemp,Error,TEXT("!EndAction"));
-	// Action 상태 종료 시 입력 활성화
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	if(PlayerController)
-	{
-		if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext,0);
-			UE_LOG(LogTemp,Error,TEXT("Input Mapping Context Restored"));
-		}
-
-		UE_LOG(LogTemp,Error,TEXT("Yes Action PlayerController!"));
-	}
+	//	// Action 상태 종료 시 입력 활성화
+	//	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	//	if(PlayerController)
+	//	{
+	//		if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	//		{
+	//			Subsystem->AddMappingContext(DefaultMappingContext,0);
+	//			UE_LOG(LogTemp,Error,TEXT("Input Mapping Context Restored"));
+	//		}
+	//
+	//		UE_LOG(LogTemp,Error,TEXT("Yes Action PlayerController!"));
+	//	}
 }
 void AN_Graduation_projectCharacter::OnPlayerDead()
 {
@@ -658,8 +658,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 
 	else if(currentPreset == "InpermonPreset.uasset")
 	{
-			//<변신을 위해 이거 2개 필수>
-			FSoftObjectPath MeshPath(TEXT("/Game/Gamin/InferMon/InferMon_idle.InferMon_idle"));
+		//<변신을 위해 이거 2개 필수>
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/InferMon/InferMon_idle.InferMon_idle"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/InferMon/Infermon_Skeleton_AnimBP.Infermon_Skeleton_AnimBP_C"));
 
 		//<피격을 위해 이거 3개 필수>
@@ -707,8 +707,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
-	}
-	else if(currentPreset == "SkeletonWarriorPreset.uasset")
+	} else if(currentPreset == "SkeletonWarriorPreset.uasset")
 	{//Content/Animation/Skeleton/SK_Chr_Skeleton_Ranger_01.uasset
 		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Skeleton/SK_Chr_Skeleton_LightArmor_01.SK_Chr_Skeleton_LightArmor_01"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Characters/MyGameCharacter/SkeletonWarrior_AnimBP.SkeletonWarrior_AnimBP_C"));
@@ -725,8 +724,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
-	}
-	else if(currentPreset == "SkeletonArcherPreset.uasset")
+	} else if(currentPreset == "SkeletonArcherPreset.uasset")
 	{
 		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Skeleton/SK_Chr_Skeleton_Ranger_01.SK_Chr_Skeleton_Ranger_01"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Characters/MyGameCharacter/SkeletonArcher_AnimBP.SkeletonArcher_AnimBP_C"));
@@ -743,7 +741,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
-		}
+	}
 }
 //히트박스 동적 생성
 void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)

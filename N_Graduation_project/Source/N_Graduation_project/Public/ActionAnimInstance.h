@@ -22,8 +22,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PlayAnimation(const FString& EffectID);
 
-
-protected:
 	// 애니메이션 종료 콜백 함수
 	UFUNCTION()
 	void OnMontageEndCallback(UAnimMontage* Montage, bool bInterrupted);
@@ -33,4 +31,6 @@ private:
 	UAnimMontage* M_Bite;
 	UAnimMontage* m_Inpermon1;
 	UAnimMontage* m_SkeletonSlash;
+	UAnimMontage* m_Gaurd;
+
 };

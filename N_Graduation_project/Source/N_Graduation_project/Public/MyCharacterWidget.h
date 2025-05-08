@@ -51,6 +51,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "SkillCoolTime")
 	bool CanSpecial;
 
+	bool SkeletonGuard;
+
 	float Percent;
 	float PassedTimeNomal = 0.0f;
 	float PassedTimeSpecial = 0.0f;
