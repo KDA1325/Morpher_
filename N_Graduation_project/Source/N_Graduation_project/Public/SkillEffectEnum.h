@@ -6,7 +6,7 @@
 #include "Engine/GameInstance.h"
 #include "SkillEffectEnum.generated.h"
 
-// ½ºÅ³ È¿°ú Å¸ÀÔ Enum
+// ìŠ¤í‚¬ íš¨ê³¼ íƒ€ìž… Enum
 UENUM(BlueprintType)
 enum class EnumEffectType : uint8
 {
@@ -17,5 +17,6 @@ enum class EnumEffectType : uint8
     Freezing     UMETA(DisplayName = "Freezing"),
     Stun     UMETA(DisplayName = "Stun"),
     Guard     UMETA(DisplayName = "Guard"),
-    // ÇÊ¿äÇÑ °ª Ãß°¡...
+	AOEDamage	UMETA(DisplayName = "AOEDamage")
+    // í•„ìš”í•œ ê°’ ì¶”ê°€...
 };
