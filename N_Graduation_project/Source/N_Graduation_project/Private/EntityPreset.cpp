@@ -632,6 +632,11 @@ void AEntityPreset::AnimNotify_SpawnProjectile()
 	// 투사체 발사 함수
 	SpawnProjectile_ThrowRock();
 }
+void AEntityPreset::AnimNotify_SpawnProjectile_FireBall()
+{
+	// 투사체 발사 함수
+	SpawnProjectile_FireBall();
+}
 
 void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -1180,7 +1185,92 @@ void AEntityPreset::SpawnProjectile_ThrowRock()
 		}
 	}
 }
+void AEntityPreset::SpawnProjectile_FireBall()
+{
+	// 스폰할 투사체 클래스 설정 확인
+	if(!NormalProjectileClass)
+	{
+		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
+		return;
+	}
 
+	// 스폰 위치, 방향 설정 
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("FireBallSocket"));
+	FVector Direction = GetMesh()->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
+
+	// 스폰 파라미터
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	// 투사체 액터 스폰 
+	FRotator DumyRotation = Direction.Rotation();
+	AEntityProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AEntityProjectile>(SpecialProjectileClass,SpawnLocation,DumyRotation,SpawnParams);
+
+	if(SpawnedProjectile)
+	{
+		// Skill 데이터 테이블에서 "Skill_FireBall" 데이터 가져오기
+		FSkillData SkillData;
+		TArray<FSkillEffectData> EffectDataArray;
+
+		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_FireBall",SkillData) &&
+			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_FireBall",EffectDataArray))
+		{
+			// 초기화
+			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
+
+			UE_LOG(LogTemp,Error,TEXT("Spawned FireBall Projectile"));
+
+			// 발사
+			SpawnedProjectile->FireInDirection(Direction);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_FireBall data!"));
+		}
+	}
+}
+void AEntityPreset::PerformSkill_FireBall()
+{
+	if(!SpecialSkillMontage) return;
+
+	// 스킬 시전 플래그 설정
+	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
+	bIsCastingSkill = true;
+
+	// AI 경로 추적 중지 
+	if(AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 중단
+			PathComp->Deactivate();
+
+			AIController->StopMovement();
+			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before LaunchCharacter"));
+		}
+	}
+
+	if(SpecialSkillMontage)
+	{
+		if(UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+		{
+			// 스페셜 스킬 몽타주
+			AnimInst->Montage_Play(SpecialSkillMontage);
+
+			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_FireBall: AnimInstance not found"));
+		}
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_FireBall: SpecialSkillMontage is not set"));
+	}
+}
 //void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 //{
 //	if (OtherActor && OtherActor != this)

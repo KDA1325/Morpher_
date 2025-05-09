@@ -66,10 +66,16 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 
 		ExecuteSkill_Charge(SkillData, EffectDataArray);
 
-		// 쿨타임 적용: 스킬 타입에 따라 타이머를 통해 재사용 가능 상태 복구
-		bCanUseSpecialSkill = false;
-		FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::SpecialCooldown);
-		SetSkillTimer(SkillData.SkillCoolTime, SpecialDelegate, true);
+	}
+	else if(SkillID == "Skill_FireBall")
+	{
+		if(!bCanUseSpecialSkill)
+		{
+			UE_LOG(LogTemp,Error,TEXT("skill is on cooldown"));
+			return;
+		}
+
+		ExecuteSkill_FireBall(SkillData,EffectDataArray);
 	}
 	else
 	{
@@ -250,37 +256,6 @@ void UEntitySkillComponent::ExecuteProjectileTypeSkill(const FSkillData& SkillDa
 	{
 		UE_LOG(LogTemp,Error,TEXT("NormalSkillMontage is not set"));
 	}
-
-	//// 소켓에서 발사 위치와 방향 얻기
-	//FName LaunchSocketName = TEXT("ThrowSocket"); 
-	//FVector SpawnLocation = OwnerEntity->GetMesh()->GetSocketLocation(LaunchSocketName);
-	//FRotator SpawnRotation = OwnerEntity->GetActorRotation(); // 필요시 조정
-
-	//if(!ProjectileClass)
-	//{
-	//	UE_LOG(LogTemp,Error,TEXT("ProjectileClass is not set in EntitySkillComponent"));
-	//	return;
-	//}
-
-	//// 투사체 생성
-	//AEntityProjectile* Projectile = GetWorld()->SpawnActor<AEntityProjectile>(ProjectileClass,SpawnLocation,SpawnRotation);
-	//if(Projectile)
-	//{
-	//	// InitProjectile을 SkillData, EffectData로 자동 세팅
-	//	Projectile->InitProjectile(SkillData,EffectData);
-
-	//	//// 발사 방향 설정 (앞으로 쏘기)
-	//	//if(Projectile->ProjectileMovement)
-	//	//{
-	//	//	FVector LaunchDirection = OwnerEntity->GetActorForwardVector();
-	//	//	Projectile->ProjectileMovement->Velocity = LaunchDirection * SkillData.ProjectileSpeed;
-	//	//}
-
-	//	UE_LOG(LogTemp,Warning,TEXT("Spawned and launched projectile for skill %s"),*SkillData.SkillNameID);
-	//} else
-	//{
-	//	UE_LOG(LogTemp,Error,TEXT("Failed to spawn projectile"));
-	//}
 }
 
 void UEntitySkillComponent::ExecuteBuffTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
@@ -296,7 +271,12 @@ void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, con
 		return;
 	}
 
+	OwnerEntity->bIsCastingSkill = true;
+
+	// 쿨타임 적용: 스킬 타입에 따라 타이머를 통해 재사용 가능 상태 복구
 	bCanUseSpecialSkill = false;
+	FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this,&UEntitySkillComponent::SpecialCooldown);
+	SetSkillTimer(SkillData.SkillCoolTime,SpecialDelegate,true);
 
 	// AI BehaviorTree 멈춤
 	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
@@ -307,8 +287,8 @@ void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, con
 		UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->StopLogic called"));
 	}
 
-	FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::SpecialCooldown);
-	SetSkillTimer(SkillData.SkillCoolTime, SpecialDelegate, true);
+	//FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::SpecialCooldown);
+	//SetSkillTimer(SkillData.SkillCoolTime, SpecialDelegate, true);
 
 	OwnerEntity->PerformSkill_Charge();
 
@@ -318,6 +298,48 @@ void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, con
 		{
 			if (AIController && AIController->BrainComponent)
 			{
+				AIController->BrainComponent->RestartLogic();
+				UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->RestartLogic called"));
+			}
+		}, 2.0f, false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
+}
+
+void UEntitySkillComponent::ExecuteSkill_FireBall(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
+{
+	if (!OwnerEntity)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
+		return;
+	}
+
+	OwnerEntity->bIsCastingSkill = true;
+
+	// 쿨타임 적용: 스킬 타입에 따라 타이머를 통해 재사용 가능 상태 복구
+	bCanUseSpecialSkill = false;
+	FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this,&UEntitySkillComponent::SpecialCooldown);
+	SetSkillTimer(SkillData.SkillCoolTime,SpecialDelegate,true);
+
+	// AI BehaviorTree 멈춤
+	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
+	if (AIController && AIController->BrainComponent)
+	{
+		AIController->StopMovement(); // 혹시 이전 경로 남아있으면 정지
+		AIController->BrainComponent->StopLogic(TEXT("Fire Ball Skill Start"));
+		UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->StopLogic called"));
+	}
+
+	//FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::SpecialCooldown);
+	//SetSkillTimer(SkillData.SkillCoolTime, SpecialDelegate, true);
+
+	OwnerEntity->PerformSkill_FireBall();
+
+	// 스킬 끝나고 다시 AI 로직 재개 (1.5초 후 정도로 가정)
+	FTimerHandle ResumeAITimer;
+	GetWorld()->GetTimerManager().SetTimer(ResumeAITimer, [AIController]()
+		{
+			if (AIController && AIController->BrainComponent)
+			{
+				//OwnerEntity->bIsCastingSkill = false;
 				AIController->BrainComponent->RestartLogic();
 				UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->RestartLogic called"));
 			}

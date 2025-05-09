@@ -144,11 +144,32 @@ void AEntityProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			case EnumEffectType::Damage:
 			UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
 			break;
-			//case EnumEffectType::AOEDamage:
-			//// 광역 대미지 처리
-			//break;
+			case EnumEffectType::AOEDamage:
+			// 광역 대미지 처리, 몬스터용 로직엔 추가할 필요 없을 듯(플레이어 쪽에 추가하기)
+			/*FVector Origin = GetActorLocation();
+			float Radius = Effect.EffectValue02;
+			TArray<AActor*> OverlappingActors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(),AN_Graduation_projectCharacter::StaticClass(),OverlappingActors);
+
+			for(AActor* Actor : OverlappingActors)
+			{
+				if(Actor->ActorHasTag("Player"))
+				{
+					float Distance = FVector::Dist(Actor->GetActorLocation(),Origin);
+					if(Distance <= Radius)
+					{
+						UGameplayStatics::ApplyDamage(Actor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+						UE_LOG(LogTemp,Warning,TEXT("AOE Damage to %s"),*Actor->GetName());
+					}
+				}
+			}*/
+			break;
 			case EnumEffectType::Fire:
 			// 불 디버프 적용
+			float ApplyDuration = Effect.EffectValue01;
+			float DPS = Effect.EffectValue02;
+			ApplyFireDOT(OtherActor, DPS, ApplyDuration);
+			break;
 			break;
 			}
 		}
@@ -182,10 +203,29 @@ void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
 	}
 }
 
+void AEntityProjectile::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration)
+{
+	if(!Target || DamagePerSecond <= 0.f || ApplyDuration <= 0.f) return;
+
+	int32 TickCount = FMath::FloorToInt(ApplyDuration);
+	for(int32 i = 1; i <= TickCount; ++i)
+	{
+		FTimerHandle FireTickHandle;
+		// [캡처](매개변수)->Return Type{ 구현 몸체 } 
+		FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=, this]()
+		{
+			UGameplayStatics::ApplyDamage(Target, DamagePerSecond, GetInstigatorController(), this, nullptr);
+			UE_LOG(LogTemp,Warning,TEXT("ApplyFireDOT: %f damage to %s (tick %d)"), DamagePerSecond, *Target->GetName(), i);
+		});
+		GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
+	}
+}
+
 void AEntityProjectile::OnLifetimeExpired()
 {
 	Destroy(); // 또는 ReturnToPool();
 }
+
 
 //void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
 //{

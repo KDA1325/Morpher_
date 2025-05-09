@@ -78,6 +78,8 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
 	TSubclassOf<class AEntityProjectile> NormalProjectileClass;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
+	TSubclassOf<class AEntityProjectile> SpecialProjectileClass;
 
 	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
 	//TSubclassOf<AActor> NormalProjectileClass;
@@ -106,6 +108,8 @@ public:
 	void AnimNotify_ShowHitBox();
 	void AnimNotify_SpawnProjectile();
 
+	void AnimNotify_SpawnProjectile_FireBall();
+
 	// 히트박스 Overlap 이벤트 처리 함수
 	UFUNCTION()
 	void OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -126,11 +130,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void PerformSkill_Charge();
+	void PerformSkill_FireBall();
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ExecuteChargeDash();
 
 	UFUNCTION(BlueprintCallable,Category = "Skill")
 	void SpawnProjectile_ThrowRock();
+
+	void SpawnProjectile_FireBall();
 
 	void ClearCastingSkill();
 

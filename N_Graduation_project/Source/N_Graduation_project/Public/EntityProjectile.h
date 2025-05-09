@@ -70,6 +70,8 @@ public:
 	// ProjectileMovementComponent 사용을 위한 함수(투사체 발사) 
 	void FireInDirection(const FVector & ShootDirection);
 
+	void ApplyFireDOT(AActor * Target,float DamagePerSecond,float Duration);
+
 	void OnLifetimeExpired();
 
 	//// Collision handling
