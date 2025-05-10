@@ -426,30 +426,30 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 {
 	if(TestMode == false) {
 		//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
-		if(PlayerSkillComponent->IsDefending == true) {
+		if(IsInvincible||PlayerSkillComponent->IsDefending) {
 			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
 			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
-			IsInvincible = true;
 			PlayerSkillComponent->CanUseNomalSkill = true;
 
 			return 0.0f;//무적상태라면 리턴.
 
-		} else
+		} 
+		else
 		{
 			PlayerSkillComponent->CanUseNomalSkill = true;
 			PlayerStatComponent->ApplyDamage(DamageAmount);
 			On_invincibility_Implementation();
-			IsInvincible = false;
 			// 데미지 로그 출력	
 			float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
 			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage  %f"),DamageAmount);
 
 			return FinalDamage;
 		}
-	} else {
+	} 
+	
+	else {
 		PlayerSkillComponent->CanUseNomalSkill = true;
 		On_invincibility_Implementation();
-		IsInvincible = false;
 		// 데미지 로그 출력	
 		float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
 		UE_LOG(LogTemp,Error,TEXT("Player TakeDamage  %f"),DamageAmount);
@@ -463,7 +463,7 @@ void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 	{
 		IsInvincible = true;
 
-		PlayerSkillComponent->OnDefenseSkill();
+		//		PlayerSkillComponent->OnDefenseSkill();
 
 		USkeletalMeshComponent* MeshComponent = GetMesh();
 		if(MeshComponent)
@@ -488,11 +488,11 @@ void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle3,[this]() { ToggleMaterial(false); },0.75f,false);
 
 			// 마지막으로 1초 후 무적 종료
-			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle4,[this]() {
-				IsInvincible = false; PlayerSkillComponent->OffDefenseSkill(); },1.0f,false);
+			GetWorld()->GetTimerManager().SetTimer(FlashTimerHandle4,[this](){ IsInvincible = false; },1.0f,false);
 		}
 	}
 }
+
 
 void AN_Graduation_projectCharacter::ToggleMaterial(bool bUseHitMaterial)
 {

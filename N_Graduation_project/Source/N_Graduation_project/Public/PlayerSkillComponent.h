@@ -94,10 +94,10 @@ private:
 
 	// 플레이어와의 거리
 	float distance;
+
 public:
-	//돼지
-	// 돌진 스킬 실행 시 저장할 방향 (설정 후 변화 없이 유지)
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")
+	//돼지 관련
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")	// 돌진 스킬 실행 시 저장할 방향 (설정 후 변화 없이 유지)
 		FVector StoredDashDirection;
 
 	// 데칼 표시용 
@@ -107,8 +107,6 @@ public:
 	UPROPERTY(EditDefaultsOnly,Category = "Skill|Charge")
 		UMaterialInstance* ChargeDecalMaterial;
 
-
-
 	UFUNCTION()
 		void ExecuteChargeDash(FVector Chargedistance,FString SkillName);
 	UFUNCTION()
@@ -117,7 +115,8 @@ public:
 	void DrawChargePath();
 	void SpawnChargeIndicator(FVector Start,FVector End);
 	void ApplyKnockback(AActor* TargetActor,float KnockbackPower);
-
+	
+	// 원숭이 관련
 	void SpawnProjectile_ThrowRock();
 	void SpawnProjectile_FireBall();
 
@@ -130,7 +129,7 @@ public:
 	UPROPERTY(EditDefaultsOnly,Category="Projectile")
 		TSubclassOf<class APlayerProjectile> SpecialProjectileClass;
 	
-	// .h
+	// 실드 이펙트
 	UPROPERTY(EditDefaultsOnly,Category = "Effect")
 		TSoftObjectPtr<UParticleSystem> ShieldParticle;
 	UParticleSystemComponent* ShieldParticleComp = nullptr;

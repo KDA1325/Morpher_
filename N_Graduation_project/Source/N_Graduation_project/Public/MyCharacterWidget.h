@@ -52,7 +52,7 @@ public:
 	bool CanSpecial;
 
 	bool SkeletonGuard;
-
+	bool bHolding;
 	float Percent;
 	float PassedTimeNomal = 0.0f;
 	float PassedTimeSpecial = 0.0f;
@@ -60,7 +60,6 @@ public:
 	float SkillCoolTimeNomal = 0.0f;
 	float SkillCoolTimeSpecial = 0.0f;
 
-private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* CooldownMID1;
 

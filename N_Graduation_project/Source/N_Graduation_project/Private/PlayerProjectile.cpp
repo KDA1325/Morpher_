@@ -140,7 +140,7 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 				ApplyFireDOT(OtherActor,DPS,ApplyDuration);
 				break;
 			}
-			break;
+									 break;
 			}
 		}
 
@@ -151,18 +151,19 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 void APlayerProjectile::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration)
 {
 	if(!Target || DamagePerSecond <= 0.f || ApplyDuration <= 0.f) return;
-
-	int32 TickCount = FMath::FloorToInt(ApplyDuration);
-	for(int32 i = 1; i <= TickCount; ++i)
-	{
-		FTimerHandle FireTickHandle;
-		// [캡처](매개변수)->Return Type{ 구현 몸체 } 
-		FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]()
+	if(Target){
+		int32 TickCount = FMath::FloorToInt(ApplyDuration);
+		for(int32 i = 1; i <= TickCount; ++i)
 		{
-			UGameplayStatics::ApplyDamage(Target,DamagePerSecond,GetInstigatorController(),this,nullptr);
-			UE_LOG(LogTemp,Warning,TEXT("ApplyFireDOT: %f damage to %s (tick %d)"),DamagePerSecond,*Target->GetName(),i);
-		});
-		GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
+			FTimerHandle FireTickHandle;
+			// [캡처](매개변수)->Return Type{ 구현 몸체 } 
+			FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]()
+			{
+				UGameplayStatics::ApplyDamage(Target,DamagePerSecond,GetInstigatorController(),this,nullptr);
+				//UE_LOG(LogTemp,Warning,TEXT("ApplyFireDOT: %f damage to %s (tick %d)"),DamagePerSecond,*Target->GetName(),i);
+			});
+			GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
+		}
 	}
 }
 

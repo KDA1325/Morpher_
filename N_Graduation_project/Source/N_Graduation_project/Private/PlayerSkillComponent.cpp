@@ -35,7 +35,7 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 		SpecialProjectileClass = SProjectileBP.Class;
 	}
 
-
+	//실드 이펙트
 	ShieldParticle = TSoftObjectPtr<UParticleSystem>(FSoftObjectPath(TEXT("/Game/Asset/FXAsset/LoPoPack/Particles/Par_LoPo_Shield_01.Par_LoPo_Shield_01")));
 	// TSoftObjectPtr에서 실제로 로드할 수 있도록 LoadSynchronous 사용
 	ShieldParticle.LoadSynchronous();
@@ -78,10 +78,11 @@ void UPlayerSkillComponent::OnDefenseSkill()
 {
 	IsDefending = true;
 	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
+
 	StatComponent->HUDWidget->SkeletonGuard=true;
-	if(GEngine)
+	if(StatComponent && StatComponent->HUDWidget)
 	{
-		//	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("DefenseSkill on"));
+		StatComponent->HUDWidget->bHolding=true;
 	}
 }
 
@@ -90,29 +91,36 @@ void UPlayerSkillComponent::OffDefenseSkill()
 	IsDefending = false;
 	UE_LOG(LogTemp,Warning,TEXT("OffDefenseSkill실행됨"));
 
+	//스킬 쿭타임
 	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 	if(StatComponent && StatComponent->HUDWidget)
 	{
 		StatComponent->HUDWidget->UpdateSpecialSkillCooldown(0.5,CanUseNomalSkill,CanUseSpecialSkill);
 		StatComponent->HUDWidget->CanSpecial = false;
+		StatComponent->HUDWidget->bHolding=false;
 	}
+	//몽타주 재개
 	AActor* OwnerActor = GetOwner();
-	if(OwnerActor && OwnerActor->IsA<ACharacter>())
-	{
-		ACharacter* CharacterOwner = Cast<ACharacter>(OwnerActor);
-		UAnimInstance* AnimInstance = CharacterOwner->GetMesh()->GetAnimInstance();
+	ACharacter* CharacterOwner = Cast<ACharacter>(OwnerActor);
 
-		UActionAnimInstance* ActionAnimInstance = Cast<UActionAnimInstance>(AnimInstance);
-		if(ActionAnimInstance){
-			ActionAnimInstance->End_Shiled();
+	if(ShieldParticle.IsValid()){
+		if(UAnimInstance* AnimInstance = CharacterOwner->GetMesh()->GetAnimInstance())
+		{
+			if(UAnimMontage* PausedMontage = AnimInstance->GetCurrentActiveMontage())
+			{
+				AnimInstance->Montage_Resume(PausedMontage);
+				UE_LOG(LogTemp,Warning,TEXT("방어 해제 → 몽타주 다시 재생됨: %s"),*PausedMontage->GetName());
+			} else
+			{
+				UE_LOG(LogTemp,Warning,TEXT("재생 중인 몽타주가 없습니다."));
+			}
 		}
 	}
-
+	//실드 이펙트
 	if(ShieldParticleComp) {
-		ShieldParticleComp->DestroyComponent();  // 파티클 컴포넌트 삭제
+		ShieldParticleComp->DestroyComponent();  // 이펙트 삭제
 		ShieldParticleComp = nullptr;  // 변수 초기화
 	}
-
 }
 void UPlayerSkillComponent::SetSkillTimer(float Count,FTimerDelegate End)
 {
@@ -251,6 +259,8 @@ void UPlayerSkillComponent::VisibleShapeBox(const FString& SkillID)
 	if(!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID,SkillData)) return;
 	if(SkillData.SkillType == EnumSkillType::HitBox)
 	{
+		UE_LOG(LogTemp,Warning,TEXT("HitBox 실행됨"));
+
 		if(SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
 		{
 			SettingHitBox(SkillData);  // 히트박스 초기화
@@ -302,7 +312,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		SkillAnimation(SkillID);
 		UE_LOG(LogTemp,Warning,TEXT("amam OnMontag Playing %s"),*SkillID);
 
-
+		HideHitBox();
 		// 쿨타임 타이머 설정
 		FTimerDelegate NomalCooldownEnd;
 		NomalCooldownEnd.BindUObject(this,&UPlayerSkillComponent::NomalCooldown);
@@ -328,6 +338,14 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 
 		if(SkillID == "Skill_Charge")
 		{
+			auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
+
+			StatComponent->HUDWidget->SkeletonGuard=true;
+			if(StatComponent && StatComponent->HUDWidget)
+			{
+				StatComponent->HUDWidget->bHolding=true;
+			}
+
 			StoredDashDirection = MyChar->GetActorForwardVector().GetSafeNormal();
 
 			DrawChargePath(); // 돌진 선
@@ -348,15 +366,13 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		}
 
 		if(SkillID == "Skill_ShieldGuard") {
-			//VisibleShapeBox(SkillID);
-			UE_LOG(LogTemp,Warning,TEXT("실드 실행됨"));
 			OnDefenseSkill();
-
+			//실드 이펙트
 			if(ShieldParticle.IsValid())
 			{
 				ShieldParticleComp = UGameplayStatics::SpawnEmitterAttached(ShieldParticle.Get(),
 					MyChar->GetMesh(),                // 붙일 대상: 캐릭터 메시
-					FName(NAME_None),        // 본 이름 (or NAME_None 전체 바디)
+					FName(NAME_None),        // 본 이름 (NAME_None= 전체 바디)
 					FVector::ZeroVector,     // 오프셋
 					FRotator::ZeroRotator,
 					EAttachLocation::KeepRelativeOffset,
@@ -368,23 +384,22 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 				}
 
 			}
-			CanUseSpecialSkill = false;
-
-
-
-			// 스킬 애니메이션
-			SkillAnimation(SkillID);
-			UE_LOG(LogTemp,Warning,TEXT("OnMontag Playing %s"),*SkillID);
-
-			FTimerDelegate SpecialCooldownEnd;
-			SpecialCooldownEnd.BindUObject(this,&UPlayerSkillComponent::SpecialCooldown);
-			SpecialSetSkillTimer(SkillData.SkillCoolTime,SpecialCooldownEnd);
-		} else
-		{
-			UE_LOG(LogTemp,Warning,TEXT("kakao No CanUseSpecialSkill"));
 		}
+		CanUseSpecialSkill = false;
+
+		// 스킬 애니메이션
+		SkillAnimation(SkillID);
+		UE_LOG(LogTemp,Warning,TEXT("OnMontag Playing %s"),*SkillID);
+
+		FTimerDelegate SpecialCooldownEnd;
+		SpecialCooldownEnd.BindUObject(this,&UPlayerSkillComponent::SpecialCooldown);
+		SpecialSetSkillTimer(SkillData.SkillCoolTime,SpecialCooldownEnd);
+	} else
+	{
+		UE_LOG(LogTemp,Warning,TEXT("kakao No CanUseSpecialSkill"));
 	}
 }
+
 //<돌진>
 void UPlayerSkillComponent::DrawChargePath()
 {
@@ -449,6 +464,13 @@ void UPlayerSkillComponent::ExecuteChargeDash(FVector Chargedistance,FString Ski
 
 	FVector DashDirection = StoredDashDirection;
 	VisibleShapeBox(SkillName);
+	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
+
+	StatComponent->HUDWidget->SkeletonGuard=true;
+	if(StatComponent && StatComponent->HUDWidget)
+	{
+		StatComponent->HUDWidget->bHolding=false;
+	}
 	// 현재 DamagedActors를 안전하게 복사해서 사용
 // ExecuteChargeDash 내부에서
 
@@ -530,7 +552,7 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 }
 
 void UPlayerSkillComponent::SpawnProjectile_FireBall()
-{
+{	
 	// 스폰할 투사체 클래스 설정 확인
 	if(!SpecialProjectileClass)
 	{
