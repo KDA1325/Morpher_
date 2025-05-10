@@ -8,7 +8,7 @@
 #include "Components/BoxComponent.h"  // UBoxComponent
 #include "Components/ArrowComponent.h"  // UArrowComponent
 #include "ActionAnimInstance.h"
-
+#include "Particles/ParticleSystem.h"
 #include "PlayerSkillComponent.generated.h"
 
 //class Forward declarations;
@@ -129,5 +129,9 @@ public:
 		
 	UPROPERTY(EditDefaultsOnly,Category="Projectile")
 		TSubclassOf<class APlayerProjectile> SpecialProjectileClass;
-
+	
+	// .h
+	UPROPERTY(EditDefaultsOnly,Category = "Effect")
+		TSoftObjectPtr<UParticleSystem> ShieldParticle;
+	UParticleSystemComponent* ShieldParticleComp = nullptr;
 };

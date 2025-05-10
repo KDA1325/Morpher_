@@ -9,9 +9,10 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class N_GRADUATION_PROJECT_API UNotify_PlayShieldCallback : public UAnimNotify
 {
 	GENERATED_BODY()
+public:
 		virtual void Notify(USkeletalMeshComponent* MeshComp,UAnimSequenceBase* Animation) override;
 };

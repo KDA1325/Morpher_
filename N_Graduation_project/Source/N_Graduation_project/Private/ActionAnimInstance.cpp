@@ -83,6 +83,8 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		UE_LOG(LogTemp,Warning,TEXT("amam Skill_SkeletonSlash  스킬 실행됨"));
 
 		Montage_Play(m_Gaurd);
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+
 	}
 	else{
 		UE_LOG(LogTemp,Warning,TEXT("amam Playing Animation 해당하는 스킬 없음"));

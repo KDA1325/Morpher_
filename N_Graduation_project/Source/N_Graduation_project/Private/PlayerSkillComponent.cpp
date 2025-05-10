@@ -14,7 +14,7 @@
 #include "Components/DecalComponent.h"            // UDecalComponent
 #include "Kismet/KismetMathLibrary.h"             // UKismetMathLibrary::FindLookAtRotation
 #include "PlayerProjectile.h"
-
+#include "Particles/ParticleSystemComponent.h" 
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -34,6 +34,21 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	{
 		SpecialProjectileClass = SProjectileBP.Class;
 	}
+
+
+	ShieldParticle = TSoftObjectPtr<UParticleSystem>(FSoftObjectPath(TEXT("/Game/Asset/FXAsset/LoPoPack/Particles/Par_LoPo_Shield_01.Par_LoPo_Shield_01")));
+	// TSoftObjectPtr에서 실제로 로드할 수 있도록 LoadSynchronous 사용
+	ShieldParticle.LoadSynchronous();
+	if(ShieldParticle.IsValid())
+	{
+		// 로드된 후 유효한 경우
+		UE_LOG(LogTemp,Warning,TEXT("ShieldParticle 있음"));
+	} else
+	{
+		// 로드되지 않은 경우
+		UE_LOG(LogTemp,Warning,TEXT("ShieldParticle 없음"));
+	}
+
 }
 
 void UPlayerSkillComponent::BeginPlay()
@@ -92,6 +107,12 @@ void UPlayerSkillComponent::OffDefenseSkill()
 			ActionAnimInstance->End_Shiled();
 		}
 	}
+
+	if(ShieldParticleComp) {
+		ShieldParticleComp->DestroyComponent();  // 파티클 컴포넌트 삭제
+		ShieldParticleComp = nullptr;  // 변수 초기화
+	}
+
 }
 void UPlayerSkillComponent::SetSkillTimer(float Count,FTimerDelegate End)
 {
@@ -317,8 +338,6 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 			ChargeEnd.BindUFunction(this,FName("ExecuteChargeDash"),StoredDashDirection,SkillID);
 			ChargeSkillTimer(PrepTime,ChargeEnd);
 			// 범위 내일 때만 히트 판정 박스 표시
-	
-
 		}
 
 		auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
@@ -332,21 +351,38 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 			//VisibleShapeBox(SkillID);
 			UE_LOG(LogTemp,Warning,TEXT("실드 실행됨"));
 			OnDefenseSkill();
+
+			if(ShieldParticle.IsValid())
+			{
+				ShieldParticleComp = UGameplayStatics::SpawnEmitterAttached(ShieldParticle.Get(),
+					MyChar->GetMesh(),                // 붙일 대상: 캐릭터 메시
+					FName(NAME_None),        // 본 이름 (or NAME_None 전체 바디)
+					FVector::ZeroVector,     // 오프셋
+					FRotator::ZeroRotator,
+					EAttachLocation::KeepRelativeOffset,
+					false                   // 소멸 시 자동 제거 여부
+				);
+				if(ShieldParticleComp == nullptr)
+				{
+					UE_LOG(LogTemp,Warning,TEXT("Failed to spawn shield particle."));
+				}
+
+			}
+			CanUseSpecialSkill = false;
+
+
+
+			// 스킬 애니메이션
+			SkillAnimation(SkillID);
+			UE_LOG(LogTemp,Warning,TEXT("OnMontag Playing %s"),*SkillID);
+
+			FTimerDelegate SpecialCooldownEnd;
+			SpecialCooldownEnd.BindUObject(this,&UPlayerSkillComponent::SpecialCooldown);
+			SpecialSetSkillTimer(SkillData.SkillCoolTime,SpecialCooldownEnd);
+		} else
+		{
+			UE_LOG(LogTemp,Warning,TEXT("kakao No CanUseSpecialSkill"));
 		}
-		CanUseSpecialSkill = false;
-
-
-
-		// 스킬 애니메이션
-		SkillAnimation(SkillID);
-		UE_LOG(LogTemp,Warning,TEXT("OnMontag Playing %s"),*SkillID);
-
-		FTimerDelegate SpecialCooldownEnd;
-		SpecialCooldownEnd.BindUObject(this,&UPlayerSkillComponent::SpecialCooldown);
-		SpecialSetSkillTimer(SkillData.SkillCoolTime,SpecialCooldownEnd);
-	} else
-	{
-		UE_LOG(LogTemp,Warning,TEXT("kakao No CanUseSpecialSkill"));
 	}
 }
 //<돌진>
@@ -566,6 +602,7 @@ void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 		}
 	}
 }
+
 void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage,bool bInterrupted)
 {
 	if(Montage)
@@ -579,7 +616,6 @@ void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage,bool bInterr
 	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 	MyChar->EndAction();
 }
-
 
 void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 {
@@ -611,8 +647,6 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 				FString EnumName = EnumPtr->GetNameStringByIndex(static_cast<int32>(Effect.EffectType));
 				UE_LOG(LogTemp,Warning,TEXT("EffectData : %s"),*EnumName);
 			}
-
-
 
 			if(Effect.EffectType == EnumEffectType::Damage)
 			{
