@@ -30,6 +30,7 @@ private:
 	UAnimMontage* M_Slash;
 	UAnimMontage* M_Bite;
 	UAnimMontage* m_Inpermon1;
+	UAnimMontage* m_Inpermon2;
 	UAnimMontage* m_SkeletonSlash;
 	UAnimMontage* m_Gaurd;
 

@@ -32,6 +32,9 @@ public:
 	bool bApplyFireDot;
 	float FireDamage;
 	float FireDuration;
+	float SkillRange; // 투사체 발사 유지 거리 
+
+	FTimerHandle DestroyTimerHandle;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -48,4 +51,9 @@ protected:
 
 	UFUNCTION()
 		void OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult);
+
+	// ProjectileMovementComponent 사용을 위한 함수(투사체 발사) 
+	void ApplyFireDOT(AActor * Target,float DamagePerSecond,float Duration);
+
+	void OnLifetimeExpired();
 };

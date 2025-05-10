@@ -29,6 +29,11 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	{
 		NomalProjectileClass = ProjectileBP.Class;
 	}
+	static ConstructorHelpers::FClassFinder<APlayerProjectile> SProjectileBP(TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_FireBall"));
+	if(SProjectileBP.Succeeded())
+	{
+		SpecialProjectileClass = SProjectileBP.Class;
+	}
 }
 
 void UPlayerSkillComponent::BeginPlay()
@@ -312,16 +317,16 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 			ChargeEnd.BindUFunction(this,FName("ExecuteChargeDash"),StoredDashDirection,SkillID);
 			ChargeSkillTimer(PrepTime,ChargeEnd);
 			// 범위 내일 때만 히트 판정 박스 표시
-			auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
-			if(StatComponent && StatComponent->HUDWidget)
-			{
-				StatComponent->HUDWidget->UpdateSpecialSkillCooldown(SkillData.SkillCoolTime,CanUseNomalSkill,CanUseSpecialSkill);
-				StatComponent->HUDWidget->CanSpecial = false;
-			}
+	
 
 		}
 
-
+		auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
+		if(StatComponent && StatComponent->HUDWidget)
+		{
+			StatComponent->HUDWidget->UpdateSpecialSkillCooldown(SkillData.SkillCoolTime,CanUseNomalSkill,CanUseSpecialSkill);
+			StatComponent->HUDWidget->CanSpecial = false;
+		}
 
 		if(SkillID == "Skill_ShieldGuard") {
 			//VisibleShapeBox(SkillID);
@@ -454,7 +459,7 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 	if(!MeshComp) return;
 
 	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
-	FVector Direction = MeshComp->GetRightVector(); // 메시 기준 전방이 RightVector라고 하셨으므로
+	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
 
 	// 스폰 파라미터
 	FActorSpawnParameters SpawnParams;
@@ -481,6 +486,57 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_ThrowRock data!"));
+		}
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
+	}
+}
+
+void UPlayerSkillComponent::SpawnProjectile_FireBall()
+{
+	// 스폰할 투사체 클래스 설정 확인
+	if(!SpecialProjectileClass)
+	{
+		UE_LOG(LogTemp,Error,TEXT("SpecialProjectileClass not set!"));
+		return;
+	}
+
+	// 소켓에서 스폰 위치 및 방향 획득
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if(!OwnerCharacter) return;
+
+	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
+	if(!MeshComp) return;
+
+	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
+
+	// 스폰 파라미터
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = OwnerCharacter;
+	SpawnParams.Instigator = OwnerCharacter;
+
+	// 투사체 스폰
+	APlayerProjectile* SpawnedProjectile = GetWorld()->SpawnActor<APlayerProjectile>(
+		SpecialProjectileClass,SpawnLocation,Direction.Rotation(),SpawnParams
+	);
+
+	if(SpawnedProjectile)
+	{
+		FSkillData SkillData;
+		TArray<FSkillEffectData> EffectDataArray;
+
+		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_FireBall",SkillData) &&
+			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_FireBall",EffectDataArray))
+		{
+			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
+			SpawnedProjectile->FireInDirection(Direction);
+			UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_FireBall"));
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_FireBall data!"));
 		}
 	} else
 	{

@@ -25,6 +25,9 @@ UActionAnimInstance::UActionAnimInstance()
 	FSoftObjectPath Nomal_InpermonMontagePath(TEXT("/Game/Gamin/InferMon/InferMon_attack_Anim_Montage.InferMon_attack_Anim_Montage"));
 	m_Inpermon1 = Cast<UAnimMontage>(Nomal_InpermonMontagePath.TryLoad());
 
+	FSoftObjectPath Special_InpermonMontagePath(TEXT("/Game/Gamin/InferMon/InferMon_FireBall_Anim_Montage.InferMon_FireBall_Anim_Montage"));
+	m_Inpermon2 = Cast<UAnimMontage>(Special_InpermonMontagePath.TryLoad());
+
 	FSoftObjectPath SkeletonSlashMontagePath(TEXT("/Game/Animation/Skeleton/Skeletion_attack_Montage.Skeletion_attack_Montage"));
 	m_SkeletonSlash = Cast<UAnimMontage>(SkeletonSlashMontagePath.TryLoad());
 
@@ -51,7 +54,7 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 			// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
 	} 
-	else if(EffectID == "Skill_ThrowRock" || EffectID == "Skill_FireBall") {
+	else if(EffectID == "Skill_ThrowRock" ) {
 		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Inpermon1->GetName());
 		UE_LOG(LogTemp,Warning,TEXT("amam Skill_ThrowRock  스킬 실행됨"));
 
@@ -59,6 +62,14 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
 	} 
+	else if(EffectID == "Skill_FireBall"){
+		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Inpermon2->GetName());
+		UE_LOG(LogTemp,Warning,TEXT("amam Skill_FireBall  스킬 실행됨"));
+
+		Montage_Play(m_Inpermon2);
+		// 애니메이션 종료 이벤트 바인딩
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+	}
 	else if(EffectID=="Skill_SkeletonSlash")
 	{
 		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_SkeletonSlash->GetName());

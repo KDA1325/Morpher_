@@ -119,11 +119,15 @@ public:
 	void ApplyKnockback(AActor* TargetActor,float KnockbackPower);
 
 	void SpawnProjectile_ThrowRock();
+	void SpawnProjectile_FireBall();
 
 	UPROPERTY(BlueprintReadWrite)
 		bool Notify_Player_Projectile;
 
 	UPROPERTY(EditDefaultsOnly,Category="Projectile")
 		TSubclassOf<class APlayerProjectile> NomalProjectileClass;
+		
+	UPROPERTY(EditDefaultsOnly,Category="Projectile")
+		TSubclassOf<class APlayerProjectile> SpecialProjectileClass;
 
 };
