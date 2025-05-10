@@ -36,12 +36,16 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Components")
 	class UProjectileMovementComponent* ProjectileMovement;
 
-	// Settings
+	// 멤버 변수 
 	float Damage;
 	float AOERadius;
 	bool bApplyFireDot;
 	float FireDamage;
 	float FireDuration;
+	float SkillRange; // 투사체 발사 유지 거리 
+
+	FTimerHandle DestroyTimerHandle;
+
 
 	
 	//void InitProjectile(const FSkillData& SkillData,const TArray<FSkillEffectData>& EffectData);
@@ -65,6 +69,10 @@ public:
 
 	// ProjectileMovementComponent 사용을 위한 함수(투사체 발사) 
 	void FireInDirection(const FVector & ShootDirection);
+
+	void ApplyFireDOT(AActor * Target,float DamagePerSecond,float Duration);
+
+	void OnLifetimeExpired();
 
 	//// Collision handling
 	//UFUNCTION()
