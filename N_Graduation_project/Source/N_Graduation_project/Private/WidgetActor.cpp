@@ -22,6 +22,16 @@ UWidgetActor::UWidgetActor()
 		PieClass = Pie.Class;
 	}
 	Before_Select= 102.0f;
+	
+	static ConstructorHelpers::FClassFinder<UUserWidget> Die(TEXT("WidgetBlueprint'/Game/GUI/HUD_GameOver.HUD_GameOver_C'"));
+	if(Die.Succeeded()){
+		DieClass = Die.Class;
+		UE_LOG(LogTemp,Warning,TEXT("az DieClass있음"));
+	}
+	else{
+		UE_LOG(LogTemp,Warning,TEXT("az DieClass없음"));
+	}
+
 }
 
 void UWidgetActor::BeginPlay()
@@ -62,6 +72,29 @@ void UWidgetActor::BeginPlay()
 	}
 }
 
+void UWidgetActor::ShowDieWidget(){
+	UE_LOG(LogTemp,Warning,TEXT("az ShowDieWidget실행됨"));
+
+	if(!DieWidget && DieClass)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("az !DieWidget && DieClass실행됨"));
+
+		DieWidget = Cast<UUserWidget>(CreateWidget(GetWorld()->GetFirstPlayerController(),DieClass));
+		if(DieWidget )
+		{
+			DieWidget->AddToViewport();
+			UE_LOG(LogTemp,Warning,TEXT("az DieWidget실행됨"));
+
+		}
+		else{
+			UE_LOG(LogTemp,Warning,TEXT("az DieWidget 없음"));
+		}
+	}
+	else{
+		UE_LOG(LogTemp,Warning,TEXT("az !DieWidget && DieClass 없음"));
+
+	}
+}
 void UWidgetActor::ShowPieMenu()
 {
 	if(PieWidget)
