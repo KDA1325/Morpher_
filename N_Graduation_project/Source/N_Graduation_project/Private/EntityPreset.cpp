@@ -573,7 +573,7 @@ void AEntityPreset::ShowSpecialHitBox()
 
 	// HitBox 활성화 
 	SpecialSkillHitBox->SetHiddenInGame(false);
-	//SpecialSkillHitBox->SetVisibility(true);
+	SpecialSkillHitBox->SetVisibility(true);
 	SpecialSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기
 	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
 
@@ -605,26 +605,26 @@ void AEntityPreset::ShowHitBox()
 // AnimNotify로 호출될 함수 정의 (Anim BP에서 사용 가능)
 void AEntityPreset::AnimNotify_ShowHitBox()
 {
-	ShowHitBox();
+	//ShowHitBox();
 
-	// Duration 기반으로 히트박스 숨기기 예약
-	if(bIsCharging)
-	{
-		float Duration = SpecialSkillData.SkillDuration;
-		GetWorldTimerManager().SetTimerForNextTick([this,Duration]()
-		{
-			FTimerHandle TimerHandle;
-			GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideSpecialHitBox,Duration,false);
-		});
-	} else
-	{
-		float Duration = NormalSkillData.SkillDuration;
-		GetWorldTimerManager().SetTimerForNextTick([this,Duration]()
-		{
-			FTimerHandle TimerHandle;
-			GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideNormalHitBox,Duration,false);
-		});
-	}
+	//// Duration 기반으로 히트박스 숨기기 예약
+	//if(bIsCharging)
+	//{
+	//	float Duration = SpecialSkillData.SkillDuration;
+	//	GetWorldTimerManager().SetTimerForNextTick([this,Duration]()
+	//	{
+	//		FTimerHandle TimerHandle;
+	//		GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideSpecialHitBox,Duration,false);
+	//	});
+	//} else
+	//{
+	//	float Duration = NormalSkillData.SkillDuration;
+	//	GetWorldTimerManager().SetTimerForNextTick([this,Duration]()
+	//	{
+	//		FTimerHandle TimerHandle;
+	//		GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideNormalHitBox,Duration,false);
+	//	});
+	//}
 }
 
 void AEntityPreset::AnimNotify_SpawnProjectile()
