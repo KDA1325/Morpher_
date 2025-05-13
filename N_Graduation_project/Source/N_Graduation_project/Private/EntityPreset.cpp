@@ -310,8 +310,8 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 		TMap<FString, FName> SkillToSocketMap = {
 			//{ "Skill_Slash", TEXT("SlashSocket") },
 			{ "Skill_Bite", TEXT("BiteHitBox") },
-			{ "Skill_Charge", TEXT("ChargeHitBox") }
-			//{ "Skill_TailSwing", TEXT("TailSocket") },
+			{ "Skill_Charge", TEXT("ChargeHitBox") },
+			{ "Skill_TailSwing", TEXT("TailSocket") }
 			//{ "Skill_FreezeBreath", TEXT("MouthSocket") },
 			//{ "Skill_ArmSwing", TEXT("RightArmSocket") },
 			//{ "Skill_EarthBreaker", TEXT("FootSocket") }
