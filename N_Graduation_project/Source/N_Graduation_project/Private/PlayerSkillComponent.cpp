@@ -15,6 +15,8 @@
 #include "Kismet/KismetMathLibrary.h"             // UKismetMathLibrary::FindLookAtRotation
 #include "PlayerProjectile.h"
 #include "Particles/ParticleSystemComponent.h" 
+#include "MyKnockbackBall.h"
+
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -219,7 +221,7 @@ AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
 	for(TActorIterator<AActor> It(GetWorld()); It; ++It)
 	{
 		AActor* Actor = *It;
-		if(Actor && Actor->ActorHasTag(FName("Monster")))
+		if(Actor && Actor->ActorHasTag(FName("Monster"))|| Actor->ActorHasTag(FName("Objcet")))
 		{
 			float CurrentDistance = FVector::Dist(PlayerLocation,Actor->GetActorLocation());
 
@@ -534,8 +536,11 @@ void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor,float Distance,fl
 			//UE_LOG(LogTemp,Warning,TEXT("넉백 Controller 클래스: %s"),*Ctrl->GetClass()->GetName());
 		}
 	//	UE_LOG(LogTemp,Warning,TEXT("넉백 성공: %s 방향 %s 파워 %f"),*TargetChar->GetName(),*KnockbackDir.ToString(),KnockbackPower);
+
 		HideHitBox();
-	}
+	}	
+	
+
 }
 
 //<원숭이>

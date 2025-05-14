@@ -432,8 +432,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 
 			return 0.0f;//무적상태라면 리턴.
 
-		} 
-		else
+		} else
 		{
 			PlayerSkillComponent->CanUseNomalSkill = true;
 			PlayerStatComponent->ApplyDamage(DamageAmount);
@@ -444,8 +443,8 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 
 			return FinalDamage;
 		}
-	} 
-	
+	}
+
 	else {
 		PlayerSkillComponent->CanUseNomalSkill = true;
 		On_invincibility_Implementation();
@@ -785,6 +784,11 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 		{
 			if(!PlayerSkillComponent->DamagedActors.Contains(OtherActor)) //데미지를 받은 적 있는지 확인 후
 			{
+				if(OtherActor->ActorHasTag(FName("NK_Object"))){
+					PlayerSkillComponent->DamagedActors.Add(OtherActor);
+					UE_LOG(LogTemp,Warning,TEXT("DamagedActors에 추가된 NK_Object: %s"),*OtherActor->GetName());
+
+				}
 				float Damage = PlayerSkillComponent->DamageAmount;
 				//UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
 				if(PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false)
