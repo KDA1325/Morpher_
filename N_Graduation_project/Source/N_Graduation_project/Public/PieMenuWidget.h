@@ -28,8 +28,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float GetCachedMouseAngle() const { return CachedMouseFinalAngle; }
 
-	FVector2D InitialMousePosition; // Ã³À½ ¸¶¿ì½º À§Ä¡
-	bool bIsReferencePointSet = false; // ÃÊ±âÈ­ ¿©ºÎ È®ÀÎ¿ë
+	FVector2D InitialMousePosition; // ì²˜ìŒ ë§ˆìš°ìŠ¤ ìœ„ì¹˜
+	bool bIsReferencePointSet = false; // ì´ˆê¸°í™” ì—¬ë¶€ í™•ì¸ìš©
 	float CachedMouseAngle=0.2f;
 	float CachedMouseFinalAngle;
 	float Before_CachedMouseFinalAngle= 102.0f;
@@ -37,7 +37,7 @@ public:
 	UPROPERTY()
 	TSet<FString> DeadMonsters;
 
-	float SectorAngle = 360.0f / 7.0f; // 7°³ ¼½ÅÍ
+	float SectorAngle = 360.0f / 7.0f; // 7ê°œ ì„¹í„°
 	FString Monster;
 	FString BeforeMonster;
 
@@ -45,7 +45,7 @@ public:
 	TArray<UScaleBox*> PieScaleBoxes;
 
 	void OpenCharacter(FString DeadMonsterName);
-private:
+
 	bool WildBoar_Ok = false;
 	bool Inpermon_OK = false;
 	bool SkeletonWarrior_OK = false;

@@ -202,7 +202,6 @@ void UPlayerSkillComponent::HideHitBox()
 
 	// 데미지 체크 초기화
 	DamagedActors.Empty();
-	SnapshotDamagedActors.Empty();
 }
 
 AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
@@ -499,6 +498,46 @@ void UPlayerSkillComponent::DelayedKnockbackEffect(FString SkillName)
 		}
 	}
 }
+void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor,float Distance,float Duration)
+{
+	if(!IsValid(TargetActor)) return;
+
+	FVector KnockbackDir = TargetActor->GetActorLocation() - GetOwner()->GetActorLocation();
+	//KnockbackDir.Z = 0.f; // 위로 튀지 않게 평면 넉백
+	KnockbackDir.Normalize();
+	float KnockbackSpeed = Distance / Duration;	
+	FVector KnockbackVelocity = KnockbackDir * KnockbackSpeed;
+
+	if(ACharacter* TargetChar = Cast<ACharacter>(TargetActor))
+	{
+		UCharacterMovementComponent* MoveComp = TargetChar->GetCharacterMovement();
+
+		// AI 컨트롤러 얻기
+		AAIController* AICon = Cast<AAIController>(TargetChar->GetController());
+		if(AICon)
+		{
+			// 이동 중지
+			AICon->StopMovement();
+			MoveComp->StopMovementImmediately();
+
+			// 넉백 실행
+			TargetChar->LaunchCharacter(KnockbackVelocity,true,true);
+			UE_LOG(LogTemp,Warning,TEXT("넉백 KnockbackVelocity: %s"),*KnockbackVelocity.ToString());
+
+		} else
+		{
+			// AI 없는 경우에도 넉백 적용
+			TargetChar->LaunchCharacter(KnockbackVelocity,true,true);
+		}
+		if(AController* Ctrl = TargetChar->GetController())
+		{
+			//UE_LOG(LogTemp,Warning,TEXT("넉백 Controller 클래스: %s"),*Ctrl->GetClass()->GetName());
+		}
+	//	UE_LOG(LogTemp,Warning,TEXT("넉백 성공: %s 방향 %s 파워 %f"),*TargetChar->GetName(),*KnockbackDir.ToString(),KnockbackPower);
+		HideHitBox();
+	}
+}
+
 //<원숭이>
 void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 {
@@ -652,7 +691,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 	if(!MyChar) return;
 	//DamageAmount = EffectData[0].EffectValue01;
-	SnapshotDamagedActors = DamagedActors.Array();
+	TArray<AActor*> SnapshotDamagedActors = DamagedActors.Array(); // 지역 변수로!
 	UE_LOG(LogTemp,Warning,TEXT("SkillEffect_ 실행 직전 SnapshotDamagedActors 수: %d"),SnapshotDamagedActors.Num());
 	for(AActor* TargetActor : SnapshotDamagedActors)
 	{
@@ -677,20 +716,24 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 					DamageAmount = Effect.EffectValue01;
 					UGameplayStatics::ApplyDamage(TargetActor,DamageAmount,MyChar->GetController(),MyChar,nullptr);
 					UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
-					GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
+					//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
 				} else {
 					DamageAmount = Effect.EffectValue01;
 					UGameplayStatics::ApplyDamage(TargetActor,10000,MyChar->GetController(),MyChar,nullptr);
 					UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
-					GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
+					//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
 
 				}
 			}
 			if(Effect.EffectType == EnumEffectType::KnockBack)
 			{
 				// 넉백
-				ApplyKnockback(TargetActor,Effect.EffectValue01);
-				GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("넉백 실행됨"));
+				float KnockbackDistance = Effect.EffectValue01;
+				float KnockbackDuration = Effect.EffectValue02;
+
+				ApplyKnockback(TargetActor,KnockbackDistance,KnockbackDuration);
+				UE_LOG(LogTemp,Warning,TEXT("넉백 TargetActor: %s KnockbackDistance: %f KnockbackDuration: %f"),
+					   *TargetActor->GetName(),KnockbackDistance,KnockbackDuration);
 
 			}
 		}
@@ -700,39 +743,3 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 	}
 }
 
-void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor,float KnockbackPower)
-{
-	if(!IsValid(TargetActor)) return;
-
-	FVector KnockbackDir = TargetActor->GetActorLocation() - GetOwner()->GetActorLocation();
-	//KnockbackDir.Z = 0.f; // 위로 튀지 않게 평면 넉백
-	KnockbackDir.Normalize();
-
-	if(ACharacter* TargetChar = Cast<ACharacter>(TargetActor))
-	{
-		UCharacterMovementComponent* MoveComp = TargetChar->GetCharacterMovement();
-
-		// AI 컨트롤러 얻기
-		AAIController* AICon = Cast<AAIController>(TargetChar->GetController());
-		if(AICon)
-		{
-			// 이동 중지
-			AICon->StopMovement();
-			MoveComp->StopMovementImmediately();
-
-			// 넉백 실행
-			TargetChar->LaunchCharacter(KnockbackDir * KnockbackPower,true,true);
-
-		} else
-		{
-			// AI 없는 경우에도 넉백 적용
-			TargetChar->LaunchCharacter(KnockbackDir * KnockbackPower,true,true);
-		}
-		if(AController* Ctrl = TargetChar->GetController())
-		{
-			UE_LOG(LogTemp,Warning,TEXT("넉백 Controller 클래스: %s"),*Ctrl->GetClass()->GetName());
-		}
-		UE_LOG(LogTemp,Warning,TEXT("넉백 성공: %s 방향 %s 파워 %f"),*TargetChar->GetName(),*KnockbackDir.ToString(),KnockbackPower);
-		HideHitBox();
-	}
-}

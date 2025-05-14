@@ -301,7 +301,6 @@ void AN_Graduation_projectCharacter::OnPieMenuPressed()
 	if(WidgetActor&&bCanMove)
 	{
 		WidgetActor->ShowPieMenu();
-
 	}
 }
 
