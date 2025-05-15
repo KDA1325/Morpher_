@@ -12,12 +12,7 @@ ANK_Event::ANK_Event()
 
 	// 생성자에서 컴포넌트를 초기화하지 않음. BeginPlay에서 로드
 	BoxComponent = nullptr;
-	// FClassFinder를 사용하여 블루프린트 클래스를 찾습니다
-	static ConstructorHelpers::FClassFinder<AActor> WallBP(TEXT("/Game/Object/BP_NK_Wall.BP_NK_Wall_C"));
-	if(WallBP.Succeeded())
-	{
-		WallBPClass = WallBP.Class; // 클래스 할당
-	}
+
 }
 
 // Called when the game starts or when spawned
@@ -31,6 +26,14 @@ void ANK_Event::BeginPlay()
 	{
 		BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&ANK_Event::OnBoxBeginOverlap);
 	} 
+	WallBPClass = StaticLoadClass(AActor::StaticClass(),nullptr,TEXT("/Game/Object/BP_NK_Wall.BP_NK_Wall_C"));
+	if(WallBPClass)
+	{
+		UE_LOG(LogTemp,Log,TEXT("WallBPClass 로딩 성공"));
+	} else
+	{
+		UE_LOG(LogTemp,Warning,TEXT("WallBPClass 로딩 실패"));
+	}
 }
 
 // Called every frame
