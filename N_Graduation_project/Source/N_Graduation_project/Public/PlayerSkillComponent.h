@@ -82,7 +82,7 @@ public:
 	UPROPERTY()
 		TSet<AActor*> DamagedActors; // 데미지를 받은 몬스터 저장
 
-	TArray<AActor*> SnapshotDamagedActors;
+	//	TArray<AActor*> SnapshotDamagedActors;
 protected:
 	virtual void BeginPlay() override;
 
@@ -114,8 +114,8 @@ public:
 
 	void DrawChargePath();
 	void SpawnChargeIndicator(FVector Start,FVector End);
-	void ApplyKnockback(AActor* TargetActor,float KnockbackPower);
-	
+	void ApplyKnockback(AActor* TargetActor,float Distance,float Duration);
+
 	// 원숭이 관련
 	void SpawnProjectile_ThrowRock();
 	void SpawnProjectile_FireBall();
@@ -125,10 +125,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly,Category="Projectile")
 		TSubclassOf<class APlayerProjectile> NomalProjectileClass;
-		
+
 	UPROPERTY(EditDefaultsOnly,Category="Projectile")
 		TSubclassOf<class APlayerProjectile> SpecialProjectileClass;
-	
+
 	// 실드 이펙트
 	UPROPERTY(EditDefaultsOnly,Category = "Effect")
 		TSoftObjectPtr<UParticleSystem> ShieldParticle;

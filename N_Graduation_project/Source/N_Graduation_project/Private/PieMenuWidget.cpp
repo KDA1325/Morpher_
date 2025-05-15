@@ -127,7 +127,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	}
 	else if (CachedMouseFinalAngle <= 233.0f)
 	{
-		if (WildBoar_Ok)
+		//if (WildBoar_Ok)
 		{
 			CachedMouseFinalAngle = 154.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -136,7 +136,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "WildBoar";
 			//	CachedMouseFinalAngle = 206.0f;
 		}
-		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+	//	else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 
 	}
 	else if (CachedMouseFinalAngle <= 285.0f)
