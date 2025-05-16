@@ -1,16 +1,16 @@
-
 #include "Barrel.h"
-#include "Kismet/GameplayStatics.h" //ApplyDamage에 필요
-//#include "Engine/Classes/Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/SphereComponent.h"
 
 // Sets default values
 ABarrel::ABarrel()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	SphereComponent = nullptr;
-	ExplosionDelay=1.0f;
+
+	ExplosionDelay = 1.0f;
 	ApplyDamage = false;
+	SphereComponent = nullptr;
+	DamageAmount = 0.0f;
 }
 
 // Called when the game starts or when spawned
@@ -18,7 +18,15 @@ void ABarrel::BeginPlay()
 {
 	Super::BeginPlay();
 	SphereComponent = Cast<USphereComponent>(GetDefaultSubobjectByName(TEXT("Sphere")));
-	RootComponent = SphereComponent;
+
+	if(SphereComponent)
+	{
+		SphereComponent->SetGenerateOverlapEvents(true);
+		UE_LOG(LogTemp,Log,TEXT("Barrel: SphereComponent 세팅 완료"));
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("Barrel: SphereComponent가 NULL입니다! BP에서 설정되었는지 확인하세요"));
+	}
 }
 
 // Called every frame
@@ -26,42 +34,70 @@ void ABarrel::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
+
+// 외부에서 데미지 유입 시 호출
 void ABarrel::WorkBarrel(float DA)
 {
-	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Barrel, 응답받았습니다"));
-	DamageAmount=DA;
-	//	StartBarrel= true;
-	//	ChangeColor(ExplosionDelay);
-	StartExplosion();
+	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Barrel: 응답받음"));
+	DamageAmount = DA;
 
+	StartExplosion();
 }
 
-
-void ABarrel::OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
+// 폭발 후 실제 데미지 처리 및 연쇄 폭발 처리
+void ABarrel::EndtExplosion()
 {
-	UE_LOG(LogTemp,Warning,TEXT("Barrel3 OtherActor Name: %s"),*OtherActor->GetName());
-
-	if(OtherActor && OtherActor != this)
+	if(!SphereComponent)
 	{
-	//	UE_LOG(LogTemp,Warning,TEXT("Barrel3 OtherActor && OtherActor != this"));
+		UE_LOG(LogTemp,Error,TEXT("Barrel: SphereComponent가 없습니다"));
+		return;
+	}
 
-	//	//if(ApplyDamage== true){
-	//		// 데미지 주는 로직
-	//		AController* InstigatorController = GetInstigatorController();	
-	//		UGameplayStatics::ApplyDamage(OtherActor,DamageAmount,InstigatorController,this,nullptr);
-	//	//	UE_LOG(LogTemp,Warning,TEXT("Barrel DamageAmount: %f"),DamageAmount);
-	//		UE_LOG(LogTemp,Warning,TEXT("Barrel3 ApplyDamage== true"));
+	TArray<AActor*> OverlappingActors;
+	SphereComponent->GetOverlappingActors(OverlappingActors);
 
-	//	//}		
-	//} 
-	//if(OtherActor->ActorHasTag(FName("Barrel")))
-	//{
-	//	UE_LOG(LogTemp,Warning,TEXT("Barrel: Barrel이여 작동하거라"));
-	//	ABarrel* Barrel = Cast<ABarrel>(OtherActor);
-	//	if(Barrel)
-	//	{
-	//		Barrel->WorkBarrel(DamageAmount);
-	//	}
+	for(AActor* Actor : OverlappingActors)
+	{
+		if(!Actor || Actor == this)
+			continue;
+
+		UE_LOG(LogTemp,Warning,TEXT("폭발 범위 내 감지된 액터: %s"),*Actor->GetName());
+
+		// Barrel인 경우 연쇄 폭발 처리
+		if(Actor->ActorHasTag(FName("Barrel")))
+		{
+			ABarrel* OtherBarrel = Cast<ABarrel>(Actor);
+			if(OtherBarrel)
+			{
+				OtherBarrel->WorkBarrel(DamageAmount);
+			}
+		}
+
+		// 데미지 처리
+		AController* InstigatorController = GetInstigatorController();
+		UGameplayStatics::ApplyDamage(Actor,DamageAmount,InstigatorController,this,nullptr);
 	}
 }
 
+//데미지와 삭제 기능을 담을 예정
+//void ABarrel::OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,
+//	UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
+//{
+//	UE_LOG(LogTemp,Warning,TEXT("Barrel3 OtherActor Name: %s"),*OtherActor->GetName());
+//	if(OtherActor->ActorHasTag(FName("Barrel")))
+//	{
+//		UE_LOG(LogTemp,Warning,TEXT("Barrel3: Barrel이여 작동하거라"));
+//		ABarrel* Barrel = Cast<ABarrel>(OtherActor);
+//		if(Barrel)
+//		{
+//			Barrel->WorkBarrel(DamageAmount);
+//		}
+//	}
+//	UE_LOG(LogTemp,Warning,TEXT("Barrel3 OtherActor && OtherActor != this"));
+//
+//	AController* InstigatorController = GetInstigatorController();
+//	UGameplayStatics::ApplyDamage(OtherActor,DamageAmount,InstigatorController,this,nullptr);
+//	UE_LOG(LogTemp,Warning,TEXT("Barrel3 %s Damage: %f"),*OtherActor->GetName(),DamageAmount);
+//
+//}
+//

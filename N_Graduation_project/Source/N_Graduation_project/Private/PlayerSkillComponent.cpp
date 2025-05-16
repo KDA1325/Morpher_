@@ -16,6 +16,7 @@
 #include "PlayerProjectile.h"
 #include "Particles/ParticleSystemComponent.h" 
 #include "MyKnockbackBall.h"
+#include "Barrel.h"
 
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
@@ -717,19 +718,40 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 
 			if(Effect.EffectType == EnumEffectType::Damage)
 			{
+				DamageAmount = Effect.EffectValue01;
 				if(MyChar->TestMode == false) {
 					// 데미지
-					DamageAmount = Effect.EffectValue01;
 					UGameplayStatics::ApplyDamage(TargetActor,DamageAmount,MyChar->GetController(),MyChar,nullptr);
 					UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
+					if(TargetActor->ActorHasTag(FName("Barrel")))
+					{
+						UE_LOG(LogTemp,Warning,TEXT("Barrel이여 작동하거라"));
+						ABarrel* Barrel = Cast<ABarrel>(TargetActor);
+						if(Barrel)
+						{
+							Barrel->WorkBarrel(DamageAmount);
+							UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ Barrel Damage %f"),DamageAmount);
+
+						}
+					}
 					//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
 				} else {
-					DamageAmount = Effect.EffectValue01;
 					UGameplayStatics::ApplyDamage(TargetActor,10000,MyChar->GetController(),MyChar,nullptr);
 					UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
-					//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
+					if(TargetActor->ActorHasTag(FName("Barrel")))
+					{
+						UE_LOG(LogTemp,Warning,TEXT("Barrel이여 작동하거라"));
+						ABarrel* Barrel = Cast<ABarrel>(TargetActor);
+						if(Barrel)
+						{
+							Barrel->WorkBarrel(DamageAmount);
+							UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ Barrel Damage %f"),DamageAmount);
 
+						}
+					}
 				}
+				MyChar->Damage=DamageAmount;
+				
 			}
 			if(Effect.EffectType == EnumEffectType::KnockBack)
 			{

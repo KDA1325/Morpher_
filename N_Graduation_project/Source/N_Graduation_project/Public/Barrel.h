@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
-
+#include "Components/StaticMeshComponent.h"
 #include "Barrel.generated.h"
 
 UCLASS()
@@ -26,10 +26,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void WorkBarrel(float DA);
 
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
-		USphereComponent* SphereComponent;
-
-
 
 	UPROPERTY(BlueprintReadWrite,Category = "Object")
 		float ExplosionDelay;
@@ -43,11 +39,18 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void StartExplosion();
+	UFUNCTION(BlueprintCallable)
+	void EndtExplosion();
 
-private:
-	void OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult);
+//	UFUNCTION()
+		//void OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult);
 
-
+private:	
 	float ElapsedExplosionTime = 0.0f;
 	bool bIsExploding = false;
+
+protected:
+	UPROPERTY(VisibleAnywhere,Category="Component")
+		USphereComponent* SphereComponent;
+
 };
