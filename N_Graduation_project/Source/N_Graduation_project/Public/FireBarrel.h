@@ -45,6 +45,7 @@ public:
 private:
 	float ElapsedExplosionTime = 0.0f;
 	bool bIsExploding = false;
+	void ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration);
 
 protected:
 	UPROPERTY(VisibleAnywhere,Category="Component")

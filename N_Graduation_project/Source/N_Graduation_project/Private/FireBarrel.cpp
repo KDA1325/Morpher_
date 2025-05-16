@@ -84,6 +84,26 @@ void AFireBarrel::EndtExplosion()
 
 		// 데미지 처리
 		AController* InstigatorController = GetInstigatorController();
-		UGameplayStatics::ApplyDamage(Actor,DamageAmount,InstigatorController,this,nullptr);
+		//UGameplayStatics::ApplyDamage(Actor,DamageAmount,InstigatorController,this,nullptr);
+		float ApplyDuration = 4;
+		float DPS = 10.0;
+		ApplyFireDOT(Actor,DPS,ApplyDuration);
+	}
+}
+void AFireBarrel::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration)
+{
+	if(!Target || DamagePerSecond <= 0.f || ApplyDuration <= 0.f) return;
+	if(Target){
+		int32 TickCount = FMath::FloorToInt(ApplyDuration);
+		for(int32 i = 1; i <= TickCount; ++i)
+		{
+			FTimerHandle FireTickHandle;
+			FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]()
+			{
+				UGameplayStatics::ApplyDamage(Target,DamagePerSecond,GetInstigatorController(),this,nullptr);
+				UE_LOG(LogTemp,Warning,TEXT("화상 횟수 %d"),i);
+			});
+			GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
+		}
 	}
 }
