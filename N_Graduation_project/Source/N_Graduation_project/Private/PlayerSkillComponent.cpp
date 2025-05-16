@@ -17,6 +17,8 @@
 #include "Particles/ParticleSystemComponent.h" 
 #include "MyKnockbackBall.h"
 #include "Barrel.h"
+#include "StunBarrel.h"
+#include "FireBarrel.h"
 
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
@@ -748,9 +750,26 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 							UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ Barrel Damage %f"),DamageAmount);
 
 						}
+						if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(TargetActor))
+						{
+							StunBarrel->WorkBarrel(DamageAmount); 
+							UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ Barrel Damage %f"),DamageAmount);
+						} 
+						else if(ABarrel* NormalBarrel = Cast<ABarrel>(TargetActor))
+						{
+							NormalBarrel->WorkBarrel(DamageAmount); 
+							UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ Barrel Damage %f"),DamageAmount);
+						} 
+						else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(TargetActor)){
+							FireBarrel->WorkBarrel(DamageAmount); 
+							UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ Barrel Damage %f"),DamageAmount);
+						}
+						else{
+							UE_LOG(LogTemp,Warning,TEXT("셋다아님"));
+
+						}
 					}
 				}
-				MyChar->Damage=DamageAmount;
 				
 			}
 			if(Effect.EffectType == EnumEffectType::KnockBack)

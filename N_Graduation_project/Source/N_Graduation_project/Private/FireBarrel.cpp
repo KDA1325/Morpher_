@@ -1,11 +1,13 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "FireBarrel.h"
 #include "Barrel.h"
+#include "StunBarrel.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
-#include "StunBarrel.h"
-#include "FireBarrel.h"
-
 // Sets default values
-ABarrel::ABarrel()
+AFireBarrel::AFireBarrel()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -16,7 +18,7 @@ ABarrel::ABarrel()
 }
 
 // Called when the game starts or when spawned
-void ABarrel::BeginPlay()
+void AFireBarrel::BeginPlay()
 {
 	Super::BeginPlay();
 	SphereComponent = Cast<USphereComponent>(GetDefaultSubobjectByName(TEXT("Sphere")));
@@ -32,13 +34,13 @@ void ABarrel::BeginPlay()
 }
 
 // Called every frame
-void ABarrel::Tick(float DeltaTime)
+void AFireBarrel::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
 // 외부에서 데미지 유입 시 호출
-void ABarrel::WorkBarrel(float DA)
+void AFireBarrel::WorkBarrel(float DA)
 {
 	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Barrel: 응답받음"));
 	DamageAmount = DA;
@@ -47,7 +49,7 @@ void ABarrel::WorkBarrel(float DA)
 }
 
 // 폭발 후 실제 데미지 처리 및 연쇄 폭발 처리
-void ABarrel::EndtExplosion()
+void AFireBarrel::EndtExplosion()
 {
 	if(!SphereComponent)
 	{
@@ -74,8 +76,7 @@ void ABarrel::EndtExplosion()
 			} else if(ABarrel* NormalBarrel = Cast<ABarrel>(Actor))
 			{
 				NormalBarrel->WorkBarrel(DamageAmount); // ABarrel 로직
-			}
-			else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(Actor)){
+			} else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(Actor)){
 				FireBarrel->WorkBarrel(DamageAmount); // FireBarrel 로직
 
 			}
@@ -86,25 +87,3 @@ void ABarrel::EndtExplosion()
 		UGameplayStatics::ApplyDamage(Actor,DamageAmount,InstigatorController,this,nullptr);
 	}
 }
-
-//void ABarrel::OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,
-//	UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
-//{
-//	UE_LOG(LogTemp,Warning,TEXT("Barrel3 OtherActor Name: %s"),*OtherActor->GetName());
-//	if(OtherActor->ActorHasTag(FName("Barrel")))
-//	{
-//		UE_LOG(LogTemp,Warning,TEXT("Barrel3: Barrel이여 작동하거라"));
-//		ABarrel* Barrel = Cast<ABarrel>(OtherActor);
-//		if(Barrel)
-//		{
-//			Barrel->WorkBarrel(DamageAmount);
-//		}
-//	}
-//	UE_LOG(LogTemp,Warning,TEXT("Barrel3 OtherActor && OtherActor != this"));
-//
-//	AController* InstigatorController = GetInstigatorController();
-//	UGameplayStatics::ApplyDamage(OtherActor,DamageAmount,InstigatorController,this,nullptr);
-//	UE_LOG(LogTemp,Warning,TEXT("Barrel3 %s Damage: %f"),*OtherActor->GetName(),DamageAmount);
-//
-//}
-//
