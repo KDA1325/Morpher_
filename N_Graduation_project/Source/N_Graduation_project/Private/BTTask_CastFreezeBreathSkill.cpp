@@ -1,20 +1,20 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BTTask_CastFireBallSkill.h"
+#include "BTTask_CastFreezeBreathSkill.h"
 #include "EntityPreset.h"
 #include "EntitySkillComponent.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Animation/AnimInstance.h"
 
-UBTTask_CastFireBallSkill::UBTTask_CastFireBallSkill()
+UBTTask_CastFreezeBreathSkill::UBTTask_CastFreezeBreathSkill()
 {
-	NodeName = TEXT("Cast Fire Ball Skill");
+	NodeName = TEXT("Cast Freeze Breath Skill");
 	CachedOwnerComp = nullptr;
 }
 
-EBTNodeResult::Type UBTTask_CastFireBallSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp,uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_CastFreezeBreathSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp,uint8* NodeMemory)
 {
 	// 캐시 저장
 	CachedOwnerComp = &OwnerComp;
@@ -33,7 +33,7 @@ EBTNodeResult::Type UBTTask_CastFireBallSkill::ExecuteTask(UBehaviorTreeComponen
 	if(Entity->bIsCastingSkill)
 		return EBTNodeResult::Failed;
 
-	Entity->EntitySkillComponent->ExecuteSkill("Skill_FireBall");
+	Entity->EntitySkillComponent->ExecuteSkill("Skill_FreezeBreath");
 
 	return EBTNodeResult::InProgress;
 }

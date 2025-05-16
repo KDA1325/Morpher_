@@ -311,8 +311,8 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			//{ "Skill_Slash", TEXT("SlashSocket") },
 			{ "Skill_Bite", TEXT("BiteHitBox") },
 			{ "Skill_Charge", TEXT("ChargeHitBox") },
-			{ "Skill_TailSwing", TEXT("TailSocket") }
-			//{ "Skill_FreezeBreath", TEXT("MouthSocket") },
+			{ "Skill_TailSwing", TEXT("TailSocket") },
+			{ "Skill_FreezeBreath", TEXT("BreathSocket") }
 			//{ "Skill_ArmSwing", TEXT("RightArmSocket") },
 			//{ "Skill_EarthBreaker", TEXT("FootSocket") }
 		};
@@ -369,6 +369,40 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 
 			UE_LOG(LogTemp, Warning, TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
 				*HalfExtent.ToString(), *NewRelativeLocation.ToString());
+		}
+		else if(SkillData.SkillNameID == "Skill_FreezeBreath")
+		{
+			// Special 히트박스 생성
+			if(!SpecialSkillHitBox)
+			{
+				SpecialSkillHitBox = NewObject<UBoxComponent>(this,TEXT("SpecialSkillHitBox"));
+				if(SpecialSkillHitBox)
+				{
+					SpecialSkillHitBox->RegisterComponent();
+					SpecialSkillHitBox->AttachToComponent(Container,FAttachmentTransformRules::KeepRelativeTransform);
+					HideSpecialHitBox();
+
+					ConfigureHitBox(SpecialSkillHitBox);
+					SpecialSkillHitBox->OnComponentBeginOverlap.AddDynamic(this,&AEntityPreset::OnSpecialHitBoxOverlap);
+				}
+			}
+
+			// UBoxComponent는 half extents를 사용
+				// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
+				// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
+				// Y축은 Z 크기 값,
+				// Z축은 X 크기 값(SkillTypeSizeX/2)
+			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f,50.0f,SkillData.SkillTypeSizeX / 2.0f);
+			SpecialSkillHitBox->SetBoxExtent(HalfExtent);
+
+			// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
+			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
+			// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
+			FVector NewRelativeLocation = FVector(0.0f,0.0f,HalfExtent.X);
+			SpecialSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			UE_LOG(LogTemp,Warning,TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+				*HalfExtent.ToString(),*NewRelativeLocation.ToString());
 		}
 		else
 		{
@@ -593,7 +627,7 @@ void AEntityPreset::HideSpecialHitBox()
 
 void AEntityPreset::ShowHitBox()
 {
-	if(bIsCharging)
+	if(bIsCharging || bIsFreezing)
 	{
 		ShowSpecialHitBox();
 	} else
@@ -732,48 +766,117 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 	AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(OtherActor);
 	if (!PlayerCharacter) return;
 
-	// 1. Damage를 먼저 처리
 	for (const FSkillEffectData& Effect : SpecialSkillEffectData)
 	{
-		if (Effect.EffectType == EnumEffectType::Damage)
+		if(OtherActor->ActorHasTag("Player"))
 		{
-			float DamageToApply = Effect.EffectValue01;
-			UGameplayStatics::ApplyDamage(OtherActor, DamageToApply, GetController(), this, nullptr);
-			UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Applied Damage %f to %s"),
-				DamageToApply, *OtherActor->GetName());
-		}
-	}
-
-	// 2. KnockBack 효과 처리
-	for (const FSkillEffectData& Effect : SpecialSkillEffectData)
-	{
-		if (Effect.EffectType == EnumEffectType::KnockBack)
-		{
-			float KnockbackDistance = Effect.EffectValue01;
-			float KnockbackDuration = Effect.EffectValue02;
-
-			ApplyKnockbackEffect(PlayerCharacter, KnockbackDistance, KnockbackDuration);
-
-			/*UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
-			if (MoveComp)
+			// 1. Damage 처리
+			if(Effect.EffectType == EnumEffectType::Damage)
 			{
-				MoveComp->Launch(KnockbackDir * Force);
+				float DamageToApply = Effect.EffectValue01;
+				UGameplayStatics::ApplyDamage(OtherActor,DamageToApply,GetController(),this,nullptr);
+				UE_LOG(LogTemp,Warning,TEXT("Special HitBox Overlap: Applied Damage %f to %s"),
+					DamageToApply,*OtherActor->GetName());
 			}
 
-			UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: KnockBack applied to %s with force %f"), *OtherActor->GetName(), Force);*/
+			// 2. KnockBack 처리
+			if(Effect.EffectType == EnumEffectType::KnockBack)
+			{
+				float KnockbackDistance = Effect.EffectValue01;
+				float KnockbackDuration = Effect.EffectValue02;
+
+				ApplyKnockbackEffect(PlayerCharacter,KnockbackDistance,KnockbackDuration);
+
+				/*UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
+				if (MoveComp)
+				{
+					MoveComp->Launch(KnockbackDir * Force);
+				}
+
+				UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: KnockBack applied to %s with force %f"), *OtherActor->GetName(), Force);*/
+			}
+
+			// Freezing 효과
+			if(Effect.EffectType == EnumEffectType::Freezing)
+			{
+				UE_LOG(LogTemp,Warning,TEXT("Special HitBox Overlap: Destroy effect processed (log only) for %s"),*OtherActor->GetName());
+
+				float Duration = Effect.EffectValue01;
+				float SlowFactor = Effect.EffectValue02;
+
+				if(Duration > 0.f && SlowFactor > 0.f)
+				{
+					UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
+					if(MoveComp)
+					{
+						float OriginalSpeed = MoveComp->MaxWalkSpeed;
+						float NewSpeed = OriginalSpeed / SlowFactor;
+
+						MoveComp->MaxWalkSpeed = NewSpeed;
+
+						UE_LOG(LogTemp,Warning,TEXT("Freezing applied to %s → NewSpeed: %.1f for %.1f seconds"),*PlayerCharacter->GetName(),NewSpeed,Duration);
+
+						// 일정 시간 뒤에 원래 속도로 복원
+						FTimerHandle RestoreHandle;
+						FTimerDelegate RestoreDelegate;
+
+						// 캡처값 반드시 복사
+						RestoreDelegate.BindLambda([=]() {
+							if(PlayerCharacter && PlayerCharacter->GetCharacterMovement())
+							{
+								PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = OriginalSpeed;
+								UE_LOG(LogTemp,Warning,TEXT("Freezing ended: Restored speed %.1f to %s"),OriginalSpeed,*PlayerCharacter->GetName());
+							}
+						});
+
+						GetWorld()->GetTimerManager().SetTimer(RestoreHandle,RestoreDelegate,Duration,false);
+					}
+				}
+			}
+
+			//Destroy 효과
+			if(Effect.EffectType == EnumEffectType::Destroy)
+			{
+				// 파괴가 필요하다면 여기에
+				// OtherActor->Destroy();
+				UE_LOG(LogTemp,Warning,TEXT("Special HitBox Overlap: Destroy effect processed (log only) for %s"),*OtherActor->GetName());
+			}
 		}
+		
 	}
 
-	// 3. Destroy 효과는 마지막에 처리 (원하면 주석 처리 가능)
-	for (const FSkillEffectData& Effect : SpecialSkillEffectData)
-	{
-		if (Effect.EffectType == EnumEffectType::Destroy)
-		{
-			// 파괴가 정말 필요하다면 여기에
-			// OtherActor->Destroy();
-			UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Destroy effect processed (log only) for %s"), *OtherActor->GetName());
-		}
-	}
+	
+
+	//// 2. KnockBack 효과 처리
+	//for (const FSkillEffectData& Effect : SpecialSkillEffectData)
+	//{
+	//	if(Effect.EffectType == EnumEffectType::KnockBack)
+	//	{
+	//		float KnockbackDistance = Effect.EffectValue01;
+	//		float KnockbackDuration = Effect.EffectValue02;
+
+	//		ApplyKnockbackEffect(PlayerCharacter,KnockbackDistance,KnockbackDuration);
+
+	//		/*UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
+	//		if (MoveComp)
+	//		{
+	//			MoveComp->Launch(KnockbackDir * Force);
+	//		}
+
+	//		UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: KnockBack applied to %s with force %f"), *OtherActor->GetName(), Force);*/
+	//	}
+	//}
+
+	//// 3. Destroy 효과는 마지막에 처리 (원하면 주석 처리 가능)
+	//for (const FSkillEffectData& Effect : SpecialSkillEffectData)
+	//{
+	//	if (Effect.EffectType == EnumEffectType::Destroy)
+	//	{
+	//		// 파괴가 정말 필요하다면 여기에
+	//		// OtherActor->Destroy();
+	//		UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Destroy effect processed (log only) for %s"), *OtherActor->GetName());
+	//	}
+	//}
 }
 
 
@@ -1247,7 +1350,7 @@ void AEntityPreset::PerformSkill_FireBall()
 			PathComp->Deactivate();
 
 			AIController->StopMovement();
-			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before LaunchCharacter"));
+			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Launch Projectile"));
 		}
 	}
 
@@ -1269,6 +1372,48 @@ void AEntityPreset::PerformSkill_FireBall()
 	} else
 	{
 		UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_FireBall: SpecialSkillMontage is not set"));
+	}
+}
+void AEntityPreset::PerformSkill_FreezeBreath()
+{
+	if(!SpecialSkillMontage) return;
+
+	// 스킬 시전 플래그 설정
+	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
+	bIsCastingSkill = true;
+	bIsFreezing = true;
+
+	// AI 경로 추적 중지 
+	if(AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 중단
+			PathComp->Deactivate();
+
+			AIController->StopMovement();
+			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Breath"));
+		}
+	}
+
+	if(SpecialSkillMontage)
+	{
+		if(UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+		{
+			// 스페셜 스킬 몽타주
+			AnimInst->Montage_Play(SpecialSkillMontage);
+
+			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_FreezeBreath: AnimInstance not found"));
+		}
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_FreezeBreath: SpecialSkillMontage is not set"));
 	}
 }
 //void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

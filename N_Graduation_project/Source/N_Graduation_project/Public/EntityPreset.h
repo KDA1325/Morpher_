@@ -131,6 +131,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void PerformSkill_Charge();
 	void PerformSkill_FireBall();
+	void PerformSkill_FreezeBreath();
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ExecuteChargeDash();
 
@@ -176,6 +177,8 @@ public:
 
 	// 돌진 관련 상태 변수
 	bool bIsCharging = false;
+	// 프리징 관련 상태 변수
+	bool bIsFreezing = false;
 
 	UPROPERTY()
 	float WildBoar_ChargeFloat;
