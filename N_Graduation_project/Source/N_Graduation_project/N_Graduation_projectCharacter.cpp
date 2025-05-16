@@ -18,6 +18,7 @@
 #include "Kismet/GameplayStatics.h"//ApplyDamage
 #include "GameFramework/Character.h"//ApplyDamage
 #include "CharacterStateComponent.h" //state
+#include "Barrel.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -763,8 +764,8 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		HitBox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 		//모든 충돌 무시
 		HitBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		//플레이어에만 반응
 		HitBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECollisionResponse::ECR_Overlap);
+		HitBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic,ECollisionResponse::ECR_Overlap);
 		HitBox->SetGenerateOverlapEvents(true);
 
 		HitBox->SetHiddenInGame(true); // 히트박스 안보이게-> true
@@ -772,11 +773,17 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		PlayerSkillComponent->SetHitBox(HitBox);
 		UE_LOG(LogTemp,Warning,TEXT("papago hHitBox Address: %p"),HitBox);
 
-		//	PlayerSkillComponent->HideHitBox();
+			PlayerSkillComponent->HideHitBox();
 	}
 }
 void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
 {
+	//UE_LOG(LogTemp,Warning,TEXT("OnHitboxOverlap된 객체: %s"),*OtherActor->GetName());
+	for(const FName& Tag : OtherActor->Tags)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("OtherActor Tag: %s"),*Tag.ToString());
+	}
+
 	AActor* MyCharacter = Cast<AActor>(UGameplayStatics::GetPlayerCharacter(this,0));
 	if(PlayerSkillComponent->CanUseNomalSkill || PlayerSkillComponent->CanUseSpecialSkill)
 	{
@@ -789,6 +796,7 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 					UE_LOG(LogTemp,Warning,TEXT("DamagedActors에 추가된 NK_Object: %s"),*OtherActor->GetName());
 
 				}
+				
 				float Damage = PlayerSkillComponent->DamageAmount;
 				//UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
 				if(PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false)
@@ -796,9 +804,19 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 					PlayerSkillComponent->DamagedActors.Add(OtherActor);//중복 없이 데미지 받은 객체저장
 					UE_LOG(LogTemp,Warning,TEXT("DamagedActors에 추가된 액터: %s"),*OtherActor->GetName());
 					//PlayerSkillComponent->SnapshotDamagedActors = PlayerSkillComponent->DamagedActors.Array();
-				}
+				} 
 			}
 		}
+
+	}
+	if(OtherActor->ActorHasTag(FName("Barrel")))
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Barrel이여 작동하거라"));
+		ABarrel* Barrel = Cast<ABarrel>(OtherActor);
+		if(Barrel)
+		{
+			Barrel->WorkBarrel(PlayerSkillComponent->DamageAmount);
+		} 
 	}
 }
 //변신

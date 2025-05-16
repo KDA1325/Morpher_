@@ -185,13 +185,14 @@ void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 		PlayerHitBox->SetVisibility(true);
 		PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 키기
 
-		UE_LOG(LogTemp,Warning,TEXT("kakao On OnHitBox"));
-		UE_LOG(LogTemp,Warning,TEXT("papago On PlayerHitBox  Address: %p"),PlayerHitBox);
+		UE_LOG(LogTemp,Warning,TEXT("[OnHitBox] On OnHitBox"));
+		UE_LOG(LogTemp,Warning,TEXT("[OnHitBox] On PlayerHitBox  Address: %p"),PlayerHitBox);
 
-	} else
+	} 
+	else
 	{
-		UE_LOG(LogTemp,Error,TEXT("gugugu Failed to find HitBox "));
-		UE_LOG(LogTemp,Warning,TEXT("papago On Failed PlayerHitBox Address: %p"),PlayerHitBox);
+		UE_LOG(LogTemp,Error,TEXT("[OnHitBox] Failed to find HitBox "));
+		UE_LOG(LogTemp,Warning,TEXT("[OnHitBox] On Failed PlayerHitBox Address: %p"),PlayerHitBox);
 
 	}
 }
@@ -290,8 +291,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 		MyChar->StartAction();
 
-
-		//if (distance > 0 && distance <= SkillData.SkillRange)
+		CurrentSkillID = SkillID;
 
 		UE_LOG(LogTemp,Warning,TEXT("KKakao Distance to Monster: %f"),distance);
 
@@ -337,6 +337,7 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 		MyChar->StartAction();
 
+		CurrentSkillID = SkillID;
 		if(SkillID == "Skill_Charge")
 		{
 			auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
