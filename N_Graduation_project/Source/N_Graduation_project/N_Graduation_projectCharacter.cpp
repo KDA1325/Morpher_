@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
+#include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
@@ -18,7 +19,6 @@
 #include "Kismet/GameplayStatics.h"//ApplyDamage
 #include "GameFramework/Character.h"//ApplyDamage
 #include "CharacterStateComponent.h" //state
-#include "Barrel.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -809,15 +809,7 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 		}
 
 	}
-	if(OtherActor->ActorHasTag(FName("Barrel")))
-	{
-		UE_LOG(LogTemp,Warning,TEXT("Barrel이여 작동하거라"));
-		ABarrel* Barrel = Cast<ABarrel>(OtherActor);
-		if(Barrel)
-		{
-			Barrel->WorkBarrel(PlayerSkillComponent->DamageAmount);
-		} 
-	}
+
 }
 //변신
 void AN_Graduation_projectCharacter::ChangePreset(FString Name)

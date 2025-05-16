@@ -28,7 +28,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void WorkBarrel(float DA);
 
-
 	UPROPERTY(BlueprintReadWrite,Category = "Object")
 		float ExplosionDelay;
 

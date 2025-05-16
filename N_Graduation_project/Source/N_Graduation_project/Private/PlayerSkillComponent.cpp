@@ -728,44 +728,35 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 					if(TargetActor->ActorHasTag(FName("Barrel")))
 					{
 						UE_LOG(LogTemp,Warning,TEXT("Barrel이여 작동하거라"));
-						ABarrel* Barrel = Cast<ABarrel>(TargetActor);
-						if(Barrel)
+						if(TargetActor->ActorHasTag(FName("Barrel")))
 						{
-							Barrel->WorkBarrel(DamageAmount);
-							UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ Barrel Damage %f"),DamageAmount);
+							if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(TargetActor))
+							{
+								StunBarrel->WorkBarrel(DamageAmount); // AStunBarrel 고유 로직
+							} else if(ABarrel* NormalBarrel = Cast<ABarrel>(TargetActor))
+							{
+								NormalBarrel->WorkBarrel(DamageAmount); // ABarrel 로직
+							} else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(TargetActor)){
+								FireBarrel->WorkBarrel(DamageAmount); // FireBarrel 로직
 
+							}
 						}
 					}
 					//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
-				} else {
+				} 
+				else {
 					UGameplayStatics::ApplyDamage(TargetActor,10000,MyChar->GetController(),MyChar,nullptr);
 					UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
 					if(TargetActor->ActorHasTag(FName("Barrel")))
 					{
-						UE_LOG(LogTemp,Warning,TEXT("Barrel이여 작동하거라"));
-						ABarrel* Barrel = Cast<ABarrel>(TargetActor);
-						if(Barrel)
-						{
-							Barrel->WorkBarrel(DamageAmount);
-							UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ Barrel Damage %f"),DamageAmount);
-
-						}
 						if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(TargetActor))
 						{
-							StunBarrel->WorkBarrel(DamageAmount); 
-							UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ Barrel Damage %f"),DamageAmount);
-						} 
-						else if(ABarrel* NormalBarrel = Cast<ABarrel>(TargetActor))
+							StunBarrel->WorkBarrel(DamageAmount); // AStunBarrel 고유 로직
+						} else if(ABarrel* NormalBarrel = Cast<ABarrel>(TargetActor))
 						{
-							NormalBarrel->WorkBarrel(DamageAmount); 
-							UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ Barrel Damage %f"),DamageAmount);
-						} 
-						else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(TargetActor)){
-							FireBarrel->WorkBarrel(DamageAmount); 
-							UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ Barrel Damage %f"),DamageAmount);
-						}
-						else{
-							UE_LOG(LogTemp,Warning,TEXT("셋다아님"));
+							NormalBarrel->WorkBarrel(DamageAmount); // ABarrel 로직
+						} else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(TargetActor)){
+							FireBarrel->WorkBarrel(DamageAmount); // FireBarrel 로직
 
 						}
 					}
