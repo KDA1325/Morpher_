@@ -2,6 +2,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
 
+
 // Sets default values
 ABarrel::ABarrel()
 {
@@ -66,11 +67,11 @@ void ABarrel::EndtExplosion()
 		// Barrel인 경우 연쇄 폭발 처리
 		if(Actor->ActorHasTag(FName("Barrel")))
 		{
-			ABarrel* OtherBarrel = Cast<ABarrel>(Actor);
-			if(OtherBarrel)
+			if(ABarrel* NormalBarrel = Cast<ABarrel>(Actor))
 			{
-				OtherBarrel->WorkBarrel(DamageAmount);
+				NormalBarrel->WorkBarrel(DamageAmount); // ABarrel 로직
 			}
+		
 		}
 
 		// 데미지 처리
@@ -79,7 +80,6 @@ void ABarrel::EndtExplosion()
 	}
 }
 
-//데미지와 삭제 기능을 담을 예정
 //void ABarrel::OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,
 //	UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
 //{

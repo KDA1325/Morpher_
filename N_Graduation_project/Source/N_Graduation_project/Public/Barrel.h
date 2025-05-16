@@ -42,9 +42,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EndtExplosion();
 
-//	UFUNCTION()
-		//void OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult);
-
 private:	
 	float ElapsedExplosionTime = 0.0f;
 	bool bIsExploding = false;
@@ -52,5 +49,4 @@ private:
 protected:
 	UPROPERTY(VisibleAnywhere,Category="Component")
 		USphereComponent* SphereComponent;
-
 };
