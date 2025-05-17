@@ -33,5 +33,7 @@ private:
 	UAnimMontage* m_Inpermon2;
 	UAnimMontage* m_SkeletonSlash;
 	UAnimMontage* m_Gaurd;
+	UAnimMontage* m_Freezard1;
+	UAnimMontage* m_Freezard2;
 
 };

@@ -33,6 +33,26 @@ UActionAnimInstance::UActionAnimInstance()
 
 	FSoftObjectPath SkeletonGaurdMontagePath(TEXT("/Game/Animation/Skeleton/Retarget_Shield_Anim__Montage.Retarget_Shield_Anim__Montage"));
 	m_Gaurd= Cast<UAnimMontage>(SkeletonGaurdMontagePath.TryLoad());
+	//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Gamin/Freezard/freezard_attack_Anim_Montage.uasset
+	FSoftObjectPath Freezard1MontagePath(TEXT("/Game/Gamin/Freezard/freezard_attack_Anim_Montage.freezard_attack_Anim_Montage"));
+	m_Freezard1= Cast<UAnimMontage>(Freezard1MontagePath.TryLoad());
+	if(m_Freezard1)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Successfully loaded Montage: %s"),*m_Freezard1->GetName());
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("Failed to load Montage from path: %s"),*Freezard1MontagePath.ToString());
+	}
+
+	FSoftObjectPath Freezard2MontagePath(TEXT("/Game/Gamin/Freezard/freezard_Breath_Anim_Montage.freezard_Breath_Anim_Montage"));
+	m_Freezard2= Cast<UAnimMontage>(Freezard2MontagePath.TryLoad());
+	if(m_Freezard2)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Successfully loaded Montage: %s"),*m_Freezard2->GetName());
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("Failed to load Montage from path: %s"),*Freezard2MontagePath.ToString());
+	}
 }
 void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 {
@@ -43,8 +63,7 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		Montage_Play(M_Slash);
 		// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
-	} 
-	else if(EffectID == "Skill_Bite" || EffectID=="Skill_Charge") {
+	} else if(EffectID == "Skill_Bite" || EffectID=="Skill_Charge") {
 		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*M_Bite->GetName());
 		UE_LOG(LogTemp,Warning,TEXT("Playing Skill_Bite 실행됨"));
 		Montage_Play(M_Bite);
@@ -53,47 +72,56 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 
 			// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
-	} 
-	else if(EffectID == "Skill_ThrowRock" ) {
+	} else if(EffectID == "Skill_ThrowRock") {
 		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Inpermon1->GetName());
 		UE_LOG(LogTemp,Warning,TEXT("amam Skill_ThrowRock  스킬 실행됨"));
 
 		Montage_Play(m_Inpermon1);
 		// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
-	} 
-	else if(EffectID == "Skill_FireBall"){
+	} else if(EffectID == "Skill_FireBall"){
 		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Inpermon2->GetName());
 		UE_LOG(LogTemp,Warning,TEXT("amam Skill_FireBall  스킬 실행됨"));
 
 		Montage_Play(m_Inpermon2);
 		// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
-	}
-	else if(EffectID=="Skill_SkeletonSlash")
+	} else if(EffectID=="Skill_SkeletonSlash")
 	{
 		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_SkeletonSlash->GetName());
 		UE_LOG(LogTemp,Warning,TEXT("amam Skill_SkeletonSlash  스킬 실행됨"));
 
 		Montage_Play(m_SkeletonSlash);
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
-	}
-	else if(EffectID=="Skill_ShieldGuard"){
+	} else if(EffectID=="Skill_ShieldGuard"){
 		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Gaurd->GetName());
 		UE_LOG(LogTemp,Warning,TEXT("amam Skill_SkeletonSlash  스킬 실행됨"));
 
 		Montage_Play(m_Gaurd);
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
 
-	}
-	else{
+	} else if(EffectID=="Skill_TailSwing"){
+		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Freezard1->GetName());
+		UE_LOG(LogTemp,Warning,TEXT("amam Skill_SkeletonSlash  스킬 실행됨"));
+
+		Montage_Play(m_Freezard1);
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+
+	} else if(EffectID=="Skill_FreezeBreath"){
+		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Freezard2->GetName());
+		UE_LOG(LogTemp,Warning,TEXT("amam Skill_SkeletonSlash  스킬 실행됨"));
+
+		Montage_Play(m_Freezard2);
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+
+	} else{
 		UE_LOG(LogTemp,Warning,TEXT("amam Playing Animation 해당하는 스킬 없음"));
 
 	}
 }
 void UActionAnimInstance::End_Shiled(){
-		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
-		UE_LOG(LogTemp,Warning,TEXT("End_Shiled 실행됨"));
+	OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+	UE_LOG(LogTemp,Warning,TEXT("End_Shiled 실행됨"));
 }
 
 void UActionAnimInstance::OnMontageEndCallback(UAnimMontage* Montage,bool bInterrupted)
