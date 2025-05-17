@@ -33,26 +33,13 @@ UActionAnimInstance::UActionAnimInstance()
 
 	FSoftObjectPath SkeletonGaurdMontagePath(TEXT("/Game/Animation/Skeleton/Retarget_Shield_Anim__Montage.Retarget_Shield_Anim__Montage"));
 	m_Gaurd= Cast<UAnimMontage>(SkeletonGaurdMontagePath.TryLoad());
-	//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Gamin/Freezard/freezard_attack_Anim_Montage.uasset
+	
 	FSoftObjectPath Freezard1MontagePath(TEXT("/Game/Gamin/Freezard/freezard_attack_Anim_Montage.freezard_attack_Anim_Montage"));
 	m_Freezard1= Cast<UAnimMontage>(Freezard1MontagePath.TryLoad());
-	if(m_Freezard1)
-	{
-		UE_LOG(LogTemp,Warning,TEXT("Successfully loaded Montage: %s"),*m_Freezard1->GetName());
-	} else
-	{
-		UE_LOG(LogTemp,Error,TEXT("Failed to load Montage from path: %s"),*Freezard1MontagePath.ToString());
-	}
 
 	FSoftObjectPath Freezard2MontagePath(TEXT("/Game/Gamin/Freezard/freezard_Breath_Anim_Montage.freezard_Breath_Anim_Montage"));
 	m_Freezard2= Cast<UAnimMontage>(Freezard2MontagePath.TryLoad());
-	if(m_Freezard2)
-	{
-		UE_LOG(LogTemp,Warning,TEXT("Successfully loaded Montage: %s"),*m_Freezard2->GetName());
-	} else
-	{
-		UE_LOG(LogTemp,Error,TEXT("Failed to load Montage from path: %s"),*Freezard2MontagePath.ToString());
-	}
+	
 }
 void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 {

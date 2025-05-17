@@ -43,8 +43,11 @@ public:
 	// 히트박스 관련 변수들
 	UPROPERTY()
 		UBoxComponent* PlayerHitBox;
+	UPROPERTY()
+		UBoxComponent* PlayerHitBox2;
 
 	void SetHitBox(UBoxComponent* NewHitBox);
+	void SetHitBox2(UBoxComponent* NewHitBox);
 
 	// 거리 감지
 	UFUNCTION(BlueprintCallable,Category = "Skill")
@@ -65,8 +68,12 @@ public:
 	// 히트박스 초기화 및 활성화 함수
 	void SettingHitBox(const FSkillData& SkillData); // 히트박스 초기화
 	void OnHitBox(const FSkillData& SkillData);
+	void SettingHitBox2(const FSkillData& SkillData); // 히트박스 초기화
+	void OnHitBox2(const FSkillData& SkillData);
 	// 히트박스 활성화
 	void HideHitBox();     // 히트박스 비활성화
+	void HideHitBox2();     // 히트박스 비활성화
+	void ClearHitBoxes(); //히트박스 지움
 	void SkillAnimation(const FString& EffectID);
 	void EndSkillAnimation(UAnimMontage* Montage,bool bInterrupted);
 	void SkillEffect(const FString& SkillNameID);

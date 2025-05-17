@@ -19,7 +19,7 @@
 #include "Barrel.h"
 #include "StunBarrel.h"
 #include "FireBarrel.h"
-
+#include "EntityPreset.h"
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -76,6 +76,12 @@ void UPlayerSkillComponent::SetHitBox(UBoxComponent* InHitBox)
 {
 	PlayerHitBox = InHitBox;
 	UE_LOG(LogTemp,Warning,TEXT("papago PlayerHitBox Address: %p"),PlayerHitBox);
+
+}
+void UPlayerSkillComponent::SetHitBox2(UBoxComponent* InHitBox)
+{
+	PlayerHitBox2 = InHitBox;
+	UE_LOG(LogTemp,Warning,TEXT("papago PlayerHitBox2 Address: %p"),PlayerHitBox2);
 
 }
 /* 스킬 관련 */
@@ -181,6 +187,22 @@ void UPlayerSkillComponent::SettingHitBox(const FSkillData& SkillData)
 		OnceHitBox = true;
 	}
 }
+void UPlayerSkillComponent::SettingHitBox2(const FSkillData& SkillData)
+{
+	if(PlayerHitBox2)
+	{
+		UE_LOG(LogTemp,Log,TEXT("SettingHitBox2"));
+
+		FVector NewBoxExtent2 = FVector(SkillData.SkillTypeSizeX,SkillData.SkillTypeSizeY,100);
+		PlayerHitBox2->SetBoxExtent(NewBoxExtent2);
+
+		// 항상 일정한 기준 위치에서 상대 이동
+		FVector BaseOffset = FVector(SkillData.SkillTypeSizeX,0.f,0.f);
+		PlayerHitBox2->SetRelativeLocation(BaseOffset);
+
+		OnceHitBox = true;
+	}
+}
 void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 {
 	if(PlayerHitBox)
@@ -191,25 +213,63 @@ void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 		UE_LOG(LogTemp,Warning,TEXT("[OnHitBox] On OnHitBox"));
 		UE_LOG(LogTemp,Warning,TEXT("[OnHitBox] On PlayerHitBox  Address: %p"),PlayerHitBox);
 
-	} 
-	else
+	} else
 	{
 		UE_LOG(LogTemp,Error,TEXT("[OnHitBox] Failed to find HitBox "));
 		UE_LOG(LogTemp,Warning,TEXT("[OnHitBox] On Failed PlayerHitBox Address: %p"),PlayerHitBox);
 
 	}
 }
+void UPlayerSkillComponent::OnHitBox2(const FSkillData& SkillData)
+{
+	if(PlayerHitBox2)
+	{
+		PlayerHitBox2->SetVisibility(true);
+		PlayerHitBox2->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 키기
+
+		UE_LOG(LogTemp,Warning,TEXT("[OnHitBox2] On OnHitBox"));
+		UE_LOG(LogTemp,Warning,TEXT("[OnHitBox2] On PlayerHitBox  Address: %p"),PlayerHitBox2);
+
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("[OnHitBox] Failed to find HitBox "));
+		UE_LOG(LogTemp,Warning,TEXT("[OnHitBox] On Failed PlayerHitBox Address: %p"),PlayerHitBox2);
+
+	}
+}
 void UPlayerSkillComponent::HideHitBox()
 {
-	PlayerHitBox->SetVisibility(false);  // 자식까지 숨기기
-	PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
-	UE_LOG(LogTemp,Warning,TEXT("HitBox and Arrow hidden."));
+	//PlayerHitBox->SetVisibility(false);  // 자식까지 숨기기
+//	PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
+	// 스킬 컴포넌트 내부에서 소유 액터를 통해 접근
 	UE_LOG(LogTemp,Warning,TEXT("papago hidden PlayerHitBox  Address: %p"),PlayerHitBox);
 
 	// 데미지 체크 초기화
 	DamagedActors.Empty();
 }
+void UPlayerSkillComponent::HideHitBox2()
+{
+	//PlayerHitBox2->SetVisibility(false);  // 자식까지 숨기기
+	//PlayerHitBox2->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
+	// 스킬 컴포넌트 내부에서 소유 액터를 통해 접근
 
+	UE_LOG(LogTemp,Warning,TEXT("papago hidden PlayerHitBox2  Address: %p"),PlayerHitBox2);
+
+	// 데미지 체크 초기화
+	DamagedActors.Empty();
+}
+void UPlayerSkillComponent:: ClearHitBoxes(){
+	//if(PlayerHitBox)
+	//{
+	//	PlayerHitBox->DestroyComponent();
+	//	PlayerHitBox = nullptr;
+	//}
+	//if(PlayerHitBox2)
+	//{
+	//	PlayerHitBox2->DestroyComponent();
+	//	PlayerHitBox2 = nullptr;
+	//}
+}
 AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
 {
 	if(!GetWorld()) return nullptr;
@@ -268,8 +328,11 @@ void UPlayerSkillComponent::VisibleShapeBox(const FString& SkillID)
 
 		if(SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
 		{
-			SettingHitBox(SkillData);  // 히트박스 초기화
-			OnHitBox(SkillData);    // 히트박스 활성화
+			if(PlayerHitBox){
+				SettingHitBox(SkillData);  // 히트박스 초기화
+				OnHitBox(SkillData);    // 히트박스 활성화
+			}
+
 		} else if(SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
 		{
 			//	 Sphere 관련 처리 추가
@@ -361,6 +424,11 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 			ChargeEnd.BindUFunction(this,FName("ExecuteChargeDash"),StoredDashDirection,SkillID);
 			ChargeSkillTimer(PrepTime,ChargeEnd);
 			// 범위 내일 때만 히트 판정 박스 표시
+		}
+		if(SkillID=="Skill_FreezeBreath"){
+			SettingHitBox2(SkillData);  // 히트박스 초기화
+			OnHitBox2(SkillData);    // 히트박스 활성화	
+			SkillEffect(SkillID);
 		}
 
 		auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
@@ -511,7 +579,7 @@ void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor,float Distance,fl
 	FVector KnockbackDir = TargetActor->GetActorLocation() - GetOwner()->GetActorLocation();
 	//KnockbackDir.Z = 0.f; // 위로 튀지 않게 평면 넉백
 	KnockbackDir.Normalize();
-	float KnockbackSpeed = Distance / Duration;	
+	float KnockbackSpeed = Distance / Duration;
 	FVector KnockbackVelocity = KnockbackDir * KnockbackSpeed;
 
 	if(ACharacter* TargetChar = Cast<ACharacter>(TargetActor))
@@ -539,11 +607,11 @@ void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor,float Distance,fl
 		{
 			//UE_LOG(LogTemp,Warning,TEXT("넉백 Controller 클래스: %s"),*Ctrl->GetClass()->GetName());
 		}
-	//	UE_LOG(LogTemp,Warning,TEXT("넉백 성공: %s 방향 %s 파워 %f"),*TargetChar->GetName(),*KnockbackDir.ToString(),KnockbackPower);
+		//	UE_LOG(LogTemp,Warning,TEXT("넉백 성공: %s 방향 %s 파워 %f"),*TargetChar->GetName(),*KnockbackDir.ToString(),KnockbackPower);
 
 		HideHitBox();
-	}	
-	
+	}
+
 
 }
 
@@ -600,7 +668,7 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 }
 
 void UPlayerSkillComponent::SpawnProjectile_FireBall()
-{	
+{
 	// 스폰할 투사체 클래스 설정 확인
 	if(!SpecialProjectileClass)
 	{
@@ -679,6 +747,8 @@ void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage,bool bInterr
 	{
 		UE_LOG(LogTemp,Warning,TEXT("Skill Animation Ended: %s"),*Montage->GetName());
 		HideHitBox();
+		HideHitBox2();
+
 	} else
 	{
 		UE_LOG(LogTemp,Warning,TEXT("Skill Animation Ended: Montage is null."));
@@ -743,8 +813,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 						}
 					}
 					//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
-				} 
-				else {
+				} else {
 					UGameplayStatics::ApplyDamage(TargetActor,10000,MyChar->GetController(),MyChar,nullptr);
 					UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
 					if(TargetActor->ActorHasTag(FName("Barrel")))
@@ -761,7 +830,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 						}
 					}
 				}
-				
+
 			}
 			if(Effect.EffectType == EnumEffectType::KnockBack)
 			{
@@ -773,6 +842,48 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 				UE_LOG(LogTemp,Warning,TEXT("넉백 TargetActor: %s KnockbackDistance: %f KnockbackDuration: %f"),
 					   *TargetActor->GetName(),KnockbackDistance,KnockbackDuration);
 
+			}
+			if(Effect.EffectType == EnumEffectType::Freezing)
+			{
+				float Duration = Effect.EffectValue01;
+				float SlowFactor = Effect.EffectValue02;
+				if(Duration > 0.f && SlowFactor > 0.f)
+				{
+					AEntityPreset* Entity = Cast<AEntityPreset>(TargetActor);
+					if(Entity)
+					{
+						APawn* Pawn = Cast<APawn>(Entity);
+						if(Pawn)
+						{
+							UCharacterMovementComponent* MoveComp = Pawn->FindComponentByClass<UCharacterMovementComponent>();
+							if(MoveComp)
+							{
+								const float OriginalSpeed = MoveComp->MaxWalkSpeed;
+								const float NewSpeed = OriginalSpeed / SlowFactor;
+
+								MoveComp->MaxWalkSpeed = NewSpeed;
+
+								// 복구 타이머 설정
+								FTimerHandle RestoreHandle;
+								FTimerDelegate RestoreDelegate;
+
+								// Pawn과 OriginalSpeed 캡처
+								RestoreDelegate.BindLambda([=]() {
+									if(Pawn && Pawn->FindComponentByClass<UCharacterMovementComponent>())
+									{
+										Pawn->FindComponentByClass<UCharacterMovementComponent>()->MaxWalkSpeed = OriginalSpeed;
+										UE_LOG(LogTemp,Warning,TEXT("슬로우 해제: %s → 원래 속도 %.1f 복원됨"),*Pawn->GetName(),OriginalSpeed);
+									}
+								});
+
+								// Duration 후 타이머 호출
+								GetWorld()->GetTimerManager().SetTimer(RestoreHandle,RestoreDelegate,Duration,false);
+
+								UE_LOG(LogTemp,Warning,TEXT("슬로우 적용: %s → 속도 %.1f → %.1f (%.1f초간)"),*Pawn->GetName(),OriginalSpeed,NewSpeed,Duration);
+							}
+						}
+					}
+				}
 			}
 		}
 		// 그 후 데미지 적용

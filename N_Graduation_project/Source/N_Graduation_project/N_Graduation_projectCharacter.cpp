@@ -605,7 +605,17 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 {
-	
+	TArray<UBoxComponent*> Components;
+	GetComponents<UBoxComponent>(Components);  
+
+	for(UBoxComponent* Comp : Components)
+	{
+		if(Comp && Comp->GetName().Contains(TEXT("Hitbox2")))
+		{
+			Comp->DestroyComponent();
+		}
+	}
+
 	USkeletalMeshComponent* MeshComponent = GetMesh();
 	currentPreset = PresetReference.TrimStartAndEnd(); //공백 제거
 
@@ -830,10 +840,25 @@ void AN_Graduation_projectCharacter::TrySpawnHitBox(FName SocketName)
 
 void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket2(FName SocketName)
 {
-	UBoxComponent* HitBox2 = NewObject<UBoxComponent>(this);
+	UBoxComponent* HitBox2 = nullptr;
 
-	if(HitBox2)
+	// 1. 이미 존재하는 히트박스를 찾기
+	TArray<UBoxComponent*> Components;
+	GetComponents<UBoxComponent>(Components);
+
+	for(UBoxComponent* Comp : Components)
 	{
+		if(Comp && Comp->GetName().Contains(TEXT("Hitbox2")))
+		{
+			HitBox2 = Comp;
+			break;
+		}
+	}
+
+	if(!HitBox2)
+	{
+		HitBox2 = NewObject<UBoxComponent>(this);
+
 		// 이름 설정
 		HitBox2->Rename(TEXT("Hitbox2"));
 
@@ -861,6 +886,9 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket2(FName SocketName)
 
 		//PlayerSkillComponent->HideHitBox2();
 	}
+	HitBox2->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,SocketName);
+	PlayerSkillComponent->SetHitBox(HitBox2);
+
 }
 
 void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
