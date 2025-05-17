@@ -129,11 +129,11 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	// Call the base class    
 	Super::BeginPlay();
 	m_pMeshCom = GetMesh();
-	SpawnHitBoxAtSocket("AttachHitBox");
-
 	FOnTimelineFloat DashCallback;
 	currentPreset = "PlayerCharacter";
 	SetPreset(currentPreset);
+	SpawnHitBoxAtSocket("AttachHitBox");
+
 	PlayerSword = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Player_sword")));
 
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
@@ -511,6 +511,9 @@ void AN_Graduation_projectCharacter::ToggleMaterial(bool bUseHitMaterial)
 				Tcount = 0;
 			}
 		}
+	} else{
+		UE_LOG(LogTemp,Error,TEXT("MeshComponent is null!"));
+		return;
 	}
 }
 
@@ -602,6 +605,7 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 {
+	
 	USkeletalMeshComponent* MeshComponent = GetMesh();
 	currentPreset = PresetReference.TrimStartAndEnd(); //공백 제거
 
@@ -624,7 +628,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		if(LoadedMesh)
 		{
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
-
+			SpawnHitBoxAtSocket("AttachHitBox");
 			PlayerSword->SetHiddenInGame(false);
 
 			// 스켈레탈 메시를 사용할 경우 SetSkeletalMesh() 사용
@@ -645,9 +649,10 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
-		GetMesh()->SetRelativeScale3D(FVector(2.0f,2.0f,2.0f));
 		if(LoadedMesh && NewAnimBP)
 		{
+			SpawnHitBoxAtSocket("AttachHitBox");
+			GetMesh()->SetRelativeScale3D(FVector(2.0f,2.0f,2.0f));
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
@@ -665,9 +670,11 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
-		GetMesh()->SetRelativeScale3D(FVector(3.f,3.0f,3.0f));
 		if(LoadedMesh && NewAnimBP)
 		{
+			SpawnHitBoxAtSocket("AttachHitBox");
+
+			GetMesh()->SetRelativeScale3D(FVector(3.f,3.0f,3.0f));
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
@@ -675,15 +682,23 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 
 	else if(currentPreset == "FreezardPreset.uasset")
 	{
-		FSoftObjectPath MeshPath(TEXT("/Script/Engine.StaticMesh'/Game/StarterContent/Props/SM_Statue.SM_Statue'"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Freezard/Freezard_idle.Freezard_idle"));
+		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/Freezard/Freezard_Skeleton_AnimBP.Freezard_Skeleton_AnimBP_C"));
+
+		//<피격을 위해 이거 3개 필수>
+		UMaterialInterface* FreezardMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Gamin/Freezard/standardSurface1.standardSurface1'"));
+		InvincibleOriginalMaterial = FreezardMaterial;
+		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh)
 		{
-			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
+			GetMesh()->SetRelativeScale3D(FVector(4.0f,4.0f,4.0f));
+			GetMesh()->SetSkeletalMesh(LoadedMesh);
+			GetMesh()->SetAnimInstanceClass(NewAnimBP);
+			SpawnHitBoxAtSocket("AttachHitBox");
+			SpawnHitBoxAtSocket2("AttachHitBox2");
 
-			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
-			//GetMesh()->SetAnimInstanceClass(NewAnimBP);
 		}
 	}
 
@@ -703,6 +718,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
+			SpawnHitBoxAtSocket("AttachHitBox");
+
 		}
 	} else if(currentPreset == "SkeletonWarriorPreset.uasset")
 	{//Content/Animation/Skeleton/SK_Chr_Skeleton_Ranger_01.uasset
@@ -720,6 +737,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
+			SpawnHitBoxAtSocket("AttachHitBox");
+
 		}
 	} else if(currentPreset == "SkeletonArcherPreset.uasset")
 	{
@@ -737,17 +756,32 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
+			SpawnHitBoxAtSocket("AttachHitBox");
+
 		}
 	}
 }
 //히트박스 동적 생성
 void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 {
-	// 1. UBoxComponent를 동적으로 생성
-	UBoxComponent* HitBox = NewObject<UBoxComponent>(this);
+	UBoxComponent* HitBox = nullptr;
 
-	if(HitBox)
+	// 1. 이미 존재하는 히트박스를 찾기
+	TArray<UBoxComponent*> Components;
+	GetComponents<UBoxComponent>(Components);
+
+	for(UBoxComponent* Comp : Components)
 	{
+		if(Comp && Comp->GetName().Contains(TEXT("Hitbox")))
+		{
+			HitBox = Comp;
+			break;
+		}
+	}
+
+	if(!HitBox)
+	{
+		HitBox = NewObject<UBoxComponent>(this);
 		// 이름 설정
 		HitBox->Rename(TEXT("Hitbox"));
 
@@ -768,17 +802,70 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		HitBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic,ECollisionResponse::ECR_Overlap);
 		HitBox->SetGenerateOverlapEvents(true);
 
-		HitBox->SetHiddenInGame(true); // 히트박스 안보이게-> true
+		HitBox->SetHiddenInGame(false); // 히트박스 안보이게-> true
 
 		PlayerSkillComponent->SetHitBox(HitBox);
-		UE_LOG(LogTemp,Warning,TEXT("papago hHitBox Address: %p"),HitBox);
+		UE_LOG(LogTemp,Warning,TEXT("Playerpapago hHitBox Address: %p"),HitBox);
 
-			PlayerSkillComponent->HideHitBox();
+	PlayerSkillComponent->HideHitBox();
+	}
+
+	HitBox->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,SocketName);
+	PlayerSkillComponent->SetHitBox(HitBox);
+
+	UE_LOG(LogTemp,Warning,TEXT("HitBox reused and attached to socket: %s"),*SocketName.ToString());
+}
+void AN_Graduation_projectCharacter::TrySpawnHitBox(FName SocketName)
+{
+	if(!GetMesh()) return;
+
+	if(GetMesh()->DoesSocketExist(SocketName))
+	{
+		SpawnHitBoxAtSocket2(SocketName);
+	} else
+	{
+		UE_LOG(LogTemp,Warning,TEXT("소켓 %s 이(가) 존재하지 않아 히트박스를 생성하지 않음"),*SocketName.ToString());
 	}
 }
+
+void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket2(FName SocketName)
+{
+	UBoxComponent* HitBox2 = NewObject<UBoxComponent>(this);
+
+	if(HitBox2)
+	{
+		// 이름 설정
+		HitBox2->Rename(TEXT("Hitbox2"));
+
+		// RegisterComponent()로 엔진에 등록 (꼭 넣어야 함)
+		HitBox2->RegisterComponent();
+		HitBox2->OnComponentBeginOverlap.AddDynamic(this,&AN_Graduation_projectCharacter::OnHitboxOverlap);
+		// 소켓에 붙이기
+		HitBox2->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,SocketName);
+		//크기 설정
+		HitBox2->SetBoxExtent(FVector(30.f,20.f,10.f));
+		// 충돌 설정 (QueryOnly-> 물리충돌 무시하고 오버랩만 처리)
+		HitBox2->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		//충돌 채널
+		HitBox2->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+		//모든 충돌 무시
+		HitBox2->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		HitBox2->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECollisionResponse::ECR_Overlap);
+		HitBox2->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic,ECollisionResponse::ECR_Overlap);
+		HitBox2->SetGenerateOverlapEvents(true);
+
+		HitBox2->SetHiddenInGame(false); // 히트박스 안보이게-> true
+
+		PlayerSkillComponent->SetHitBox2(HitBox2);
+		UE_LOG(LogTemp,Warning,TEXT("papago hHitBox Address: %p"),HitBox2);
+
+		//PlayerSkillComponent->HideHitBox2();
+	}
+}
+
 void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
 {
-	//UE_LOG(LogTemp,Warning,TEXT("OnHitboxOverlap된 객체: %s"),*OtherActor->GetName());
+	//	UE_LOG(LogTemp,Warning,TEXT("OnHitboxOverlap된 객체: %s"),*OtherActor->GetName());
 	for(const FName& Tag : OtherActor->Tags)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("OtherActor Tag: %s"),*Tag.ToString());
@@ -793,18 +880,17 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 			{
 				if(OtherActor->ActorHasTag(FName("NK_Object"))){
 					PlayerSkillComponent->DamagedActors.Add(OtherActor);
-					UE_LOG(LogTemp,Warning,TEXT("DamagedActors에 추가된 NK_Object: %s"),*OtherActor->GetName());
-
+					//	UE_LOG(LogTemp,Warning,TEXT("DamagedActors에 추가된 NK_Object: %s"),*OtherActor->GetName());
 				}
-				
+
 				float Damage = PlayerSkillComponent->DamageAmount;
 				//UGameplayStatics::ApplyDamage(OtherActor, Damage, GetController(), this, nullptr); //데미지를 줌
 				if(PlayerSkillComponent->DamagedActors.Contains(OtherActor) == false)
 				{
 					PlayerSkillComponent->DamagedActors.Add(OtherActor);//중복 없이 데미지 받은 객체저장
-					UE_LOG(LogTemp,Warning,TEXT("DamagedActors에 추가된 액터: %s"),*OtherActor->GetName());
+					UE_LOG(LogTemp,Warning,TEXT("OnHitboxOverlap DamagedActors에 추가된 액터: %s"),*OtherActor->GetName());
 					//PlayerSkillComponent->SnapshotDamagedActors = PlayerSkillComponent->DamagedActors.Array();
-				} 
+				}
 			}
 		}
 

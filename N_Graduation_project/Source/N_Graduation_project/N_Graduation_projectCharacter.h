@@ -249,6 +249,10 @@ void TransformToEntity(int32 EntityID);*/
 	// �������� ��Ʈ�ڽ��� ���Ͽ� �����ϴ� �Լ� ����
 	UFUNCTION(BlueprintCallable, Category = "HitBox")
 	void SpawnHitBoxAtSocket(FName SocketName);
+	UFUNCTION(BlueprintCallable, Category = "HitBox")
+	void SpawnHitBoxAtSocket2(FName SocketName);
+
+	void TrySpawnHitBox(FName SocketName);
 
 	UFUNCTION()
 	void OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
