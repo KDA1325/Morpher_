@@ -102,7 +102,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	}
 	else if (CachedMouseFinalAngle <= 129.0f)
 	{
-		if (Freezard_OK)
+		//if (Freezard_OK)
 		{
 			CachedMouseFinalAngle = 257.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -111,7 +111,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "Freezard";
 			//		CachedMouseFinalAngle = 103.0f;
 		}
-		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 181.0f)
 	{

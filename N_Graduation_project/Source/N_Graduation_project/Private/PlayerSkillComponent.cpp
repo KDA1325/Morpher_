@@ -20,6 +20,8 @@
 #include "StunBarrel.h"
 #include "FireBarrel.h"
 #include "EntityPreset.h"
+#include "FireFloor.h"
+
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -884,6 +886,14 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 						}
 					}
 				}
+				if(TargetActor->ActorHasTag(FName("FireFloor")))
+				{
+					if(AFireFloor* FireFloor = Cast<AFireFloor>(TargetActor))
+					{
+						FireFloor->Off_Fire(); //화염 끔 코드
+					} 
+				}
+
 			}
 		}
 		// 그 후 데미지 적용
