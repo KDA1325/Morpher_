@@ -241,8 +241,8 @@ void UPlayerSkillComponent::OnHitBox2(const FSkillData& SkillData)
 }
 void UPlayerSkillComponent::HideHitBox()
 {
-	//PlayerHitBox->SetVisibility(false);  // 자식까지 숨기기
-//	PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
+	PlayerHitBox->SetVisibility(false);  // 자식까지 숨기기
+	PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
 	// 스킬 컴포넌트 내부에서 소유 액터를 통해 접근
 	UE_LOG(LogTemp,Warning,TEXT("papago hidden PlayerHitBox  Address: %p"),PlayerHitBox);
 
@@ -251,8 +251,8 @@ void UPlayerSkillComponent::HideHitBox()
 }
 void UPlayerSkillComponent::HideHitBox2()
 {
-	//PlayerHitBox2->SetVisibility(false);  // 자식까지 숨기기
-	//PlayerHitBox2->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
+	PlayerHitBox2->SetVisibility(false);  // 자식까지 숨기기
+	PlayerHitBox2->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
 	// 스킬 컴포넌트 내부에서 소유 액터를 통해 접근
 
 	UE_LOG(LogTemp,Warning,TEXT("papago hidden PlayerHitBox2  Address: %p"),PlayerHitBox2);
@@ -260,18 +260,7 @@ void UPlayerSkillComponent::HideHitBox2()
 	// 데미지 체크 초기화
 	DamagedActors.Empty();
 }
-void UPlayerSkillComponent:: ClearHitBoxes(){
-	//if(PlayerHitBox)
-	//{
-	//	PlayerHitBox->DestroyComponent();
-	//	PlayerHitBox = nullptr;
-	//}
-	//if(PlayerHitBox2)
-	//{
-	//	PlayerHitBox2->DestroyComponent();
-	//	PlayerHitBox2 = nullptr;
-	//}
-}
+
 AActor* UPlayerSkillComponent::FindFrontMonsterTarget() const
 {
 	if(!GetWorld()) return nullptr;

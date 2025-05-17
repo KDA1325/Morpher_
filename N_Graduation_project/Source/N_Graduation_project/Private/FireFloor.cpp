@@ -23,6 +23,10 @@ void AFireFloor::BeginPlay()
 	if(BoxComponent)
 	{
 		On_Fire();
+		BoxComponent->SetCollisionResponseToAllChannels(ECR_Ignore); // 전부 무시하고
+		BoxComponent->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap); // 원하는 채널만 오버랩
+		BoxComponent->SetCollisionResponseToChannel(ECC_WorldDynamic,ECR_Overlap); // 필요시 추가
+
 		BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&AFireFloor::OnOverlapBegin);
 		// 델리게이트 바인딩
 		UE_LOG(LogTemp,Error,TEXT("Find BoxComponent"));
@@ -63,7 +67,9 @@ void AFireFloor::Off_Fire()
 void AFireFloor::On_Fire()
 {
 	ActiveFire=true;
-//	FireParticle->ActivateSystem(); // 파티클 켜기
+	if(FireParticle){
+		FireParticle->ActivateSystem(); // 파티클 켜기
+	}
 	UE_LOG(LogTemp,Warning,TEXT("On_Fire, ActiveFire %d"),ActiveFire);
 }
 
@@ -71,11 +77,17 @@ void AFireFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Othe
 	UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult & SweepResult)
 {
 	if(ActiveFire==true){
-		if(!ActiveFire || !OtherActor || OtherActor == this)
-			return;
-
-		UE_LOG(LogTemp,Warning,TEXT("On_Fire 범위 내 감지된 액터: %s"),*OtherActor->GetName());
-		ApplyFireDOT(OtherActor,10.0f,4.0f);
+		if(!OtherActor->ActorHasTag("HitBox")){
+			if(!ActiveFire || !OtherActor || OtherActor == this)
+				return;
+			if(OtherComp->ComponentHasTag("HitBox"))
+			{
+				UE_LOG(LogTemp,Warning,TEXT("On_Fire 무시됨: %s"),*OtherActor->GetName());
+				return;
+			}
+			UE_LOG(LogTemp,Warning,TEXT("On_Fire 범위 내 감지된 액터: %s"),*OtherActor->GetName());
+			ApplyFireDOT(OtherActor,10.0f,4.0f);
+		}
 	}
 }
 

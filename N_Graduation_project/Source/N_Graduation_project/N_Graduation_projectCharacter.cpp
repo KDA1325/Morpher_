@@ -638,12 +638,15 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		if(LoadedMesh)
 		{
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
-			SpawnHitBoxAtSocket("AttachHitBox");
 			PlayerSword->SetHiddenInGame(false);
 
 			// 스켈레탈 메시를 사용할 경우 SetSkeletalMesh() 사용
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
+
+			SpawnHitBoxAtSocket("AttachHitBox");
+			TrySpawnHitBox("AttachHitBox2");
+
 		}
 	}
 
@@ -661,10 +664,13 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh && NewAnimBP)
 		{
-			SpawnHitBoxAtSocket("AttachHitBox");
 			GetMesh()->SetRelativeScale3D(FVector(2.0f,2.0f,2.0f));
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
+
+			SpawnHitBoxAtSocket("AttachHitBox");
+			TrySpawnHitBox("AttachHitBox2");
+
 		}
 	}
 
@@ -682,8 +688,6 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh && NewAnimBP)
 		{
-			SpawnHitBoxAtSocket("AttachHitBox");
-
 			GetMesh()->SetRelativeScale3D(FVector(3.f,3.0f,3.0f));
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
@@ -706,8 +710,9 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			GetMesh()->SetRelativeScale3D(FVector(4.0f,4.0f,4.0f));
 			GetMesh()->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
+
 			SpawnHitBoxAtSocket("AttachHitBox");
-			SpawnHitBoxAtSocket2("AttachHitBox2");
+			TrySpawnHitBox("AttachHitBox2");
 
 		}
 	}
@@ -728,7 +733,9 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
+
 			SpawnHitBoxAtSocket("AttachHitBox");
+			TrySpawnHitBox("AttachHitBox2");
 
 		}
 	} else if(currentPreset == "SkeletonWarriorPreset.uasset")
@@ -747,7 +754,9 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
+
 			SpawnHitBoxAtSocket("AttachHitBox");
+			TrySpawnHitBox("AttachHitBox2");
 
 		}
 	} else if(currentPreset == "SkeletonArcherPreset.uasset")
@@ -766,10 +775,13 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
+
 			SpawnHitBoxAtSocket("AttachHitBox");
+			TrySpawnHitBox("AttachHitBox2");
 
 		}
 	}
+
 }
 //히트박스 동적 생성
 void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
@@ -811,8 +823,9 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		HitBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECollisionResponse::ECR_Overlap);
 		HitBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic,ECollisionResponse::ECR_Overlap);
 		HitBox->SetGenerateOverlapEvents(true);
+		HitBox->ComponentTags.Add(FName("HitBox"));
 
-		HitBox->SetHiddenInGame(false); // 히트박스 안보이게-> true
+		HitBox->SetHiddenInGame(true); // 히트박스 안보이게-> true
 
 		PlayerSkillComponent->SetHitBox(HitBox);
 		UE_LOG(LogTemp,Warning,TEXT("Playerpapago hHitBox Address: %p"),HitBox);
@@ -860,7 +873,8 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket2(FName SocketName)
 		HitBox2 = NewObject<UBoxComponent>(this);
 
 		// 이름 설정
-		HitBox2->Rename(TEXT("Hitbox2"));
+//		HitBox2->Rename(TEXT("Hitbox2"));
+		HitBox2 = NewObject<UBoxComponent>(this,UBoxComponent::StaticClass(),TEXT("Hitbox2"));
 
 		// RegisterComponent()로 엔진에 등록 (꼭 넣어야 함)
 		HitBox2->RegisterComponent();
@@ -878,13 +892,14 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket2(FName SocketName)
 		HitBox2->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECollisionResponse::ECR_Overlap);
 		HitBox2->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic,ECollisionResponse::ECR_Overlap);
 		HitBox2->SetGenerateOverlapEvents(true);
+		HitBox2->ComponentTags.Add(FName("HitBox"));
 
-		HitBox2->SetHiddenInGame(false); // 히트박스 안보이게-> true
+		HitBox2->SetHiddenInGame(true); // 히트박스 안보이게-> true
 
 		PlayerSkillComponent->SetHitBox2(HitBox2);
 		UE_LOG(LogTemp,Warning,TEXT("papago hHitBox Address: %p"),HitBox2);
 
-		//PlayerSkillComponent->HideHitBox2();
+		PlayerSkillComponent->HideHitBox2();
 	}
 	HitBox2->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,SocketName);
 	PlayerSkillComponent->SetHitBox(HitBox2);

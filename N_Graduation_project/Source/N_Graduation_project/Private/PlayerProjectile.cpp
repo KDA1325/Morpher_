@@ -4,6 +4,7 @@
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
+#include "FireFloor.h"
 
 APlayerProjectile::APlayerProjectile()
 {
@@ -101,7 +102,15 @@ void APlayerProjectile::FireInDirection(const FVector& ShootDirection)
 void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
 {
 	if(!OtherActor) return;
+	if(OtherActor)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("FireBall Overlapped with: %s"),*OtherActor->GetName());
 
+		for(const FName& Tag : OtherActor->Tags)
+		{
+			UE_LOG(LogTemp,Warning,TEXT("Tag: %s"),*Tag.ToString());
+		}
+	}
 	// 몬스터만 처리
 	if(OtherActor->ActorHasTag("Monster"))
 	{
@@ -145,6 +154,14 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 		}
 
 		Destroy(); // 충돌 후 제거
+	}
+	if(OtherActor->ActorHasTag(FName("FireFloor")))
+	{
+		if(AFireFloor* FireFloor = Cast<AFireFloor>(OtherActor))
+		{
+			FireFloor->On_Fire(); //화염 킴
+			UE_LOG(LogTemp,Warning,TEXT("FireFloor activated!"));
+		}
 	}
 }
 

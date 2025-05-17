@@ -115,7 +115,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	}
 	else if (CachedMouseFinalAngle <= 181.0f)
 	{
-		if (Inpermon_OK)
+		//if (Inpermon_OK)
 		{
 			CachedMouseFinalAngle = 206.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -123,7 +123,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "Inpermon";
 			//		CachedMouseFinalAngle = 154.0f;
 		}
-		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 233.0f)
 	{

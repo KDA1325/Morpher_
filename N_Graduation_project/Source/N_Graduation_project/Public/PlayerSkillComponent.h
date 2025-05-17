@@ -73,7 +73,6 @@ public:
 	// 히트박스 활성화
 	void HideHitBox();     // 히트박스 비활성화
 	void HideHitBox2();     // 히트박스 비활성화
-	void ClearHitBoxes(); //히트박스 지움
 	void SkillAnimation(const FString& EffectID);
 	void EndSkillAnimation(UAnimMontage* Montage,bool bInterrupted);
 	void SkillEffect(const FString& SkillNameID);
