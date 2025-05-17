@@ -33,6 +33,7 @@ public:
 	float FireDamage;
 	float FireDuration;
 	float SkillRange; // 투사체 발사 유지 거리 
+	bool OnObject=false;
 
 	FTimerHandle DestroyTimerHandle;
 

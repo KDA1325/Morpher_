@@ -5,7 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "FireFloor.h"
-
+#include "FrozeFloor.h"
 APlayerProjectile::APlayerProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -112,8 +112,10 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 		}
 	}
 	// 몬스터만 처리
-	if(OtherActor->ActorHasTag("Monster"))
+	if(OtherActor->ActorHasTag("Monster")|| OtherActor->ActorHasTag("FireFloor")||OtherActor->ActorHasTag("FrozeFloor"))
 	{
+		UE_LOG(LogTemp,Warning,TEXT("OtherActor->ActorHasTag(Floor"));
+
 		for(const FSkillEffectData& Effect : EffectDataArray)
 		{
 			switch(Effect.EffectType)
@@ -147,6 +149,25 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 				float ApplyDuration = Effect.EffectValue01;
 				float DPS = Effect.EffectValue02;
 				ApplyFireDOT(OtherActor,DPS,ApplyDuration);
+				UE_LOG(LogTemp,Warning,TEXT("FireFloor EnumEffectType::Fire!"));
+
+				if(OtherActor->ActorHasTag(FName("FireFloor")))
+				{
+					if(AFireFloor* FireFloor = Cast<AFireFloor>(OtherActor))
+					{
+						FireFloor->On_Fire(); //화염 킴
+						UE_LOG(LogTemp,Warning,TEXT("FireFloor activated!"));
+					}
+				}
+				if(OtherActor->ActorHasTag("FrozeFloor"))
+				{
+					if(AFrozeFloor* FrozeFloor = Cast<AFrozeFloor>(OtherActor))
+					{
+						FrozeFloor->Off_Froze(); //빙결 킴 코드
+						UE_LOG(LogTemp,Warning,TEXT("FrozeFloor activated!"));
+
+					}
+				}
 				break;
 			}
 									 break;
@@ -155,14 +176,7 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 
 		Destroy(); // 충돌 후 제거
 	}
-	if(OtherActor->ActorHasTag(FName("FireFloor")))
-	{
-		if(AFireFloor* FireFloor = Cast<AFireFloor>(OtherActor))
-		{
-			FireFloor->On_Fire(); //화염 킴
-			UE_LOG(LogTemp,Warning,TEXT("FireFloor activated!"));
-		}
-	}
+
 }
 
 void APlayerProjectile::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration)

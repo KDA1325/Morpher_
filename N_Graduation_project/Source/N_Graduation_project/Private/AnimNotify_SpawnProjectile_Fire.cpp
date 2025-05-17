@@ -5,7 +5,7 @@
 #include "EntityPreset.h"
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "PlayerSkillComponent.h"
-
+#include "PlayerProjectile.h"
 void UAnimNotify_SpawnProjectile_Fire::Notify(USkeletalMeshComponent * MeshComp,UAnimSequenceBase * Animation)
 {
 	if(!MeshComp) return;

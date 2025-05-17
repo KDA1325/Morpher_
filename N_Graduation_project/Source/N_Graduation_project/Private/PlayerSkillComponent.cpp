@@ -21,7 +21,7 @@
 #include "FireBarrel.h"
 #include "EntityPreset.h"
 #include "FireFloor.h"
-
+#include "FrozeFloor.h"
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -882,6 +882,14 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 						FireFloor->Off_Fire(); //화염 끔 코드
 					} 
 				}
+				if(TargetActor->ActorHasTag(FName("FrozeFloor")))
+				{
+					if(AFrozeFloor* FrozeFloor = Cast<AFrozeFloor>(TargetActor))
+					{
+						FrozeFloor->On_Froze(); //빙결 킴 코드
+					} 
+				}
+
 
 			}
 		}
