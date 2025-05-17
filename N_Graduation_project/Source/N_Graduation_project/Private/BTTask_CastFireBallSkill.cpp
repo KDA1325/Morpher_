@@ -10,7 +10,7 @@
 
 UBTTask_CastFireBallSkill::UBTTask_CastFireBallSkill()
 {
-	NodeName = TEXT("Cast Throw Rock Skill");
+	NodeName = TEXT("Cast Fire Ball Skill");
 	CachedOwnerComp = nullptr;
 }
 
