@@ -84,7 +84,7 @@ void AFireBarrel::EndtExplosion()
 
 		// 데미지 처리
 		AController* InstigatorController = GetInstigatorController();
-		//UGameplayStatics::ApplyDamage(Actor,DamageAmount,InstigatorController,this,nullptr);
+		UGameplayStatics::ApplyDamage(Actor,DamageAmount,InstigatorController,this,nullptr);
 		float ApplyDuration = 4;
 		float DPS = 10.0;
 		ApplyFireDOT(Actor,DPS,ApplyDuration);
