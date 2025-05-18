@@ -120,9 +120,9 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 		{
 			switch(Effect.EffectType)
 			{
-			case EnumEffectType::Damage:
+			/*case EnumEffectType::Damage:
 			UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
-			break;
+			break;*/
 			case EnumEffectType::AOEDamage:
 			{
 				// 광역 대미지 처리, 몬스터용 로직엔 추가할 필요 없을 듯(플레이어 쪽에 추가하기)
