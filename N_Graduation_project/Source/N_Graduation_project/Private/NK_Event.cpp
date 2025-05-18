@@ -4,7 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
-
+#include "MyGameInstance.h"
 // Sets default values
 ANK_Event::ANK_Event()
 {
@@ -61,14 +61,23 @@ void ANK_Event::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent,AActo
 			if(FoundActors.Num() > 0)
 			{
 				AActor* WallActor = FoundActors[0];  // 맨 처음에 찾은 WallActor를 가져옴
+				ANK_Event* WallEvent = Cast<ANK_Event>(WallActor);
 
 				if(WallActor)
 				{
-					// 벽을 삭제
-					WallActor->Destroy();
-					GetKey=true;
+
+					UMyGameInstance* MyGI = Cast<UMyGameInstance>(GetGameInstance());
+					if(MyGI)
+					{
+						MyGI->GetKey = true;
+					}
+					if(WallEvent)
+					{					
+						DestroyEvent();
+						WallEvent->DestroyEvent(); // 여기를 추가해야 문이 삭제됨
+					}
+
 					UE_LOG(LogTemp,Log,TEXT("NK_Event: WallActor 삭제 완료"));
-					Destroy();
 				}
 			} else
 			{
