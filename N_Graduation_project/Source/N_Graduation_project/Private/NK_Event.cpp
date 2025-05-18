@@ -26,7 +26,7 @@ void ANK_Event::BeginPlay()
 	{
 		BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&ANK_Event::OnBoxBeginOverlap);
 	} 
-	WallBPClass = StaticLoadClass(AActor::StaticClass(),nullptr,TEXT("/Game/Object/BP_NK_Wall.BP_NK_Wall_C"));
+	WallBPClass = StaticLoadClass(AActor::StaticClass(),nullptr,TEXT("/Game/Object/BP_StoneGate.BP_StoneGate_C"));
 	if(WallBPClass)
 	{
 		UE_LOG(LogTemp,Log,TEXT("WallBPClass 로딩 성공"));
@@ -48,7 +48,7 @@ void ANK_Event::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent,AActo
 {
 	UE_LOG(LogTemp,Log,TEXT("NK_Event: Overlap 감지"));
 
-	if(OtherActor && OtherActor->ActorHasTag(TEXT("Monster")))
+	if(OtherActor && OtherActor->ActorHasTag(TEXT("Player")))
 	{
 		UE_LOG(LogTemp,Log,TEXT("NK_Event: Monster 태그 감지"));
 
@@ -66,7 +66,9 @@ void ANK_Event::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent,AActo
 				{
 					// 벽을 삭제
 					WallActor->Destroy();
+					GetKey=true;
 					UE_LOG(LogTemp,Log,TEXT("NK_Event: WallActor 삭제 완료"));
+					Destroy();
 				}
 			} else
 			{

@@ -24,7 +24,7 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	bool GetKey = false;
 	// 콤포넌트 선언
 	UPROPERTY(VisibleAnywhere)
 		UBoxComponent* BoxComponent;
