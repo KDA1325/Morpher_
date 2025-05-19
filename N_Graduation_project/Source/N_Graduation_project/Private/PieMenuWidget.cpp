@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "PieMenuWidget.h"
@@ -85,11 +85,11 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 
 			BeforeMonster = "SkeletonWarrior";
 		}
-	//	else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 77.0f)
 	{
-	//	if (StoneGolem_OK)
+		if (StoneGolem_OK)
 		{
 			CachedMouseFinalAngle = 306.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -98,11 +98,11 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "StoneGolem";
 			//CachedMouseFinalAngle = 51.0f;
 		}
-	//	else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 129.0f)
 	{
-		if (Freezard_OK)
+		//if (Freezard_OK)
 		{
 			CachedMouseFinalAngle = 257.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -111,11 +111,11 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "Freezard";
 			//		CachedMouseFinalAngle = 103.0f;
 		}
-		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 181.0f)
 	{
-		if (Inpermon_OK)
+		//if (Inpermon_OK)
 		{
 			CachedMouseFinalAngle = 206.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -123,11 +123,11 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "Inpermon";
 			//		CachedMouseFinalAngle = 154.0f;
 		}
-		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 233.0f)
 	{
-		if (WildBoar_Ok)
+		//if (WildBoar_Ok)
 		{
 			CachedMouseFinalAngle = 154.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -136,7 +136,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "WildBoar";
 			//	CachedMouseFinalAngle = 206.0f;
 		}
-		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 
 	}
 	else if (CachedMouseFinalAngle <= 285.0f)
@@ -151,7 +151,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	}
 	else if (CachedMouseFinalAngle <= 337.0f)
 	{
-		if (SkeletonArcher_OK)
+		//if (SkeletonArcher_OK)
 		{
 			UE_LOG(LogTemp, Log, TEXT("궁수 선택"));
 
@@ -161,9 +161,9 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "SkeletonArcher";
 			//CachedMouseFinalAngle = 309.0f;
 		}
-		else { 
+		//else { 
 	//		CachedMouseFinalAngle = Before_CachedMouseFinalAngle; 
-		}
+		//}
 	}
 	else
 	{

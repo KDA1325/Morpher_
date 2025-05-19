@@ -3,7 +3,9 @@
 
 #include "AnimNotify_SpawnProjectile_Fire.h"
 #include "EntityPreset.h"
-
+#include "N_Graduation_project/N_Graduation_projectCharacter.h"
+#include "PlayerSkillComponent.h"
+#include "PlayerProjectile.h"
 void UAnimNotify_SpawnProjectile_Fire::Notify(USkeletalMeshComponent * MeshComp,UAnimSequenceBase * Animation)
 {
 	if(!MeshComp) return;
@@ -13,5 +15,10 @@ void UAnimNotify_SpawnProjectile_Fire::Notify(USkeletalMeshComponent * MeshComp,
 	{
 		Entity->SpawnProjectile_FireBall();
 		UE_LOG(LogTemp,Warning,TEXT("UAnimNotify_SpawnProjectile_Fire: Projectile Spawned"));
+	} 
+	else if(AN_Graduation_projectCharacter* Player = Cast<AN_Graduation_projectCharacter>(MeshComp->GetOwner()))
+	{
+		Player->PlayerSkillComponent->SpawnProjectile_FireBall();
+		UE_LOG(LogTemp,Warning,TEXT("UAnimNotify_SpawnProjectile_Fire: Player Projectile Spawned"));
 	}
 }

@@ -22,14 +22,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PlayAnimation(const FString& EffectID);
 
-
-protected:
-	// ¾Ö´Ï¸ŞÀÌ¼Ç Á¾·á Äİ¹é ÇÔ¼ö
+	// ì• ë‹ˆë©”ì´ì…˜ ì¢…ë£Œ ì½œë°± í•¨ìˆ˜
 	UFUNCTION()
 	void OnMontageEndCallback(UAnimMontage* Montage, bool bInterrupted);
-
+	void End_Shiled();
 private:
 	UAnimMontage* M_Slash;
 	UAnimMontage* M_Bite;
+	UAnimMontage* m_Inpermon1;
+	UAnimMontage* m_Inpermon2;
+	UAnimMontage* m_SkeletonSlash;
+	UAnimMontage* m_Gaurd;
+	UAnimMontage* m_Freezard1;
+	UAnimMontage* m_Freezard2;
 
 };
