@@ -6,7 +6,7 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
-
+#include "MyGameInstance.h"
 void UPieMenuWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
@@ -73,10 +73,12 @@ float UPieMenuWidget::CalculateMouseAngle()
 void UPieMenuWidget::CacheFinalMouseAngle()
 {
 	CachedMouseFinalAngle = CachedMouseAngle;
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
 
 	if (CachedMouseFinalAngle <= 25.0f)
 	{
-		//if (SkeletonWarrior_OK)
+		if (MyGameInstance->SkeletonWarrior_OK)
 		{
 			CachedMouseFinalAngle = -2.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -85,11 +87,11 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 
 			BeforeMonster = "SkeletonWarrior";
 		}
-		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 77.0f)
 	{
-		if (StoneGolem_OK)
+		if (MyGameInstance->StoneGolem_OK)
 		{
 			CachedMouseFinalAngle = 306.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -102,7 +104,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	}
 	else if (CachedMouseFinalAngle <= 129.0f)
 	{
-		//if (Freezard_OK)
+		if (MyGameInstance->Freezard_OK)
 		{
 			CachedMouseFinalAngle = 257.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -111,11 +113,11 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "Freezard";
 			//		CachedMouseFinalAngle = 103.0f;
 		}
-		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 181.0f)
 	{
-		//if (Inpermon_OK)
+		if (MyGameInstance->Inpermon_OK)
 		{
 			CachedMouseFinalAngle = 206.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -123,11 +125,11 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "Inpermon";
 			//		CachedMouseFinalAngle = 154.0f;
 		}
-		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 	}
 	else if (CachedMouseFinalAngle <= 233.0f)
 	{
-		//if (WildBoar_Ok)
+		if (MyGameInstance->WildBoar_Ok)
 		{
 			CachedMouseFinalAngle = 154.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
@@ -136,7 +138,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "WildBoar";
 			//	CachedMouseFinalAngle = 206.0f;
 		}
-		//else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 
 	}
 	else if (CachedMouseFinalAngle <= 285.0f)
@@ -151,7 +153,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 	}
 	else if (CachedMouseFinalAngle <= 337.0f)
 	{
-		//if (SkeletonArcher_OK)
+		if (MyGameInstance->SkeletonArcher_OK)
 		{
 			UE_LOG(LogTemp, Log, TEXT("궁수 선택"));
 
@@ -161,9 +163,9 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			BeforeMonster = "SkeletonArcher";
 			//CachedMouseFinalAngle = 309.0f;
 		}
-		//else { 
-	//		CachedMouseFinalAngle = Before_CachedMouseFinalAngle; 
-		//}
+	else { 
+			CachedMouseFinalAngle = Before_CachedMouseFinalAngle; 
+		}
 	}
 	else
 	{
@@ -177,12 +179,14 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 void UPieMenuWidget::OpenCharacter(FString DeadMonsterName)
 {
 	UE_LOG(LogTemp, Log, TEXT("OpenCharacter 실행됨_ %s"), *DeadMonsterName);
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
 
 	if (DeadMonsterName == "WildBoar") {
 		UE_LOG(LogTemp, Log, TEXT("와일드 보어 해금 완료"));
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("boar_img"))))
 		{
-			WildBoar_Ok = true;
+			MyGameInstance->WildBoar_Ok = true;
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
@@ -191,35 +195,35 @@ void UPieMenuWidget::OpenCharacter(FString DeadMonsterName)
 		UE_LOG(LogTemp, Log, TEXT("인페르몽 해금 완료"));
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("monkey_img"))))
 		{
-			Inpermon_OK = true;
+			MyGameInstance->Inpermon_OK = true;
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 	else if (DeadMonsterName == "SkeletonWarrior") {
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("Skeleton1_img"))))
 		{
-			SkeletonWarrior_OK = true;
+			MyGameInstance->SkeletonWarrior_OK = true;
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 	else if (DeadMonsterName == "StoneGolem") {
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("Golem_img"))))
 		{
-			StoneGolem_OK = true;
+			MyGameInstance->StoneGolem_OK = true;
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 	else if (DeadMonsterName == "SkeletonArcher") {
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("Skeleton2_img"))))
 		{
-			SkeletonArcher_OK = true;
+			MyGameInstance->SkeletonArcher_OK = true;
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 	else if (DeadMonsterName == "Freezard") {
 		if (UImage* CollecterIcon = Cast<UImage>(GetWidgetFromName(TEXT("lizard_img"))))
 		{
-			Freezard_OK = true;
+			MyGameInstance->Freezard_OK = true;
 			CollecterIcon->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
