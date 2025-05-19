@@ -27,14 +27,14 @@ EBTNodeResult::Type UBTTask_CastChargeSkill::ExecuteTask(UBehaviorTreeComponent&
 	if (Entity->bIsCastingSkill)
 		return EBTNodeResult::Failed;
 
-	// Charge 스킬 실행 : Charge 스킬은 AEntityPreset의 PerformSkill_Charge()에서 전체 Charge 로직을 처리합니다.
+	// Charge 스킬 실행 : Charge 스킬은 AEntityPreset의 PerformSkill_Charge()에서 전체 Charge 로직을 처리
 	//Entity->bIsCastingSkill = true; // 스킬 진행 중 상태 설정
 	Entity->EntitySkillComponent->ExecuteSkill("Skill_Charge");
 
 	// Entity->PerformSkill_Charge();
 
 	// Charge 스킬이 내부적으로 몽타주 종료 델리게이트를 통해 bIsCastingSkill을 false로 클리어하면,
-	// 이 태스크는 InProgress 상태에서 OnMontageEnded에서 완료 처리합니다.
+	// 이 태스크는 InProgress 상태에서 OnMontageEnded에서 완료 처리
 	return EBTNodeResult::InProgress;
 }
 
