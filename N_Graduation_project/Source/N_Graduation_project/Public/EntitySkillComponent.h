@@ -63,6 +63,8 @@ private:
 
 	void ExecuteSkill_FreezeBreath(const FSkillData & SkillData,const TArray<FSkillEffectData>& EffectData);
 
+	void ExecuteSkill_EarthBreaker(const FSkillData & SkillData,const TArray<FSkillEffectData>& EffectData);
+
 	/* 쿨타임 관리 함수 */
 	void SetSkillTimer(float CooldownTime, FTimerDelegate TimerDelegate, bool bIsSpecial);
 	void NormalCooldown(); // 일반 스킬 쿨타임 끝남

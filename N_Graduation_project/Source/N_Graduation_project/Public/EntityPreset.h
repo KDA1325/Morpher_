@@ -66,6 +66,9 @@ public:
 	// Special 스킬용 히트박스 컴포넌트 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	UBoxComponent* SpecialSkillHitBox;
+	// Special 스킬용 Sphere 히트박스 컴포넌트 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")
+	USphereComponent* SpecialSkillSphereHitBox;
 
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	UAnimMontage* NormalSkillMontage;
@@ -92,6 +95,8 @@ public:
 
 	void ConfigureHitBox(UBoxComponent* HitBox);
 
+	void ConfigureSphereHitBox(USphereComponent * HitBox);
+
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ShowNormalHitBox();
 
@@ -99,9 +104,13 @@ public:
 	void HideNormalHitBox();
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ShowSpecialHitBox();
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void ShowSpecialSphereHitBox();
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void HideSpecialHitBox();
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void HideSpecialSphereHitBox();
 
 	void ShowHitBox();
 
@@ -132,6 +141,8 @@ public:
 	void PerformSkill_Charge();
 	void PerformSkill_FireBall();
 	void PerformSkill_FreezeBreath();
+	void PerformSkill_EarthBreaker();
+
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ExecuteChargeDash();
 
@@ -179,6 +190,8 @@ public:
 	bool bIsCharging = false;
 	// 프리징 관련 상태 변수
 	bool bIsFreezing = false;
+	// 스턴 관련 상태 변수 
+	bool bIsBreaking = false;
 
 	UPROPERTY()
 	float WildBoar_ChargeFloat;

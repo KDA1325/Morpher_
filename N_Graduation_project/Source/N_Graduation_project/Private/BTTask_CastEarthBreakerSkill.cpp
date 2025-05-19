@@ -1,19 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BTTask_CastArmSwingSkill.h"
+#include "BTTask_CastEarthBreakerSkill.h"
 #include "EntityPreset.h"
 #include "EntitySkillComponent.h"
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-UBTTask_CastArmSwingSkill::UBTTask_CastArmSwingSkill()
+UBTTask_CastEarthBreakerSkill::UBTTask_CastEarthBreakerSkill()
 {
-	NodeName = TEXT("Cast Arm Swing Skill");
+	NodeName = TEXT("Cast Earth Breaker Skill");
 	CachedOwnerComp = nullptr;
 }
 
-EBTNodeResult::Type UBTTask_CastArmSwingSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp,uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_CastEarthBreakerSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp,uint8* NodeMemory)
 {
 	CachedOwnerComp = &OwnerComp;
 
@@ -31,14 +31,14 @@ EBTNodeResult::Type UBTTask_CastArmSwingSkill::ExecuteTask(UBehaviorTreeComponen
 		return EBTNodeResult::Failed;
 
 	// 스킬 실행
-	Entity->EntitySkillComponent->ExecuteSkill("Skill_ArmSwing");
+	Entity->EntitySkillComponent->ExecuteSkill("Skill_EarthBreaker");
 
 	// 스킬이 내부적으로 몽타주 종료 델리게이트를 통해 bIsCastingSkill을 false로 클리어하면,
 	// 이 태스크는 InProgress 상태에서 OnMontageEnded에서 완료 처리
 	return EBTNodeResult::InProgress;
 }
 
-void UBTTask_CastArmSwingSkill::OnMontageEnded(UAnimMontage* Montage,bool bInterrupted)
+void UBTTask_CastEarthBreakerSkill::OnMontageEnded(UAnimMontage* Montage,bool bInterrupted)
 {
 	if(CachedOwnerComp)
 	{

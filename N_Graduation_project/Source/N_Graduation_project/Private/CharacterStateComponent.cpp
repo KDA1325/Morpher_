@@ -32,6 +32,17 @@ void UCharacterStateComponent::ChangeState(ECharacterState NewState)
 		}
 	}
 
+	if (CurrentState == ECharacterState::Stun)
+	{
+		if (isStunned == true)
+		{
+			if (NewState == ECharacterState::Move || NewState == ECharacterState::Idle || NewState == ECharacterState::Action || NewState == ECharacterState::Dash)
+			{
+				return; // 위 상태로 변경 안됨
+			}
+		}
+	}
+
 	//if (CurrentState == ECharacterState::Dead)
 	//{
 	//	if (isAction == true)
@@ -68,6 +79,10 @@ void UCharacterStateComponent::ApplyActionRestrictions()
 			break;
 		case ECharacterState::Dash:
 			// 이동 조작X, 스킬 조작X, 변신 조작X
+			break;
+		case ECharacterState::Stun:
+			// 이동, 스킬, 대시, 변신 조작X
+			isStunned = true;
 			break;
 		case ECharacterState::Move:
 			break;

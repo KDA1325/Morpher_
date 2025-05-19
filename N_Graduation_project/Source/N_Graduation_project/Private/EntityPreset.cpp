@@ -9,6 +9,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "WidgetActor.h"
+#include "CharacterStateComponent.h"
+#include "Components/SphereComponent.h"
 
 
 AEntityPreset::AEntityPreset()
@@ -314,7 +316,6 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			{ "Skill_TailSwing", TEXT("TailSocket") },
 			{ "Skill_FreezeBreath", TEXT("BreathSocket") },
 			{ "Skill_ArmSwing", TEXT("ArmSocket") }
-			//{ "Skill_EarthBreaker", TEXT("FootSocket") }
 		};
 
 		FName SocketToAttach = TEXT("DefaultHitBox"); 
@@ -547,6 +548,101 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Sphere"));
+
+		// SkillNameID -> 소켓 이름 매핑 테이블
+		TMap<FString,FName> SkillToSocketMap = {
+			{"Skill_EarthBreaker", TEXT("BreakerSocket")}
+		};
+
+		FName SocketToAttach = TEXT("DefaultHitBox");
+		if(FName* FoundSocket = SkillToSocketMap.Find(SkillData.SkillNameID))
+		{
+			SocketToAttach = *FoundSocket;
+		}
+
+		USceneComponent* Container = nullptr;
+		/*if(SkillData.SkillNameID == "Skill_Charge")
+		{
+			Container = SpecialHitBoxContainer;
+		} else
+		{
+			Container = NormalHitBoxContainer;
+		}
+
+		Container->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepRelativeTransform,SocketToAttach);*/
+
+		// 스킬 타입에 따라 해당 히트박스 컴포넌트 생성
+		if(SkillData.SkillNameID == "Skill_EarthBreaker")
+		{
+			// Special 히트박스 생성
+			if(!SpecialSkillSphereHitBox)
+			{
+				SpecialSkillSphereHitBox = NewObject<USphereComponent>(this,TEXT("SpecialSkillSphereHitBox"));
+				if(SpecialSkillSphereHitBox)
+				{
+					SpecialSkillSphereHitBox->RegisterComponent();
+					SpecialSkillSphereHitBox->AttachToComponent(Container,FAttachmentTransformRules::KeepRelativeTransform);
+					HideSpecialSphereHitBox();
+
+					ConfigureSphereHitBox(SpecialSkillSphereHitBox);
+					SpecialSkillSphereHitBox->OnComponentBeginOverlap.AddDynamic(this,&AEntityPreset::OnSpecialHitBoxOverlap);
+				}
+			}
+
+			// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 HalfRadius로 사용
+			// HalfRadiust의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
+			// Y축은 Z 크기 값,
+			// Z축은 X 크기 값(SkillTypeSizeX/2)
+			float HalfRadius = float(SkillData.SkillTypeSizeX / 2.0f);
+			SpecialSkillSphereHitBox->SetSphereRadius(HalfRadius);
+
+			// 기본 USphereComponent는 자신의 중심을 기준으로 확장
+			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 확장되도록 하기
+			// USphereComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 HalfRadiust만큼 이동
+			FVector NewRelativeLocation = FVector(SkillData.SkillTypeSizeX);
+			SpecialSkillSphereHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			UE_LOG(LogTemp, Warning, TEXT("SetupSpecialSkillSphereHitBox: HalfRadius=%.1f, NewRelativeLocation=%s"),
+				HalfRadius, *NewRelativeLocation.ToString());
+		} 
+		else
+		{
+			// Normal 히트박스 생성
+			if(!NormalSkillHitBox)
+			{
+				NormalSkillHitBox = NewObject<UBoxComponent>(this,TEXT("NormalSkillHitBox"));
+				if(NormalSkillHitBox)
+				{
+					NormalSkillHitBox->RegisterComponent();
+					NormalSkillHitBox->AttachToComponent(NormalHitBoxContainer,FAttachmentTransformRules::KeepRelativeTransform);
+
+					HideNormalHitBox();
+
+					ConfigureHitBox(NormalSkillHitBox);
+
+					// Overlap 이벤트 바인딩 
+					NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this,&AEntityPreset::OnNormalHitBoxOverlap);
+				}
+			}
+
+			// UBoxComponent는 half extents를 사용
+				// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
+				// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
+				// Y축은 Z 크기 값,
+				// Z축은 X 크기 값(SkillTypeSizeX/2)
+			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f,50.0f,SkillData.SkillTypeSizeX / 2.0f);
+			NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+			// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
+			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
+			// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
+			FVector NewRelativeLocation = FVector(0.0f,0.0f,HalfExtent.X);
+			NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			UE_LOG(LogTemp,Warning,TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+				*HalfExtent.ToString(),*NewRelativeLocation.ToString());
+		}
+
 	}
 
 
@@ -577,13 +673,27 @@ void AEntityPreset::ConfigureHitBox(UBoxComponent* HitBox)
 	HitBox->SetGenerateOverlapEvents(true);
 }
 
+// 히트박스 충돌 세팅 
+void AEntityPreset::ConfigureSphereHitBox(USphereComponent* HitBox)
+{
+	if (!HitBox)
+	{
+		return;
+	}
+
+	HitBox->SetCollisionObjectType(ECC_WorldDynamic);
+	HitBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	HitBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	HitBox->SetGenerateOverlapEvents(true);
+}
+
 void AEntityPreset::ShowNormalHitBox()
 {
 	float Duration = NormalSkillData.SkillDuration;
 
 	// HitBox 활성화 
 	NormalSkillHitBox->SetHiddenInGame(false);
-	//NormalSkillHitBox->SetVisibility(true);
+	NormalSkillHitBox->SetVisibility(true);
 	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기, 물리는 무시하지만 쿼리만 처리
 	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
 
@@ -596,7 +706,7 @@ void AEntityPreset::HideNormalHitBox()
 {
 	// HitBox 비활성화 
 	NormalSkillHitBox->SetHiddenInGame(true);
-	NormalSkillHitBox->SetVisibility(false);
+	//NormalSkillHitBox->SetVisibility(false);
 	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 끄기
 	UE_LOG(LogTemp, Warning, TEXT("Hide HitBox"));
 }
@@ -616,6 +726,21 @@ void AEntityPreset::ShowSpecialHitBox()
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::HideSpecialHitBox, Duration, false);
 }
 
+void AEntityPreset::ShowSpecialSphereHitBox()
+{
+	float Duration = SpecialSkillData.SkillDuration;
+
+	// HitBox 활성화 
+	SpecialSkillSphereHitBox->SetHiddenInGame(false);
+	SpecialSkillSphereHitBox->SetVisibility(true);
+	SpecialSkillSphereHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기
+	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
+
+	// 유지 시간 이후 HideHitBox 함수 호출  
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::HideSpecialSphereHitBox, Duration, false);
+}
+
 void AEntityPreset::HideSpecialHitBox()
 {
 	// HitBox 비활성화 
@@ -625,12 +750,26 @@ void AEntityPreset::HideSpecialHitBox()
 	UE_LOG(LogTemp, Warning, TEXT("Hide HitBox"));
 }
 
+void AEntityPreset::HideSpecialSphereHitBox()
+{
+	// HitBox 비활성화 
+	SpecialSkillSphereHitBox->SetHiddenInGame(true);
+	//SpecialSkillSphereHitBox->SetVisibility(false);
+	SpecialSkillSphereHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 끄기
+	UE_LOG(LogTemp, Warning, TEXT("Hide HitBox"));
+}
+
 void AEntityPreset::ShowHitBox()
 {
 	if(bIsCharging || bIsFreezing)
 	{
 		ShowSpecialHitBox();
-	} else
+	} 
+	else if(bIsBreaking)
+	{
+		ShowSpecialSphereHitBox();
+	}
+	else
 	{
 		ShowNormalHitBox();
 	}
@@ -799,7 +938,7 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 			// Freezing 효과
 			if(Effect.EffectType == EnumEffectType::Freezing)
 			{
-				UE_LOG(LogTemp,Warning,TEXT("Special HitBox Overlap: Destroy effect processed (log only) for %s"),*OtherActor->GetName());
+				UE_LOG(LogTemp,Warning,TEXT("Special HitBox Overlap: Freezing effect processed (log only) for %s"),*OtherActor->GetName());
 
 				float Duration = Effect.EffectValue01;
 				float SlowFactor = Effect.EffectValue02;
@@ -830,6 +969,60 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 						});
 
 						GetWorld()->GetTimerManager().SetTimer(RestoreHandle,RestoreDelegate,Duration,false);
+					}
+				}
+			}
+
+			// Stun 효과
+			if(Effect.EffectType == EnumEffectType::Stun)
+			{
+				UE_LOG(LogTemp,Warning,TEXT("Special HitBox Overlap: Stun effect processed (log only) for %s"),*OtherActor->GetName());
+
+				float Duration = Effect.EffectValue01;
+
+				if(Duration > 0.f)
+				{
+					UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
+					if(MoveComp)
+					{
+						// 스턴 상태로 변경 
+						//PlayerCharacter->CharacterStateComponent->isStunned = true;
+						
+						// 이동 불가능 
+						PlayerCharacter->bCanMove = false;
+
+						UE_LOG(LogTemp,Warning,TEXT("Stun applied to %s for %.1f seconds"),*PlayerCharacter->GetName(),Duration);
+
+						// 일정 시간 뒤에 원래 속도로 복원
+						FTimerHandle RestoreHandle;
+						FTimerDelegate RestoreDelegate;
+
+						// 캡처값 복사
+						RestoreDelegate.BindLambda([=]() {
+							if(PlayerCharacter && PlayerCharacter->CharacterStateComponent)
+							{
+								PlayerCharacter->CharacterStateComponent->isStunned = false;
+								PlayerCharacter->bCanMove = true;
+
+								UE_LOG(LogTemp,Warning,TEXT("Stun ended for %s"),*PlayerCharacter->GetName());
+							}
+						});
+						GetWorld()->GetTimerManager().SetTimer(RestoreHandle, RestoreDelegate, Duration, false);
+						
+						// 이동 불가능
+						//MoveComp->DisableMovement();
+
+				/*		
+						RestoreDelegate.BindLambda([=]() {
+							if(PlayerCharacter && PlayerCharacter->GetCharacterMovement())
+							{
+								PlayerCharacter->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+								PlayerCharacter->CustomTimeDilation = 1.f;
+
+								UE_LOG(LogTemp,Warning,TEXT("Stun ended: %s can move"), *PlayerCharacter->GetName());
+							}
+						});*/
+
 					}
 				}
 			}
@@ -1414,6 +1607,48 @@ void AEntityPreset::PerformSkill_FreezeBreath()
 	} else
 	{
 		UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_FreezeBreath: SpecialSkillMontage is not set"));
+	}
+}
+void AEntityPreset::PerformSkill_EarthBreaker()
+{
+	if(!SpecialSkillMontage) return;
+
+	// 스킬 시전 플래그 설정
+	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
+	bIsCastingSkill = true;
+	bIsBreaking = true;
+
+	// AI 경로 추적 중지 
+	if(AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 중단
+			PathComp->Deactivate();
+
+			AIController->StopMovement();
+			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Earth Breaking"));
+		}
+	}
+
+	if(SpecialSkillMontage)
+	{
+		if(UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+		{
+			// 스페셜 스킬 몽타주
+			AnimInst->Montage_Play(SpecialSkillMontage);
+
+			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("PerformSkill_EarthBreaker: AnimInstance not found"));
+		}
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("PerformSkill_EarthBreaker: SpecialSkillMontage is not set"));
 	}
 }
 //void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

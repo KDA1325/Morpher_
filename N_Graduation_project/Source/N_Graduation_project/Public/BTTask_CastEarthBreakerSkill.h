@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BTTask_CastArmSwingSkill.generated.h"
+#include "BTTask_CastEarthBreakerSkill.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class N_GRADUATION_PROJECT_API UBTTask_CastArmSwingSkill : public UBTTaskNode
+class N_GRADUATION_PROJECT_API UBTTask_CastEarthBreakerSkill : public UBTTaskNode
 {
 	GENERATED_BODY()
 public:
-	UBTTask_CastArmSwingSkill();
+	UBTTask_CastEarthBreakerSkill();
 
 protected:
 	// BTTaskNode 인터페이스 재정의 (실행)
