@@ -37,12 +37,3 @@ EBTNodeResult::Type UBTTask_CastEarthBreakerSkill::ExecuteTask(UBehaviorTreeComp
 	// 이 태스크는 InProgress 상태에서 OnMontageEnded에서 완료 처리
 	return EBTNodeResult::InProgress;
 }
-
-void UBTTask_CastEarthBreakerSkill::OnMontageEnded(UAnimMontage* Montage,bool bInterrupted)
-{
-	if(CachedOwnerComp)
-	{
-		FinishLatentTask(*CachedOwnerComp,EBTNodeResult::Succeeded);
-		CachedOwnerComp = nullptr;
-	}
-}

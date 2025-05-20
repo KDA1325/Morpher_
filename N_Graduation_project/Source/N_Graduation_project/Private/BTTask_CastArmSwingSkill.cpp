@@ -32,17 +32,9 @@ EBTNodeResult::Type UBTTask_CastArmSwingSkill::ExecuteTask(UBehaviorTreeComponen
 
 	// 스킬 실행
 	Entity->EntitySkillComponent->ExecuteSkill("Skill_ArmSwing");
+	UE_LOG(LogTemp,Error,TEXT("Skill_ArmSwing"));
 
 	// 스킬이 내부적으로 몽타주 종료 델리게이트를 통해 bIsCastingSkill을 false로 클리어하면,
 	// 이 태스크는 InProgress 상태에서 OnMontageEnded에서 완료 처리
 	return EBTNodeResult::InProgress;
-}
-
-void UBTTask_CastArmSwingSkill::OnMontageEnded(UAnimMontage* Montage,bool bInterrupted)
-{
-	if(CachedOwnerComp)
-	{
-		FinishLatentTask(*CachedOwnerComp,EBTNodeResult::Succeeded);
-		CachedOwnerComp = nullptr;
-	}
 }

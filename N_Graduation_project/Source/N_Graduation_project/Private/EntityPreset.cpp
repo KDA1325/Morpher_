@@ -562,15 +562,18 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 		}
 
 		USceneComponent* Container = nullptr;
-		/*if(SkillData.SkillNameID == "Skill_Charge")
+
+		if(SkillData.SkillNameID == "Skill_EarthBreaker")
 		{
 			Container = SpecialHitBoxContainer;
-		} else
+		} 
+		else
 		{
 			Container = NormalHitBoxContainer;
 		}
 
-		Container->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepRelativeTransform,SocketToAttach);*/
+		Container->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepRelativeTransform,SocketToAttach);
+
 
 		// 스킬 타입에 따라 해당 히트박스 컴포넌트 생성
 		if(SkillData.SkillNameID == "Skill_EarthBreaker")
@@ -594,17 +597,19 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			// HalfRadiust의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
 			// Y축은 Z 크기 값,
 			// Z축은 X 크기 값(SkillTypeSizeX/2)
-			float HalfRadius = float(SkillData.SkillTypeSizeX / 2.0f);
-			SpecialSkillSphereHitBox->SetSphereRadius(HalfRadius);
+			//float HalfRadius = float(SkillData.SkillTypeSizeX / 2.0f);
+			float Radius = SkillData.SkillTypeSizeX;
+			SpecialSkillSphereHitBox->SetSphereRadius(Radius);
 
 			// 기본 USphereComponent는 자신의 중심을 기준으로 확장
 			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 확장되도록 하기
 			// USphereComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 HalfRadiust만큼 이동
-			FVector NewRelativeLocation = FVector(SkillData.SkillTypeSizeX);
+			//FVector NewRelativeLocation = FVector(SkillData.SkillTypeSizeX);
+			FVector NewRelativeLocation = FVector::ZeroVector;
 			SpecialSkillSphereHitBox->SetRelativeLocation(NewRelativeLocation);
 
 			UE_LOG(LogTemp, Warning, TEXT("SetupSpecialSkillSphereHitBox: HalfRadius=%.1f, NewRelativeLocation=%s"),
-				HalfRadius, *NewRelativeLocation.ToString());
+				Radius, *NewRelativeLocation.ToString());
 		} 
 		else
 		{
@@ -735,7 +740,7 @@ void AEntityPreset::ShowSpecialSphereHitBox()
 	SpecialSkillSphereHitBox->SetHiddenInGame(false);
 	SpecialSkillSphereHitBox->SetVisibility(true);
 	SpecialSkillSphereHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기
-	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
+	UE_LOG(LogTemp, Warning, TEXT("Show Sphere HitBox"));
 
 	// 유지 시간 이후 HideHitBox 함수 호출  
 	FTimerHandle TimerHandle;
@@ -768,6 +773,7 @@ void AEntityPreset::ShowHitBox()
 	} 
 	else if(bIsBreaking)
 	{
+		UE_LOG(LogTemp,Warning,TEXT("[ShowHitBox] Calling ShowSpecialSphereHitBox (Break)"));
 		ShowSpecialSphereHitBox();
 	}
 	else
@@ -1323,6 +1329,19 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted
 	// 스킬 종료 처리 
 	bIsCastingSkill = false;
 
+	if(bIsBreaking)
+	{
+		bIsBreaking = false;
+	}/*
+	else if(bIsCharging)
+	{
+		bIsCharging = false;
+	}
+	else if(bIsFreezing)
+	{
+		bIsFreezing = false;
+	}*/
+
 	// AI 경로 추적 활성화
 	if (AAIController* AIController = Cast<AAIController>(GetController()))
 	{
@@ -1632,6 +1651,7 @@ void AEntityPreset::PerformSkill_EarthBreaker()
 		}
 	}
 
+	// 여기서부터 안됨 
 	if(SpecialSkillMontage)
 	{
 		if(UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
@@ -1643,11 +1663,14 @@ void AEntityPreset::PerformSkill_EarthBreaker()
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
 			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
-		} else
+			UE_LOG(LogTemp,Error,TEXT("PerformSkill_EarthBreaker"));
+		} 
+		else
 		{
 			UE_LOG(LogTemp,Error,TEXT("PerformSkill_EarthBreaker: AnimInstance not found"));
 		}
-	} else
+	} 
+	else
 	{
 		UE_LOG(LogTemp,Error,TEXT("PerformSkill_EarthBreaker: SpecialSkillMontage is not set"));
 	}

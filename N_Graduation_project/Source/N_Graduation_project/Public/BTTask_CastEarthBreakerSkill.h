@@ -21,8 +21,8 @@ protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp,uint8* NodeMemory) override;
 
 	// 몽타주 종료 델리게이트 콜백
-	UFUNCTION()
-		void OnMontageEnded(UAnimMontage* Montage,bool bInterrupted);
+	//UFUNCTION()
+		//void OnMontageEnded(UAnimMontage* Montage,bool bInterrupted);
 
 	// 캐시
 	UPROPERTY()
