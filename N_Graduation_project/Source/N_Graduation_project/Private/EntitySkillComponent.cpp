@@ -193,7 +193,7 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, 
 		if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
 		{
 			PathComp->Deactivate();
-			UE_LOG(LogTemp, Warning, TEXT("PathFollowingComponent deactivated for Bite skill"));
+			UE_LOG(LogTemp, Warning, TEXT("PathFollowingComponent deactivated for normal skill"));
 		}
 	}
 

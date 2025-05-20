@@ -315,7 +315,8 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			{ "Skill_Charge", TEXT("ChargeHitBox") },
 			{ "Skill_TailSwing", TEXT("TailSocket") },
 			{ "Skill_FreezeBreath", TEXT("BreathSocket") },
-			{ "Skill_ArmSwing", TEXT("ArmSocket") }
+			{ "Skill_ArmSwing", TEXT("ArmSocket") },
+			{ "Skill_SkeletonSlash", TEXT("SlashSocket") }
 		};
 
 		FName SocketToAttach = TEXT("DefaultHitBox"); 
