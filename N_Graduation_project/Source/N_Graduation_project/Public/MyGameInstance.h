@@ -17,6 +17,10 @@ class N_GRADUATION_PROJECT_API UMyGameInstance: public UGameInstance
 public:
 	UPROPERTY(BlueprintReadOnly)
 		bool GetKey = false;
+	UPROPERTY(BlueprintReadWrite)
+		FString SaveRoomName;
+	UPROPERTY(BlueprintReadWrite)
+		FVector SaveLocation;
 
 	bool WildBoar_Ok = false;
 	bool Inpermon_OK = false;
@@ -26,7 +30,6 @@ public:
 	bool Freezard_OK = false;
 
 	FString CurrentPlayerCharacter="PlayerCharacter";
-	FString SaveRoomName;
 	float PlayerFullHP=150;
 	float PlayerFinalAngle=102.f
 		;
