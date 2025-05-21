@@ -46,5 +46,5 @@ public:
 	// 내부 사용 함수
 	void InitFromSaveData(UMySaveGame* SaveData);
 	void SaveToSaveData(UMySaveGame* SaveData);
-
+	void OnStreamLevelLoaded();
 };

@@ -32,7 +32,8 @@ public:
 
 	UPROPERTY()
 		TArray<FName> DiscoveredEntities;
-
+	UPROPERTY(BlueprintReadWrite)
+		FVector SavePlayerLocation;
 	UPROPERTY()
 		float FullHP;
 	UPROPERTY()

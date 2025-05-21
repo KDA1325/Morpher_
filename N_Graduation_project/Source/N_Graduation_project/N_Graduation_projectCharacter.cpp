@@ -660,6 +660,9 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 	UE_LOG(LogTemp,Warning,TEXT("Player is dead!"));
 	isDead=true;
 	bcanPie=false;
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+	MyGameInstance->LoadGame();
 	WidgetActor->ShowDieWidget();
 }
 
