@@ -22,6 +22,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		FVector SaveLocation;
 
+	bool Player_Ok = true;
 	bool WildBoar_Ok = false;
 	bool Inpermon_OK = false;
 	bool SkeletonWarrior_OK = false;

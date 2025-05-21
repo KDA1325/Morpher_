@@ -244,7 +244,8 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 우클릭"));
-
+	FVector Location = GetOwner()->GetActorLocation();
+	UE_LOG(LogTemp,Warning,TEXT("캐릭터 위치: X=%.2f, Y=%.2f, Z=%.2f"),Location.X,Location.Y,Location.Z);
 	if(CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
 		return;
 	}
@@ -1038,13 +1039,17 @@ void AN_Graduation_projectCharacter:: LoadPreset(FString PresetID){
 	{
 		UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
 	}
-
+	FString CleanName;
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
 	// 확장자 제거
+	if(MyGameInstance->CurrentPlayerCharacter!="PCPreset.uasset"){ 
 	FString FileName = FPaths::GetBaseFilename(MyGameInstance->CurrentPlayerCharacter);
-	FString CleanName = FileName;
-	CleanName.RemoveFromEnd(TEXT("Preset"));
+	CleanName = FileName;
+	CleanName.RemoveFromEnd(TEXT("Preset"));}
+	else{
+		CleanName="PlayerCharacter";
+	}
 	if(UABGameSingleton::Get().GetEntityDataByGroupID(CleanName,EntityData))
 	{
 		if(PlayerStatComponent->CurrentMana >= EntityData.TransManaCost) 		OkTrans = true;

@@ -171,15 +171,23 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 
 	} else if(CachedMouseFinalAngle <= 285.0f)
 	{
-		UE_LOG(LogTemp,Log,TEXT("플레이어 선택"));
+		if(MyGameInstance->Player_Ok)
+		{
+			UE_LOG(LogTemp,Log,TEXT("플레이어 선택"));
 
-		CachedMouseFinalAngle = 102.0f;
-		Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
-		MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
+			CachedMouseFinalAngle = 102.0f;
+			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
 
-		BeforeMonster = "PlayerCharacter";
-		//CachedMouseFinalAngle = 257.0f;
-	} else if(CachedMouseFinalAngle <= 337.0f)
+			BeforeMonster = "PlayerCharacter";
+			//CachedMouseFinalAngle = 257.0f;
+		} else {
+			CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
+
+		}
+	} 
+	else if(CachedMouseFinalAngle <= 337.0f)
 	{
 		if(MyGameInstance->SkeletonArcher_OK)
 		{
@@ -218,7 +226,6 @@ void UPieMenuWidget::OpenCharacter(FString DeadMonsterName)
 	UE_LOG(LogTemp,Log,TEXT("OpenCharacter 실행됨_ %s"),*DeadMonsterName);
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
-
 	if(DeadMonsterName == "WildBoar") {
 		UE_LOG(LogTemp,Log,TEXT("와일드 보어 해금 완료"));
 		MyGameInstance->WildBoar_Ok = true;
