@@ -76,21 +76,32 @@ float UPieMenuWidget::CalculateMouseAngle()
 
 void UPieMenuWidget::CacheFinalMouseAngle()
 {
-	CachedMouseFinalAngle = CachedMouseAngle;
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
+
+	if(CachedMouseAngle < 0.2f) // -1.0f 등 무시 상태면 변신 처리 중단
+	{
+		UE_LOG(LogTemp,Warning,TEXT("원 내 클릭 무시, 변신 처리 안함"));
+		return;
+	}
+
+	CachedMouseFinalAngle = CachedMouseAngle;
+
+
 	if(CachedMouseFinalAngle <= 25.0f)
 	{
 		if(MyGameInstance->SkeletonWarrior_OK)
 		{
 			CachedMouseFinalAngle = -2.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
 
 			UE_LOG(LogTemp,Log,TEXT("전사 선택"));
 
 			BeforeMonster = "SkeletonWarrior";
 		} else {
 			CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
 
 		}
 	} else if(CachedMouseFinalAngle <= 77.0f)
@@ -100,10 +111,15 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			CachedMouseFinalAngle = 306.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 			UE_LOG(LogTemp,Log,TEXT("골렘 선택"));
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
 
 			BeforeMonster = "StoneGolem";
 			//CachedMouseFinalAngle = 51.0f;
-		} else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		} else {
+			CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
+
+		}
 	} else if(CachedMouseFinalAngle <= 129.0f)
 	{
 		if(MyGameInstance->Freezard_OK)
@@ -111,22 +127,29 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			CachedMouseFinalAngle = 257.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 			UE_LOG(LogTemp,Log,TEXT("프리자드 선택"));
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
 
 			BeforeMonster = "Freezard";
 			//		CachedMouseFinalAngle = 103.0f;
-		} else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		} else {
+			CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
+
+		}
 	} else if(CachedMouseFinalAngle <= 181.0f)
 	{
 		if(MyGameInstance->Inpermon_OK)
 		{
 			CachedMouseFinalAngle = 206.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
 
 			UE_LOG(LogTemp,Log,TEXT("인페르몽 선택"));
 			BeforeMonster = "Inpermon";
 			//		CachedMouseFinalAngle = 154.0f;
 		} else {
 			CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
 
 		}
 	} else if(CachedMouseFinalAngle <= 233.0f)
@@ -136,10 +159,15 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 			CachedMouseFinalAngle = 154.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
 			UE_LOG(LogTemp,Log,TEXT("와일드 보어 선택"));
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
 
 			BeforeMonster = "WildBoar";
 			//	CachedMouseFinalAngle = 206.0f;
-		} else CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+		} else {
+			CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
+
+		}
 
 	} else if(CachedMouseFinalAngle <= 285.0f)
 	{
@@ -147,6 +175,7 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 
 		CachedMouseFinalAngle = 102.0f;
 		Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+		MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
 
 		BeforeMonster = "PlayerCharacter";
 		//CachedMouseFinalAngle = 257.0f;
@@ -158,11 +187,14 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 
 			CachedMouseFinalAngle = 51.0f;
 			Before_CachedMouseFinalAngle = CachedMouseFinalAngle;
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
 
 			BeforeMonster = "SkeletonArcher";
 			//CachedMouseFinalAngle = 309.0f;
 		} else {
 			CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
+			MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
+
 		}
 	} else
 	{
@@ -170,11 +202,10 @@ void UPieMenuWidget::CacheFinalMouseAngle()
 
 		CachedMouseFinalAngle = Before_CachedMouseFinalAngle;
 		Monster = BeforeMonster;
-	//	MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
+		MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
 
 	}
 	Monster = BeforeMonster;
-	MyGameInstance->PlayerFinalAngle=CachedMouseFinalAngle;
 
 	MyGameInstance->CurrentPlayerCharacter=Monster;
 	UE_LOG(LogTemp,Log,TEXT("Save %s %s"),*Monster,*MyGameInstance->CurrentPlayerCharacter);
