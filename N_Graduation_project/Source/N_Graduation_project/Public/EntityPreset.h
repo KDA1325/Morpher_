@@ -84,10 +84,10 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
 	TSubclassOf<class AEntityProjectile> SpecialProjectileClass;
 
-	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
-	//TSubclassOf<AActor> NormalProjectileClass;
-	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
-	//TSubclassOf<AEntityProjectile> SpecialProjectileClass;
+	// 손에 붙일 화살
+	UPROPERTY()
+	AEntityProjectile* PendingArrow;  
+
 
 	//스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
@@ -114,10 +114,10 @@ public:
 
 	void ShowHitBox();
 
-	void AnimNotify_ShowHitBox();
-	void AnimNotify_SpawnProjectile();
+	//void AnimNotify_ShowHitBox();
+	//void AnimNotify_SpawnProjectile();
 
-	void AnimNotify_SpawnProjectile_FireBall();
+	//void AnimNotify_SpawnProjectile_FireBall();
 
 	// 히트박스 Overlap 이벤트 처리 함수
 	UFUNCTION()
@@ -142,6 +142,14 @@ public:
 	void PerformSkill_FireBall();
 	void PerformSkill_FreezeBreath();
 	void PerformSkill_EarthBreaker();
+
+	void PerformSkill_Arrow();
+
+	void SpawnProjectile_Arrow();
+	void FireProjectile_Arrow();
+	// Skill_Arrow 시전 시 저장할 방향 (설정 후 변화 없이 유지)
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")
+	FVector ArrowDirection;
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ExecuteChargeDash();

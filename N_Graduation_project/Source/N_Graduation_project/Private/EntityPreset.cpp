@@ -782,41 +782,41 @@ void AEntityPreset::ShowHitBox()
 	}
 }
 
-// AnimNotify로 호출될 함수 정의 (Anim BP에서 사용 가능)
-void AEntityPreset::AnimNotify_ShowHitBox()
-{
-	//ShowHitBox();
+//// AnimNotify로 호출될 함수 정의 (Anim BP에서 사용 가능)
+//void AEntityPreset::AnimNotify_ShowHitBox()
+//{
+//	//ShowHitBox();
+//
+//	//// Duration 기반으로 히트박스 숨기기 예약
+//	//if(bIsCharging)
+//	//{
+//	//	float Duration = SpecialSkillData.SkillDuration;
+//	//	GetWorldTimerManager().SetTimerForNextTick([this,Duration]()
+//	//	{
+//	//		FTimerHandle TimerHandle;
+//	//		GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideSpecialHitBox,Duration,false);
+//	//	});
+//	//} else
+//	//{
+//	//	float Duration = NormalSkillData.SkillDuration;
+//	//	GetWorldTimerManager().SetTimerForNextTick([this,Duration]()
+//	//	{
+//	//		FTimerHandle TimerHandle;
+//	//		GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideNormalHitBox,Duration,false);
+//	//	});
+//	//}
+//}
 
-	//// Duration 기반으로 히트박스 숨기기 예약
-	//if(bIsCharging)
-	//{
-	//	float Duration = SpecialSkillData.SkillDuration;
-	//	GetWorldTimerManager().SetTimerForNextTick([this,Duration]()
-	//	{
-	//		FTimerHandle TimerHandle;
-	//		GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideSpecialHitBox,Duration,false);
-	//	});
-	//} else
-	//{
-	//	float Duration = NormalSkillData.SkillDuration;
-	//	GetWorldTimerManager().SetTimerForNextTick([this,Duration]()
-	//	{
-	//		FTimerHandle TimerHandle;
-	//		GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideNormalHitBox,Duration,false);
-	//	});
-	//}
-}
-
-void AEntityPreset::AnimNotify_SpawnProjectile()
-{
-	// 투사체 발사 함수
-	SpawnProjectile_ThrowRock();
-}
-void AEntityPreset::AnimNotify_SpawnProjectile_FireBall()
-{
-	// 투사체 발사 함수
-	SpawnProjectile_FireBall();
-}
+//void AEntityPreset::AnimNotify_SpawnProjectile()
+//{
+//	// 투사체 발사 함수
+//	SpawnProjectile_ThrowRock();
+//}
+//void AEntityPreset::AnimNotify_SpawnProjectile_FireBall()
+//{
+//	// 투사체 발사 함수
+//	SpawnProjectile_FireBall();
+//}
 
 void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -1351,45 +1351,7 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted
 			PathComp->Activate();
 		}
 	}
-	//// 실제 돌진 동작: 빠른 이동 및 히트박스 생성
- //   // 예를 들어: 전방으로 특정 거리를 빠르게 이동 + ShowSpecialHitBox() 호출
- //   
- //   // 돌진 이동 처리 (임의 값, 필요에 따라 수정)
-	//FVector ForwardDirection = GetActorForwardVector();
-	//float ChargeDistance = 600.f; // SkillData.SkillRange 등 데이터 사용 가능
-	//FVector TargetLocation = GetActorLocation() + ForwardDirection * ChargeDistance;
-
-	//// 빠른 이동(예: Teleport or Smooth movement using a timeline)
-	//SetActorLocation(TargetLocation);
-	//UE_LOG(LogTemp, Warning, TEXT("OnSpecialSkill_ChargeMontageEnded: Moved to Charge target location"));
-
-	// 돌진 동작 시 히트박스 활성화
-	//ShowSpecialHitBox();
-	//HideSpecialHitBox();
 }
-
-//// Special 스킬 몽타주 종료 콜백
-//void AEntityPreset::OnSpecialSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted)
-//{
-//	// 스킬 종료 처리 
-//	bIsCastingSkill = false;
-//
-//	//// 실제 돌진 동작: 빠른 이동 및 히트박스 생성
-// //   // 예를 들어: 전방으로 특정 거리를 빠르게 이동 + ShowSpecialHitBox() 호출
-// //   
-// //   // 돌진 이동 처리 (임의 값, 필요에 따라 수정)
-//	//FVector ForwardDirection = GetActorForwardVector();
-//	//float ChargeDistance = 600.f; // SkillData.SkillRange 등 데이터 사용 가능
-//	//FVector TargetLocation = GetActorLocation() + ForwardDirection * ChargeDistance;
-//
-//	//// 빠른 이동(예: Teleport or Smooth movement using a timeline)
-//	//SetActorLocation(TargetLocation);
-//	//UE_LOG(LogTemp, Warning, TEXT("OnSpecialSkill_ChargeMontageEnded: Moved to Charge target location"));
-//
-//	// 돌진 동작 시 히트박스 활성화
-//	//ShowSpecialHitBox();
-//	//HideSpecialHitBox();
-//}
 
 void AEntityPreset::StopMovement()
 {
@@ -1504,7 +1466,7 @@ void AEntityPreset::SpawnProjectile_ThrowRock()
 void AEntityPreset::SpawnProjectile_FireBall()
 {
 	// 스폰할 투사체 클래스 설정 확인
-	if(!NormalProjectileClass)
+	if(!SpecialProjectileClass)
 	{
 		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
 		return;
@@ -1651,7 +1613,6 @@ void AEntityPreset::PerformSkill_EarthBreaker()
 		}
 	}
 
-	// 여기서부터 안됨 
 	if(SpecialSkillMontage)
 	{
 		if(UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
@@ -1673,6 +1634,199 @@ void AEntityPreset::PerformSkill_EarthBreaker()
 	else
 	{
 		UE_LOG(LogTemp,Error,TEXT("PerformSkill_EarthBreaker: SpecialSkillMontage is not set"));
+	}
+}
+
+// 화살 발사 
+void AEntityPreset::PerformSkill_Arrow()
+{
+	if(!NormalProjectileClass) return;
+
+	// 스킬 시전 플래그 설정
+	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
+	bIsCastingSkill = true;
+
+	// AI 경로 추적 중지 
+	if(AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 중단
+			PathComp->Deactivate();
+
+			AIController->StopMovement();
+			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Spawn Projectile"));
+		}
+	}
+
+	if(NormalProjectileClass)
+	{
+		if(UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+		{
+			// 스페셜 스킬 몽타주
+			AnimInst->Montage_Play(NormalSkillMontage);
+
+			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate,NormalSkillMontage);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("PerformSkill_Arrow: AnimInstance not found"));
+		}
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("PerformSkill_Arrow: NormalSkillMontage is not set"));
+	}
+}
+
+// 노티파이에서 실행 : 화살 스폰 
+void AEntityPreset::SpawnProjectile_Arrow()
+{
+	if(!NormalProjectileClass) return;
+
+	// 소켓 위치/회전 가져오기
+	FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+
+	// 스폰 파라미터
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	// 화살 생성
+	PendingArrow = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SocketTransform,SpawnParams);
+	if(!PendingArrow) return;
+
+	// 소켓에 부착
+	PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("ArrowSocket"));
+
+	// 자동 발사 방지
+	PendingArrow->bAutoFireOnSpawn = false;
+
+	// 발사 방향 저장 (소켓 기준 정방향)
+	ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector();
+
+	UE_LOG(LogTemp,Log,TEXT("[Arrow Spawned] Location: %s, Direction: %s"),
+		*SocketTransform.GetLocation().ToString(),
+		*ArrowDirection.ToString());
+
+	 //Skill 데이터 테이블에서 "Skill_Arrow" 데이터 가져오기
+	FSkillData SkillData;
+	TArray<FSkillEffectData> EffectDataArray;
+
+	if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+		UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+	{
+		// 초기화
+		PendingArrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+	} 
+	else
+	{
+		UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+	}
+}
+//void AEntityPreset::SpawnProjectile_Arrow()
+//{
+//	// 스폰할 투사체 클래스 설정 확인
+//	if(!NormalProjectileClass)
+//	{
+//		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
+//		return;
+//	}
+//
+//	//// 스폰 위치, 방향 설정 
+//	//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+//	//FVector SpawnLocation = SocketTransform.GetLocation();
+//	//FRotator SpawnRotation  = SocketTransform.GetRotation().Rotator();
+//
+//	//// 스폰 파라미터
+//	//FActorSpawnParameters SpawnParams;
+//	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+//	//SpawnParams.Owner = this;
+//	//SpawnParams.Instigator = GetInstigator();
+//
+//	////ArrowDirection = GetActorForwardVector();
+//	//ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector(); // 소켓 방향 그대로
+//	//FRotator DummyRotation = ArrowDirection.Rotation();
+//
+//	//// 화살 스폰 
+//	//PendingArrow = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,DummyRotation,SpawnParams);
+//
+//
+//	//
+//
+//	////FRotator DumyRotation = FRotator::ZeroRotator;
+//	////FRotator DumyRotation = ArrowDirection.Rotation();
+//	////AEntityProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,DumyRotation,SpawnParams);
+//	//
+//
+//	if(PendingArrow)
+//	{
+//		//// 소켓 트랜스폼 가져오기 (World 기준)
+//		//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+//
+//		//// 위치와 회전 모두 수동으로 설정
+//		//PendingArrow->SetActorLocation(SocketTransform.GetLocation());
+//		//PendingArrow->SetActorRotation(SocketTransform.GetRotation().Rotator());
+//
+//		//// 부착은 Scale 영향 X
+//		//PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("ArrowSocket"));
+//
+//		//UE_LOG(LogTemp,Warning,TEXT("Arrow attached to ArrowSocket: Loc=%s, Rot=%s"),
+//		//	*SocketTransform.GetLocation().ToString(),
+//		//	*SocketTransform.GetRotation().Rotator().ToString());
+//
+//		//PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("ArrowSocket"));
+//
+//		//// 소켓의 월드 회전 방향을 따라가도록 화살의 로컬 회전 보정
+//		//FRotator SocketRotation = GetMesh()->GetSocketRotation(TEXT("ArrowSocket"));
+//		//FRotator LocalRotation = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_ParentBoneSpace).Rotator();
+//
+//		//PendingArrow->SetActorRelativeRotation(LocalRotation);
+//
+//		PendingArrow->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("ArrowSocket"));
+//
+//
+//		////PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,TEXT("ArrowSocket"));
+//		//PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("ArrowSocket"));
+//
+//		//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+//		//PendingArrow->SetActorLocationAndRotation(SocketTransform.GetLocation(),SocketTransform.GetRotation());
+//
+//		//UE_LOG(LogTemp,Warning,TEXT("Arrow attached to socket."));
+//
+//		// Skill 데이터 테이블에서 "Skill_Arrow" 데이터 가져오기
+//		FSkillData SkillData;
+//		TArray<FSkillEffectData> EffectDataArray;
+//
+//		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+//			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+//		{
+//			// 초기화
+//			PendingArrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+//
+//			UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
+//		} else
+//		{
+//			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+//		}
+//	}
+//}
+
+// 노티파이에서 실행 : 화살 발사
+void AEntityPreset::FireProjectile_Arrow()
+{
+	if(PendingArrow)
+	{
+		// 소켓에서 화살 분리 
+		PendingArrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+		// 자동 발사 막기
+		PendingArrow->bAutoFireOnSpawn = true;  
+		PendingArrow->FireInDirection(ArrowDirection);
+
+		PendingArrow = nullptr; // 재사용 안함
 	}
 }
 //void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

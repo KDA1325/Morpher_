@@ -31,7 +31,7 @@ public:
 	//class USphereComponent* CollisionComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Collision")
-	class USphereComponent* CollisionComp;
+	class UPrimitiveComponent* CollisionComp;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Components")
 	class UProjectileMovementComponent* ProjectileMovement;
@@ -46,8 +46,10 @@ public:
 
 	FTimerHandle DestroyTimerHandle;
 
+	// 투사체 자동 발사 플래그 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
+	bool bAutoFireOnSpawn = true;
 
-	
 	//void InitProjectile(const FSkillData& SkillData,const TArray<FSkillEffectData>& EffectData);
 
 	// 투사체가 사용할 스킬 데이터
