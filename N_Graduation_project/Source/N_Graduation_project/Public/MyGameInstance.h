@@ -18,7 +18,7 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		bool GetKey = false;
 	UPROPERTY(BlueprintReadWrite)
-		FString SaveRoomName;
+		FName SaveRoomName;
 	UPROPERTY(BlueprintReadWrite)
 		FVector SaveLocation;
 

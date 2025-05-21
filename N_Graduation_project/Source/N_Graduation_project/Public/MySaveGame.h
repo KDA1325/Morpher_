@@ -26,7 +26,7 @@ public:
 	UMySaveGame();
 
 	UPROPERTY()
-		FString RoomName;
+		FName RoomName;
 		UPROPERTY()
 		FString PlayerPreset;
 
