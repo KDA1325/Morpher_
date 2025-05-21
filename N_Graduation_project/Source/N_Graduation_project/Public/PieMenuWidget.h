@@ -45,7 +45,7 @@ public:
 	TArray<UScaleBox*> PieScaleBoxes;
 
 	void OpenCharacter(FString DeadMonsterName);
-
+	void InitUnlockIcons();
 
 
 };

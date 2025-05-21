@@ -29,18 +29,18 @@ void UEntitySkillComponent::BeginPlay()
 
 	// ...
 	OwnerEntity = Cast<AEntityPreset>(GetOwner());
-	if (!OwnerEntity)
+	if(!OwnerEntity)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
+		UE_LOG(LogTemp,Error,TEXT("Owner entity is null"));
 		return;
 	}
-	
+
 }
 
 // Called every frame
-void UEntitySkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UEntitySkillComponent::TickComponent(float DeltaTime,ELevelTick TickType,FActorComponentTickFunction* ThisTickFunction)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	Super::TickComponent(DeltaTime,TickType,ThisTickFunction);
 
 	// ...
 }
@@ -50,24 +50,23 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 	FSkillData SkillData;
 	TArray<FSkillEffectData> EffectDataArray;
 
-	if (!LoadSkillDataBySkillID(SkillID, SkillData, EffectDataArray))
+	if(!LoadSkillDataBySkillID(SkillID,SkillData,EffectDataArray))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load skill data by skill id"));
+		UE_LOG(LogTemp,Error,TEXT("Failed to load skill data by skill id"));
 		return;
 	}
 
-	if (SkillID == "Skill_Charge")
+	if(SkillID == "Skill_Charge")
 	{
-		if (!bCanUseSpecialSkill)
+		if(!bCanUseSpecialSkill)
 		{
-			UE_LOG(LogTemp, Error, TEXT("skill is on cooldown"));
+			UE_LOG(LogTemp,Error,TEXT("skill is on cooldown"));
 			return;
 		}
 
-		ExecuteSkill_Charge(SkillData, EffectDataArray);
+		ExecuteSkill_Charge(SkillData,EffectDataArray);
 
-	}
-	else if(SkillID == "Skill_FireBall")
+	} else if(SkillID == "Skill_FireBall")
 	{
 		if(!bCanUseSpecialSkill)
 		{
@@ -76,8 +75,7 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 		}
 
 		ExecuteSkill_FireBall(SkillData,EffectDataArray);
-	}
-	else if(SkillID == "Skill_FreezeBreath")
+	} else if(SkillID == "Skill_FreezeBreath")
 	{
 		if(!bCanUseSpecialSkill)
 		{
@@ -86,63 +84,61 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 		}
 
 		ExecuteSkill_FreezeBreath(SkillData,EffectDataArray);
-	}
-	else
+	} else
 	{
-		if (!bCanUseNormalSkill)
+		if(!bCanUseNormalSkill)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Normal skill %s is on cooldown"), *SkillID);
+			UE_LOG(LogTemp,Warning,TEXT("Normal skill %s is on cooldown"),*SkillID);
 			return;
 		}
 		// SkillType에 따라 스킬 실행(모듈화) 
-		switch (SkillData.SkillType)
+		switch(SkillData.SkillType)
 		{
 		case EnumSkillType::HitBox:
-			ExecuteHitBoxTypeSkill(SkillData, EffectDataArray);
-			break;
+		ExecuteHitBoxTypeSkill(SkillData,EffectDataArray);
+		break;
 		case EnumSkillType::Projectile:
-			ExecuteProjectileTypeSkill(SkillData, EffectDataArray);
-			break;
+		ExecuteProjectileTypeSkill(SkillData,EffectDataArray);
+		break;
 		case EnumSkillType::Buff:
-			ExecuteBuffTypeSkill(SkillData, EffectDataArray);
-			break;
+		ExecuteBuffTypeSkill(SkillData,EffectDataArray);
+		break;
 		}
 
 		bCanUseNormalSkill = false;
-		FTimerDelegate NormalDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::NormalCooldown);
-		SetSkillTimer(SkillData.SkillCoolTime, NormalDelegate, false);
+		FTimerDelegate NormalDelegate = FTimerDelegate::CreateUObject(this,&UEntitySkillComponent::NormalCooldown);
+		SetSkillTimer(SkillData.SkillCoolTime,NormalDelegate,false);
 	}
 }
 
 // Skill Data와 Skill Effect Data 불러옴
-bool UEntitySkillComponent::LoadSkillDataBySkillID(const FString& SkillID, FSkillData& OutSkillData, TArray<FSkillEffectData>& OutEffectData)
+bool UEntitySkillComponent::LoadSkillDataBySkillID(const FString& SkillID,FSkillData& OutSkillData,TArray<FSkillEffectData>& OutEffectData)
 {
-	if (!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID, OutSkillData))
+	if(!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID,OutSkillData))
 	{
-		UE_LOG(LogTemp, Error, TEXT("SkillData not found by %s"), *SkillID);
+		UE_LOG(LogTemp,Error,TEXT("SkillData not found by %s"),*SkillID);
 
 		return false;
 	}
 
-	if (!UABGameSingleton::Get().GetSkillEffectDataBySkillID(SkillID, OutEffectData))
+	if(!UABGameSingleton::Get().GetSkillEffectDataBySkillID(SkillID,OutEffectData))
 	{
-		UE_LOG(LogTemp, Error, TEXT("SkillEffectData not found by %s"), *SkillID);
+		UE_LOG(LogTemp,Error,TEXT("SkillEffectData not found by %s"),*SkillID);
 	}
 
 	return true;
 }
 
-void UEntitySkillComponent::SetSkillTimer(float CooldownTime, FTimerDelegate TimerDelegate, bool bIsSpecial)
+void UEntitySkillComponent::SetSkillTimer(float CooldownTime,FTimerDelegate TimerDelegate,bool bIsSpecial)
 {
-	if (CooldownTime > 0)
+	if(CooldownTime > 0)
 	{
-		if (bIsSpecial)
+		if(bIsSpecial)
 		{
-			GetWorld()->GetTimerManager().SetTimer(SpecialSkillTimerHandle, TimerDelegate, CooldownTime, false);
-		}
-		else
+			GetWorld()->GetTimerManager().SetTimer(SpecialSkillTimerHandle,TimerDelegate,CooldownTime,false);
+		} else
 		{
-			GetWorld()->GetTimerManager().SetTimer(NormalSkillTimerHandle, TimerDelegate, CooldownTime, false);
+			GetWorld()->GetTimerManager().SetTimer(NormalSkillTimerHandle,TimerDelegate,CooldownTime,false);
 		}
 	}
 }
@@ -160,68 +156,66 @@ void UEntitySkillComponent::NormalCooldown()
 {
 	bCanUseNormalSkill = true;
 
-	UE_LOG(LogTemp, Log, TEXT("Normal skill cooldown ended"));
+	UE_LOG(LogTemp,Log,TEXT("Normal skill cooldown ended"));
 }
 
 void UEntitySkillComponent::SpecialCooldown()
 {
 	bCanUseSpecialSkill = true;
-	UE_LOG(LogTemp, Log, TEXT("Special skill cooldown ended"));
+	UE_LOG(LogTemp,Log,TEXT("Special skill cooldown ended"));
 }
 
-void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
+void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData,const TArray<FSkillEffectData>& EffectData)
 {
-	if (!OwnerEntity)
+	if(!OwnerEntity)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
+		UE_LOG(LogTemp,Error,TEXT("Owner entity is null"));
 		return;
 	}
 
 	// AI 이동 비활성화
-	if (AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController()))
+	if(AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController()))
 	{
-		if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
 		{
 			PathComp->Deactivate();
-			UE_LOG(LogTemp, Warning, TEXT("PathFollowingComponent deactivated for Bite skill"));
+			UE_LOG(LogTemp,Warning,TEXT("PathFollowingComponent deactivated for Bite skill"));
 		}
 	}
 
 	OwnerEntity->bIsCastingSkill = true;
 	bCanUseNormalSkill = false;
 
-	FTimerDelegate NormalDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::NormalCooldown);
-	SetSkillTimer(SkillData.SkillCoolTime, NormalDelegate, false);
+	FTimerDelegate NormalDelegate = FTimerDelegate::CreateUObject(this,&UEntitySkillComponent::NormalCooldown);
+	SetSkillTimer(SkillData.SkillCoolTime,NormalDelegate,false);
 
-	if (OwnerEntity->NormalSkillMontage)
+	if(OwnerEntity->NormalSkillMontage)
 	{
-		if (UAnimInstance* AnimInst = OwnerEntity->GetMesh()->GetAnimInstance())
+		if(UAnimInstance* AnimInst = OwnerEntity->GetMesh()->GetAnimInstance())
 		{
 			// 노멀 스킬 몽타주 재생 
 			AnimInst->Montage_Play(OwnerEntity->NormalSkillMontage);
-			UE_LOG(LogTemp, Warning, TEXT("Normal Skill Montage played"));
+			UE_LOG(LogTemp,Warning,TEXT("Normal Skill Montage played"));
 
 
 			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
 			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(OwnerEntity, &AEntityPreset::OnSkillMontageEnded);
-			AnimInst->Montage_SetEndDelegate(EndDelegate, OwnerEntity->NormalSkillMontage);
-		}
-		else
+			EndDelegate.BindUObject(OwnerEntity,&AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate,OwnerEntity->NormalSkillMontage);
+		} else
 		{
-			UE_LOG(LogTemp, Error, TEXT("Normal Skill AnimInstance not found"));
+			UE_LOG(LogTemp,Error,TEXT("Normal Skill AnimInstance not found"));
 		}
-	}
-	else
+	} else
 	{
-		UE_LOG(LogTemp, Error, TEXT("NormalSkillMontage is not set"));
+		UE_LOG(LogTemp,Error,TEXT("NormalSkillMontage is not set"));
 	}
 
 	//OwnerEntity->ShowNormalHitBox();
 }
 
 // Projectile 타입 스킬 구현 = 쿨타임 타이머 실행 및 스킬 애니메이션 재생 
-void UEntitySkillComponent::ExecuteProjectileTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
+void UEntitySkillComponent::ExecuteProjectileTypeSkill(const FSkillData& SkillData,const TArray<FSkillEffectData>& EffectData)
 {
 	if(!OwnerEntity)
 	{
@@ -268,16 +262,16 @@ void UEntitySkillComponent::ExecuteProjectileTypeSkill(const FSkillData& SkillDa
 	}
 }
 
-void UEntitySkillComponent::ExecuteBuffTypeSkill(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
+void UEntitySkillComponent::ExecuteBuffTypeSkill(const FSkillData& SkillData,const TArray<FSkillEffectData>& EffectData)
 {
 	// Buff 스킬 구현 
 }
 
-void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
+void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData,const TArray<FSkillEffectData>& EffectData)
 {
-	if (!OwnerEntity)
+	if(!OwnerEntity)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
+		UE_LOG(LogTemp,Error,TEXT("Owner entity is null"));
 		return;
 	}
 
@@ -290,11 +284,11 @@ void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, con
 
 	// AI BehaviorTree 멈춤
 	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
-	if (AIController && AIController->BrainComponent)
+	if(AIController && AIController->BrainComponent)
 	{
 		AIController->StopMovement(); // 혹시 이전 경로 남아있으면 정지
 		AIController->BrainComponent->StopLogic(TEXT("Charge Skill Start"));
-		UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->StopLogic called"));
+		UE_LOG(LogTemp,Warning,TEXT("AI BrainComponent->StopLogic called"));
 	}
 
 	//FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::SpecialCooldown);
@@ -304,21 +298,21 @@ void UEntitySkillComponent::ExecuteSkill_Charge(const FSkillData& SkillData, con
 
 	// 스킬 끝나고 다시 AI 로직 재개 (1.5초 후 정도로 가정)
 	FTimerHandle ResumeAITimer;
-	GetWorld()->GetTimerManager().SetTimer(ResumeAITimer, [AIController]()
+	GetWorld()->GetTimerManager().SetTimer(ResumeAITimer,[AIController]()
+	{
+		if(AIController && AIController->BrainComponent)
 		{
-			if (AIController && AIController->BrainComponent)
-			{
-				AIController->BrainComponent->RestartLogic();
-				UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->RestartLogic called"));
-			}
-		}, 2.0f, false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
+			AIController->BrainComponent->RestartLogic();
+			UE_LOG(LogTemp,Warning,TEXT("AI BrainComponent->RestartLogic called"));
+		}
+	},2.0f,false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
 }
 
-void UEntitySkillComponent::ExecuteSkill_FireBall(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
+void UEntitySkillComponent::ExecuteSkill_FireBall(const FSkillData& SkillData,const TArray<FSkillEffectData>& EffectData)
 {
-	if (!OwnerEntity)
+	if(!OwnerEntity)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
+		UE_LOG(LogTemp,Error,TEXT("Owner entity is null"));
 		return;
 	}
 
@@ -331,11 +325,11 @@ void UEntitySkillComponent::ExecuteSkill_FireBall(const FSkillData& SkillData, c
 
 	// AI BehaviorTree 멈춤
 	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
-	if (AIController && AIController->BrainComponent)
+	if(AIController && AIController->BrainComponent)
 	{
 		AIController->StopMovement(); // 혹시 이전 경로 남아있으면 정지
 		AIController->BrainComponent->StopLogic(TEXT("Fire Ball Skill Start"));
-		UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->StopLogic called"));
+		UE_LOG(LogTemp,Warning,TEXT("AI BrainComponent->StopLogic called"));
 	}
 
 	//FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this, &UEntitySkillComponent::SpecialCooldown);
@@ -345,22 +339,22 @@ void UEntitySkillComponent::ExecuteSkill_FireBall(const FSkillData& SkillData, c
 
 	// 스킬 끝나고 다시 AI 로직 재개 (1.5초 후 정도로 가정)
 	FTimerHandle ResumeAITimer;
-	GetWorld()->GetTimerManager().SetTimer(ResumeAITimer, [AIController]()
+	GetWorld()->GetTimerManager().SetTimer(ResumeAITimer,[AIController]()
+	{
+		if(AIController && AIController->BrainComponent)
 		{
-			if (AIController && AIController->BrainComponent)
-			{
-				//OwnerEntity->bIsCastingSkill = false;
-				AIController->BrainComponent->RestartLogic();
-				UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->RestartLogic called"));
-			}
-		}, 2.0f, false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
+			//OwnerEntity->bIsCastingSkill = false;
+			AIController->BrainComponent->RestartLogic();
+			UE_LOG(LogTemp,Warning,TEXT("AI BrainComponent->RestartLogic called"));
+		}
+	},2.0f,false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
 }
 
-void UEntitySkillComponent::ExecuteSkill_FreezeBreath(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
+void UEntitySkillComponent::ExecuteSkill_FreezeBreath(const FSkillData& SkillData,const TArray<FSkillEffectData>& EffectData)
 {
-	if (!OwnerEntity)
+	if(!OwnerEntity)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
+		UE_LOG(LogTemp,Error,TEXT("Owner entity is null"));
 		return;
 	}
 
@@ -373,24 +367,34 @@ void UEntitySkillComponent::ExecuteSkill_FreezeBreath(const FSkillData& SkillDat
 
 	// AI BehaviorTree 멈춤
 	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
-	if (AIController && AIController->BrainComponent)
+	if(AIController && AIController->BrainComponent)
 	{
 		AIController->StopMovement(); // 혹시 이전 경로 남아있으면 정지
 		AIController->BrainComponent->StopLogic(TEXT("Freeze Breath Skill Start"));
-		UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->StopLogic called"));
+		UE_LOG(LogTemp,Warning,TEXT("AI BrainComponent->StopLogic called"));
 	}
 
 	OwnerEntity->PerformSkill_FreezeBreath();
 
 	// 스킬 끝나고 다시 AI 로직 재개 (1.5초 후 정도로 가정)
+	TWeakObjectPtr<AActor> WeakOwner = OwnerEntity;
 	FTimerHandle ResumeAITimer;
-	GetWorld()->GetTimerManager().SetTimer(ResumeAITimer, [AIController]()
+	GetWorld()->GetTimerManager().SetTimer(ResumeAITimer,[WeakOwner]()
+	{
+		if(!WeakOwner.IsValid())
 		{
-			if (AIController && AIController->BrainComponent)
-			{
-				//OwnerEntity->bIsCastingSkill = false;
-				AIController->BrainComponent->RestartLogic();
-				UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->RestartLogic called"));
-			}
-		}, 2.0f, false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
+			UE_LOG(LogTemp,Warning,TEXT("OwnerEntity no longer valid, skipping RestartLogic"));
+			return;
+		}
+		AAIController* InnerAIController = Cast<AAIController>(WeakOwner->GetInstigatorController());
+		if(InnerAIController && InnerAIController->BrainComponent)
+		{
+			//OwnerEntity->bIsCastingSkill = false;
+			InnerAIController->BrainComponent->RestartLogic();
+			UE_LOG(LogTemp,Warning,TEXT("AI BrainComponent->RestartLogic called"));
+		} else
+		{
+			UE_LOG(LogTemp,Warning,TEXT("AIController or BrainComponent is null at resume time"));
+		}
+	},2.0f,false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
 }

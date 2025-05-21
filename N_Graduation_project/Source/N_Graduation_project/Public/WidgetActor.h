@@ -19,6 +19,7 @@ protected:
 
 public:
 	bool Back_CacheFinalMouseAngle;
+	bool first=true;
 	float Before_Select = 0.0f;
 
 	void HidePieMenu();

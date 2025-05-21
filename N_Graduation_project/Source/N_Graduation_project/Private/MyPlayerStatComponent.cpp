@@ -5,7 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
 #include "TimerManager.h"
-
+#include "MyGameInstance.h"
 UMyPlayerStatComponent::UMyPlayerStatComponent()
 {
 	CurrentMana = 10;
@@ -97,8 +97,13 @@ void UMyPlayerStatComponent::RegenerateMana()
 
 void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 {
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+	UE_LOG(LogTemp,Error,TEXT("Loadgame TransformToEntity:%s, %d, %d"),*Name, HP,Mana);
+
 	if (CurrentMana >= Mana)
 	{
+		MyGameInstance->PlayerFullHP=HP;
 		Change = true;
 		PastMaxHP = NewMaxHP;
 		PastCurrentHP = CurrentHP;
@@ -138,6 +143,7 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 			SetMaxHp(HP);
 			SetHP(FMath::Min(FMath::CeilToFloat(NewHP), (float)NewMaxHP));
 			UseMana(Mana);
+
 		}
 	}
 	else

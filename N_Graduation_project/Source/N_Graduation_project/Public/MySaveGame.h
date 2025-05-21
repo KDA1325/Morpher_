@@ -6,9 +6,18 @@
 #include "GameFramework/SaveGame.h"
 #include "MySaveGame.generated.h"
 
-/**
- *
- */
+USTRUCT(BlueprintType)
+struct FRoomSaveData
+{
+	GENERATED_BODY()
+
+		UPROPERTY()
+		FName RoomID;
+
+	UPROPERTY()
+		bool bIsCleared;
+};
+
 UCLASS()
 class N_GRADUATION_PROJECT_API UMySaveGame: public USaveGame
 {
@@ -17,13 +26,22 @@ public:
 	UMySaveGame();
 
 	UPROPERTY()
-		int32 Level; // 몇번째 맵인지 체크하려고(=방 클리어 여부)
-	UPROPERTY()
-		FString LevelName; // 맵 이름 저장(=같은 맵을 열기위해서)
+		FString RoomName;
+		UPROPERTY()
+		FString PlayerPreset;
 
 	UPROPERTY()
-		bool Puzzle; // 퍼즐 해결 여부
+		TArray<FName> DiscoveredEntities;
 
+	UPROPERTY()
+		float FullHP;
+	UPROPERTY()
+		float SaveFinalAngle;
+
+	UPROPERTY()
+		FVector RespawnLocation;
+
+	
 	UPROPERTY()
 		bool Open_Boar;
 	UPROPERTY()
@@ -37,6 +55,7 @@ public:
 	UPROPERTY()
 		bool Open_Golem;
 	
+
 	// 세이브할 것
 		//도감 진척도
 		//방 클리어 여부

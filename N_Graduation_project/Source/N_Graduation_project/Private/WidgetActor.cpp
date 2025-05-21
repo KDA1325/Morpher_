@@ -5,7 +5,7 @@
 #include "Blueprint/WidgetLayoutLibrary.h" // <- DPI 스케일을 위해 필요
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "MyPlayerStatComponent.h"
-
+#include "MyGameInstance.h"
 UWidgetActor::UWidgetActor()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -37,6 +37,8 @@ UWidgetActor::UWidgetActor()
 void UWidgetActor::BeginPlay()
 {
 	Super::BeginPlay();
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
 
 	if(!HUDWidget && HUDClass)
 	{
@@ -62,7 +64,9 @@ void UWidgetActor::BeginPlay()
 		{
 			PieWidget->AddToViewport(120);
 			PieWidget->SetVisibility(ESlateVisibility::Hidden);
-
+			PieWidget->OpenCharacter(MyGameInstance->CurrentPlayerCharacter);
+			PieWidget->	CacheFinalMouseAngle();
+			
 			FInputModeGameAndUI InputMode;
 			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 			InputMode.SetHideCursorDuringCapture(false);
@@ -70,6 +74,9 @@ void UWidgetActor::BeginPlay()
 			PC->bShowMouseCursor = true;
 		}
 	}
+	PieWidget->CacheFinalMouseAngle();
+//	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
+//	MyChar->ChangePreset(MyGameInstance->CurrentPlayerCharacter);
 }
 
 void UWidgetActor::ShowDieWidget(){
@@ -97,6 +104,7 @@ void UWidgetActor::ShowDieWidget(){
 }
 void UWidgetActor::ShowPieMenu()
 {
+	PieWidget->	InitUnlockIcons();
 	if(PieWidget)
 	{
 		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(),0);
@@ -112,7 +120,6 @@ void UWidgetActor::ShowPieMenu()
 			PieWidget->SetVisibility(ESlateVisibility::Visible);
 			PieWidget->StandardPosition();
 			//	PC->bShowMouseCursor = true;
-
 			UE_LOG(LogTemp,Log,TEXT("Pie 메뉴 보임, 계산된 위치: %s"),*FinalPosition.ToString());
 		} else
 		{
@@ -127,16 +134,17 @@ void UWidgetActor::HidePieMenu()
 
 	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 	UMyPlayerStatComponent* Stat = MyChar->FindComponentByClass<UMyPlayerStatComponent>();
-
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
 	//PC->SetShowMouseCursor(false); 
 	if(PieWidget)
 	{
 		PC->SetInputMode(FInputModeGameAndUI());
 		if(Stat->Change == true) {
 
-
 			PieWidget->CacheFinalMouseAngle();
-			MyChar->ChangePreset(PieWidget->Monster);
+			//MyChar->ChangePreset(PieWidget->Monster);
+			MyChar->ChangePreset(MyGameInstance->CurrentPlayerCharacter);
 			if(Back_CacheFinalMouseAngle == true) {
 				PieWidget->CachedMouseFinalAngle = Before_Select;
 			}
@@ -150,4 +158,5 @@ void UWidgetActor::HidePieMenu()
 	{
 		UE_LOG(LogTemp,Warning,TEXT("PieWidget이 nullptr입니다."));
 	}
+
 }

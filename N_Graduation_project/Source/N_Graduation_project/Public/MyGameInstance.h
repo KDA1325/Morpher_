@@ -4,26 +4,43 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "MySaveGame.h"
 #include "MyGameInstance.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
-class N_GRADUATION_PROJECT_API UMyGameInstance : public UGameInstance
+class N_GRADUATION_PROJECT_API UMyGameInstance: public UGameInstance
 {
 	GENERATED_BODY()
-public:	
-		UPROPERTY(BlueprintReadOnly)
+public:
+	UPROPERTY(BlueprintReadOnly)
 		bool GetKey = false;
 
-		bool WildBoar_Ok = false;
-		bool Inpermon_OK = false;
-		bool SkeletonWarrior_OK = false;
-		bool StoneGolem_OK = false;
-		bool SkeletonArcher_OK = false;
-		bool Freezard_OK = false;
+	bool WildBoar_Ok = false;
+	bool Inpermon_OK = false;
+	bool SkeletonWarrior_OK = false;
+	bool StoneGolem_OK = false;
+	bool SkeletonArcher_OK = false;
+	bool Freezard_OK = false;
 
-		// 불러오기 함수 (저장 데이터를 바탕으로 초기화)
-		void InitFromSaveData(class UMySaveGame* SaveData);
+	FString CurrentPlayerCharacter="PlayerCharacter";
+	FString SaveRoomName;
+	float PlayerFullHP=150;
+	float PlayerFinalAngle=102.f
+		;
+	//게임 시작 시 자동 로드
+	void Init();
+
+	// 세이브 / 로드 함수
+	UFUNCTION(BlueprintCallable)
+		void SaveGame();
+	UFUNCTION(BlueprintCallable)
+		void LoadGame();
+
+	// 내부 사용 함수
+	void InitFromSaveData(UMySaveGame* SaveData);
+	void SaveToSaveData(UMySaveGame* SaveData);
+
 };
