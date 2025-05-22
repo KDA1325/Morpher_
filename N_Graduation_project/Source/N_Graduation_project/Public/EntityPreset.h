@@ -84,9 +84,18 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
 	TSubclassOf<class AEntityProjectile> SpecialProjectileClass;
 
-	// 손에 붙일 화살
-	UPROPERTY()
-	AEntityProjectile* PendingArrow;  
+	//// 손에 붙일 화살
+	//UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+	//AEntityProjectile* PendingArrow;  
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+	AEntityProjectile* Arrow;
+
+	//UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+	//UChildActorComponent* SkillArrowChildComponent;
+
+	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
+	//UChildActorComponent* TestChildActor;
 
 
 	//스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 

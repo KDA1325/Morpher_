@@ -61,6 +61,12 @@ void AEntityProjectile::BeginPlay()
 		{
 			ProjectileMovement->Activate(true);
 		}
+		else
+		{
+			//FRotator FixRotation = GetActorRotation();
+			//FixRotation = FRotator(0.f,90.f,0.f); 
+			//SetActorRotation(FixRotation);
+		}
 
 		CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AEntityProjectile::OnOverlap);
 	}
