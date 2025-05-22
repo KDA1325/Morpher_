@@ -1719,122 +1719,47 @@ void AEntityPreset::PerformSkill_Arrow()
 		UE_LOG(LogTemp,Error,TEXT("PerformSkill_Arrow: NormalSkillMontage is not set"));
 	}
 }
-//
-//void AEntityPreset::SpawnProjectile_Arrow()
-//{
-//	if(Arrow)
-//	{
-//		Arrow ->Destroy();
-//		Arrow = nullptr;
-//	}
-//
-//	// 스폰 파라미터
-//	FActorSpawnParameters SpawnParams;
-//	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-//	SpawnParams.Owner = this;
-//
-//	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ArrowSocket"));
-//	FRotator SpawnRotation = GetActorForwardVector().Rotation();
-//	
-//	//// pitch, yaw, roll: x, z, y
-//	//FRotator NewRotation = FRotator(0.f,0.f,-90.f);
-//	//// 화살 전방 각도 보정 
-//	//FRotator FixedRotation = SpawnRotation + NewRotation;
-//
-//	Arrow = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
-//
-//	if(!Arrow)
-//	{
-//		UE_LOG(LogTemp,Error,TEXT("Failed to spawn arrow"));
-//	}
-//
-//	Arrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,TEXT("ArrowSocket"));
-//	//Arrow->SetActorHiddenInGame(false);
-//	//Arrow->SetActorEnableCollision(false);
-//
-//	// Skill 데이터 테이블에서 "Skill_Arrow" 데이터 가져오기
-//	FSkillData SkillData;
-//	TArray<FSkillEffectData> EffectDataArray;
-//	if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
-//		UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
-//	{
-//		Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
-//	}
-//}
 
-
-void AEntityPreset::SpawnProjectile_Arrow()
+void AEntityPreset::PerformSkill_Arrow()
 {
-	//FActorSpawnParameters SpawnParams;
-	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	//SpawnParams.Owner = this;
-	//SpawnParams.Instigator = GetInstigator();
+	if(!NormalProjectileClass) return;
 
-	//Arrow = GetWorld()->SpawnActor<AEntityProjectile>(
-	//	NormalProjectileClass,
-	//	FVector::ZeroVector,
-	//	FRotator::ZeroRotator,
-	//	SpawnParams);
+	// 스킬 시전 플래그 설정
+	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
+	bIsCastingSkill = true;
 
-	//Arrow->AttachToComponent(
-	//	GetMesh(),
-	//	FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-	//	TEXT("ArrowSocket"));
+	// AI 경로 추적 중지 
+	if(AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 중단
+			PathComp->Deactivate();
 
+			AIController->StopMovement();
+			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Spawn Projectile"));
+		}
+	}
 
-	//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
-	//Arrow->SetActorTransform(SocketTransform);
-	//Arrow->SetActorRelativeRotation(FRotator(0,0,270)); // 필요 시 보정
-	//ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector();
+	if(NormalProjectileClass)
+	{
+		if(UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+		{
+			// 스페셜 스킬 몽타주
+			AnimInst->Montage_Play(NormalSkillMontage);
 
-	//FSkillData SkillData;
-	//TArray<FSkillEffectData> EffectDataArray;
-
-	//if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
-	//	UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
-	//{
-	//	// 초기화
-	//	Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
-	//	UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
-	//} else
-	//{
-	//	UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
-	//}
- //
-	////FRotator FixedRotation = SocketTransform.GetRotation().Rotator() + FRotator(0.f,90.f,0.f);
-	////SpawnedArrow->SetActorRotation(FixedRotation);
-
-	////if(Arrow)
-	////{
-	////	//SkillArrowChildComponent->SetVisibility(true);
-	////	//SkillArrowChildComponent->SetHiddenInGame(false);
-	////	///*Arrow->SetActorEnableCollision(true);
-	////	//Arrow->SetActorHiddenInGame(false);*/
-
-	////	//// 화살 스폰 후 즉시 방향 확인
-	////	//UE_LOG(LogTemp,Warning,TEXT("Arrow Dir: %s"),*Arrow->GetActorForwardVector().ToString());
-	////	//UE_LOG(LogTemp,Warning,TEXT("Expected Dir: %s"),*GetActorForwardVector().ToString());
-
-	////	////Arrow->SetActorRelativeRotation(FRotator(0,0,270)); // 필요 시 보정
-
-	////	//FSkillData SkillData;
-	////	//TArray<FSkillEffectData> EffectDataArray;
-
-	////	//if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
-	////	//	UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
-	////	//{
-	////	//	// 초기화
-	////	//	Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
-	////	//	UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
-	////	//} else
-	////	//{
-	////	//	UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
-	////	//}
-	////}
+			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate,NormalSkillMontage);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("PerformSkill_Arrow: AnimInstance not found"));
+		}
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("PerformSkill_Arrow: NormalSkillMontage is not set"));
+	}
 }
 
 // 노티파이에서 실행 : 화살 발사
@@ -1885,339 +1810,7 @@ void AEntityPreset::FireProjectile_Arrow()
 			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
 		}
 	}
-
-
-
-
-
-
-
-
-	//FActorSpawnParameters SpawnParams;
-	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	//SpawnParams.Owner = this;
-	//SpawnParams.Instigator = GetInstigator();
-
-
-
-	////Arrow->AttachToComponent(
-	////	GetMesh(),
-	////	FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-	////	TEXT("ArrowSocket"));
-
-
-	//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
-	////Arrow->SetActorTransform(SocketTransform);
-	////Arrow->SetActorRelativeRotation(FRotator(0,0,270)); // 필요 시 보정
-	//ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector();
-
-	//Arrow = GetWorld()->SpawnActor<AEntityProjectile>(
-	//NormalProjectileClass,
-	//SocketTransform.GetLocation(),
-	//SocketTransform.GetRotation(),
-	//SpawnParams);
-
-	//FSkillData SkillData;
-	//TArray<FSkillEffectData> EffectDataArray;
-
-	//if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
-	//	UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
-	//{
-	//	// 초기화
-	//	Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
-	//	UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
-	//} else
-	//{
-	//	UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
-	//}
-
-
-
-
-	//if(Arrow)
-	//{
-	//	// 소켓에서 화살 분리 
-	//	Arrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-
-	//	//ArrowDirection = GetMesh()->GetRightVector();
-
-	//	// 자동 발사 막기
-	//	Arrow->bAutoFireOnSpawn = true;
-	//	Arrow->FireInDirection(ArrowDirection);
-	//}
 }
-//void AEntityPreset::SpawnProjectile_Arrow()
-//{
-//	Arrow = Cast<AEntityProjectile>(SkillArrowChildComponent->GetChildActor());
-//
-//	if(Arrow)
-//	{
-//		Arrow->SetActorHiddenInGame(false);
-//		Arrow->SetActorEnableCollision(true);
-//		//Arrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,TEXT("ArrowSocket"));
-//
-//		//FRotator SocketRotation = GetMesh()->GetSocketRotation(TEXT("ArrowSocket"));
-//
-//		////// 소켓 회전에 Yaw 180도 추가
-//		////FRotator FixedRotation = SocketRotation + FRotator(0.f,180.f,0.f);
-//
-//		////Arrow->SetActorRelativeRotation(FixedRotation);
-//		//
-//		//// 궁수의 전방 벡터 기준으로 회전값 생성
-//		//FVector ForwardDir = GetActorForwardVector(); // 또는 필요 시 GetMesh()->GetForwardVector()
-//		//FRotator ArrowRotation = ForwardDir.Rotation();
-//
-//		//// 보정이 필요하면 여기서 추가 보정 (ex. Roll이나 Pitch 조정)
-//		//Arrow->SetActorRotation(ArrowRotation);
-//
-//		//// 화살 스폰 후 즉시 방향 확인
-//		UE_LOG(LogTemp,Warning,TEXT("Arrow Dir: %s"),*Arrow->GetActorForwardVector().ToString());
-//		UE_LOG(LogTemp,Warning,TEXT("Expected Dir: %s"),*GetActorForwardVector().ToString());
-//
-//		//Arrow->SetActorRelativeRotation(FRotator(0,0,270)); // 필요 시 보정
-//
-//		FSkillData SkillData;
-//		TArray<FSkillEffectData> EffectDataArray;
-//
-//		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
-//			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
-//		{
-//			// 초기화
-//			Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
-//			UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
-//		} else
-//		{
-//			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
-//		}
-//	}
-//
-//	//// 스폰할 투사체 클래스 설정 확인
-//	//if(!NormalProjectileClass)
-//	//{
-//	//	UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
-//	//	return;
-//	//}
-//
-//	//ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector();
-//	//
-//	//// 스폰 위치, 방향 설정 
-//	//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"));
-//
-//	//// 스폰 파라미터
-//	//FActorSpawnParameters SpawnParams;
-//	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-//	//SpawnParams.Owner = this;
-//	//SpawnParams.Instigator = GetInstigator();
-//
-//	//// 화살 스폰 
-//	//PendingArrow = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,FVector::ZeroVector,FRotator::ZeroRotator,SpawnParams);
-//	//PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,TEXT("ArrowSocket"));
-//
-//	//// 화살 스폰 위치 설정 
-//	//PendingArrow->SetActorLocation(SocketTransform.GetLocation());
-//	//// 어태치용 z 270도 회전 적용 
-//	//PendingArrow->SetActorRotation(SocketTransform.GetRotation().Rotator() + FRotator(0.f,0.f,270.f));
-//	////FRotator RotationOffset(0.f,0.f,270.f);
-//	////PendingArrow->SetActorRelativeRotation(RotationOffset);
-//
-//	//UE_LOG(LogTemp,Warning,TEXT("Arrow attached to socket."));
-//	//
-//	////ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector();
-//
-//	// Skill 데이터 테이블에서 "Skill_Arrow" 데이터 가져오기
-//	//FSkillData SkillData;
-//	//TArray<FSkillEffectData> EffectDataArray;
-//
-//	//if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
-//	//	UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
-//	//{
-//	//	// 초기화
-//	//	PendingArrow->InitProjectileBySkillData(SkillData,EffectDataArray);
-//	//	UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
-//	//} 
-//	//else
-//	//{
-//	//	UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
-//	//}
-//}
-//void AEntityPreset::SpawnProjectile_Arrow()
-//{
-//	// 스폰할 투사체 클래스 설정 확인
-//	if(!NormalProjectileClass)
-//	{
-//		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
-//		return;
-//	}
-//
-//	//// 스폰 위치, 방향 설정 
-//	//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
-//	//FVector SpawnLocation = SocketTransform.GetLocation();
-//	//FRotator SpawnRotation  = SocketTransform.GetRotation().Rotator();
-//
-//	//// 스폰 파라미터
-//	//FActorSpawnParameters SpawnParams;
-//	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-//	//SpawnParams.Owner = this;
-//	//SpawnParams.Instigator = GetInstigator();
-//
-//	////ArrowDirection = GetActorForwardVector();
-//	//ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector(); // 소켓 방향 그대로
-//	//FRotator DummyRotation = ArrowDirection.Rotation();
-//
-//	//// 화살 스폰 
-//	//PendingArrow = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,DummyRotation,SpawnParams);
-//
-//
-//	//
-//
-//	////FRotator DumyRotation = FRotator::ZeroRotator;
-//	////FRotator DumyRotation = ArrowDirection.Rotation();
-//	////AEntityProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,DumyRotation,SpawnParams);
-//	//
-//
-//	if(PendingArrow)
-//	{
-//		// 소켓 트랜스폼 가져오기 (World 기준)
-//		//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
-//
-//		// 위치와 회전 모두 수동으로 설정
-//		//PendingArrow->SetActorLocation(SocketTransform.GetLocation());
-//		//PendingArrow->SetActorRotation(SocketTransform.GetRotation().Rotator());
-//
-//		// 부착은 Scale 영향 X
-//		//PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("ArrowSocket"));
-//
-//		
-//
-//		//PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("ArrowSocket"));
-//
-//		// 소켓의 월드 회전 방향을 따라가도록 화살의 로컬 회전 보정
-//		FRotator SocketRotation = GetMesh()->GetSocketRotation(TEXT("ArrowSocket"));
-//		FRotator LocalRotation = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_ParentBoneSpace).Rotator();
-//
-//		PendingArrow->SetActorRelativeRotation(LocalRotation);
-//
-//		PendingArrow->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepWorldTransform, TEXT("ArrowSocket"));
-//
-//		//UE_LOG(LogTemp,Warning,TEXT("Arrow attached to ArrowSocket: Loc=%s, Rot=%s"),
-//		//	*SocketTransform.GetLocation().ToString(),
-//		//	*SocketTransform.GetRotation().Rotator().ToString());
-//		////PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,TEXT("ArrowSocket"));
-//		//PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("ArrowSocket"));
-//
-//		//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
-//		//PendingArrow->SetActorLocationAndRotation(SocketTransform.GetLocation(),SocketTransform.GetRotation());
-//
-//		//UE_LOG(LogTemp,Warning,TEXT("Arrow attached to socket."));
-//
-//		// Skill 데이터 테이블에서 "Skill_Arrow" 데이터 가져오기
-//		FSkillData SkillData;
-//		TArray<FSkillEffectData> EffectDataArray;
-//
-//		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
-//			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
-//		{
-//			// 초기화
-//			PendingArrow->InitProjectileBySkillData(SkillData,EffectDataArray);
-//
-//			UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
-//		} else
-//		{
-//			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
-//		}
-//	}
-//}
-
-//
-//// 노티파이에서 실행 : 화살 스폰 
-//void AEntityPreset::SpawnProjectile_Arrow()
-//{
-//	if(!NormalProjectileClass) return;
-//
-//	// 소켓 위치/회전 가져오기
-//	FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
-//
-//	// 스폰 파라미터
-//	FActorSpawnParameters SpawnParams;
-//	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-//	SpawnParams.Owner = this;
-//	SpawnParams.Instigator = GetInstigator();
-//
-//	// 화살 생성
-//	//PendingArrow = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SocketTransform,SpawnParams);
-//	PendingArrow = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,FVector::ZeroVector,FRotator::ZeroRotator,SpawnParams);
-//	if(!PendingArrow) return;
-//	
-//	FVector ArrowLoc = GetMesh()->GetSocketLocation("ArrowSocket");
-//	FRotator ArrowRot = GetMesh()->GetSocketRotation("ArrowSocket");
-//	PendingArrow->SetActorLocation(ArrowLoc);
-//	//PendingArrow->SetActorLocation(SocketTransform.GetLocation());
-//	//PendingArrow->SetActorRotation(SocketTransform.GetRotation().Rotator());
-//
-//	// 소켓에 부착
-//	PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("ArrowSocket"));
-//
-//	PendingArrow->SetActorRotation(ArrowRot);
-//
-//	// 자동 발사 방지
-//	PendingArrow->bAutoFireOnSpawn = false;
-//
-//	// 발사 방향 저장 (소켓 기준 정방향)
-//	ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector();
-//
-//	UE_LOG(LogTemp,Log,TEXT("[Arrow Spawned] Location: %s, Direction: %s"),
-//		*SocketTransform.GetLocation().ToString(),
-//		*ArrowDirection.ToString());
-//
-//	 //Skill 데이터 테이블에서 "Skill_Arrow" 데이터 가져오기
-//	FSkillData SkillData;
-//	TArray<FSkillEffectData> EffectDataArray;
-//
-//	if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
-//		UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
-//	{
-//		// 초기화
-//		PendingArrow->InitProjectileBySkillData(SkillData,EffectDataArray);
-//	} 
-//	else
-//	{
-//		UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
-//	}
-//}
-// 
-
-//// 노티파이에서 실행 : 화살 발사
-//void AEntityPreset::FireProjectile_Arrow()
-//{
-//	if(Arrow)
-//	{
-//		// 소켓에서 화살 분리 
-//		Arrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-//
-//		ArrowDirection = GetMesh()->GetRightVector();
-//
-//		// 자동 발사 막기
-//		Arrow->bAutoFireOnSpawn = true;
-//		Arrow->FireInDirection(ArrowDirection);
-//
-//		//Arrow = nullptr; // 재사용 안함
-//	}
-//	//if(PendingArrow)
-//	//{
-//	//	// 회전 원복
-//	//	FRotator FixedRotation = ArrowDirection.Rotation();  		
-//	//	PendingArrow->SetActorRotation(FixedRotation);
-//
-//	//	// 소켓에서 화살 분리 
-//	//	PendingArrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-//
-//	//	// 자동 발사 막기
-//	//	PendingArrow->bAutoFireOnSpawn = true;  
-//	//	PendingArrow->FireInDirection(ArrowDirection);
-//
-//	//	PendingArrow = nullptr; // 재사용 안함
-//	//}
-//}
 
 EnumAttackType AEntityPreset::GetAttackType()
 {
@@ -2239,3 +1832,499 @@ float AEntityPreset::GetSpecialSkillRange()
 
 	return currentSpecialSkillRange;
 }
+
+
+// 화살 부착 시도했던 로직
+// 혹시 몰라 남겨줌 
+//void AEntityPreset::SpawnProjectile_Arrow()
+//{
+//	if(Arrow)
+//	{
+//		Arrow ->Destroy();
+//		Arrow = nullptr;
+//	}
+//
+//	// 스폰 파라미터
+//	FActorSpawnParameters SpawnParams;
+//	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+//	SpawnParams.Owner = this;
+//
+//	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ArrowSocket"));
+//	FRotator SpawnRotation = GetActorForwardVector().Rotation();
+//	
+//	//// pitch, yaw, roll: x, z, y
+//	//FRotator NewRotation = FRotator(0.f,0.f,-90.f);
+//	//// 화살 전방 각도 보정 
+//	//FRotator FixedRotation = SpawnRotation + NewRotation;
+//
+//	Arrow = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+//
+//	if(!Arrow)
+//	{
+//		UE_LOG(LogTemp,Error,TEXT("Failed to spawn arrow"));
+//	}
+//
+//	Arrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,TEXT("ArrowSocket"));
+//	//Arrow->SetActorHiddenInGame(false);
+//	//Arrow->SetActorEnableCollision(false);
+//
+//	// Skill 데이터 테이블에서 "Skill_Arrow" 데이터 가져오기
+//	FSkillData SkillData;
+//	TArray<FSkillEffectData> EffectDataArray;
+//	if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+//		UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+//	{
+//		Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+//	}
+//}
+//
+//
+//void AEntityPreset::SpawnProjectile_Arrow()
+//{
+//	//FActorSpawnParameters SpawnParams;
+//	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+//	//SpawnParams.Owner = this;
+//	//SpawnParams.Instigator = GetInstigator();
+//
+//	//Arrow = GetWorld()->SpawnActor<AEntityProjectile>(
+//	//	NormalProjectileClass,
+//	//	FVector::ZeroVector,
+//	//	FRotator::ZeroRotator,
+//	//	SpawnParams);
+//
+//	//Arrow->AttachToComponent(
+//	//	GetMesh(),
+//	//	FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+//	//	TEXT("ArrowSocket"));
+//
+//
+//	//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+//	//Arrow->SetActorTransform(SocketTransform);
+//	//Arrow->SetActorRelativeRotation(FRotator(0,0,270)); // 필요 시 보정
+//	//ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector();
+//
+//	//FSkillData SkillData;
+//	//TArray<FSkillEffectData> EffectDataArray;
+//
+//	//if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+//	//	UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+//	//{
+//	//	// 초기화
+//	//	Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+//	//	UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
+//	//} else
+//	//{
+//	//	UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+//	//}
+// //
+//	////FRotator FixedRotation = SocketTransform.GetRotation().Rotator() + FRotator(0.f,90.f,0.f);
+//	////SpawnedArrow->SetActorRotation(FixedRotation);
+//
+//	////if(Arrow)
+//	////{
+//	////	//SkillArrowChildComponent->SetVisibility(true);
+//	////	//SkillArrowChildComponent->SetHiddenInGame(false);
+//	////	///*Arrow->SetActorEnableCollision(true);
+//	////	//Arrow->SetActorHiddenInGame(false);*/
+//
+//	////	//// 화살 스폰 후 즉시 방향 확인
+//	////	//UE_LOG(LogTemp,Warning,TEXT("Arrow Dir: %s"),*Arrow->GetActorForwardVector().ToString());
+//	////	//UE_LOG(LogTemp,Warning,TEXT("Expected Dir: %s"),*GetActorForwardVector().ToString());
+//
+//	////	////Arrow->SetActorRelativeRotation(FRotator(0,0,270)); // 필요 시 보정
+//
+//	////	//FSkillData SkillData;
+//	////	//TArray<FSkillEffectData> EffectDataArray;
+//
+//	////	//if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+//	////	//	UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+//	////	//{
+//	////	//	// 초기화
+//	////	//	Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+//	////	//	UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
+//	////	//} else
+//	////	//{
+//	////	//	UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+//	////	//}
+//	////}
+//}
+//
+//// 노티파이에서 실행 : 화살 발사
+//void AEntityPreset::FireProjectile_Arrow()
+//{
+//	// 스폰할 투사체 클래스 설정 확인
+//	if(!NormalProjectileClass)
+//	{
+//		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
+//		return;
+//	}
+//
+//	// 스폰 위치, 방향 설정 
+//	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ArrowSocket"));
+//	FVector Direction = GetMesh()->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
+//
+//	// 스폰 파라미터
+//	FActorSpawnParameters SpawnParams;
+//	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+//	SpawnParams.Owner = this;
+//	SpawnParams.Instigator = GetInstigator();
+//
+//	// 투사체 액터 스폰 
+//	FRotator DumyRotation = Direction.Rotation();
+//	AEntityProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,DumyRotation,SpawnParams);
+//
+//	if(SpawnedProjectile)
+//	{
+//		// Skill 데이터 테이블에서 "Skill_Arrow" 데이터 가져오기
+//		FSkillData SkillData;
+//		TArray<FSkillEffectData> EffectDataArray;
+//
+//		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+//			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+//		{
+//			// 초기화
+//			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
+//
+//			//SpawnedProjectile->IgnoreActorWhenMoving(this,true);
+//
+//			UE_LOG(LogTemp,Error,TEXT("Spawned Skill_Arrow Projectile"));
+//
+//			// 발사
+//			//FVector Direction = GetMesh()->GetForwardVector();
+//			SpawnedProjectile->FireInDirection(Direction);
+//		} else
+//		{
+//			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+//		}
+//	}
+//
+//	//FActorSpawnParameters SpawnParams;
+//	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+//	//SpawnParams.Owner = this;
+//	//SpawnParams.Instigator = GetInstigator();
+//
+//
+//
+//	////Arrow->AttachToComponent(
+//	////	GetMesh(),
+//	////	FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+//	////	TEXT("ArrowSocket"));
+//
+//
+//	//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+//	////Arrow->SetActorTransform(SocketTransform);
+//	////Arrow->SetActorRelativeRotation(FRotator(0,0,270)); // 필요 시 보정
+//	//ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector();
+//
+//	//Arrow = GetWorld()->SpawnActor<AEntityProjectile>(
+//	//NormalProjectileClass,
+//	//SocketTransform.GetLocation(),
+//	//SocketTransform.GetRotation(),
+//	//SpawnParams);
+//
+//	//FSkillData SkillData;
+//	//TArray<FSkillEffectData> EffectDataArray;
+//
+//	//if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+//	//	UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+//	//{
+//	//	// 초기화
+//	//	Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+//	//	UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
+//	//} else
+//	//{
+//	//	UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+//	//}
+//
+//
+//
+//
+//	//if(Arrow)
+//	//{
+//	//	// 소켓에서 화살 분리 
+//	//	Arrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+//
+//	//	//ArrowDirection = GetMesh()->GetRightVector();
+//
+//	//	// 자동 발사 막기
+//	//	Arrow->bAutoFireOnSpawn = true;
+//	//	Arrow->FireInDirection(ArrowDirection);
+//	//}
+//}
+////void AEntityPreset::SpawnProjectile_Arrow()
+////{
+////	Arrow = Cast<AEntityProjectile>(SkillArrowChildComponent->GetChildActor());
+////
+////	if(Arrow)
+////	{
+////		Arrow->SetActorHiddenInGame(false);
+////		Arrow->SetActorEnableCollision(true);
+////		//Arrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,TEXT("ArrowSocket"));
+////
+////		//FRotator SocketRotation = GetMesh()->GetSocketRotation(TEXT("ArrowSocket"));
+////
+////		////// 소켓 회전에 Yaw 180도 추가
+////		////FRotator FixedRotation = SocketRotation + FRotator(0.f,180.f,0.f);
+////
+////		////Arrow->SetActorRelativeRotation(FixedRotation);
+////		//
+////		//// 궁수의 전방 벡터 기준으로 회전값 생성
+////		//FVector ForwardDir = GetActorForwardVector(); // 또는 필요 시 GetMesh()->GetForwardVector()
+////		//FRotator ArrowRotation = ForwardDir.Rotation();
+////
+////		//// 보정이 필요하면 여기서 추가 보정 (ex. Roll이나 Pitch 조정)
+////		//Arrow->SetActorRotation(ArrowRotation);
+////
+////		//// 화살 스폰 후 즉시 방향 확인
+////		UE_LOG(LogTemp,Warning,TEXT("Arrow Dir: %s"),*Arrow->GetActorForwardVector().ToString());
+////		UE_LOG(LogTemp,Warning,TEXT("Expected Dir: %s"),*GetActorForwardVector().ToString());
+////
+////		//Arrow->SetActorRelativeRotation(FRotator(0,0,270)); // 필요 시 보정
+////
+////		FSkillData SkillData;
+////		TArray<FSkillEffectData> EffectDataArray;
+////
+////		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+////			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+////		{
+////			// 초기화
+////			Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+////			UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
+////		} else
+////		{
+////			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+////		}
+////	}
+////
+////	//// 스폰할 투사체 클래스 설정 확인
+////	//if(!NormalProjectileClass)
+////	//{
+////	//	UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
+////	//	return;
+////	//}
+////
+////	//ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector();
+////	//
+////	//// 스폰 위치, 방향 설정 
+////	//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"));
+////
+////	//// 스폰 파라미터
+////	//FActorSpawnParameters SpawnParams;
+////	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+////	//SpawnParams.Owner = this;
+////	//SpawnParams.Instigator = GetInstigator();
+////
+////	//// 화살 스폰 
+////	//PendingArrow = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,FVector::ZeroVector,FRotator::ZeroRotator,SpawnParams);
+////	//PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,TEXT("ArrowSocket"));
+////
+////	//// 화살 스폰 위치 설정 
+////	//PendingArrow->SetActorLocation(SocketTransform.GetLocation());
+////	//// 어태치용 z 270도 회전 적용 
+////	//PendingArrow->SetActorRotation(SocketTransform.GetRotation().Rotator() + FRotator(0.f,0.f,270.f));
+////	////FRotator RotationOffset(0.f,0.f,270.f);
+////	////PendingArrow->SetActorRelativeRotation(RotationOffset);
+////
+////	//UE_LOG(LogTemp,Warning,TEXT("Arrow attached to socket."));
+////	//
+////	////ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector();
+////
+////	// Skill 데이터 테이블에서 "Skill_Arrow" 데이터 가져오기
+////	//FSkillData SkillData;
+////	//TArray<FSkillEffectData> EffectDataArray;
+////
+////	//if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+////	//	UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+////	//{
+////	//	// 초기화
+////	//	PendingArrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+////	//	UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
+////	//} 
+////	//else
+////	//{
+////	//	UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+////	//}
+////}
+////void AEntityPreset::SpawnProjectile_Arrow()
+////{
+////	// 스폰할 투사체 클래스 설정 확인
+////	if(!NormalProjectileClass)
+////	{
+////		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
+////		return;
+////	}
+////
+////	//// 스폰 위치, 방향 설정 
+////	//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+////	//FVector SpawnLocation = SocketTransform.GetLocation();
+////	//FRotator SpawnRotation  = SocketTransform.GetRotation().Rotator();
+////
+////	//// 스폰 파라미터
+////	//FActorSpawnParameters SpawnParams;
+////	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+////	//SpawnParams.Owner = this;
+////	//SpawnParams.Instigator = GetInstigator();
+////
+////	////ArrowDirection = GetActorForwardVector();
+////	//ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector(); // 소켓 방향 그대로
+////	//FRotator DummyRotation = ArrowDirection.Rotation();
+////
+////	//// 화살 스폰 
+////	//PendingArrow = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,DummyRotation,SpawnParams);
+////
+////
+////	//
+////
+////	////FRotator DumyRotation = FRotator::ZeroRotator;
+////	////FRotator DumyRotation = ArrowDirection.Rotation();
+////	////AEntityProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,DumyRotation,SpawnParams);
+////	//
+////
+////	if(PendingArrow)
+////	{
+////		// 소켓 트랜스폼 가져오기 (World 기준)
+////		//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+////
+////		// 위치와 회전 모두 수동으로 설정
+////		//PendingArrow->SetActorLocation(SocketTransform.GetLocation());
+////		//PendingArrow->SetActorRotation(SocketTransform.GetRotation().Rotator());
+////
+////		// 부착은 Scale 영향 X
+////		//PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("ArrowSocket"));
+////
+////		
+////
+////		//PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("ArrowSocket"));
+////
+////		// 소켓의 월드 회전 방향을 따라가도록 화살의 로컬 회전 보정
+////		FRotator SocketRotation = GetMesh()->GetSocketRotation(TEXT("ArrowSocket"));
+////		FRotator LocalRotation = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_ParentBoneSpace).Rotator();
+////
+////		PendingArrow->SetActorRelativeRotation(LocalRotation);
+////
+////		PendingArrow->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepWorldTransform, TEXT("ArrowSocket"));
+////
+////		//UE_LOG(LogTemp,Warning,TEXT("Arrow attached to ArrowSocket: Loc=%s, Rot=%s"),
+////		//	*SocketTransform.GetLocation().ToString(),
+////		//	*SocketTransform.GetRotation().Rotator().ToString());
+////		////PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,TEXT("ArrowSocket"));
+////		//PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("ArrowSocket"));
+////
+////		//FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+////		//PendingArrow->SetActorLocationAndRotation(SocketTransform.GetLocation(),SocketTransform.GetRotation());
+////
+////		//UE_LOG(LogTemp,Warning,TEXT("Arrow attached to socket."));
+////
+////		// Skill 데이터 테이블에서 "Skill_Arrow" 데이터 가져오기
+////		FSkillData SkillData;
+////		TArray<FSkillEffectData> EffectDataArray;
+////
+////		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+////			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+////		{
+////			// 초기화
+////			PendingArrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+////
+////			UE_LOG(LogTemp,Error,TEXT("Spawned Arrow Projectile"));
+////		} else
+////		{
+////			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+////		}
+////	}
+////}
+//
+////
+////// 노티파이에서 실행 : 화살 스폰 
+////void AEntityPreset::SpawnProjectile_Arrow()
+////{
+////	if(!NormalProjectileClass) return;
+////
+////	// 소켓 위치/회전 가져오기
+////	FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+////
+////	// 스폰 파라미터
+////	FActorSpawnParameters SpawnParams;
+////	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+////	SpawnParams.Owner = this;
+////	SpawnParams.Instigator = GetInstigator();
+////
+////	// 화살 생성
+////	//PendingArrow = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SocketTransform,SpawnParams);
+////	PendingArrow = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,FVector::ZeroVector,FRotator::ZeroRotator,SpawnParams);
+////	if(!PendingArrow) return;
+////	
+////	FVector ArrowLoc = GetMesh()->GetSocketLocation("ArrowSocket");
+////	FRotator ArrowRot = GetMesh()->GetSocketRotation("ArrowSocket");
+////	PendingArrow->SetActorLocation(ArrowLoc);
+////	//PendingArrow->SetActorLocation(SocketTransform.GetLocation());
+////	//PendingArrow->SetActorRotation(SocketTransform.GetRotation().Rotator());
+////
+////	// 소켓에 부착
+////	PendingArrow->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,TEXT("ArrowSocket"));
+////
+////	PendingArrow->SetActorRotation(ArrowRot);
+////
+////	// 자동 발사 방지
+////	PendingArrow->bAutoFireOnSpawn = false;
+////
+////	// 발사 방향 저장 (소켓 기준 정방향)
+////	ArrowDirection = GetMesh()->GetSocketRotation(TEXT("ArrowSocket")).Vector();
+////
+////	UE_LOG(LogTemp,Log,TEXT("[Arrow Spawned] Location: %s, Direction: %s"),
+////		*SocketTransform.GetLocation().ToString(),
+////		*ArrowDirection.ToString());
+////
+////	 //Skill 데이터 테이블에서 "Skill_Arrow" 데이터 가져오기
+////	FSkillData SkillData;
+////	TArray<FSkillEffectData> EffectDataArray;
+////
+////	if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+////		UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+////	{
+////		// 초기화
+////		PendingArrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+////	} 
+////	else
+////	{
+////		UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+////	}
+////}
+//// 
+//
+////// 노티파이에서 실행 : 화살 발사
+////void AEntityPreset::FireProjectile_Arrow()
+////{
+////	if(Arrow)
+////	{
+////		// 소켓에서 화살 분리 
+////		Arrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+////
+////		ArrowDirection = GetMesh()->GetRightVector();
+////
+////		// 자동 발사 막기
+////		Arrow->bAutoFireOnSpawn = true;
+////		Arrow->FireInDirection(ArrowDirection);
+////
+////		//Arrow = nullptr; // 재사용 안함
+////	}
+////	//if(PendingArrow)
+////	//{
+////	//	// 회전 원복
+////	//	FRotator FixedRotation = ArrowDirection.Rotation();  		
+////	//	PendingArrow->SetActorRotation(FixedRotation);
+////
+////	//	// 소켓에서 화살 분리 
+////	//	PendingArrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+////
+////	//	// 자동 발사 막기
+////	//	PendingArrow->bAutoFireOnSpawn = true;  
+////	//	PendingArrow->FireInDirection(ArrowDirection);
+////
+////	//	PendingArrow = nullptr; // 재사용 안함
+////	//}
+////}
+
