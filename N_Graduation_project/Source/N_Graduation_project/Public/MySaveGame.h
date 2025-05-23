@@ -27,8 +27,6 @@ public:
 
 	UPROPERTY()
 		FName RoomName;
-		UPROPERTY()
-		FString PlayerPreset;
 
 	UPROPERTY()
 		TArray<FName> DiscoveredEntities;

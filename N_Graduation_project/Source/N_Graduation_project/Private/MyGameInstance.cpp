@@ -102,8 +102,8 @@ void UMyGameInstance::LoadGame()
 				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ room name: %s"),*SaveData->RoomName.ToString());
 
 			}
-
-			AActor* CallbackTarget = UGameplayStatics::GetPlayerCharacter(this,0); // 또는 월드에서 존재하는 Actor
+			//레[벨 스트리밍
+			AActor* CallbackTarget = UGameplayStatics::GetPlayerCharacter(this,0); 
 			FLatentActionInfo LatentInfo;
 			LatentInfo.CallbackTarget = CallbackTarget;
 			LatentInfo.ExecutionFunction = FName("OnLevelLoaded");

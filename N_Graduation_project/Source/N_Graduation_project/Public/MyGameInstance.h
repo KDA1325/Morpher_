@@ -30,7 +30,6 @@ public:
 	bool SkeletonArcher_OK = false;
 	bool Freezard_OK = false;
 
-	FString CurrentPlayerCharacter="PlayerCharacter";
 	float PlayerFullHP=150;
 	float PlayerFinalAngle=102.f
 		;
