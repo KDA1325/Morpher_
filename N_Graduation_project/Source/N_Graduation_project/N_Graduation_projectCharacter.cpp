@@ -238,14 +238,14 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 
 	} else
 	{
-		UE_LOG(LogTemplateCharacter,Error,TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."),*GetNameSafe(this));
+	//	UE_LOG(LogTemplateCharacter,Error,TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."),*GetNameSafe(this));
 	}
 }
 void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 우클릭"));
 	FVector Location = GetOwner()->GetActorLocation();
-	UE_LOG(LogTemp,Warning,TEXT("캐릭터 위치: X=%.2f, Y=%.2f, Z=%.2f"),Location.X,Location.Y,Location.Z);
+	//UE_LOG(LogTemp,Warning,TEXT("캐릭터 위치: X=%.2f, Y=%.2f, Z=%.2f"),Location.X,Location.Y,Location.Z);
 	if(CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
 		return;
 	}
@@ -253,7 +253,7 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 		PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
 		//PlaySpecial = true;	
 	} else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
-	UE_LOG(LogTemp,Warning,TEXT("실드 우클릭"));
+	//UE_LOG(LogTemp,Warning,TEXT("실드 우클릭"));
 }
 void AN_Graduation_projectCharacter::EndShield()
 {
@@ -262,7 +262,7 @@ void AN_Graduation_projectCharacter::EndShield()
 
 	if(currentPreset  == "SkeletonWarrior"){
 		PlayerSkillComponent->OffDefenseSkill();
-		UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
+	//	UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
 	}
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
@@ -274,7 +274,7 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 	}
 	if(PlayerSkillComponent->CanUseNomalSkill == true) {
 		PlayerSkillComponent->NomalSkillPlay(NomalSkill);
-		UE_LOG(LogTemp,Warning,TEXT("CanUseNomalSkill: %s"),PlayerSkillComponent->CanUseNomalSkill ? TEXT("true") : TEXT("false"));
+		//UE_LOG(LogTemp,Warning,TEXT("CanUseNomalSkill: %s"),PlayerSkillComponent->CanUseNomalSkill ? TEXT("true") : TEXT("false"));
 
 		//	PlayNomal = true;
 	} else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
@@ -521,7 +521,7 @@ void AN_Graduation_projectCharacter::ToggleMaterial(bool bUseHitMaterial)
 
 			if(!TargetMaterial)
 			{
-				UE_LOG(LogTemp,Error,TEXT("TargetMaterial is null! (bUseHitMaterial: %s)"),bUseHitMaterial ? TEXT("true") : TEXT("false"));
+				//UE_LOG(LogTemp,Error,TEXT("TargetMaterial is null! (bUseHitMaterial: %s)"),bUseHitMaterial ? TEXT("true") : TEXT("false"));
 				return;
 			}
 
@@ -537,14 +537,14 @@ void AN_Graduation_projectCharacter::ToggleMaterial(bool bUseHitMaterial)
 
 		}
 	} else	{
-		UE_LOG(LogTemp,Error,TEXT("MeshComponent is null!"));
+	//	UE_LOG(LogTemp,Error,TEXT("MeshComponent is null!"));
 		return;
 	}
 }
 
 void AN_Graduation_projectCharacter::UpdateEntityData()
 {
-	UE_LOG(LogTemp,Error,TEXT("Loadgame UpdateEntityData 실행됨"));
+//	UE_LOG(LogTemp,Error,TEXT("Loadgame UpdateEntityData 실행됨"));
 
 	
 	if(UABGameSingleton::Get().GetEntityDataByGroupID(currentPreset,EntityData))
@@ -559,10 +559,9 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 		SpecialSkill = EntityData.SpecialSkill;
 		UE_LOG(LogTemp,Error,TEXT("!Entity Name: %s, HP: %d, Move Speed: %d"),
 			*EntityData.EntityName,EntityData.HP,EntityData.MoveSpeed);
-		UE_LOG(LogTemp,Error,TEXT("Loadgame EntityData 찾기 성공: %s"),*currentPreset);
 
 	} else{
-		UE_LOG(LogTemp,Error,TEXT("Loadgame EntityData 찾기 실패: %s"),*currentPreset);
+//		UE_LOG(LogTemp,Error,TEXT("Loadgame EntityData 찾기 실패: %s"),*currentPreset);
 	}
 	// currentPreset!=클릭한 버튼의 캐릭터이름 이면..
 	if(pastPreset != currentPreset) {
@@ -576,7 +575,7 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 
 void AN_Graduation_projectCharacter::SetMoveSpeed(int32 MoveSpeed)
 {
-	UE_LOG(LogTemp,Error,TEXT("!currentSpeed: %d"),currentSpeed);
+	//UE_LOG(LogTemp,Error,TEXT("!currentSpeed: %d"),currentSpeed);
 
 	currentSpeed = MoveSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
@@ -587,7 +586,7 @@ void AN_Graduation_projectCharacter::SetMoveSpeed(int32 MoveSpeed)
 }
 void AN_Graduation_projectCharacter::StartAction()
 {
-	UE_LOG(LogTemp,Error,TEXT("!StartAction"));
+	UE_LOG(LogTemp,Error,TEXT("StartAction"));
 	bCanMove = false;
 	// 플레이어 컨트롤러 가져오기
 	//APlayerController* PlayerController = Cast<APlayerController>(GetController());
@@ -609,7 +608,7 @@ void AN_Graduation_projectCharacter::EndAction()
 	CharacterStateComponent->isAction = false;
 	bCanMove=true;
 	// 기존 속도로 이동 
-	UE_LOG(LogTemp,Error,TEXT("!EndAction"));
+	UE_LOG(LogTemp,Error,TEXT("EndAction"));
 	//	// Action 상태 종료 시 입력 활성화
 	//	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	//	if(PlayerController)
@@ -632,7 +631,7 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 		StateComp->ChangeState(ECharacterState::Dead);
 	}
 	// HP가 0이 되었을 때 처리할 로직
-	UE_LOG(LogTemp,Warning,TEXT("Player is dead!"));
+	UE_LOG(LogTemp,Warning,TEXT("Player is dead"));
 	isDead=true;
 	bcanPie=false;
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
@@ -866,7 +865,7 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		HitBox->SetHiddenInGame(true); // 히트박스 안보이게-> true
 
 		PlayerSkillComponent->SetHitBox(HitBox);
-		UE_LOG(LogTemp,Warning,TEXT("Playerpapago hHitBox Address: %p"),HitBox);
+		//UE_LOG(LogTemp,Warning,TEXT("Playerpapago hHitBox Address: %p"),HitBox);
 
 		PlayerSkillComponent->HideHitBox();
 	}
@@ -874,7 +873,7 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 	HitBox->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,SocketName);
 	PlayerSkillComponent->SetHitBox(HitBox);
 
-	UE_LOG(LogTemp,Warning,TEXT("HitBox reused and attached to socket: %s"),*SocketName.ToString());
+	//UE_LOG(LogTemp,Warning,TEXT("HitBox reused and attached to socket: %s"),*SocketName.ToString());
 }
 void AN_Graduation_projectCharacter::TrySpawnHitBox(FName SocketName)
 {
@@ -885,7 +884,7 @@ void AN_Graduation_projectCharacter::TrySpawnHitBox(FName SocketName)
 		SpawnHitBoxAtSocket2(SocketName);
 	} else
 	{
-		UE_LOG(LogTemp,Warning,TEXT("소켓 %s 이(가) 존재하지 않아 히트박스를 생성하지 않음"),*SocketName.ToString());
+		//UE_LOG(LogTemp,Warning,TEXT("소켓 %s 이(가) 존재하지 않아 히트박스를 생성하지 않음"),*SocketName.ToString());
 	}
 }
 
@@ -935,7 +934,7 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket2(FName SocketName)
 		HitBox2->SetHiddenInGame(true); // 히트박스 안보이게-> true
 
 		PlayerSkillComponent->SetHitBox2(HitBox2);
-		UE_LOG(LogTemp,Warning,TEXT("papago hHitBox Address: %p"),HitBox2);
+		//UE_LOG(LogTemp,Warning,TEXT("papago hHitBox Address: %p"),HitBox2);
 
 		PlayerSkillComponent->HideHitBox2();
 	}
@@ -949,7 +948,7 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 	//	UE_LOG(LogTemp,Warning,TEXT("OnHitboxOverlap된 객체: %s"),*OtherActor->GetName());
 	for(const FName& Tag : OtherActor->Tags)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("OtherActor Tag: %s"),*Tag.ToString());
+		//UE_LOG(LogTemp,Warning,TEXT("OtherActor Tag: %s"),*Tag.ToString());
 	}
 
 	AActor* MyCharacter = Cast<AActor>(UGameplayStatics::GetPlayerCharacter(this,0));
@@ -990,14 +989,14 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 			PlayerSword->SetHiddenInGame(true);
 		} else
 		{
-			UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
+			//UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
 		}		UpdateEntityData();
 		if(OkTrans) {
-			UE_LOG(LogTemp,Warning,TEXT("ChangePreset 변신완 "));
+			//UE_LOG(LogTemp,Warning,TEXT("ChangePreset 변신완 "));
 
 			SetPreset(EntityData.PresetReference);
 			WidgetActor->Back_CacheFinalMouseAngle = false;
-			UE_LOG(LogTemp,Warning,TEXT("OkTrans true"));
+			//UE_LOG(LogTemp,Warning,TEXT("OkTrans true"));
 		} else {
 			WidgetActor->Back_CacheFinalMouseAngle = true;
 		}
