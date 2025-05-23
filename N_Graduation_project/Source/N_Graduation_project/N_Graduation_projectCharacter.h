@@ -165,11 +165,7 @@ public:
 	/** ������ �޴� �Լ� */
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	//���Ͱ� ���� ������� ó���ϴ� ������ �߰��ϱ� ���� �������̵�.
-	//DamageAmount �������� ��
-	//FDamageEvent const& DamageEvent ������ ����
-	//EventInstigator,//�������� �� ��Ʈ�ѷ�
-	//DamageCauser//�������� �� ���� ��ü
+
 
 	// ���� ���� Ȱ��ȭ
 	UPROPERTY(BlueprintReadWrite)
@@ -232,7 +228,7 @@ void TransformToEntity(int32 EntityID);*/
 
 	int32 currentSpeed;
 	int32 OriginalSpeed;
-	//FString currentPreset= "PCPreset.uasset";
+	FString currentPreset= "PCPreset.uasset";
 	FString pastPreset= "PCPreset.uasset";
 
 

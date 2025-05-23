@@ -7,7 +7,6 @@
 void UMyGameInstance::Init()
 {
 	Super::Init();
-	UE_LOG(LogTemp,Error,TEXT("LoadGamePreset,Init CurrentPlayerCharacter: %s"),*CurrentPlayerCharacter);
 	//	UE_LOG(LogTemp,Warning,TEXT("LoadGame SaveLocation: X=%f, Y=%f, Z=%f"),SaveLocation.X,SaveLocation.Y,SaveLocation.Z);
 
 }
@@ -15,7 +14,6 @@ void UMyGameInstance::Init()
 void UMyGameInstance::InitFromSaveData(UMySaveGame* SaveData)
 {
 	if(!SaveData) return;
-	CurrentPlayerCharacter = SaveData->PlayerPreset;
 
 	WildBoar_Ok         = SaveData->Open_Boar;
 	Inpermon_OK         = SaveData->Open_MonKey;
@@ -38,10 +36,8 @@ void UMyGameInstance::SaveToSaveData(UMySaveGame* SaveData)
 	SaveData->Open_Golem = Freezard_OK;
 	SaveData->FullHP = PlayerFullHP;
 	SaveData->RoomName = SaveRoomName;
-	SaveData->PlayerPreset = CurrentPlayerCharacter;
 	SaveData->SaveFinalAngle=PlayerFinalAngle;
 	SaveData->SavePlayerLocation = SaveLocation;
-	UE_LOG(LogTemp,Warning,TEXT("LoadGame 완료 후 CurrentPlayerCharacter: %s %s"),*CurrentPlayerCharacter,*SaveData->PlayerPreset);
 	UE_LOG(LogTemp,Warning,TEXT("LoadGame SaveToSaveData SaveLocation: X=%f, Y=%f, Z=%f"),SaveData->SavePlayerLocation.X,SaveData->SavePlayerLocation.Y,SaveData->SavePlayerLocation.Z);
 
 }
@@ -82,7 +78,6 @@ void UMyGameInstance::LoadGame()
 		}
 
 		InitFromSaveData(SaveData);
-		UE_LOG(LogTemp,Error,TEXT("LoadGamePreset, CurrentPlayerCharacter: %s"),*CurrentPlayerCharacter);
 		AN_Graduation_projectCharacter* Player = Cast<AN_Graduation_projectCharacter>(UGameplayStatics::GetPlayerCharacter(this,0));
 		if(Player)
 		{
@@ -96,24 +91,27 @@ void UMyGameInstance::LoadGame()
 			}
 			if(SaveData)
 			{
+				SaveRoomName=SaveData->RoomName;
 				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ Boar Opened: %s"),SaveData->Open_Boar ? TEXT("Yes") : TEXT("No"));
-				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ Current Preset: %s"),*SaveData->PlayerPreset);
 				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ PlayerFullHP: %f"),SaveData->FullHP);
-				Player->LoadPreset(SaveData->PlayerPreset);
 				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ SaveFinalAngle: %f"),SaveData->SaveFinalAngle);
 				SaveLocation = SaveData->SavePlayerLocation;
 				SaveLocation.Z += 100.0f; // Z축 위로 이동!
 				Player->SetActorLocation(SaveLocation);
 				UE_LOG(LogTemp,Warning,TEXT("LoadGame LoadGame SaveLocation: X=%f, Y=%f, Z=%f"),SaveLocation.X,SaveLocation.Y,SaveLocation.Z);
+				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ room name: %s"),*SaveData->RoomName.ToString());
 
 			}
+
+			AActor* CallbackTarget = UGameplayStatics::GetPlayerCharacter(this,0); // 또는 월드에서 존재하는 Actor
 			FLatentActionInfo LatentInfo;
-			LatentInfo.CallbackTarget = this;
+			LatentInfo.CallbackTarget = CallbackTarget;
 			LatentInfo.ExecutionFunction = FName("OnLevelLoaded");
 			LatentInfo.Linkage = 0;
-			LatentInfo.UUID = __LINE__; // 고유 ID
+			LatentInfo.UUID = __LINE__;
 
-			UGameplayStatics::LoadStreamLevel(this,FName(SaveData->RoomName),true,false,LatentInfo);
+			UGameplayStatics::LoadStreamLevel(this,FName(*SaveData->RoomName.ToString()),true,false,LatentInfo);
+		
 		}
 	}
 }

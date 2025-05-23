@@ -64,8 +64,6 @@ void UWidgetActor::BeginPlay()
 		{
 			PieWidget->AddToViewport(120);
 			PieWidget->SetVisibility(ESlateVisibility::Hidden);
-			PieWidget->OpenCharacter(MyGameInstance->CurrentPlayerCharacter);
-			PieWidget->	CacheFinalMouseAngle();
 			
 			FInputModeGameAndUI InputMode;
 			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
@@ -74,9 +72,6 @@ void UWidgetActor::BeginPlay()
 			PC->bShowMouseCursor = true;
 		}
 	}
-	PieWidget->CacheFinalMouseAngle();
-//	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
-//	MyChar->ChangePreset(MyGameInstance->CurrentPlayerCharacter);
 }
 
 void UWidgetActor::ShowDieWidget(){
@@ -134,17 +129,13 @@ void UWidgetActor::HidePieMenu()
 
 	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 	UMyPlayerStatComponent* Stat = MyChar->FindComponentByClass<UMyPlayerStatComponent>();
-	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if(!MyGameInstance) return;
-	//PC->SetShowMouseCursor(false); 
 	if(PieWidget)
 	{
 		PC->SetInputMode(FInputModeGameAndUI());
 		if(Stat->Change == true) {
 
 			PieWidget->CacheFinalMouseAngle();
-			//MyChar->ChangePreset(PieWidget->Monster);
-			MyChar->ChangePreset(MyGameInstance->CurrentPlayerCharacter);
+			MyChar->ChangePreset(PieWidget->Monster);
 			if(Back_CacheFinalMouseAngle == true) {
 				PieWidget->CachedMouseFinalAngle = Before_Select;
 			}
