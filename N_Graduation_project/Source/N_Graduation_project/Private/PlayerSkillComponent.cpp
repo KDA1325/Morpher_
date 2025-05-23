@@ -342,6 +342,8 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 	if(CanUseNomalSkill)
 	{
+		bIsSpecialAttack = false;
+
 		FSkillData SkillData;
 		if(!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID,SkillData)) return;
 

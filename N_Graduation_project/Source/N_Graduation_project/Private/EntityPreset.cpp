@@ -165,7 +165,7 @@ void AEntityPreset::BeginPlay()
 	//	SkillArrowChildComponent->SetHiddenInGame(true);
 	//}
 
-	bIsDefending = false;
+	this->bIsDefending = false;
 }
 
 // Called every frame
@@ -196,16 +196,35 @@ void AEntityPreset::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 float AEntityPreset::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {	
 	// 방어 중
-	if(bIsDefending)
+	if(this->bIsDefending)
 	{
+		UE_LOG(LogTemp,Warning,TEXT("[TakeDamage] Monster %s (%p) is defending."),*GetName(),this);
+
 		// 대미지 원인이 플레이어 캐릭터 스킬인지 확인
 		AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(DamageCauser);
+		//ACharacter* PlayerCharacter = Cast<ACharacter>(DamageCauser);
+		UE_LOG(LogTemp,Warning,TEXT("DamageCauser: %s (%s)"), *GetNameSafe(DamageCauser), DamageCauser ? *DamageCauser->GetClass()->GetName() : TEXT("nullptr"));
+
+		UPlayerSkillComponent* PlayerSkillComponent = PlayerCharacter->FindComponentByClass<UPlayerSkillComponent>();
+
 		// 플레이어 캐릭터 스킬이 !bIsSpecialAttack = 노멀 스킬이라면
-		if(PlayerCharacter && !PlayerCharacter->PlayerSkillComponent->bIsSpecialAttack)
+		if(PlayerSkillComponent)
 		{
-			UE_LOG(LogTemp,Log,TEXT("[Defending]: Normal Skill 대미지 무시"));
-			
-			return 0.0f;
+			// 플레이어가 노말 스킬 공격을 했을 때
+			if(!PlayerSkillComponent->bIsSpecialAttack)
+			{
+				UE_LOG(LogTemp,Warning,TEXT("[Defending]: Ignore Normal Skill Damage"));
+				
+				return 0.0f;
+			}
+			else
+			{
+				UE_LOG(LogTemp,Error,TEXT("[Defending]: Take Special Attack Damage"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp,Error,TEXT("PlayerSkillComponent is NULL"));
 		}
 	}
 
@@ -1413,7 +1432,8 @@ void AEntityPreset::OnGuardEnded()
 {
 	// 스킬 종료 처리 
 	bIsCastingSkill = false;
-	bIsDefending = false;
+	this->bIsDefending = false;
+	UE_LOG(LogTemp,Warning,TEXT("방어 종료"));
 
 	// AI 경로 추적 활성화
 	if (AAIController* AIController = Cast<AAIController>(GetController()))
@@ -1423,7 +1443,16 @@ void AEntityPreset::OnGuardEnded()
 			// 경로 추적 활성화 
 			PathComp->Activate();
 		}
+
+		// AI 로직 재시작
+		if(AIController->BrainComponent)
+		{
+			AIController->BrainComponent->RestartLogic();
+			UE_LOG(LogTemp,Warning,TEXT("OnGuardEnded → AI BrainComponent Restarted"));
+		}
 	}
+	UE_LOG(LogTemp,Error,TEXT("OnGuardEnded"));
+
 }
 
 void AEntityPreset::StopMovement()
@@ -2078,12 +2107,14 @@ void AEntityPreset::Fire_AllArrows()
 
 void AEntityPreset::PerformSkill_ShieldGuard()
 {
-	if(!SpecialProjectileClass) return;
+	if(!SpecialSkillMontage) return;
+
+	UE_LOG(LogTemp,Error,TEXT("PerformSkill_ShieldGuard: 스킬 시전"));
 
 	// 스킬 시전 플래그 설정
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
 	bIsCastingSkill = true;
-	bIsDefending = true;
+	this->bIsDefending = true;
 
 	// AI 경로 추적 중지 
 	if(AAIController* AIController = Cast<AAIController>(GetController()))
@@ -2109,7 +2140,10 @@ void AEntityPreset::PerformSkill_ShieldGuard()
 		FTimerHandle TimerHandle;
 		GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::OnGuardEnded,3.0f,false);
 	}
-	UE_LOG(LogTemp,Error,TEXT("PerformSkill_ShieldGuard: AnimInstance not found"));
+	else
+	{
+		UE_LOG(LogTemp,Error,TEXT("PerformSkill_ShieldGuard: AnimInstance not found"));
+	}
 }
 
 
