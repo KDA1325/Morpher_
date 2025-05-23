@@ -33,6 +33,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 		UParticleSystemComponent* FreezeParticle;
+	UPROPERTY(BlueprintReadWrite)
+	float Duration ;
+
+	UPROPERTY(BlueprintReadWrite)
+	float SlowFactor;
 
 public:
 	// Called every frame

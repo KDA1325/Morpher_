@@ -86,7 +86,7 @@ void AFireFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Othe
 				return;
 			}
 			UE_LOG(LogTemp,Warning,TEXT("On_Fire 범위 내 감지된 액터: %s"),*OtherActor->GetName());
-			ApplyFireDOT(OtherActor,10.0f,4.0f);
+			ApplyFireDOT(OtherActor,0.5f,10.f);
 		}
 	}
 }
@@ -98,7 +98,7 @@ void AFireFloor::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDu
 	int32 TickCount = FMath::FloorToInt(ApplyDuration);
 	for(int32 i = 1; i <= TickCount; ++i)
 	{
-		int32 CurrentTick = i; // 👈 람다에 고정으로 넘길 값
+		int32 CurrentTick = i; 
 
 		FTimerHandle FireTickHandle;
 		FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]() // CurrentTick이 값으로 캡처됨

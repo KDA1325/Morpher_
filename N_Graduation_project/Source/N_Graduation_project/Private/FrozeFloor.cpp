@@ -90,8 +90,6 @@ void AFrozeFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Oth
 				return;
 			}
 			SlowedActors.Add(OtherActor);
-			float Duration = 5.0f;
-			float SlowFactor = 3.0f;
 
 			if(Duration > 0.f && SlowFactor > 0.f)
 			{
