@@ -1632,6 +1632,7 @@ void AEntityPreset::PerformSkill_FreezeBreath()
 		UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_FreezeBreath: SpecialSkillMontage is not set"));
 	}
 }
+
 void AEntityPreset::PerformSkill_EarthBreaker()
 {
 	if(!SpecialSkillMontage) return;
@@ -1720,9 +1721,9 @@ void AEntityPreset::PerformSkill_Arrow()
 	}
 }
 
-void AEntityPreset::PerformSkill_Arrow()
+void AEntityPreset::PerformSkill_SplinterArrow()
 {
-	if(!NormalProjectileClass) return;
+	if(!SpecialProjectileClass) return;
 
 	// 스킬 시전 플래그 설정
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
@@ -1737,28 +1738,31 @@ void AEntityPreset::PerformSkill_Arrow()
 			PathComp->Deactivate();
 
 			AIController->StopMovement();
-			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Spawn Projectile"));
+			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Spawn Splineter Projectile"));
 		}
 	}
 
-	if(NormalProjectileClass)
+	if(SpecialProjectileClass)
 	{
 		if(UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
 		{
 			// 스페셜 스킬 몽타주
-			AnimInst->Montage_Play(NormalSkillMontage);
+			AnimInst->Montage_Play(SpecialSkillMontage);
+
+			UE_LOG(LogTemp,Error,TEXT("PerformSkill_SplinterArrow: Anim Montage Play"));
 
 			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
-			AnimInst->Montage_SetEndDelegate(EndDelegate,NormalSkillMontage);
-		} else
+			AnimInst->Montage_SetEndDelegate(EndDelegate,SpecialSkillMontage);
+		} 
+		else
 		{
-			UE_LOG(LogTemp,Error,TEXT("PerformSkill_Arrow: AnimInstance not found"));
+			UE_LOG(LogTemp,Error,TEXT("PerformSkill_SplinterArrow: AnimInstance not found"));
 		}
 	} else
 	{
-		UE_LOG(LogTemp,Error,TEXT("PerformSkill_Arrow: NormalSkillMontage is not set"));
+		UE_LOG(LogTemp,Error,TEXT("PerformSkill_SplinterArrow: SpecialSkillMontage is not set"));
 	}
 }
 
@@ -1811,6 +1815,234 @@ void AEntityPreset::FireProjectile_Arrow()
 		}
 	}
 }
+
+// 노티파이에서 실행 : 센터 화살 스폰 
+void AEntityPreset::Spawn_CenterArrow()
+{
+	// 스폰할 투사체 클래스 설정 확인
+	if(!SpecialProjectileClass)
+	{
+		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
+		return;
+	}
+
+	// 스폰 위치, 방향 설정 
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ArrowSocket"));
+	FVector Direction = GetMesh()->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
+
+	// 스폰 파라미터
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	// 투사체 액터 스폰 
+	//FRotator DumyRotation = Direction.Rotation();
+	FRotator DumyRotation = GetActorForwardVector().Rotation();
+	Arrow = GetWorld()->SpawnActor<AEntityProjectile>(SpecialProjectileClass,SpawnLocation,DumyRotation,SpawnParams);
+
+	if(Arrow)
+	{
+		// Skill 데이터 테이블에서 "Skill_SplinterArrow" 데이터 가져오기
+		FSkillData SkillData;
+		TArray<FSkillEffectData> EffectDataArray;
+
+		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_SplinterArrow",SkillData) &&
+			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_SplinterArrow",EffectDataArray))
+		{
+			// 초기화
+			Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+
+			UE_LOG(LogTemp,Error,TEXT("Spawned Skill_SplinterArrow Center Projectile"));
+
+			// 발사
+			//FVector Direction = GetMesh()->GetForwardVector();
+			//Arrow->FireInDirection(Direction);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_SplinterArrow Center data!"));
+		}
+	}
+}
+
+// 노티파이에서 실행 : 서브 화살1, 2 스폰 및 모든 화살 발사  
+void AEntityPreset::Fire_AllArrows()
+{
+	if(!SpecialProjectileClass)
+	{
+		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
+		return;
+	}
+
+	TArray<AEntityProjectile*> ArrowList;
+
+	// Skill 데이터 불러오기 (한 번만)
+	FSkillData SkillData;
+	TArray<FSkillEffectData> EffectDataArray;
+
+	// 센터 화살 포함
+	if(Arrow)
+	{
+		ArrowList.Add(Arrow);
+	}
+
+	TArray<FName> SubSockets = {TEXT("ArrowSubSocket_1"),TEXT("ArrowSubSocket_2")};
+
+	// 서브 화살 생성
+	for(FName SocketName : SubSockets)
+	{
+		FVector SpawnLoc = GetMesh()->GetSocketLocation(SocketName);
+		FRotator SpawnRot = GetMesh()->GetSocketRotation(SocketName); 
+		//FVector Direction = SpawnRot.Vector();
+
+		// 스폰 파라미터
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		AEntityProjectile* SubArrow = GetWorld()->SpawnActor<AEntityProjectile>(SpecialProjectileClass,SpawnLoc,SpawnRot,SpawnParams);
+
+		if(SubArrow)
+		{
+			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_SplinterArrow",SkillData) &&
+			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_SplinterArrow",EffectDataArray))
+			{
+				// 초기화
+				SubArrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+
+				UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_SplinterArrow sub data!"));
+
+				ArrowList.Add(SubArrow);
+			}
+		}
+	}
+
+	// 모든 화살 발사
+	for(int i = 0; i < ArrowList.Num(); i++)
+	{
+		AEntityProjectile* CurrentArrow = ArrowList[i];
+		FName SocketName;
+
+		if(i == 0)
+			SocketName = TEXT("ArrowSocket");
+		else if(i == 1)
+			SocketName = TEXT("ArrowSubSocket_1");
+		else if(i == 2)
+			SocketName = TEXT("ArrowSubSocket_2");
+
+		if(CurrentArrow)
+		{
+			/*FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName);
+			FVector FireDirection = GetMesh()->GetSocketRotation(SocketName).Vector();*/
+			/*FVector FireDirection = GetMesh()->GetSocketRotation(SocketName).Vector();
+			CurrentArrow->FireInDirection(FireDirection);*/
+
+			FTransform SocketTransform = GetMesh()->GetSocketTransform(SocketName,RTS_World);
+			FVector FireDirection = SocketTransform.GetRotation().GetForwardVector();
+
+			CurrentArrow->FireInDirection(FireDirection);
+			UE_LOG(LogTemp,Warning,TEXT("Fired arrow %d → Dir: %s"),i,*FireDirection.ToString());
+		}
+	}
+
+	//for(int32 i = 0; i < ArrowList.Num(); ++i)
+	//{
+	//	AEntityProjectile* CurrentArrow = ArrowList[i];
+	//	if(CurrentArrow)
+	//	{
+	//		// 소켓 회전 기준 방향
+	//		FVector FireDir = CurrentArrow->GetActorForwardVector();
+	//		//CurrentArrow->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	//		CurrentArrow->bAutoFireOnSpawn = true;
+	//		CurrentArrow->FireInDirection(FireDir);
+
+	//		UE_LOG(LogTemp,Warning,TEXT("Fired arrow %d → Dir: %s"),i,*FireDir.ToString());
+	//	}
+	//}
+
+	// 센터 화살 포인터 정리
+	Arrow = nullptr;
+}
+
+//void AEntityPreset::Fire_AllArrows()
+//{
+//	// 스폰할 투사체 클래스 설정 확인
+//	if(!SpecialProjectileClass)
+//	{
+//		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
+//		return;
+//	}
+//
+//	// 모든 화살 발사를 위해 저장할 배열
+//	TArray<AEntityProjectile*> ArrowList;
+//
+//	if(Arrow)
+//	{
+//		ArrowList.Add(Arrow);
+//	}
+//
+//	TArray<FName> SubSockets = {TEXT("ArrowSubSocket_1"),TEXT("ArrowSubSocket_2")};
+//
+//	// 서브 화살 스폰 
+//	for(int i = 0; i < SubSockets.Num(); i++)
+//	{
+//		// 스폰 위치, 방향 설정 
+//		FVector SpawnLocation = GetMesh()->GetSocketLocation(SubSockets[i]);
+//		FVector Direction = GetMesh()->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
+//		FRotator SpawnRotation = Direction.Rotation();
+//
+//		// 스폰 파라미터
+//		FActorSpawnParameters SpawnParams;
+//		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+//		SpawnParams.Owner = this;
+//		SpawnParams.Instigator = GetInstigator();
+//
+//		AEntityProjectile* SubArrow = GetWorld()->SpawnActor<AEntityProjectile>(SpecialProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+//
+//		if(SubArrow)
+//		{
+//			// Skill 데이터 테이블에서 "Skill_SplinterArrow" 데이터 가져오기
+//			FSkillData SkillData;
+//			TArray<FSkillEffectData> EffectDataArray;
+//
+//			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_SplinterArrow",SkillData) &&
+//				UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_SplinterArrow",EffectDataArray))
+//			{
+//				// 초기화
+//				Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+//
+//				UE_LOG(LogTemp,Error,TEXT("Spawned Skill_SplinterArrow Projectile"));
+//			} else
+//			{
+//				UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_SplinterArrow data!"));
+//			}
+//		}
+//		//// 투사체 액터 스폰 
+//		//if(i == 0)
+//		//{
+//		//	FRotator DumyRotation = Direction.Rotation();
+//		//	SubArrow1 = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,DumyRotation,SpawnParams);
+//		//}
+//		//else if(i == 1)
+//		//{
+//		//	FRotator DumyRotation = Direction.Rotation();
+//		//	SubArrow2 = GetWorld()->SpawnActor<AEntityProjectile>(NormalProjectileClass,SpawnLocation,DumyRotation,SpawnParams);
+//		//}
+//	}
+//
+//	for(int i = 0; i < ArrowList.Num(); i++)
+//	{
+//		AEntityProjectile* CurrentArrow = ArrowList[i];
+//
+//		if(CurrentArrow)
+//		{
+//			FVector FireDirection = GetMesh()->GetForwardVector();
+//			CurrentArrow->FireInDirection(FireDirection);
+//		}
+//	}
+//
+//}
 
 EnumAttackType AEntityPreset::GetAttackType()
 {

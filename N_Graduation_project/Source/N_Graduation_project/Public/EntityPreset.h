@@ -88,14 +88,19 @@ public:
 	//UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
 	//AEntityProjectile* PendingArrow;  
 
+	// 노말 화살 or 스페셜 센터 화살 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
 	AEntityProjectile* Arrow;
+	
+	// 스페셜 서브 화살 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+	AEntityProjectile* SubArrow1;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+	AEntityProjectile* SubArrow2;
 
 	//UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
 	//UChildActorComponent* SkillArrowChildComponent;
 
-	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
-	//UChildActorComponent* TestChildActor;
 
 
 	//스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
@@ -154,8 +159,11 @@ public:
 
 	void PerformSkill_Arrow();
 
-	void SpawnProjectile_Arrow();
+	void PerformSkill_SplinterArrow();
+
+	//void SpawnProjectile_Arrow();
 	void FireProjectile_Arrow();
+
 	// Skill_Arrow 시전 시 저장할 방향 (설정 후 변화 없이 유지)
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")
 	FVector ArrowDirection;
@@ -278,6 +286,10 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	float GetHPRatio(); // 최대 HP로 나누기
+
+	void Spawn_CenterArrow();
+
+	void Fire_AllArrows();
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	EnumAttackType GetAttackType();

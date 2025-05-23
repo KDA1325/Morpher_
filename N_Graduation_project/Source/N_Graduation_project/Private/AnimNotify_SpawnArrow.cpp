@@ -13,7 +13,7 @@ void UAnimNotify_SpawnArrow::Notify(USkeletalMeshComponent * MeshComp,UAnimSeque
 
 	if(AEntityPreset* Entity = Cast<AEntityPreset>(MeshComp->GetOwner()))
 	{
-		Entity->SpawnProjectile_Arrow();
+		//Entity->SpawnProjectile_Arrow();
 		UE_LOG(LogTemp,Warning,TEXT("UAnimNotify_SpawnArrow: Entity Arrow Spawned"));
 
 		//// 소켓 위치 가져오기
