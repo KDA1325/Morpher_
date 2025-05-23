@@ -146,10 +146,13 @@ public:
 	// 스킬 시전 중 플래그: 돌진 스킬 시전 중엔 이동 업데이트 차단
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	bool bIsCastingSkill;
-
 	// 돌진 스킬 실행 시 저장할 방향 (설정 후 변화 없이 유지)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	FVector StoredDashDirection;
+
+	// 방어 중 플래그
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
+	bool bIsDefending;
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void PerformSkill_Charge();
@@ -226,6 +229,8 @@ public:
 	float ChargeDistance = 0.0f;
 	FVector ChargeTargetLocation;
 
+	void OnGuardEnded();
+
 	void StopMovement();
 
 	void DrawChargePath();
@@ -290,6 +295,8 @@ public:
 	void Spawn_CenterArrow();
 
 	void Fire_AllArrows();
+
+	void PerformSkill_ShieldGuard();
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	EnumAttackType GetAttackType();

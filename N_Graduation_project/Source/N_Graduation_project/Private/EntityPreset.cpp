@@ -5,11 +5,13 @@
 #include "MyAI.h"
 #include "EntityProjectile.h"
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
+#include "PlayerSkillComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "WidgetActor.h"
 #include "CharacterStateComponent.h"
+#include "BrainComponent.h"
 #include "Components/SphereComponent.h"
 
 
@@ -163,8 +165,7 @@ void AEntityPreset::BeginPlay()
 	//	SkillArrowChildComponent->SetHiddenInGame(true);
 	//}
 
-
-
+	bIsDefending = false;
 }
 
 // Called every frame
@@ -194,12 +195,25 @@ void AEntityPreset::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 float AEntityPreset::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {	
-	UE_LOG(LogTemp, Log, TEXT("banana Damage: %f"), DamageAmount);
-	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser); // 부모 클래스의 TakeDamage 호출
-	UE_LOG(LogTemp, Log, TEXT("banana (TakeDamage)CurrentHP: %f, DamageAmount: %f, CurrentHP - DamageAmount: %f"), CurrentHP, DamageAmount, CurrentHP - DamageAmount);
+	// 방어 중
+	if(bIsDefending)
+	{
+		// 대미지 원인이 플레이어 캐릭터 스킬인지 확인
+		AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(DamageCauser);
+		// 플레이어 캐릭터 스킬이 !bIsSpecialAttack = 노멀 스킬이라면
+		if(PlayerCharacter && !PlayerCharacter->PlayerSkillComponent->bIsSpecialAttack)
+		{
+			UE_LOG(LogTemp,Log,TEXT("[Defending]: Normal Skill 대미지 무시"));
+			
+			return 0.0f;
+		}
+	}
 
+	UE_LOG(LogTemp,Log,TEXT("banana Damage: %f"),DamageAmount);
+	float ActualDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser); // 부모 클래스의 TakeDamage 호출
+	UE_LOG(LogTemp,Log,TEXT("banana (TakeDamage)CurrentHP: %f, DamageAmount: %f, CurrentHP - DamageAmount: %f"),CurrentHP,DamageAmount,CurrentHP - DamageAmount);
 
-	if (CurrentHP > 0)
+	if(CurrentHP > 0)
 	{
 		ApplyDamage(DamageAmount);
 	}
@@ -1394,6 +1408,24 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted
 	}
 }
 
+//  가드 종료 콜백
+void AEntityPreset::OnGuardEnded()
+{
+	// 스킬 종료 처리 
+	bIsCastingSkill = false;
+	bIsDefending = false;
+
+	// AI 경로 추적 활성화
+	if (AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 활성화 
+			PathComp->Activate();
+		}
+	}
+}
+
 void AEntityPreset::StopMovement()
 {
 	GetCharacterMovement()->StopMovementImmediately();
@@ -2043,6 +2075,43 @@ void AEntityPreset::Fire_AllArrows()
 //	}
 //
 //}
+
+void AEntityPreset::PerformSkill_ShieldGuard()
+{
+	if(!SpecialProjectileClass) return;
+
+	// 스킬 시전 플래그 설정
+	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
+	bIsCastingSkill = true;
+	bIsDefending = true;
+
+	// AI 경로 추적 중지 
+	if(AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 중단
+			PathComp->Deactivate();
+
+			AIController->StopMovement();
+			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Shield"));
+		}
+	}
+
+	if(UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+	{
+		// 스페셜 스킬 몽타주
+		AnimInst->Montage_Play(SpecialSkillMontage);
+
+		UE_LOG(LogTemp,Error,TEXT("PerformSkill_ShieldGuard: Anim Montage Play"));
+
+		// 스킬 시전 3초 후 스킬 종료 
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::OnGuardEnded,3.0f,false);
+	}
+	UE_LOG(LogTemp,Error,TEXT("PerformSkill_ShieldGuard: AnimInstance not found"));
+}
+
 
 EnumAttackType AEntityPreset::GetAttackType()
 {

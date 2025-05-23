@@ -37,6 +37,10 @@ public:
 	bool CanUseSpecialSkill; // 스페셜 스킬 사용 가능 여부
 	bool IsDefending;        // 방어 중인지 여부
 	bool OnceHitBox;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsSpecialAttack = false;
+
 	// 현재 스킬 ID
 	FString CurrentSkillID;
 

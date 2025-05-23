@@ -107,6 +107,16 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 
 		ExecuteSkill_SplinterArrow(SkillData,EffectDataArray);
 	}
+	else if(SkillID == "Skill_ShieldGuard")
+	{
+		if(!bCanUseSpecialSkill)
+		{
+			UE_LOG(LogTemp,Error,TEXT("skill is on cooldown"));
+			return;
+		}
+
+		ExecuteSkill_ShieldGuard(SkillData,EffectDataArray);
+	}
 	else
 	{
 		if (!bCanUseNormalSkill)
@@ -482,11 +492,38 @@ void UEntitySkillComponent::ExecuteSkill_SplinterArrow(const FSkillData& SkillDa
 	// 스킬 끝나고 다시 AI 로직 재개 
 	FTimerHandle ResumeAITimer;
 	GetWorld()->GetTimerManager().SetTimer(ResumeAITimer, [AIController]()
+	{
+		if (AIController && AIController->BrainComponent)
 		{
-			if (AIController && AIController->BrainComponent)
-			{
-				AIController->BrainComponent->RestartLogic();
-				UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->RestartLogic called"));
-			}
-		}, 2.0f, false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
+			AIController->BrainComponent->RestartLogic();
+			UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->RestartLogic called"));
+		}		
+	}, 2.0f, false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
+}
+
+void UEntitySkillComponent::ExecuteSkill_ShieldGuard(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
+{
+	if (!OwnerEntity)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
+		return;
+	}
+
+	OwnerEntity->bIsCastingSkill = true;
+
+	// 쿨타임 적용: 스킬 타입에 따라 타이머를 통해 재사용 가능 상태 복구
+	bCanUseSpecialSkill = false;
+	FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this,&UEntitySkillComponent::SpecialCooldown);
+	SetSkillTimer(SkillData.SkillCoolTime,SpecialDelegate,true);
+
+	// AI BehaviorTree 멈춤
+	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
+	if (AIController && AIController->BrainComponent)
+	{
+		AIController->StopMovement(); // 혹시 이전 경로 남아있으면 정지
+		AIController->BrainComponent->StopLogic(TEXT("Shield Guard Skill Start"));
+		UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->StopLogic called"));
+	}
+
+	OwnerEntity->PerformSkill_ShieldGuard();
 }
