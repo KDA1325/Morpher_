@@ -43,7 +43,7 @@ void AFireBarrel::Tick(float DeltaTime)
 void AFireBarrel::WorkBarrel(float DA)
 {
 	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Barrel: 응답받음"));
-	DamageAmount = DA;
+	DamageAmount = 20;
 
 	StartExplosion();
 }
@@ -85,9 +85,8 @@ void AFireBarrel::EndtExplosion()
 		// 데미지 처리
 		AController* InstigatorController = GetInstigatorController();
 		UGameplayStatics::ApplyDamage(Actor,DamageAmount,InstigatorController,this,nullptr);
-		float ApplyDuration = 4;
-		float DPS = 10.0;
-		ApplyFireDOT(Actor,DPS,ApplyDuration);
+
+		ApplyFireDOT(Actor,DPS,Duration);
 	}
 }
 void AFireBarrel::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration)

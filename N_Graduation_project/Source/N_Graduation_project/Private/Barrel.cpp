@@ -41,7 +41,7 @@ void ABarrel::Tick(float DeltaTime)
 void ABarrel::WorkBarrel(float DA)
 {
 	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Barrel: 응답받음"));
-	DamageAmount = DA;
+	DamageAmount = 50;
 
 	StartExplosion();
 }

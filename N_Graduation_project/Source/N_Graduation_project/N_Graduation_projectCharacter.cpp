@@ -8,17 +8,16 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
-#include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "MyPlayerStatComponent.h"
 #include "PlayerSkillComponent.h"
-//#include "Blueprint/UserWidget.h"
-//#include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"//ApplyDamage
 #include "GameFramework/Character.h"//ApplyDamage
 #include "CharacterStateComponent.h" //state
+#include "MySaveGame.h"
+#include "MyGameInstance.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -120,8 +119,7 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	}
 
 	bIsMoving = true;
-	pastPreset = "PlayerCharacter";
-	NomalSkill = "Skill_Slash";
+	bcanPie=true;
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -130,12 +128,10 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	Super::BeginPlay();
 	m_pMeshCom = GetMesh();
 	FOnTimelineFloat DashCallback;
-	currentPreset = "PlayerCharacter";
-	SetPreset(currentPreset);
 	SpawnHitBoxAtSocket("AttachHitBox");
-
+	//UE_LOG(LogTemp,Log,TEXT("캐릭터 BeginPlay실시, player: %s"),*currentPreset);
 	PlayerSword = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Player_sword")));
-
+	isDead=false;
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
 	DashCallback.BindUFunction(this,FName("DashInterpReturn"));
 
@@ -145,6 +141,27 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	DashTimeline->AddInterpFloat(DashCurve,DashCallback);
 	// 타임라인 길이 설정
 	DashTimeline->SetTimelineLength(0.2f);
+
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	if(MeshComponent)
+	{
+		InvincibleOriginalMaterial = MeshComponent->GetMaterial(0);
+	}
+
+	HitMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/UI/Materials/Hit.Hit'"));
+	if(!HitMaterial)
+	{
+		UE_LOG(LogTemp,Error,TEXT("Failed to load HitMaterial!"));
+	}
+
+	UE_LOG(LogTemp,Error,TEXT("ChangePreset 캐릭터 BeginPlay"));
+
+
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+	else{
+		MyGameInstance->LoadGame();
+	}
 }
 void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
@@ -227,22 +244,23 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue& Value)
 {
 	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 우클릭"));
-
+	FVector Location = GetOwner()->GetActorLocation();
+	UE_LOG(LogTemp,Warning,TEXT("캐릭터 위치: X=%.2f, Y=%.2f, Z=%.2f"),Location.X,Location.Y,Location.Z);
 	if(CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
 		return;
 	}
 	if(PlayerSkillComponent->CanUseSpecialSkill == true) {
 		PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
 		//PlaySpecial = true;	
-
 	} else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
 	UE_LOG(LogTemp,Warning,TEXT("실드 우클릭"));
 }
 void AN_Graduation_projectCharacter::EndShield()
 {
-	//	CharacterStateComponent->ChangeState(ECharacterState::Idle);
-		//애니메이션은 어떡하지..
-	if(currentPreset == "SkeletonWarriorPreset.uasset"){
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+
+	if(currentPreset  == "SkeletonWarrior"){
 		PlayerSkillComponent->OffDefenseSkill();
 		UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
 	}
@@ -492,26 +510,33 @@ void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 	}
 }
 
-
+// ToggleMaterial 수정
 void AN_Graduation_projectCharacter::ToggleMaterial(bool bUseHitMaterial)
 {
-	USkeletalMeshComponent* MeshComponent = GetMesh();
-	if(MeshComponent)
-	{
-		UMaterialInterface* HitMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/UI/Materials/Hit.Hit'"));
+	if(USkeletalMeshComponent* MeshComponent = GetMesh()){
 
-		if(HitMaterial && InvincibleOriginalMaterial)
+		if(isDead==false)
 		{
-			MeshComponent->SetMaterial(0,bUseHitMaterial ? HitMaterial : InvincibleOriginalMaterial);
+			UMaterialInterface* TargetMaterial = bUseHitMaterial ? HitMaterial : InvincibleOriginalMaterial;
+
+			if(!TargetMaterial)
+			{
+				UE_LOG(LogTemp,Error,TEXT("TargetMaterial is null! (bUseHitMaterial: %s)"),bUseHitMaterial ? TEXT("true") : TEXT("false"));
+				return;
+			}
+
+			MeshComponent->SetMaterial(0,TargetMaterial);
+
 			Tcount++;
 			if(Tcount > 3)
 			{
-				MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
-				InvincibleOriginalMaterial = nullptr;
+				// 필요 없다면 아래 줄 생략 (주의: nullptr 초기화 금지)
+				// InvincibleOriginalMaterial = nullptr;
 				Tcount = 0;
 			}
+
 		}
-	} else{
+	} else	{
 		UE_LOG(LogTemp,Error,TEXT("MeshComponent is null!"));
 		return;
 	}
@@ -519,6 +544,9 @@ void AN_Graduation_projectCharacter::ToggleMaterial(bool bUseHitMaterial)
 
 void AN_Graduation_projectCharacter::UpdateEntityData()
 {
+	UE_LOG(LogTemp,Error,TEXT("Loadgame UpdateEntityData 실행됨"));
+
+	
 	if(UABGameSingleton::Get().GetEntityDataByGroupID(currentPreset,EntityData))
 	{
 		if(PlayerStatComponent->CurrentMana >= EntityData.TransManaCost) 		OkTrans = true;
@@ -531,13 +559,18 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 		SpecialSkill = EntityData.SpecialSkill;
 		UE_LOG(LogTemp,Error,TEXT("!Entity Name: %s, HP: %d, Move Speed: %d"),
 			*EntityData.EntityName,EntityData.HP,EntityData.MoveSpeed);
+		UE_LOG(LogTemp,Error,TEXT("Loadgame EntityData 찾기 성공: %s"),*currentPreset);
+
+	} else{
+		UE_LOG(LogTemp,Error,TEXT("Loadgame EntityData 찾기 실패: %s"),*currentPreset);
 	}
 	// currentPreset!=클릭한 버튼의 캐릭터이름 이면..
 	if(pastPreset != currentPreset) {
 		PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID,EntityData.HP,EntityData.TransManaCost);
 		pastPreset = currentPreset;
-		UE_LOG(LogTemp,Error,TEXT("= pastPreset %s != currentPreset %s"),*pastPreset,*currentPreset);
+		//	UE_LOG(LogTemp,Error,TEXT("ChangePreset = pastPreset %s != currentPreset %s"),*pastPreset,currentPreset);
 	}
+
 	USkeletalMeshComponent* MeshComponent = GetMesh();
 }
 
@@ -600,13 +633,18 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 	}
 	// HP가 0이 되었을 때 처리할 로직
 	UE_LOG(LogTemp,Warning,TEXT("Player is dead!"));
+	isDead=true;
+	bcanPie=false;
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+	MyGameInstance->LoadGame();
 	WidgetActor->ShowDieWidget();
 }
 
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 {
 	TArray<UBoxComponent*> Components;
-	GetComponents<UBoxComponent>(Components);  
+	GetComponents<UBoxComponent>(Components);
 
 	for(UBoxComponent* Comp : Components)
 	{
@@ -615,11 +653,11 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			Comp->DestroyComponent();
 		}
 	}
-
+	UE_LOG(LogTemp,Log,TEXT("ChangePreset SetPreset 실행됨"));
 	USkeletalMeshComponent* MeshComponent = GetMesh();
-	currentPreset = PresetReference.TrimStartAndEnd(); //공백 제거
+	currentPreset  = PresetReference.TrimStartAndEnd(); //공백 제거
 
-	currentPreset = PresetReference;
+	//	currentPreset = PresetReference;
 	InvincibleOriginalMaterial = nullptr;	// 프리셋 이름마다 메시 에셋 파일 할당
 	if(currentPreset == "PCPreset.uasset")
 	{
@@ -830,7 +868,7 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		PlayerSkillComponent->SetHitBox(HitBox);
 		UE_LOG(LogTemp,Warning,TEXT("Playerpapago hHitBox Address: %p"),HitBox);
 
-	PlayerSkillComponent->HideHitBox();
+		PlayerSkillComponent->HideHitBox();
 	}
 
 	HitBox->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,SocketName);
@@ -943,11 +981,20 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 //변신
 void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 {
+
 	currentPreset = Name;
-	if(currentPreset != pastPreset) {
-		PlayerSword->SetHiddenInGame(true);
-		UpdateEntityData();
+	if(currentPreset  != pastPreset) {
+
+		if(PlayerSword)
+		{
+			PlayerSword->SetHiddenInGame(true);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
+		}		UpdateEntityData();
 		if(OkTrans) {
+			UE_LOG(LogTemp,Warning,TEXT("ChangePreset 변신완 "));
+
 			SetPreset(EntityData.PresetReference);
 			WidgetActor->Back_CacheFinalMouseAngle = false;
 			UE_LOG(LogTemp,Warning,TEXT("OkTrans true"));
@@ -955,22 +1002,51 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 			WidgetActor->Back_CacheFinalMouseAngle = true;
 		}
 	}
-}
-/* //나중에 테스터에
-void AN_Graduation_projectCharacter::DealDamageToPlayer()
-{
-	UE_LOG(LogTemp, Error, TEXT("50 Damage"));
-
-	//0번 플레이어를 가져온다
-	ACharacter* TargetCharacter = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	float DamageAmount = 50.0f;
-	// TargetCharacter에서 GetController를 호출
-	AController* InstigatorController = TargetCharacter->GetController();
-	AActor* DamageCauser = this; // 데미지를 주는 액터
-	TSubclassOf<UDamageType> DamageType = UDamageType::StaticClass(); // 기본 데미지 타입
-
-	// 데미지 적용
-	UGameplayStatics::ApplyDamage(TargetCharacter, DamageAmount, InstigatorController, DamageCauser, DamageType);
 
 }
-*/
+//void AN_Graduation_projectCharacter:: LoadPreset(FString PresetID){
+//	if(PlayerSword)
+//	{
+//		PlayerSword->SetHiddenInGame(true);
+//	} else
+//	{
+//		UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
+//	}
+//	FString CleanName;
+//	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+//	if(!MyGameInstance) return;
+//	// 확장자 제거
+//	if(MyGameInstance->CurrentPlayerCharacter!="PCPreset.uasset"){ 
+//	FString FileName = FPaths::GetBaseFilename(MyGameInstance->CurrentPlayerCharacter);
+//	CleanName = FileName;
+//	CleanName.RemoveFromEnd(TEXT("Preset"));}
+//	else{
+//		CleanName="PlayerCharacter";
+//	}
+//	if(UABGameSingleton::Get().GetEntityDataByGroupID(CleanName,EntityData))
+//	{
+//		if(PlayerStatComponent->CurrentMana >= EntityData.TransManaCost) 		OkTrans = true;
+//		if(!(PlayerStatComponent->CurrentMana >= EntityData.TransManaCost))		OkTrans = false;
+//
+//		InvincibleOriginalMaterial = nullptr;
+//		//SetActorLabel(EntityData.EntityName);
+//		SetMoveSpeed(1000);
+//		NomalSkill = EntityData.NormalSkill;
+//		SpecialSkill = EntityData.SpecialSkill;
+//		UE_LOG(LogTemp,Error,TEXT("Loadgame LoadPreset Entity Name: %s, HP: %d, Move Speed: %d"),
+//			*EntityData.EntityName,EntityData.HP,EntityData.MoveSpeed);
+//		UE_LOG(LogTemp,Error,TEXT("Loadgame LoadPreset EntityData 찾기 성공: %s"),*CleanName);
+//
+//	} else{
+//			UE_LOG(LogTemp,Error,TEXT("Loadgame LoadPreset EntityData 찾기 실패: %s"),*CleanName);
+//	}
+//
+//	UE_LOG(LogTemp,Error,TEXT("Loadgame LoadPreset 실행됨"));
+//	PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID,EntityData.HP,EntityData.TransManaCost);
+//	pastPreset = MyGameInstance->CurrentPlayerCharacter;
+//	SetPreset(EntityData.PresetReference);
+//	WidgetActor->Back_CacheFinalMouseAngle = false;
+//
+//
+//	USkeletalMeshComponent* MeshComponent = GetMesh();
+//}

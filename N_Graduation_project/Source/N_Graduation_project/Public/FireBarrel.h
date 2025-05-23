@@ -9,11 +9,11 @@
 #include "FireBarrel.generated.h"
 
 UCLASS()
-class N_GRADUATION_PROJECT_API AFireBarrel : public AActor
+class N_GRADUATION_PROJECT_API AFireBarrel: public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AFireBarrel();
 
@@ -36,7 +36,10 @@ public:
 		bool ApplyDamage;
 	UPROPERTY(BlueprintReadWrite,Category = "Object")
 		float DamageAmount;
-
+	UPROPERTY(BlueprintReadWrite,Category = "Object")
+		float Duration;
+	UPROPERTY(BlueprintReadWrite,Category = "Object")
+		float DPS;
 	UFUNCTION(BlueprintImplementableEvent)
 		void StartExplosion();
 	UFUNCTION(BlueprintCallable)

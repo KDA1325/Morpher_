@@ -45,12 +45,7 @@ public:
 	TArray<UScaleBox*> PieScaleBoxes;
 
 	void OpenCharacter(FString DeadMonsterName);
+	void InitUnlockIcons();
 
-	bool WildBoar_Ok = false;
-	bool Inpermon_OK = false;
-	bool SkeletonWarrior_OK = false;
-	bool StoneGolem_OK = false;
-	bool SkeletonArcher_OK = false;
-	bool Freezard_OK = false;
 
 };

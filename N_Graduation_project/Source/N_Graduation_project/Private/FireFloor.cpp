@@ -86,7 +86,7 @@ void AFireFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Othe
 				return;
 			}
 			UE_LOG(LogTemp,Warning,TEXT("On_Fire 범위 내 감지된 액터: %s"),*OtherActor->GetName());
-			ApplyFireDOT(OtherActor,10.0f,4.0f);
+			ApplyFireDOT(OtherActor,0.5f,10.f);
 		}
 	}
 }
@@ -94,17 +94,22 @@ void AFireFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Othe
 void AFireFloor::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration)
 {
 	if(!Target || DamagePerSecond <= 0.f || ApplyDuration <= 0.f) return;
-	if(Target){
-		int32 TickCount = FMath::FloorToInt(ApplyDuration);
-		for(int32 i = 1; i <= TickCount; ++i)
+
+	int32 TickCount = FMath::FloorToInt(ApplyDuration);
+	for(int32 i = 1; i <= TickCount; ++i)
+	{
+		int32 CurrentTick = i; 
+
+		FTimerHandle FireTickHandle;
+		FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]() // CurrentTick이 값으로 캡처됨
 		{
-			FTimerHandle FireTickHandle;
-			FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]()
+			if(IsValid(Target))
 			{
 				UGameplayStatics::ApplyDamage(Target,DamagePerSecond,GetInstigatorController(),this,nullptr);
-				UE_LOG(LogTemp,Warning,TEXT("화상 횟수 %d"),i);
-			});
-			GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
-		}
+				UE_LOG(LogTemp,Warning,TEXT("화상 횟수 %d"),CurrentTick); 
+			}
+		});
+
+		GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
 	}
 }

@@ -33,6 +33,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 		UParticleSystemComponent* FireParticle;
 
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
