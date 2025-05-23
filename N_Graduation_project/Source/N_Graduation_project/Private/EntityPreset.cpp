@@ -517,107 +517,6 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			UE_LOG(LogTemp, Warning, TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
 				*HalfExtent.ToString(), *NewRelativeLocation.ToString());
 		}
-
-
-		//// 1. HitBoxContainer 생성 및 소켓에 부착
-		//if (!NormalHitBoxContainer)
-		//{
-		//	NormalHitBoxContainer = NewObject<USceneComponent>(this, TEXT("NormalHitBoxContainer"));
-		//	if (NormalHitBoxContainer)
-		//	{
-		//		// 컨테이너를 컴포넌트로 등록 
-		//		NormalHitBoxContainer->RegisterComponent();
-
-		//		// 스켈레탈 메시의 소켓에 부착
-		//		// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
-		//		NormalHitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketToAttach);
-		//	}
-		//}
-		//if (!SpecialHitBoxContainer)
-		//{
-		//	SpecialHitBoxContainer = NewObject<USceneComponent>(this, TEXT("SpecialHitBoxContainer"));
-		//	if (SpecialHitBoxContainer)
-		//	{
-		//		// 컨테이너를 컴포넌트로 등록 
-		//		SpecialHitBoxContainer->RegisterComponent();
-
-		//		// 스켈레탈 메시의 소켓에 부착
-		//		// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
-		//		SpecialHitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketToAttach);
-		//	}
-		//}
-
-		//// 2. NormalSkillHitBox 생성 (HitBoxContainer의 자식)
-		//if (!NormalSkillHitBox)
-		//{
-		//	NormalSkillHitBox = NewObject<UBoxComponent>(this, TEXT("NormalSkillHitBox"));
-		//	if (NormalSkillHitBox)
-		//	{
-		//		NormalSkillHitBox->RegisterComponent();
-		//		NormalSkillHitBox->AttachToComponent(NormalHitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
-
-		//		HideNormalHitBox();
-
-		//		// Overlap 이벤트 바인딩 
-		//		NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnNormalHitBoxOverlap);
-		//	}
-		//}
-
-		//// 3. SpecialSkillHitBox 생성 (HitBoxContainer의 자식)
-		//if (!SpecialSkillHitBox)
-		//{
-		//	SpecialSkillHitBox = NewObject<UBoxComponent>(this, TEXT("SpecialSkillHitBox"));
-		//	if (SpecialSkillHitBox)
-		//	{
-		//		SpecialSkillHitBox->RegisterComponent();
-		//		SpecialSkillHitBox->AttachToComponent(SpecialHitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
-
-		//		HideSpecialHitBox();
-
-		//		// Overlap 이벤트 바인딩 
-		//		SpecialSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnSpecialHitBoxOverlap);
-		//	}
-		//}
-
-		//if (NormalSkillHitBox && NormalHitBoxContainer)
-		//{
-		//	// UBoxComponent는 half extents를 사용
-		//	// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
-		//	// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
-		//	// Y축은 Z 크기 값,
-		//	// Z축은 X 크기 값(SkillTypeSizeX/2)
-		//	FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
-		//	NormalSkillHitBox->SetBoxExtent(HalfExtent);
-
-		//	// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
-		//	// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
-		//	// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
-		//	FVector NewRelativeLocation = FVector(0.0f, 0.0f, HalfExtent.X);
-		//	NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
-
-		//	UE_LOG(LogTemp, Warning, TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
-		//		*HalfExtent.ToString(), *NewRelativeLocation.ToString());
-		//}
-		
-		//if (SpecialSkillHitBox && SpecialHitBoxContainer)
-		//{
-		//	// UBoxComponent는 half extents를 사용
-		//	// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
-		//	// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
-		//	// Y축은 Z 크기 값,
-		//	// Z축은 X 크기 값(SkillTypeSizeX/2)
-		//	FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
-		//	SpecialSkillHitBox->SetBoxExtent(HalfExtent);
-
-		//	// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
-		//	// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
-		//	// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
-		//	FVector NewRelativeLocation = FVector(0.0f, 0.0f, HalfExtent.X);
-		//	SpecialSkillHitBox->SetRelativeLocation(NewRelativeLocation);
-
-		//	UE_LOG(LogTemp, Warning, TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
-		//		*HalfExtent.ToString(), *NewRelativeLocation.ToString());
-		//}
 	}
 
 	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
@@ -647,7 +546,6 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 		}
 
 		Container->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepRelativeTransform,SocketToAttach);
-
 
 		// 스킬 타입에 따라 해당 히트박스 컴포넌트 생성
 		if(SkillData.SkillNameID == "Skill_EarthBreaker")
@@ -724,7 +622,6 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 		}
 
 	}
-
 
 	if(NormalSkillHitBox)
 	{
@@ -856,42 +753,6 @@ void AEntityPreset::ShowHitBox()
 	}
 }
 
-//// AnimNotify로 호출될 함수 정의 (Anim BP에서 사용 가능)
-//void AEntityPreset::AnimNotify_ShowHitBox()
-//{
-//	//ShowHitBox();
-//
-//	//// Duration 기반으로 히트박스 숨기기 예약
-//	//if(bIsCharging)
-//	//{
-//	//	float Duration = SpecialSkillData.SkillDuration;
-//	//	GetWorldTimerManager().SetTimerForNextTick([this,Duration]()
-//	//	{
-//	//		FTimerHandle TimerHandle;
-//	//		GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideSpecialHitBox,Duration,false);
-//	//	});
-//	//} else
-//	//{
-//	//	float Duration = NormalSkillData.SkillDuration;
-//	//	GetWorldTimerManager().SetTimerForNextTick([this,Duration]()
-//	//	{
-//	//		FTimerHandle TimerHandle;
-//	//		GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideNormalHitBox,Duration,false);
-//	//	});
-//	//}
-//}
-
-//void AEntityPreset::AnimNotify_SpawnProjectile()
-//{
-//	// 투사체 발사 함수
-//	SpawnProjectile_ThrowRock();
-//}
-//void AEntityPreset::AnimNotify_SpawnProjectile_FireBall()
-//{
-//	// 투사체 발사 함수
-//	SpawnProjectile_FireBall();
-//}
-
 void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != this)
@@ -936,48 +797,6 @@ void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedCompone
 		}
 	}
 }
-
-//void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-//{
-//	if (OtherActor && OtherActor != this)
-//	{
-//		// 플레이어 캐릭터인지 확인
-//		ACharacter* PlayerCharacter = Cast<ACharacter>(OtherActor);
-//		if (PlayerCharacter)
-//		{
-//			for (const FSkillEffectData& Effect : SpecialSkillEffectData)
-//			{
-//				switch (Effect.EffectType)
-//				{
-//				case EnumEffectType::Damage:
-//				{
-//					float DamageToApply = Effect.EffectValue01;
-//					UGameplayStatics::ApplyDamage(OtherActor, DamageToApply, GetController(), this, nullptr);
-//					UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Applied Damage %f to %s"),
-//						DamageToApply, *OtherActor->GetName());
-//					break;
-//				}
-//				case EnumEffectType::KnockBack:
-//				{
-//					// KnockBack 효과 로직 구현
-//					UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: KnockBack effect applied to %s"),
-//						*OtherActor->GetName());
-//					break;
-//				}
-//				case EnumEffectType::Destroy:
-//				{
-//					//OtherActor->Destroy();
-//					UE_LOG(LogTemp, Warning, TEXT(" Destroyed "));
-//					//UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Destroyed %s"), *OtherActor->GetName());
-//					break;
-//				}
-//				default:
-//					break;
-//				}
-//			}
-//		}
-//	}
-//}
 
 void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -1118,39 +937,6 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 		}
 		
 	}
-
-	
-
-	//// 2. KnockBack 효과 처리
-	//for (const FSkillEffectData& Effect : SpecialSkillEffectData)
-	//{
-	//	if(Effect.EffectType == EnumEffectType::KnockBack)
-	//	{
-	//		float KnockbackDistance = Effect.EffectValue01;
-	//		float KnockbackDuration = Effect.EffectValue02;
-
-	//		ApplyKnockbackEffect(PlayerCharacter,KnockbackDistance,KnockbackDuration);
-
-	//		/*UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
-	//		if (MoveComp)
-	//		{
-	//			MoveComp->Launch(KnockbackDir * Force);
-	//		}
-
-	//		UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: KnockBack applied to %s with force %f"), *OtherActor->GetName(), Force);*/
-	//	}
-	//}
-
-	//// 3. Destroy 효과는 마지막에 처리 (원하면 주석 처리 가능)
-	//for (const FSkillEffectData& Effect : SpecialSkillEffectData)
-	//{
-	//	if (Effect.EffectType == EnumEffectType::Destroy)
-	//	{
-	//		// 파괴가 정말 필요하다면 여기에
-	//		// OtherActor->Destroy();
-	//		UE_LOG(LogTemp, Warning, TEXT("Special HitBox Overlap: Destroy effect processed (log only) for %s"), *OtherActor->GetName());
-	//	}
-	//}
 }
 
 
@@ -1228,78 +1014,6 @@ void AEntityPreset::PerformSkill_Charge()
 	{
 		UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill_Charge: SpecialSkillMontage is not set"));
 	}
-	 
-	//// 애니메이션
-	//if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
-	//{
-	//	AnimInst->Montage_Play(SpecialSkillMontage);
-
-	//	// 경로 미리 시각화 (데칼은 여기에 맞춰서 깔림)
-	//	DrawDebugLine(GetWorld(), ChargeStartLocation, ChargeTargetLocation, FColor::Red, false, 2.0f, 0, 5.0f);
-
-	//	// 애니메이션 끝나는 시점에 돌진 시작
-	//	float PrepTime = 1.0f; // 애니메이션 준비 시간
-	//	FTimerHandle TimerHandle;
-	//	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::StartChargeMovement, PrepTime, false);
-	//}
-	//// 스킬 시전 플래그 설정
-	//// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
-	//bIsCastingSkill = true;
-
-	//// 저장된 전방 방향
-	//ChargeDirection = GetActorForwardVector().GetSafeNormal();
-	//ChargeStartLocation = GetActorLocation();
-	//ChargeDistance = SpecialSkillData.SkillRange;
-	//ChargeTargetLocation = ChargeStartLocation + ChargeDirection * ChargeDistance;
-
-	//// AI 경로 추적 중지 
-	//if (AAIController* AIController = Cast<AAIController>(GetController()))
-	//{
-	//	if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
-	//	{
-	//		// 경로 추적 중단
-	//		PathComp->Deactivate();
-
-	//		AIController->StopMovement();
-	//		UE_LOG(LogTemp, Warning, TEXT("AI movement forcibly stopped before LaunchCharacter"));
-	//	}
-	//}
-	////// 현재 전방 벡터를 저장 (처음 결정된 방향을 고정)
-	////StoredDashDirection = GetActorForwardVector().GetSafeNormal();
-
-	//if (SpecialSkillMontage)
-	//{
-	//	if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
-	//	{
-	//		// 스페셜 스킬 몽타주에 플레이어에게 돌진하기 전, 준비 애니메이션(1초) 포함
-	//		AnimInst->Montage_Play(SpecialSkillMontage);
-	//		UE_LOG(LogTemp, Warning, TEXT("PerformSpecialSkill_Charge: Montage played"));
-
-	//		//// 돌진 경로 표시
-	//		//DrawChargePath();
-
-	//		// 경로 시각화 (기획 확인용)
-	//		DrawDebugLine(GetWorld(), ChargeStartLocation, ChargeTargetLocation, FColor::Red, false, 2.0f, 0, 3.0f);
-
-	//		// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
-	//		FOnMontageEnded EndDelegate;
-	//		EndDelegate.BindUObject(this, &AEntityPreset::OnSkillMontageEnded);
-	//		AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
-
-	//		// 준비 시간 후 돌진 실행
-	//		float PrepTime = 1.0f; 
-	//		FTimerHandle TimerHandle;
-	//		GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::ExecuteChargeDash, PrepTime, false);
-	//	}
-	//	else
-	//	{
-	//		UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill_Charge: AnimInstance not found"));
-	//	}
-	//}
-	//else
-	//{
-	//	UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill_Charge: SpecialSkillMontage is not set"));
-	//}
 }
 
 void AEntityPreset::ExecuteChargeDash()
@@ -1310,30 +1024,7 @@ void AEntityPreset::ExecuteChargeDash()
 	LaunchCharacter(ChargeDirection * LaunchSpeed, true, true);
 	bIsCharging = true;
 
-	// 히트박스도 활성화
-	//ShowSpecialHitBox();
-
 	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Launch Started"));
-
-	//// 준비 시간 동안 저장된 dash 방향을 사용
-	//FVector DashDirection = StoredDashDirection;
-
-	//// SkillData에 정의된 SkillRange를 돌진 거리로 사용 
-	////float DashDistance = SpecialSkillData.SkillRange;
-
-	////FVector StartLocation = GetActorLocation();
-	////FVector DashTarget = StartLocation + DashDirection * DashDistance;
-
-	//// 히트박스 활성화 
-	//ShowSpecialHitBox();
-
-	//// 돌진
-	//float DashSpeed = 2000.0f; 
-	//LaunchCharacter(DashDirection * DashSpeed, true, false);
-
-	//UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Dashing"));
-
-	// 스킬 종료 처리는 MontageEnded 콜백에서 처리 
 }
 
 void AEntityPreset::SpawnChargeIndicator(FVector Start, FVector End)
@@ -1367,7 +1058,6 @@ void AEntityPreset::StartChargeMovement()
 	if (ChargeTimeline)
 	{
 		ChargeTimeline->PlayFromStart();
-		//ShowSpecialHitBox(); // 충돌 체크 시작
 	}
 }
 
@@ -1381,15 +1071,6 @@ void AEntityPreset::Timeline_ChargeFinished()
 {
 	bIsCastingSkill = false;
 	HideSpecialHitBox();
-
-	// AI 재시작 (필요 시)
-	//if (AAIController* AIController = Cast<AAIController>(GetController()))
-	//{
-	//	if (AIController->BrainComponent)
-	//	{
-	//		AIController->BrainComponent->RestartLogic();
-	//	}
-	//}
 }
 
 void AEntityPreset::ClearCastingSkill()
