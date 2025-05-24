@@ -60,25 +60,25 @@ void AEntityPreset::BeginPlay()
 	FName WidgetCompName = TEXT("EntityPresetWidget");
 	WidgetComp = Cast<UWidgetComponent>(GetDefaultSubobjectByName(WidgetCompName));  // 멤버 변수 WidgetComp 사용
 
-	if (WidgetComp)
+	if(WidgetComp)
 	{
 		UUserWidget* UserWidget = WidgetComp->GetUserWidgetObject();
-		if (UserWidget)
+		if(UserWidget)
 		{
 			EntityWidget = Cast<UEntityWidget>(UserWidget);
-			if (EntityWidget)
+			if(EntityWidget)
 			{
 				OnHealthChanged.Broadcast(CurrentHP);
 
 				EntityWidget->EntityPreset = this;
 				// 체력 변경 델리게이트 바인딩
-				OnHealthChanged.AddDynamic(EntityWidget, &UEntityWidget::UpdateHealthBar);
-				UE_LOG(LogTemp, Warning, TEXT("banana HP Bar connected %s"), *GetName());
+				OnHealthChanged.AddDynamic(EntityWidget,&UEntityWidget::UpdateHealthBar);
+				UE_LOG(LogTemp,Warning,TEXT("banana HP Bar connected %s"),*GetName());
 			}
-		/*	else
-			{
-				UE_LOG(LogTemp, Error, TEXT("bananaBeginPlay WidgetComp's widget is not of type UEntityWidget for %s"), *GetName());
-			}*/
+			/*	else
+				{
+					UE_LOG(LogTemp, Error, TEXT("bananaBeginPlay WidgetComp's widget is not of type UEntityWidget for %s"), *GetName());
+				}*/
 		}
 		/*else
 		{
@@ -89,38 +89,38 @@ void AEntityPreset::BeginPlay()
 	//{
 	//	UE_LOG(LogTemp, Error, TEXT("bananaBeginPlay WidgetComp is not assigned in blueprint for %s"), *GetName());
 	//}
-	
+
 	// 1. HitBoxContainer 생성 및 소켓에 부착
-	if (!NormalHitBoxContainer)
+	if(!NormalHitBoxContainer)
 	{
-		NormalHitBoxContainer = NewObject<USceneComponent>(this, TEXT("NormalHitBoxContainer"));
-		if (NormalHitBoxContainer)
+		NormalHitBoxContainer = NewObject<USceneComponent>(this,TEXT("NormalHitBoxContainer"));
+		if(NormalHitBoxContainer)
 		{
 			// 컨테이너를 컴포넌트로 등록 
 			NormalHitBoxContainer->RegisterComponent();
 
 			// 스켈레탈 메시의 소켓에 부착
 			// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
-			NormalHitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("BiteHitBox"));
+			NormalHitBoxContainer->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepRelativeTransform,TEXT("BiteHitBox"));
 		}
 	}
-	if (!SpecialHitBoxContainer)
+	if(!SpecialHitBoxContainer)
 	{
-		SpecialHitBoxContainer = NewObject<USceneComponent>(this, TEXT("SpecialHitBoxContainer"));
-		if (SpecialHitBoxContainer)
+		SpecialHitBoxContainer = NewObject<USceneComponent>(this,TEXT("SpecialHitBoxContainer"));
+		if(SpecialHitBoxContainer)
 		{
 			// 컨테이너를 컴포넌트로 등록 
 			SpecialHitBoxContainer->RegisterComponent();
 
 			// 스켈레탈 메시의 소켓에 부착
 			// 컨테이너는 소켓의 원점을 그대로 유지 (즉, 히트박스가 소켓 위치에서 시작)
-			SpecialHitBoxContainer->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("ChargeHitBox"));
+			SpecialHitBoxContainer->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepRelativeTransform,TEXT("ChargeHitBox"));
 		}
 	}
 
-	if (ChargeCurve)
+	if(ChargeCurve)
 	{
-		ChargeTimeline = NewObject<UTimelineComponent>(this, FName("WildBoar_ChargeFloat"));
+		ChargeTimeline = NewObject<UTimelineComponent>(this,FName("WildBoar_ChargeFloat"));
 		ChargeTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
 		ChargeTimeline->SetNetAddressable();
 		ChargeTimeline->SetPropertySetObject(this);
@@ -129,8 +129,8 @@ void AEntityPreset::BeginPlay()
 		ChargeTimeline->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
 
 		FOnTimelineFloat ProgressFunction;
-		ProgressFunction.BindUFunction(this, FName("Timeline_ChargeProgress"));
-		ChargeTimeline->AddInterpFloat(ChargeCurve, ProgressFunction, FName("WildBoar_ChargeFloat"));
+		ProgressFunction.BindUFunction(this,FName("Timeline_ChargeProgress"));
+		ChargeTimeline->AddInterpFloat(ChargeCurve,ProgressFunction,FName("WildBoar_ChargeFloat"));
 
 		//FOnTimelineEvent FinishedFunction;
 		//FinishedFunction.BindUFunction(this, FName("Timeline_ChargeFinished"));
@@ -173,16 +173,16 @@ void AEntityPreset::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsCharging)
+	if(bIsCharging)
 	{
-		float TravelledDistance = FVector::Dist(ChargeStartLocation, GetActorLocation());
-		if (TravelledDistance >= ChargeDistance)
+		float TravelledDistance = FVector::Dist(ChargeStartLocation,GetActorLocation());
+		if(TravelledDistance >= ChargeDistance)
 		{
 			StopMovement();
 			bIsCharging = false;
 
 			HideSpecialHitBox(); // 돌진 끝났으면 히트박스 제거
-			UE_LOG(LogTemp, Warning, TEXT("Charge Finished — Distance Reached"));
+			UE_LOG(LogTemp,Warning,TEXT("Charge Finished — Distance Reached"));
 		}
 	}
 }
@@ -193,8 +193,8 @@ void AEntityPreset::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-float AEntityPreset::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{	
+float AEntityPreset::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
+{
 	// 방어 중
 	if(this->bIsDefending)
 	{
@@ -203,7 +203,7 @@ float AEntityPreset::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 		// 대미지 원인이 플레이어 캐릭터 스킬인지 확인
 		AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(DamageCauser);
 		//ACharacter* PlayerCharacter = Cast<ACharacter>(DamageCauser);
-		UE_LOG(LogTemp,Warning,TEXT("DamageCauser: %s (%s)"), *GetNameSafe(DamageCauser), DamageCauser ? *DamageCauser->GetClass()->GetName() : TEXT("nullptr"));
+		UE_LOG(LogTemp,Warning,TEXT("DamageCauser: %s (%s)"),*GetNameSafe(DamageCauser),DamageCauser ? *DamageCauser->GetClass()->GetName() : TEXT("nullptr"));
 
 		UPlayerSkillComponent* PlayerSkillComponent = PlayerCharacter->FindComponentByClass<UPlayerSkillComponent>();
 
@@ -214,15 +214,13 @@ float AEntityPreset::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 			if(!PlayerSkillComponent->bIsSpecialAttack)
 			{
 				UE_LOG(LogTemp,Warning,TEXT("[Defending]: Ignore Normal Skill Damage"));
-				
+
 				return 0.0f;
-			}
-			else
+			} else
 			{
 				UE_LOG(LogTemp,Error,TEXT("[Defending]: Take Special Attack Damage"));
 			}
-		}
-		else
+		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("PlayerSkillComponent is NULL"));
 		}
@@ -242,40 +240,39 @@ float AEntityPreset::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 
 void AEntityPreset::SetHP(float NewHP)
 {
-	CurrentHP = FMath::Clamp(NewHP, 0.0f ,MaxHp);
+	CurrentHP = FMath::Clamp(NewHP,0.0f,MaxHp);
 	//CurrentHP = NewHP;
 	// 델리게이트 호출
 	//UE_LOG(LogTemp, Warning, TEXT("banana SetHP - NewHP: %f, ClampedHP: %f, MaxHP: %f"), NewHP, CurrentHP, MaxHp);
 	OnHealthChanged.Broadcast(CurrentHP);
 
-	if (CurrentHP <= 0)
+	if(CurrentHP <= 0)
 	{
-		if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+		if(APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(),0))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("yorimo PlayerController 존재"));
+			UE_LOG(LogTemp,Warning,TEXT("yorimo PlayerController 존재"));
 
 			APawn* PlayerPawn = PC->GetPawn();
 			ACharacter* Character = Cast<ACharacter>(PlayerPawn);
 
 			// 여기가 핵심: 플레이어에서 WidgetActor 찾기
-			if (UWidgetActor* WidgetActor = Character->FindComponentByClass<UWidgetActor>())
+			if(UWidgetActor* WidgetActor = Character->FindComponentByClass<UWidgetActor>())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("yorimo WidgetActor 찾음"));
-				if (!WidgetActor->PieWidget->DeadMonsters.Contains(currentPreset))
+				UE_LOG(LogTemp,Warning,TEXT("yorimo WidgetActor 찾음"));
+				if(!WidgetActor->PieWidget->DeadMonsters.Contains(currentPreset))
 				{
 					WidgetActor->HUDWidget->OnCollection_Implementation(currentPreset);
 					WidgetActor->PieWidget->DeadMonsters.Add(currentPreset);
-					UE_LOG(LogTemp, Warning, TEXT("yorimo DeadMonsters에 %s 추가됨"), *currentPreset);
+					UE_LOG(LogTemp,Warning,TEXT("yorimo DeadMonsters에 %s 추가됨"),*currentPreset);
 					WidgetActor->PieWidget->OpenCharacter(currentPreset);
-				}
-				else {
-					UE_LOG(LogTemp, Warning, TEXT("yorimo 추가실패"));
+				} else {
+					UE_LOG(LogTemp,Warning,TEXT("yorimo 추가실패"));
 
 				}
 
 			}
 		}
-		UE_LOG(LogTemp, Warning, TEXT("banana Entity Die"));
+		UE_LOG(LogTemp,Warning,TEXT("banana Entity Die"));
 		Destroy();
 	}
 
@@ -288,12 +285,11 @@ void AEntityPreset::ApplyDamage(float DamageAmount)
 
 float AEntityPreset::GetHPRatio()
 {
-	if (MaxHp > 0)
+	if(MaxHp > 0)
 	{
 		//UE_LOG(LogTemp, Log, TEXT("banana MaxHp > 0"));
 		return(CurrentHP / MaxHp);
-	}
-	else {
+	} else {
 		//UE_LOG(LogTemp, Log, TEXT("banana MaxHp = 0"));
 		return 0.0f;
 	}
@@ -315,68 +311,68 @@ void AEntityPreset::SetSpecialSkillRange(float SpecialSkillRange)
 }
 
 void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
-{	
+{
 	// Entity 데이터에 따라 초기화 
 	MaxHp = InEntityData.HP;
 	///SetActorLabel(InEntityData.EntityName);
 	SetMoveSpeed(InEntityData.MoveSpeed);
 	SetHP(InEntityData.HP);
 	currentPreset = InEntityData.EntityGroupID;
-	 
-	UE_LOG(LogTemp, Error, TEXT("banana Initialized Entity with Name: %s, HP: %d, Move Speed: %d"),
-		*InEntityData.EntityName, InEntityData.HP, InEntityData.MoveSpeed);
+
+	UE_LOG(LogTemp,Error,TEXT("banana Initialized Entity with Name: %s, HP: %d, Move Speed: %d"),
+		*InEntityData.EntityName,InEntityData.HP,InEntityData.MoveSpeed);
 
 	// EntityData에 저장된 Normal Skill 식별자를 통해 스킬 데이터 가져옴 
-	if (UABGameSingleton::Get().GetSkillDataBySkillID(InEntityData.NormalSkill, NormalSkillData))
+	if(UABGameSingleton::Get().GetSkillDataBySkillID(InEntityData.NormalSkill,NormalSkillData))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
-			*NormalSkillData.SkillNameID, (uint8)NormalSkillData.SkillType, NormalSkillData.SkillRange);
+		UE_LOG(LogTemp,Warning,TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
+			*NormalSkillData.SkillNameID,(uint8)NormalSkillData.SkillType,NormalSkillData.SkillRange);
 
 		NormalSkillID = InEntityData.NormalSkill;
 
 		SetNormalSkillRange(NormalSkillData.SkillRange);
 
 		// SkillType이 HitBox라면 
-		if (NormalSkillData.SkillType == EnumSkillType::HitBox)
+		if(NormalSkillData.SkillType == EnumSkillType::HitBox)
 		{
 			SetupHitBoxComponent(NormalSkillData);
 		}
 
 		// NormalSkillData에 저장된 SkillNameID 식별자를 통해 스킬 효과 데이터 가져옴
-		if (UABGameSingleton::Get().GetSkillEffectDataBySkillID(NormalSkillData.SkillNameID, NormalSkillEffectData))
+		if(UABGameSingleton::Get().GetSkillEffectDataBySkillID(NormalSkillData.SkillNameID,NormalSkillEffectData))
 		{
-			for (const FSkillEffectData& EffectData : NormalSkillEffectData)
+			for(const FSkillEffectData& EffectData : NormalSkillEffectData)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Effect Data: %s, Effect Type: %d, Effect Value01: %f, Effect Value02: %f"),
-					*EffectData.SkillNameID, (uint8)EffectData.EffectType, EffectData.EffectValue01, EffectData.EffectValue02);
-			}			
+				UE_LOG(LogTemp,Warning,TEXT("Loaded Skill Effect Data: %s, Effect Type: %d, Effect Value01: %f, Effect Value02: %f"),
+					*EffectData.SkillNameID,(uint8)EffectData.EffectType,EffectData.EffectValue01,EffectData.EffectValue02);
+			}
 		}
 	}
-	
+
 	// EntityData에 저장된 Special Skill 식별자를 통해 스킬 데이터 가져옴 
-	if (UABGameSingleton::Get().GetSkillDataBySkillID(InEntityData.SpecialSkill, SpecialSkillData))
+	if(UABGameSingleton::Get().GetSkillDataBySkillID(InEntityData.SpecialSkill,SpecialSkillData))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
-			*SpecialSkillData.SkillNameID, (uint8)SpecialSkillData.SkillType, SpecialSkillData.SkillRange);
+		UE_LOG(LogTemp,Warning,TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
+			*SpecialSkillData.SkillNameID,(uint8)SpecialSkillData.SkillType,SpecialSkillData.SkillRange);
 
 		SpecialSkillID = InEntityData.SpecialSkill;
 
 		SetSpecialSkillRange(SpecialSkillData.SkillRange);
 
 		// SkillType이 HitBox라면 
-		if (SpecialSkillData.SkillType == EnumSkillType::HitBox)
+		if(SpecialSkillData.SkillType == EnumSkillType::HitBox)
 		{
 			SetupHitBoxComponent(SpecialSkillData);
 		}
 
 		// SpecialSkillData에 저장된 SkillNameID 식별자를 통해 스킬 효과 데이터 가져옴
-		if (UABGameSingleton::Get().GetSkillEffectDataBySkillID(SpecialSkillData.SkillNameID, SpecialSkillEffectData))
+		if(UABGameSingleton::Get().GetSkillEffectDataBySkillID(SpecialSkillData.SkillNameID,SpecialSkillEffectData))
 		{
-			for (const FSkillEffectData& EffectData : SpecialSkillEffectData)
+			for(const FSkillEffectData& EffectData : SpecialSkillEffectData)
 			{
 
-				UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Effect Data: %s, Effect Type: %d, Effect Value01: %f, Effect Value02: %f"),
-					*EffectData.SkillNameID, (uint8)EffectData.EffectType, EffectData.EffectValue01, EffectData.EffectValue02);
+				UE_LOG(LogTemp,Warning,TEXT("Loaded Skill Effect Data: %s, Effect Type: %d, Effect Value01: %f, Effect Value02: %f"),
+					*EffectData.SkillNameID,(uint8)EffectData.EffectType,EffectData.EffectValue01,EffectData.EffectValue02);
 			}
 		}
 	}
@@ -384,73 +380,38 @@ void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 
 void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 {
-	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
+	if(SkillData.SkillTypeShape == EnumSkillTypeShape::Box)
 	{
 		// SkillNameID -> 소켓 이름 매핑 테이블
-		TMap<FString, FName> SkillToSocketMap = {
+		TMap<FString,FName> SkillToSocketMap = {
 			//{ "Skill_Slash", TEXT("SlashSocket") },
-			{ "Skill_Bite", TEXT("BiteHitBox") },
-			{ "Skill_Charge", TEXT("ChargeHitBox") },
-			{ "Skill_TailSwing", TEXT("TailSocket") },
-			{ "Skill_FreezeBreath", TEXT("BreathSocket") },
-			{ "Skill_ArmSwing", TEXT("ArmSocket") },
-			{ "Skill_SkeletonSlash", TEXT("SlashSocket") }
+			{"Skill_Bite",TEXT("BiteHitBox")},
+			{"Skill_Charge",TEXT("ChargeHitBox")},
+			{"Skill_TailSwing",TEXT("TailSocket")},
+			{"Skill_FreezeBreath",TEXT("BreathSocket")},
+			{"Skill_ArmSwing",TEXT("ArmSocket")},
+			{"Skill_SkeletonSlash",TEXT("SlashSocket")}
 		};
 
-		FName SocketToAttach = TEXT("DefaultHitBox"); 
-		if (FName* FoundSocket = SkillToSocketMap.Find(SkillData.SkillNameID))
+		FName SocketToAttach = TEXT("DefaultHitBox");
+		if(FName* FoundSocket = SkillToSocketMap.Find(SkillData.SkillNameID))
 		{
 			SocketToAttach = *FoundSocket;
 		}
 
 		USceneComponent* Container = nullptr;
-		if (SkillData.SkillNameID == "Skill_Charge")
+		if(SkillData.SkillNameID == "Skill_Charge")
 		{
 			Container = SpecialHitBoxContainer;
-		}
-		else
+		} else
 		{
 			Container = NormalHitBoxContainer;
 		}
 
-		Container->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, SocketToAttach);
+		Container->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepRelativeTransform,SocketToAttach);
 
 		// 스킬 타입에 따라 해당 히트박스 컴포넌트 생성
-		if (SkillData.SkillNameID == "Skill_Charge")
-		{
-			// Special 히트박스 생성
-			if (!SpecialSkillHitBox)
-			{
-				SpecialSkillHitBox = NewObject<UBoxComponent>(this, TEXT("SpecialSkillHitBox"));
-				if (SpecialSkillHitBox)
-				{
-					SpecialSkillHitBox->RegisterComponent();
-					SpecialSkillHitBox->AttachToComponent(Container, FAttachmentTransformRules::KeepRelativeTransform);
-					HideSpecialHitBox();
-
-					ConfigureHitBox(SpecialSkillHitBox);
-					SpecialSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnSpecialHitBoxOverlap);
-				}
-			}
-
-			// UBoxComponent는 half extents를 사용
-				// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
-				// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
-				// Y축은 Z 크기 값,
-				// Z축은 X 크기 값(SkillTypeSizeX/2)
-			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
-			SpecialSkillHitBox->SetBoxExtent(HalfExtent);
-
-			// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
-			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
-			// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
-			FVector NewRelativeLocation = FVector(0.0f, 0.0f, HalfExtent.X);
-			SpecialSkillHitBox->SetRelativeLocation(NewRelativeLocation);
-
-			UE_LOG(LogTemp, Warning, TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
-				*HalfExtent.ToString(), *NewRelativeLocation.ToString());
-		}
-		else if(SkillData.SkillNameID == "Skill_FreezeBreath")
+		if(SkillData.SkillNameID == "Skill_Charge")
 		{
 			// Special 히트박스 생성
 			if(!SpecialSkillHitBox)
@@ -483,24 +444,20 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 
 			UE_LOG(LogTemp,Warning,TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
 				*HalfExtent.ToString(),*NewRelativeLocation.ToString());
-		}
-		else
+		} else if(SkillData.SkillNameID == "Skill_FreezeBreath")
 		{
-			// Normal 히트박스 생성
-			if (!NormalSkillHitBox)
+			// Special 히트박스 생성
+			if(!SpecialSkillHitBox)
 			{
-				NormalSkillHitBox = NewObject<UBoxComponent>(this, TEXT("NormalSkillHitBox"));
-				if (NormalSkillHitBox)
+				SpecialSkillHitBox = NewObject<UBoxComponent>(this,TEXT("SpecialSkillHitBox"));
+				if(SpecialSkillHitBox)
 				{
-					NormalSkillHitBox->RegisterComponent();
-					NormalSkillHitBox->AttachToComponent(NormalHitBoxContainer, FAttachmentTransformRules::KeepRelativeTransform);
+					SpecialSkillHitBox->RegisterComponent();
+					SpecialSkillHitBox->AttachToComponent(Container,FAttachmentTransformRules::KeepRelativeTransform);
+					HideSpecialHitBox();
 
-					HideNormalHitBox();
-
-					ConfigureHitBox(NormalSkillHitBox);
-
-					// Overlap 이벤트 바인딩 
-					NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this, &AEntityPreset::OnNormalHitBoxOverlap);
+					ConfigureHitBox(SpecialSkillHitBox);
+					SpecialSkillHitBox->OnComponentBeginOverlap.AddDynamic(this,&AEntityPreset::OnSpecialHitBoxOverlap);
 				}
 			}
 
@@ -509,27 +466,63 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 				// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
 				// Y축은 Z 크기 값,
 				// Z축은 X 크기 값(SkillTypeSizeX/2)
-			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
+			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f,50.0f,SkillData.SkillTypeSizeX / 2.0f);
+			SpecialSkillHitBox->SetBoxExtent(HalfExtent);
+
+			// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
+			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
+			// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
+			FVector NewRelativeLocation = FVector(0.0f,0.0f,HalfExtent.X);
+			SpecialSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			UE_LOG(LogTemp,Warning,TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+				*HalfExtent.ToString(),*NewRelativeLocation.ToString());
+		} else
+		{
+			// Normal 히트박스 생성
+			if(!NormalSkillHitBox)
+			{
+				NormalSkillHitBox = NewObject<UBoxComponent>(this,TEXT("NormalSkillHitBox"));
+				if(NormalSkillHitBox)
+				{
+					NormalSkillHitBox->RegisterComponent();
+					NormalSkillHitBox->AttachToComponent(NormalHitBoxContainer,FAttachmentTransformRules::KeepRelativeTransform);
+
+					HideNormalHitBox();
+
+					ConfigureHitBox(NormalSkillHitBox);
+
+					// Overlap 이벤트 바인딩 
+					NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this,&AEntityPreset::OnNormalHitBoxOverlap);
+				}
+			}
+
+			// UBoxComponent는 half extents를 사용
+				// 전방 길이로 SkillTypeSizeX를 전체 길이로 보고, 이 값을 절반으로 해서 half extent로 사용
+				// half extent의 X축 값은 히트박스의 Y 크기 값(SkillTypeSizeY/2),
+				// Y축은 Z 크기 값,
+				// Z축은 X 크기 값(SkillTypeSizeX/2)
+			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f,50.0f,SkillData.SkillTypeSizeX / 2.0f);
 			NormalSkillHitBox->SetBoxExtent(HalfExtent);
 
 			// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
 			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
 			// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
-			FVector NewRelativeLocation = FVector(0.0f, 0.0f, HalfExtent.X);
+			FVector NewRelativeLocation = FVector(0.0f,0.0f,HalfExtent.X);
 			NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
 
-			UE_LOG(LogTemp, Warning, TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
-				*HalfExtent.ToString(), *NewRelativeLocation.ToString());
+			UE_LOG(LogTemp,Warning,TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+				*HalfExtent.ToString(),*NewRelativeLocation.ToString());
 		}
 	}
 
-	if (SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
+	if(SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Sphere"));
+		UE_LOG(LogTemp,Warning,TEXT("Sphere"));
 
 		// SkillNameID -> 소켓 이름 매핑 테이블
 		TMap<FString,FName> SkillToSocketMap = {
-			{"Skill_EarthBreaker", TEXT("BreakerSocket")}
+			{"Skill_EarthBreaker",TEXT("BreakerSocket")}
 		};
 
 		FName SocketToAttach = TEXT("DefaultHitBox");
@@ -543,8 +536,7 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 		if(SkillData.SkillNameID == "Skill_EarthBreaker")
 		{
 			Container = SpecialHitBoxContainer;
-		} 
-		else
+		} else
 		{
 			Container = NormalHitBoxContainer;
 		}
@@ -584,10 +576,9 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			FVector NewRelativeLocation = FVector::ZeroVector;
 			SpecialSkillSphereHitBox->SetRelativeLocation(NewRelativeLocation);
 
-			UE_LOG(LogTemp, Warning, TEXT("SetupSpecialSkillSphereHitBox: HalfRadius=%.1f, NewRelativeLocation=%s"),
-				Radius, *NewRelativeLocation.ToString());
-		} 
-		else
+			UE_LOG(LogTemp,Warning,TEXT("SetupSpecialSkillSphereHitBox: HalfRadius=%.1f, NewRelativeLocation=%s"),
+				Radius,*NewRelativeLocation.ToString());
+		} else
 		{
 			// Normal 히트박스 생성
 			if(!NormalSkillHitBox)
@@ -643,28 +634,28 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 // 히트박스 충돌 세팅 
 void AEntityPreset::ConfigureHitBox(UBoxComponent* HitBox)
 {
-	if (!HitBox)
+	if(!HitBox)
 	{
 		return;
 	}
 
 	HitBox->SetCollisionObjectType(ECC_WorldDynamic);
 	HitBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	HitBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	HitBox->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);
 	HitBox->SetGenerateOverlapEvents(true);
 }
 
 // 히트박스 충돌 세팅 
 void AEntityPreset::ConfigureSphereHitBox(USphereComponent* HitBox)
 {
-	if (!HitBox)
+	if(!HitBox)
 	{
 		return;
 	}
 
 	HitBox->SetCollisionObjectType(ECC_WorldDynamic);
 	HitBox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	HitBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	HitBox->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);
 	HitBox->SetGenerateOverlapEvents(true);
 }
 
@@ -676,11 +667,11 @@ void AEntityPreset::ShowNormalHitBox()
 	NormalSkillHitBox->SetHiddenInGame(false);
 	NormalSkillHitBox->SetVisibility(true);
 	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기, 물리는 무시하지만 쿼리만 처리
-	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
+	UE_LOG(LogTemp,Warning,TEXT("Show HitBox"));
 
 	// 유지 시간 이후 HideHitBox 함수 호출  
 	FTimerHandle TimerHandle;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::HideNormalHitBox, Duration, false);
+	GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideNormalHitBox,Duration,false);
 }
 
 void AEntityPreset::HideNormalHitBox()
@@ -689,7 +680,7 @@ void AEntityPreset::HideNormalHitBox()
 	NormalSkillHitBox->SetHiddenInGame(true);
 	//NormalSkillHitBox->SetVisibility(false);
 	NormalSkillHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 끄기
-	UE_LOG(LogTemp, Warning, TEXT("Hide HitBox"));
+	UE_LOG(LogTemp,Warning,TEXT("Hide HitBox"));
 }
 
 void AEntityPreset::ShowSpecialHitBox()
@@ -700,11 +691,11 @@ void AEntityPreset::ShowSpecialHitBox()
 	SpecialSkillHitBox->SetHiddenInGame(false);
 	SpecialSkillHitBox->SetVisibility(true);
 	SpecialSkillHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기
-	UE_LOG(LogTemp, Warning, TEXT("Show HitBox"));
+	UE_LOG(LogTemp,Warning,TEXT("Show HitBox"));
 
 	// 유지 시간 이후 HideHitBox 함수 호출  
 	FTimerHandle TimerHandle;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::HideSpecialHitBox, Duration, false);
+	GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideSpecialHitBox,Duration,false);
 }
 
 void AEntityPreset::ShowSpecialSphereHitBox()
@@ -715,11 +706,11 @@ void AEntityPreset::ShowSpecialSphereHitBox()
 	SpecialSkillSphereHitBox->SetHiddenInGame(false);
 	SpecialSkillSphereHitBox->SetVisibility(true);
 	SpecialSkillSphereHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 켜기
-	UE_LOG(LogTemp, Warning, TEXT("Show Sphere HitBox"));
+	UE_LOG(LogTemp,Warning,TEXT("Show Sphere HitBox"));
 
 	// 유지 시간 이후 HideHitBox 함수 호출  
 	FTimerHandle TimerHandle;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::HideSpecialSphereHitBox, Duration, false);
+	GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::HideSpecialSphereHitBox,Duration,false);
 }
 
 void AEntityPreset::HideSpecialHitBox()
@@ -728,7 +719,7 @@ void AEntityPreset::HideSpecialHitBox()
 	SpecialSkillHitBox->SetHiddenInGame(true);
 	SpecialSkillHitBox->SetVisibility(false);
 	SpecialSkillHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 끄기
-	UE_LOG(LogTemp, Warning, TEXT("Hide HitBox"));
+	UE_LOG(LogTemp,Warning,TEXT("Hide HitBox"));
 }
 
 void AEntityPreset::HideSpecialSphereHitBox()
@@ -737,7 +728,7 @@ void AEntityPreset::HideSpecialSphereHitBox()
 	SpecialSkillSphereHitBox->SetHiddenInGame(true);
 	//SpecialSkillSphereHitBox->SetVisibility(false);
 	SpecialSkillSphereHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 끄기
-	UE_LOG(LogTemp, Warning, TEXT("Hide HitBox"));
+	UE_LOG(LogTemp,Warning,TEXT("Hide HitBox"));
 }
 
 void AEntityPreset::ShowHitBox()
@@ -745,43 +736,41 @@ void AEntityPreset::ShowHitBox()
 	if(bIsCharging || bIsFreezing)
 	{
 		ShowSpecialHitBox();
-	} 
-	else if(bIsBreaking)
+	} else if(bIsBreaking)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("[ShowHitBox] Calling ShowSpecialSphereHitBox (Break)"));
 		ShowSpecialSphereHitBox();
-	}
-	else
+	} else
 	{
 		ShowNormalHitBox();
 	}
 }
 
-void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != this)
+	if(OtherActor && OtherActor != this)
 	{
 		// 플레이어 캐릭터인지 확인
 		AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(OtherActor);
-		if (PlayerCharacter)
+		if(PlayerCharacter)
 		{
 			// Normal 스킬에 부여된 모든 효과들을 반복 처리합니다.
-			for (const FSkillEffectData& Effect : NormalSkillEffectData)
+			for(const FSkillEffectData& Effect : NormalSkillEffectData)
 			{
-				switch (Effect.EffectType)
+				switch(Effect.EffectType)
 				{
 				case EnumEffectType::Damage:
 				{
 					float DamageToApply = Effect.EffectValue01;
-					UGameplayStatics::ApplyDamage(OtherActor, DamageToApply, GetController(), this, nullptr);
-					UE_LOG(LogTemp, Warning, TEXT("Normal HitBox Overlap: Applied Damage %f to %s"),
-						DamageToApply, *OtherActor->GetName());
+					UGameplayStatics::ApplyDamage(OtherActor,DamageToApply,GetController(),this,nullptr);
+					UE_LOG(LogTemp,Warning,TEXT("Normal HitBox Overlap: Applied Damage %f to %s"),
+						DamageToApply,*OtherActor->GetName());
 					break;
 				}
 				case EnumEffectType::KnockBack:
 				{
 					// KnockBack 효과 로직 구현 (예: OtherActor에게 일정 힘을 가해 뒤로 밀어냄)
-					UE_LOG(LogTemp, Warning, TEXT("Normal HitBox Overlap: KnockBack effect applied to %s"),
+					UE_LOG(LogTemp,Warning,TEXT("Normal HitBox Overlap: KnockBack effect applied to %s"),
 						*OtherActor->GetName());
 					break;
 				}
@@ -789,27 +778,27 @@ void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedCompone
 				{
 					// Destroy 효과가 적용되는 경우 OtherActor를 파괴하도록 합니다.
 					//OtherActor->Destroy();
-					UE_LOG(LogTemp, Warning, TEXT("Normal HitBox Overlap: Destroyed %s"),
+					UE_LOG(LogTemp,Warning,TEXT("Normal HitBox Overlap: Destroyed %s"),
 						*OtherActor->GetName());
 					break;
 				}
 				// 필요한 다른 효과에 대해서도 추가적으로 처리
 				default:
-					break;
+				break;
 				}
 			}
 		}
 	}
 }
 
-void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
 {
-	if (!OtherActor || OtherActor == this) return;
+	if(!OtherActor || OtherActor == this) return;
 
 	AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(OtherActor);
-	if (!PlayerCharacter) return;
+	if(!PlayerCharacter) return;
 
-	for (const FSkillEffectData& Effect : SpecialSkillEffectData)
+	for(const FSkillEffectData& Effect : SpecialSkillEffectData)
 	{
 		if(OtherActor->ActorHasTag("Player"))
 		{
@@ -891,7 +880,7 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 					{
 						// 스턴 상태로 변경 
 						//PlayerCharacter->CharacterStateComponent->isStunned = true;
-						
+
 						// 이동 불가능 
 						PlayerCharacter->bCanMove = false;
 
@@ -911,12 +900,12 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 								UE_LOG(LogTemp,Warning,TEXT("Stun ended for %s"),*PlayerCharacter->GetName());
 							}
 						});
-						GetWorld()->GetTimerManager().SetTimer(RestoreHandle, RestoreDelegate, Duration, false);
-						
+						GetWorld()->GetTimerManager().SetTimer(RestoreHandle,RestoreDelegate,Duration,false);
+
 						// 이동 불가능
 						//MoveComp->DisableMovement();
 
-				/*		
+				/*
 						RestoreDelegate.BindLambda([=]() {
 							if(PlayerCharacter && PlayerCharacter->GetCharacterMovement())
 							{
@@ -939,7 +928,7 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 				UE_LOG(LogTemp,Warning,TEXT("Special HitBox Overlap: Destroy effect processed (log only) for %s"),*OtherActor->GetName());
 			}
 		}
-		
+
 	}
 }
 
@@ -947,7 +936,7 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 
 void AEntityPreset::PerformSkill_Charge()
 {
-	if (!SpecialSkillMontage) return;
+	if(!SpecialSkillMontage) return;
 
 	// 스킬 시전 플래그 설정
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
@@ -962,61 +951,59 @@ void AEntityPreset::PerformSkill_Charge()
 	ChargeTargetLocation = ChargeStartLocation + ChargeDirection * SpecialSkillData.SkillRange;*/
 
 	// 인디케이터 표시
-	SpawnChargeIndicator(ChargeStartLocation, ChargeTargetLocation); 
+	SpawnChargeIndicator(ChargeStartLocation,ChargeTargetLocation);
 
 	// 1초 뒤 데칼 제거
 	FTimerHandle DecalTimerHandle;
-	GetWorldTimerManager().SetTimer(DecalTimerHandle, [this]()
+	GetWorldTimerManager().SetTimer(DecalTimerHandle,[this]()
+	{
+		if(ChargeDecalComponent)
 		{
-			if (ChargeDecalComponent)
-			{
-				ChargeDecalComponent->DestroyComponent();
-				ChargeDecalComponent = nullptr;
-			}
-		}, 1.0f, false);
+			ChargeDecalComponent->DestroyComponent();
+			ChargeDecalComponent = nullptr;
+		}
+	},1.0f,false);
 
 	// AI 경로 추적 중지 
-	if (AAIController* AIController = Cast<AAIController>(GetController()))
+	if(AAIController* AIController = Cast<AAIController>(GetController()))
 	{
-		if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
 		{
 			// 경로 추적 중단
 			PathComp->Deactivate();
 
 			AIController->StopMovement();
-			UE_LOG(LogTemp, Warning, TEXT("AI movement forcibly stopped before LaunchCharacter"));
+			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before LaunchCharacter"));
 		}
 	}
 
-	if (SpecialSkillMontage)
+	if(SpecialSkillMontage)
 	{
-		if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+		if(UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
 		{
 			// 스페셜 스킬 몽타주에 플레이어에게 돌진하기 전, 준비 애니메이션(1초) 포함
 			AnimInst->Montage_Play(SpecialSkillMontage);
-			UE_LOG(LogTemp, Warning, TEXT("PerformSpecialSkill_Charge: Montage played"));
+			UE_LOG(LogTemp,Warning,TEXT("PerformSpecialSkill_Charge: Montage played"));
 
 			// 경로 시각화 (기획 확인용)
 			//DrawDebugLine(GetWorld(), ChargeStartLocation, ChargeTargetLocation, FColor::Red, false, 2.0f, 0, 3.0f);
 
 			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
 			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this, &AEntityPreset::OnSkillMontageEnded);
-			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
+			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate,SpecialSkillMontage);
 
 			// 준비 시간 후 돌진 실행
-			float PrepTime = 1.0f; 
+			float PrepTime = 1.0f;
 			FTimerHandle TimerHandle;
-			GetWorldTimerManager().SetTimer(TimerHandle, this, &AEntityPreset::StartChargeMovement, PrepTime, false);
-		}
-		else
+			GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::StartChargeMovement,PrepTime,false);
+		} else
 		{
-			UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill_Charge: AnimInstance not found"));
+			UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_Charge: AnimInstance not found"));
 		}
-	}
-	else
+	} else
 	{
-		UE_LOG(LogTemp, Error, TEXT("PerformSpecialSkill_Charge: SpecialSkillMontage is not set"));
+		UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_Charge: SpecialSkillMontage is not set"));
 	}
 }
 
@@ -1025,32 +1012,32 @@ void AEntityPreset::ExecuteChargeDash()
 	float LaunchSpeed = 2000.0f;
 
 	// 실제 돌진
-	LaunchCharacter(ChargeDirection * LaunchSpeed, true, true);
+	LaunchCharacter(ChargeDirection * LaunchSpeed,true,true);
 	bIsCharging = true;
 
-	UE_LOG(LogTemp, Warning, TEXT("ExecuteChargeDash: Launch Started"));
+	UE_LOG(LogTemp,Warning,TEXT("ExecuteChargeDash: Launch Started"));
 }
 
-void AEntityPreset::SpawnChargeIndicator(FVector Start, FVector End)
+void AEntityPreset::SpawnChargeIndicator(FVector Start,FVector End)
 {
-	if (!ChargeDecalComponent)
+	if(!ChargeDecalComponent)
 	{
 		ChargeDecalComponent = NewObject<UDecalComponent>(this);
 		ChargeDecalComponent->RegisterComponent();
-		ChargeDecalComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+		ChargeDecalComponent->AttachToComponent(RootComponent,FAttachmentTransformRules::KeepWorldTransform);
 		ChargeDecalComponent->SetDecalMaterial(ChargeDecalMaterial);
 	}
 
 	FVector MidPoint = (Start + End) * 0.5f;
-	float Length = FVector::Distance(Start, End);
+	float Length = FVector::Distance(Start,End);
 
 	// 데칼 크기: Y축 방향으로 돌진 경로 길이 반영
-	ChargeDecalComponent->DecalSize = FVector(100.f, Length * 0.5f, 100.f);  // (높이, Y폭, 깊이)
+	ChargeDecalComponent->DecalSize = FVector(100.f,Length * 0.5f,100.f);  // (높이, Y폭, 깊이)
 
 	// 데칼 방향: 돌진 방향으로 정렬 (Pitch -90은 지면 투사)
 	// Z축 투사, Y축 방향 보정 (Yaw + 90도)
-	FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(Start, End);
-	FRotator DecalRot = FRotator(-90.f, LookAtRot.Yaw + 90.f, 0.f);
+	FRotator LookAtRot = UKismetMathLibrary::FindLookAtRotation(Start,End);
+	FRotator DecalRot = FRotator(-90.f,LookAtRot.Yaw + 90.f,0.f);
 
 	ChargeDecalComponent->SetWorldLocation(MidPoint);
 	ChargeDecalComponent->SetWorldRotation(DecalRot);
@@ -1059,7 +1046,7 @@ void AEntityPreset::SpawnChargeIndicator(FVector Start, FVector End)
 
 void AEntityPreset::StartChargeMovement()
 {
-	if (ChargeTimeline)
+	if(ChargeTimeline)
 	{
 		ChargeTimeline->PlayFromStart();
 	}
@@ -1067,7 +1054,7 @@ void AEntityPreset::StartChargeMovement()
 
 void AEntityPreset::Timeline_ChargeProgress(float Value)
 {
-	FVector NewLocation = FMath::Lerp(ChargeStartLocation, ChargeTargetLocation, Value);
+	FVector NewLocation = FMath::Lerp(ChargeStartLocation,ChargeTargetLocation,Value);
 	SetActorLocation(NewLocation);
 }
 
@@ -1083,7 +1070,7 @@ void AEntityPreset::ClearCastingSkill()
 }
 
 //  스킬 몽타주 종료 콜백
-void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage,bool bInterrupted)
 {
 	// 스킬 종료 처리 
 	bIsCastingSkill = false;
@@ -1102,9 +1089,9 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted
 	}*/
 
 	// AI 경로 추적 활성화
-	if (AAIController* AIController = Cast<AAIController>(GetController()))
+	if(AAIController* AIController = Cast<AAIController>(GetController()))
 	{
-		if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
 		{
 			// 경로 추적 활성화 
 			PathComp->Activate();
@@ -1121,9 +1108,9 @@ void AEntityPreset::OnGuardEnded()
 	UE_LOG(LogTemp,Warning,TEXT("방어 종료"));
 
 	// AI 경로 추적 활성화
-	if (AAIController* AIController = Cast<AAIController>(GetController()))
+	if(AAIController* AIController = Cast<AAIController>(GetController()))
 	{
-		if (UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
 		{
 			// 경로 추적 활성화 
 			PathComp->Activate();
@@ -1155,17 +1142,17 @@ void AEntityPreset::DrawChargePath()
 	FVector EndLocation = StartLocation + GetActorForwardVector() * DashSpeed * DashDuration;
 
 	//DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1.5f, 0, 5.f);
-	UE_LOG(LogTemp, Warning, TEXT("DrawChargePath: Charge path drawn"));
+	UE_LOG(LogTemp,Warning,TEXT("DrawChargePath: Charge path drawn"));
 }
 
-void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target, float Distance, float Duration)
+void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target,float Distance,float Duration)
 {
 	// LaunchCharacter 로 구현
 	FVector KnockbackDir = Target->GetActorLocation() - GetActorLocation();
 	KnockbackDir.Normalize();
-			
+
 	// 최소 보정
-	if (Distance <= 0.01f)
+	if(Distance <= 0.01f)
 	{
 		Duration = 0.1f;
 	}
@@ -1176,10 +1163,10 @@ void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target, float Distance, flo
 	FVector KnockbackVelocity = KnockbackDir * KnockbackSpeed;
 
 	UCharacterMovementComponent* MoveComp = Target->GetCharacterMovement();
-	if (MoveComp)
+	if(MoveComp)
 	{
 		// 기존 모멘텀 무시하고 새로운 속도로 밀기
-		Target->LaunchCharacter(KnockbackVelocity, true, true);
+		Target->LaunchCharacter(KnockbackVelocity,true,true);
 
 		// 마찰력 없애서 정확하게 이동
 		MoveComp->BrakingFrictionFactor = 0.f;
@@ -1191,10 +1178,10 @@ void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target, float Distance, flo
 		RestoreFriction.BindLambda([=]() {
 			MoveComp->BrakingFrictionFactor = 2.f;
 			MoveComp->GroundFriction = 8.f;
-			});
-		Target->GetWorldTimerManager().SetTimer(FrictionRestoreHandle, RestoreFriction, Duration, false);
-		
-		UE_LOG(LogTemp, Warning, TEXT("KnockBack to %s → Distance: %.1fcm in %.2fs (speed: %.1f)"), *Target->GetName(), Distance, Duration, KnockbackSpeed);
+		});
+		Target->GetWorldTimerManager().SetTimer(FrictionRestoreHandle,RestoreFriction,Duration,false);
+
+		UE_LOG(LogTemp,Warning,TEXT("KnockBack to %s → Distance: %.1fcm in %.2fs (speed: %.1f)"),*Target->GetName(),Distance,Duration,KnockbackSpeed);
 	}
 }
 
@@ -1326,7 +1313,7 @@ void AEntityPreset::PerformSkill_FireBall()
 			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
-			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
+			AnimInst->Montage_SetEndDelegate(EndDelegate,SpecialSkillMontage);
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_FireBall: AnimInstance not found"));
@@ -1368,7 +1355,7 @@ void AEntityPreset::PerformSkill_FreezeBreath()
 			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
-			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
+			AnimInst->Montage_SetEndDelegate(EndDelegate,SpecialSkillMontage);
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_FreezeBreath: AnimInstance not found"));
@@ -1411,15 +1398,13 @@ void AEntityPreset::PerformSkill_EarthBreaker()
 			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
-			AnimInst->Montage_SetEndDelegate(EndDelegate, SpecialSkillMontage);
+			AnimInst->Montage_SetEndDelegate(EndDelegate,SpecialSkillMontage);
 			UE_LOG(LogTemp,Error,TEXT("PerformSkill_EarthBreaker"));
-		} 
-		else
+		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("PerformSkill_EarthBreaker: AnimInstance not found"));
 		}
-	} 
-	else
+	} else
 	{
 		UE_LOG(LogTemp,Error,TEXT("PerformSkill_EarthBreaker: SpecialSkillMontage is not set"));
 	}
@@ -1440,6 +1425,8 @@ void AEntityPreset::PerformSkill_Arrow()
 		{
 			// 경로 추적 중단
 			PathComp->Deactivate();
+			// 포커스 해제 
+			AIController->ClearFocus(EAIFocusPriority::Gameplay);
 
 			AIController->StopMovement();
 			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Spawn Projectile"));
@@ -1482,6 +1469,8 @@ void AEntityPreset::PerformSkill_SplinterArrow()
 		{
 			// 경로 추적 중단
 			PathComp->Deactivate();
+			// 포커스 해제 
+			AIController->ClearFocus(EAIFocusPriority::Gameplay);
 
 			AIController->StopMovement();
 			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Spawn Splineter Projectile"));
@@ -1501,8 +1490,7 @@ void AEntityPreset::PerformSkill_SplinterArrow()
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
 			AnimInst->Montage_SetEndDelegate(EndDelegate,SpecialSkillMontage);
-		} 
-		else
+		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("PerformSkill_SplinterArrow: AnimInstance not found"));
 		}
@@ -1563,55 +1551,61 @@ void AEntityPreset::FireProjectile_Arrow()
 }
 
 // 노티파이에서 실행 : 센터 화살 스폰 
-void AEntityPreset::Spawn_CenterArrow()
-{
-	// 스폰할 투사체 클래스 설정 확인
-	if(!SpecialProjectileClass)
-	{
-		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
-		return;
-	}
+//void AEntityPreset::Spawn_CenterArrow()
+//{
+//	// 스폰할 투사체 클래스 설정 확인
+//	if(!SpecialProjectileClass)
+//	{
+//		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
+//		return;
+//	}
+//
+//	// 스폰 위치, 방향 설정 
+//	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ArrowSocket"));
+//	FVector Direction = GetMesh()->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
+//
+//	// 스폰 파라미터
+//	FActorSpawnParameters SpawnParams;
+//	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+//	SpawnParams.Owner = this;
+//	SpawnParams.Instigator = GetInstigator();
+//
+//	// 투사체 액터 스폰 
+//	//FRotator DumyRotation = Direction.Rotation();
+//	FRotator DumyRotation = GetActorForwardVector().Rotation();
+//	Arrow = GetWorld()->SpawnActor<AEntityProjectile>(SpecialProjectileClass,SpawnLocation,DumyRotation,SpawnParams);
+//
+//	if(Arrow)
+//	{
+//		// Skill 데이터 테이블에서 "Skill_SplinterArrow" 데이터 가져오기
+//		FSkillData SkillData;
+//		TArray<FSkillEffectData> EffectDataArray;
+//
+//		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_SplinterArrow",SkillData) &&
+//			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_SplinterArrow",EffectDataArray))
+//		{
+//			// 초기화
+//			Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+//
+//			UE_LOG(LogTemp,Error,TEXT("Spawned Skill_SplinterArrow Center Projectile"));
+//
+//			// 발사
+//			/*FTransform SocketTransform = GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+//			FVector FireDirection = SocketTransform.GetRotation().GetForwardVector();
+//
+//			Arrow->FireInDirection(FireDirection);
+//			UE_LOG(LogTemp,Warning,TEXT("Fired arrow → Dir: %s"), *FireDirection.ToString());*/
+//
+//			/*FVector Direction = GetMesh()->GetForwardVector();
+//			Arrow->FireInDirection(Direction);*/
+//		} else
+//		{
+//			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_SplinterArrow Center data!"));
+//		}
+//	}
+//}
 
-	// 스폰 위치, 방향 설정 
-	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ArrowSocket"));
-	FVector Direction = GetMesh()->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
-
-	// 스폰 파라미터
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Owner = this;
-	SpawnParams.Instigator = GetInstigator();
-
-	// 투사체 액터 스폰 
-	//FRotator DumyRotation = Direction.Rotation();
-	FRotator DumyRotation = GetActorForwardVector().Rotation();
-	Arrow = GetWorld()->SpawnActor<AEntityProjectile>(SpecialProjectileClass,SpawnLocation,DumyRotation,SpawnParams);
-
-	if(Arrow)
-	{
-		// Skill 데이터 테이블에서 "Skill_SplinterArrow" 데이터 가져오기
-		FSkillData SkillData;
-		TArray<FSkillEffectData> EffectDataArray;
-
-		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_SplinterArrow",SkillData) &&
-			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_SplinterArrow",EffectDataArray))
-		{
-			// 초기화
-			Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
-
-			UE_LOG(LogTemp,Error,TEXT("Spawned Skill_SplinterArrow Center Projectile"));
-
-			// 발사
-			//FVector Direction = GetMesh()->GetForwardVector();
-			//Arrow->FireInDirection(Direction);
-		} else
-		{
-			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_SplinterArrow Center data!"));
-		}
-	}
-}
-
-// 노티파이에서 실행 : 서브 화살1, 2 스폰 및 모든 화살 발사  
+// 노티파이에서 실행 : 화살 스폰 및 모든 화살 발사  
 void AEntityPreset::Fire_AllArrows()
 {
 	if(!SpecialProjectileClass)
@@ -1626,19 +1620,19 @@ void AEntityPreset::Fire_AllArrows()
 	FSkillData SkillData;
 	TArray<FSkillEffectData> EffectDataArray;
 
-	// 센터 화살 포함
-	if(Arrow)
-	{
-		ArrowList.Add(Arrow);
-	}
+	//// 센터 화살 포함
+	//if(Arrow)
+	//{
+	//	//ArrowList.Add(Arrow);
+	//}
 
-	TArray<FName> SubSockets = {TEXT("ArrowSubSocket_1"),TEXT("ArrowSubSocket_2")};
+	TArray<FName> Sockets = {TEXT("ArrowSocket"), TEXT("ArrowSubSocket_1"),TEXT("ArrowSubSocket_2")};
 
 	// 서브 화살 생성
-	for(FName SocketName : SubSockets)
+	for(FName SocketName : Sockets)
 	{
 		FVector SpawnLoc = GetMesh()->GetSocketLocation(SocketName);
-		FRotator SpawnRot = GetMesh()->GetSocketRotation(SocketName); 
+		FRotator SpawnRot = GetMesh()->GetSocketRotation(SocketName);
 		//FVector Direction = SpawnRot.Vector();
 
 		// 스폰 파라미터
@@ -1647,19 +1641,20 @@ void AEntityPreset::Fire_AllArrows()
 		SpawnParams.Owner = this;
 		SpawnParams.Instigator = GetInstigator();
 
-		AEntityProjectile* SubArrow = GetWorld()->SpawnActor<AEntityProjectile>(SpecialProjectileClass,SpawnLoc,SpawnRot,SpawnParams);
+		//AEntityProjectile*
+		Arrow = GetWorld()->SpawnActor<AEntityProjectile>(SpecialProjectileClass,SpawnLoc,SpawnRot,SpawnParams);
 
-		if(SubArrow)
+		if(Arrow)
 		{
 			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_SplinterArrow",SkillData) &&
 			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_SplinterArrow",EffectDataArray))
 			{
 				// 초기화
-				SubArrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+				Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
 
 				UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_SplinterArrow sub data!"));
 
-				ArrowList.Add(SubArrow);
+				ArrowList.Add(Arrow);
 			}
 		}
 	}
@@ -1670,6 +1665,11 @@ void AEntityPreset::Fire_AllArrows()
 		AEntityProjectile* CurrentArrow = ArrowList[i];
 		FName SocketName;
 
+		/*if(i == 0)
+			SocketName = TEXT("ArrowSubSocket_1");
+		else if(i == 1)
+			SocketName = TEXT("ArrowSubSocket_2");
+		*/	
 		if(i == 0)
 			SocketName = TEXT("ArrowSocket");
 		else if(i == 1)
@@ -1707,8 +1707,8 @@ void AEntityPreset::Fire_AllArrows()
 	//	}
 	//}
 
-	// 센터 화살 포인터 정리
-	Arrow = nullptr;
+	//// 센터 화살 포인터 정리
+	//Arrow = nullptr;
 }
 
 //void AEntityPreset::Fire_AllArrows()
@@ -1824,8 +1824,7 @@ void AEntityPreset::PerformSkill_ShieldGuard()
 		// 스킬 시전 3초 후 스킬 종료 
 		FTimerHandle TimerHandle;
 		GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::OnGuardEnded,3.0f,false);
-	}
-	else
+	} else
 	{
 		UE_LOG(LogTemp,Error,TEXT("PerformSkill_ShieldGuard: AnimInstance not found"));
 	}
@@ -1834,21 +1833,21 @@ void AEntityPreset::PerformSkill_ShieldGuard()
 
 EnumAttackType AEntityPreset::GetAttackType()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Get AttackType: %d"), (uint8)currentAttackType);
+	UE_LOG(LogTemp,Warning,TEXT("Get AttackType: %d"),(uint8)currentAttackType);
 
 	return currentAttackType;
 }
 
 float AEntityPreset::GetNormalSkillRange()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Get Normal Skill Range: %f"), currentNormalSkillRange);
+	UE_LOG(LogTemp,Warning,TEXT("Get Normal Skill Range: %f"),currentNormalSkillRange);
 
 	return currentNormalSkillRange;
 }
 
 float AEntityPreset::GetSpecialSkillRange()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Get Special Skill Range: %f"), currentSpecialSkillRange);
+	UE_LOG(LogTemp,Warning,TEXT("Get Special Skill Range: %f"),currentSpecialSkillRange);
 
 	return currentSpecialSkillRange;
 }

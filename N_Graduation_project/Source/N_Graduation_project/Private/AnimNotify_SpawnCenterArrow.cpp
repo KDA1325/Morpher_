@@ -8,9 +8,9 @@ void UAnimNotify_SpawnCenterArrow::Notify(USkeletalMeshComponent * MeshComp,UAni
 {
 	if(!MeshComp) return;
 
-	if(AEntityPreset* Entity = Cast<AEntityPreset>(MeshComp->GetOwner()))
-	{
-		Entity->Spawn_CenterArrow();
-		UE_LOG(LogTemp,Warning,TEXT("UAnimNotify_SpawnCenterArrow: Entity Arrow Spawned"));
-	}
+	//if(AEntityPreset* Entity = Cast<AEntityPreset>(MeshComp->GetOwner()))
+	//{
+	//	Entity->Spawn_CenterArrow();
+	//	UE_LOG(LogTemp,Warning,TEXT("UAnimNotify_SpawnCenterArrow: Entity Arrow Spawned"));
+	//}
 }

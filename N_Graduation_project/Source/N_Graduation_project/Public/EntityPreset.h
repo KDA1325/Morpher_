@@ -297,7 +297,7 @@ public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	float GetHPRatio(); // 최대 HP로 나누기
 
-	void Spawn_CenterArrow();
+	//void Spawn_CenterArrow();
 
 	void Fire_AllArrows();
 
