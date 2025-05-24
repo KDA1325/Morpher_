@@ -1091,6 +1091,13 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage,bool bInterrupted)
 	// AI 경로 추적 활성화
 	if(AAIController* AIController = Cast<AAIController>(GetController()))
 	{
+		if(UBlackboardComponent* BBComp = AIController->GetBlackboardComponent())
+		{
+			BBComp->SetValueAsBool(BBKEY_BASKILLCONDITION,false);
+			BBComp->SetValueAsBool(BBKEY_BBSKILLCONDITION,false);
+			BBComp->ClearValue(BBKEY_CASTSKILLID); // string이라면 clear
+		}
+
 		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
 		{
 			APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(),0);
@@ -1098,6 +1105,7 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage,bool bInterrupted)
 			// 경로 추적 활성화 
 			PathComp->Activate();
 			AIController->SetFocus(PlayerPawn);
+
 		}
 	}
 }
@@ -1549,6 +1557,7 @@ void AEntityPreset::FireProjectile_Arrow()
 			// 발사
 			//FVector Direction = GetMesh()->GetForwardVector();
 			SpawnedProjectile->FireInDirection(Direction);
+			bUseControllerRotationYaw = true;
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
@@ -1694,6 +1703,7 @@ void AEntityPreset::Fire_AllArrows()
 			FVector FireDirection = SocketTransform.GetRotation().GetForwardVector();
 
 			CurrentArrow->FireInDirection(FireDirection);
+			bUseControllerRotationYaw = true;
 			UE_LOG(LogTemp,Warning,TEXT("Fired arrow %d → Dir: %s"),i,*FireDirection.ToString());
 		}
 	}

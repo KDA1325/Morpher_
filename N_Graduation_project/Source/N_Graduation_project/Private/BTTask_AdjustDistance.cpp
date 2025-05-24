@@ -56,38 +56,55 @@ EBTNodeResult::Type UBTTask_AdjustDistance::ExecuteTask(UBehaviorTreeComponent& 
     FVector MonsterLocation = ControllingPawn->GetActorLocation();
     FVector PlayerLocation = BlackboardComp->GetValueAsVector(BBKEY_PLAYERLOCATION);
  
-    if (DistanceToPlayer == CalculatedMinDistance)
+	if(DistanceToPlayer < CalculatedMinDistance)
+	{
+		OwnerComp.GetAIOwner()->SetFocus(playerPawn);
+
+		// (몬스터 - 플레이어) 방향 → 플레이어의 반대 방향
+		FVector FleeDirection = (MonsterLocation - PlayerLocation);
+		if(!FleeDirection.IsNearlyZero())
+		{
+			FleeDirection.Normalize();
+			// 도망 목표 지점: 플레이어 위치에서 FleeDirection으로 CalcMinDistance만큼 떨어진 곳
+			FVector FleeLocation = PlayerLocation + FleeDirection * CalculatedMinDistance;
+			OwnerComp.GetAIOwner()->MoveToLocation(FleeLocation,5.0f,false);
+		} else
+		{
+			FVector AltDirection = -ControllingPawn->GetActorForwardVector();
+			FVector FleeLocation = PlayerLocation + AltDirection * CalculatedMinDistance;
+			OwnerComp.GetAIOwner()->MoveToLocation(FleeLocation,5.0f,false);
+		}
+		//// (몬스터 - 플레이어) 방향 → 플레이어의 반대 방향
+		//FVector FleeDirection = (MonsterLocation - PlayerLocation).GetSafeNormal();
+
+		//// 도망 목표 지점: 플레이어 위치에서 FleeDirection으로 CalcMinDistance만큼 떨어진 곳
+		//FVector FleeLocation = PlayerLocation + FleeDirection * CalculatedMinDistance;
+
+		//// AcceptanceRadius는 너무 크게 잡지 않도록 적절히 설정
+		//OwnerComp.GetAIOwner()->MoveToLocation(FleeLocation, /*AcceptanceRadius=*/5.0f,false);
+
+		////// 플레이어로부터 벡터를 계산하여 반대 방향(도망 방향)으로 정규화
+		////FVector RunAwayDirection = (MonsterLocation - PlayerLocation).GetSafeNormal();
+
+		////// 도망 목표 위치: 플레이어 위치에서 RunAwayDirection으로 MinDistance만큼 떨어진 지점
+		////FVector AdjustLocation = PlayerLocation + RunAwayDirection * MinDistance;
+
+		////OwnerComp.GetAIOwner()->MoveToLocation(AdjustLocation);
+		return EBTNodeResult::Succeeded;
+	} 
+	else if(DistanceToPlayer > CalculatedMinDistance)
+	{
+		OwnerComp.GetAIOwner()->SetFocus(playerPawn);
+		OwnerComp.GetAIOwner()->MoveToActor(playerPawn,CalculatedMinDistance,false);
+		return EBTNodeResult::Succeeded;
+	}
+	else if (DistanceToPlayer == CalculatedMinDistance)
     {
 		OwnerComp.GetAIOwner()->SetFocus(playerPawn);
         OwnerComp.GetAIOwner()->StopMovement();
     }
-    else if (DistanceToPlayer > CalculatedMinDistance)
-    {
-        OwnerComp.GetAIOwner()->SetFocus(playerPawn);
-        OwnerComp.GetAIOwner()->MoveToActor(playerPawn, CalculatedMinDistance, false);
-        return EBTNodeResult::Succeeded;
-    }
-    else if (DistanceToPlayer < CalculatedMinDistance)
-    {
-        OwnerComp.GetAIOwner()->SetFocus(playerPawn);
-        // (몬스터 - 플레이어) 방향 → 플레이어의 반대 방향
-        FVector FleeDirection = (MonsterLocation - PlayerLocation).GetSafeNormal();
-
-        // 도망 목표 지점: 플레이어 위치에서 FleeDirection으로 CalcMinDistance만큼 떨어진 곳
-        FVector FleeLocation = PlayerLocation + FleeDirection * CalculatedMinDistance;
-
-        // AcceptanceRadius는 너무 크게 잡지 않도록 적절히 설정
-        OwnerComp.GetAIOwner()->MoveToLocation(FleeLocation, /*AcceptanceRadius=*/5.0f, false);
-
-        //// 플레이어로부터 벡터를 계산하여 반대 방향(도망 방향)으로 정규화
-        //FVector RunAwayDirection = (MonsterLocation - PlayerLocation).GetSafeNormal();
-
-        //// 도망 목표 위치: 플레이어 위치에서 RunAwayDirection으로 MinDistance만큼 떨어진 지점
-        //FVector AdjustLocation = PlayerLocation + RunAwayDirection * MinDistance;
-
-        //OwnerComp.GetAIOwner()->MoveToLocation(AdjustLocation);
-        return EBTNodeResult::Succeeded;
-    }
+    
+    
 
 	return EBTNodeResult::Type();
 }
