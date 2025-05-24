@@ -54,6 +54,16 @@ public:
 	TArray<FSkillEffectData> NormalSkillEffectData;
 	TArray<FSkillEffectData> SpecialSkillEffectData;
 
+	UPROPERTY(EditAnywhere)
+	FString currentPreset;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	FString NormalSkillID;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	FString SpecialSkillID;
+
+
 	// HitBox를 위한 컨테이너 컴포넌트 (소켓 기준)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	USceneComponent* NormalHitBoxContainer;	
@@ -243,11 +253,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(EditAnywhere)
-	FString currentEntityGroupID;
-
-	UPROPERTY(EditAnywhere)
-	FString currentPreset;
 	// 최대 체력와 이동 속도
 	float MaxHp;
 	int32 currentSpeed;

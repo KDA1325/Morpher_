@@ -332,6 +332,8 @@ void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 		UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
 			*NormalSkillData.SkillNameID, (uint8)NormalSkillData.SkillType, NormalSkillData.SkillRange);
 
+		NormalSkillID = InEntityData.NormalSkill;
+
 		SetNormalSkillRange(NormalSkillData.SkillRange);
 
 		// SkillType이 HitBox라면 
@@ -356,6 +358,8 @@ void AEntityPreset::InitializeEntity(FABEntityData& InEntityData)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Loaded Skill Data: %s, Skill Type: %d, Skill Range: %f"),
 			*SpecialSkillData.SkillNameID, (uint8)SpecialSkillData.SkillType, SpecialSkillData.SkillRange);
+
+		SpecialSkillID = InEntityData.SpecialSkill;
 
 		SetSpecialSkillRange(SpecialSkillData.SkillRange);
 

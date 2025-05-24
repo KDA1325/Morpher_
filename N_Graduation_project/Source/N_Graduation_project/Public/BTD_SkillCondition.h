@@ -20,7 +20,7 @@ public:
     TEnumAsByte<EBTFlowAbortMode::Type> ObserverAborts;
 
 protected:
-    // ÀÌ ÇÔ¼ö¿¡¼­ Á¶°ÇÀ» Æò°¡
-    virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
+    // ì´ í•¨ìˆ˜ì—ì„œ ì¡°ê±´ì„ í‰ê°€
+    //virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
 	
 };

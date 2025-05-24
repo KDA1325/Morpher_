@@ -34,7 +34,6 @@ void UEntitySkillComponent::BeginPlay()
 		UE_LOG(LogTemp,Error,TEXT("Owner entity is null"));
 		return;
 	}
-
 }
 
 // Called every frame

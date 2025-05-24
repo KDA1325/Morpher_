@@ -33,6 +33,11 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Skill")
+	FString NormalSkillID;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Skill")
+	FString SpecialSkillID;
 
 	// 쿨타임 플래그
 	UPROPERTY(BlueprintReadOnly, Category = "Skill|Cooldown")
@@ -40,6 +45,10 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Skill|Cooldown")
 	bool bCanUseSpecialSkill;
+
+
+
+
 
 
 private:
