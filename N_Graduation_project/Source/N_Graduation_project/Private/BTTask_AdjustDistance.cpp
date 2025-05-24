@@ -58,6 +58,7 @@ EBTNodeResult::Type UBTTask_AdjustDistance::ExecuteTask(UBehaviorTreeComponent& 
  
     if (DistanceToPlayer == CalculatedMinDistance)
     {
+		OwnerComp.GetAIOwner()->SetFocus(playerPawn);
         OwnerComp.GetAIOwner()->StopMovement();
     }
     else if (DistanceToPlayer > CalculatedMinDistance)

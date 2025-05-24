@@ -1093,8 +1093,11 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage,bool bInterrupted)
 	{
 		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
 		{
+			APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(),0);
+
 			// 경로 추적 활성화 
 			PathComp->Activate();
+			AIController->SetFocus(PlayerPawn);
 		}
 	}
 }
@@ -1110,10 +1113,12 @@ void AEntityPreset::OnGuardEnded()
 	// AI 경로 추적 활성화
 	if(AAIController* AIController = Cast<AAIController>(GetController()))
 	{
+		APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(),0);
 		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
 		{
 			// 경로 추적 활성화 
 			PathComp->Activate();
+			AIController->SetFocus(PlayerPawn);
 		}
 
 		// AI 로직 재시작
@@ -1193,7 +1198,7 @@ void AEntityPreset::SpawnProjectile_ThrowRock()
 		UE_LOG(LogTemp,Error,TEXT("ProjectileClass not set!"));
 		return;
 	}
-
+	
 	// 스폰 위치, 방향 설정 
 	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("ThrowRockSocket"));
 	FVector Direction = GetMesh()->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
@@ -1290,18 +1295,18 @@ void AEntityPreset::PerformSkill_FireBall()
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
 	bIsCastingSkill = true;
 
-	// AI 경로 추적 중지 
-	if(AAIController* AIController = Cast<AAIController>(GetController()))
-	{
-		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
-		{
-			// 경로 추적 중단
-			PathComp->Deactivate();
+	//// AI 경로 추적 중지 
+	//if(AAIController* AIController = Cast<AAIController>(GetController()))
+	//{
+	//	if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+	//	{
+	//		// 경로 추적 중단
+	//		PathComp->Deactivate();
 
-			AIController->StopMovement();
-			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Launch Projectile"));
-		}
-	}
+	//		AIController->StopMovement();
+	//		UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Launch Projectile"));
+	//	}
+	//}
 
 	if(SpecialSkillMontage)
 	{
@@ -1444,6 +1449,7 @@ void AEntityPreset::PerformSkill_Arrow()
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
 			AnimInst->Montage_SetEndDelegate(EndDelegate,NormalSkillMontage);
+			bUseControllerRotationYaw = true;
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("PerformSkill_Arrow: AnimInstance not found"));

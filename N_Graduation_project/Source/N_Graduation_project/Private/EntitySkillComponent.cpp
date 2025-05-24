@@ -74,6 +74,7 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 		}
 
 		ExecuteSkill_FireBall(SkillData,EffectDataArray);
+
 	} else if(SkillID == "Skill_FreezeBreath")
 	{
 		if(!bCanUseSpecialSkill)
@@ -212,7 +213,7 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData,c
 			UE_LOG(LogTemp, Warning, TEXT("PathFollowingComponent deactivated for normal skill"));
 		}
 	}
-
+	OwnerEntity-> bUseControllerRotationYaw = false;
 	OwnerEntity->bIsCastingSkill = true;
 	bCanUseNormalSkill = false;
 
@@ -227,6 +228,8 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData,c
 			AnimInst->Montage_Play(OwnerEntity->NormalSkillMontage);
 			UE_LOG(LogTemp,Warning,TEXT("Normal Skill Montage played"));
 
+
+			OwnerEntity-> bUseControllerRotationYaw = false;
 
 			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
 			FOnMontageEnded EndDelegate;
@@ -263,6 +266,7 @@ void UEntitySkillComponent::ExecuteProjectileTypeSkill(const FSkillData& SkillDa
 		}
 	}
 
+	OwnerEntity-> bUseControllerRotationYaw = false;
 	OwnerEntity->bIsCastingSkill = true;
 	bCanUseNormalSkill = false;
 
@@ -357,7 +361,15 @@ void UEntitySkillComponent::ExecuteSkill_FireBall(const FSkillData& SkillData,co
 	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
 	if(AIController && AIController->BrainComponent)
 	{
-		AIController->StopMovement(); // 혹시 이전 경로 남아있으면 정지
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 중단
+			PathComp->Deactivate();
+
+			AIController->StopMovement();
+			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Launch Projectile"));
+		}
+
 		AIController->BrainComponent->StopLogic(TEXT("Fire Ball Skill Start"));
 		UE_LOG(LogTemp,Warning,TEXT("AI BrainComponent->StopLogic called"));
 	}
@@ -375,9 +387,16 @@ void UEntitySkillComponent::ExecuteSkill_FireBall(const FSkillData& SkillData,co
 		{
 			//OwnerEntity->bIsCastingSkill = false;
 			AIController->BrainComponent->RestartLogic();
+
+			APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(AIController->GetWorld(),0);
+			if(PlayerPawn)
+			{
+				AIController->SetFocus(PlayerPawn);
+				UE_LOG(LogTemp,Warning,TEXT("AI SetFocus to Player after RestartLogic"));
+			}
 			UE_LOG(LogTemp,Warning,TEXT("AI BrainComponent->RestartLogic called"));
 		}
-	},2.0f,false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
+	},3.3f,false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
 }
 
 void UEntitySkillComponent::ExecuteSkill_FreezeBreath(const FSkillData& SkillData,const TArray<FSkillEffectData>& EffectData)

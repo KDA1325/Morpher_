@@ -65,6 +65,19 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	AEntityPreset* Entity = Cast<AEntityPreset>(ControllingPawn);
 	if(!Entity || !Entity->EntitySkillComponent) return;
 
+	
+	if(Entity->bIsCastingSkill == false)
+	{
+		AAIController* AIController = Cast<AAIController>(Entity->GetController());
+		if(AIController)
+		{
+			if(playerPawn)
+			{
+				AIController->SetFocus(playerPawn);
+			}
+		}
+	}
+
 	// 지금 제어하고 있는 폰의 EntitySkillComponent 불러옴
 	UEntitySkillComponent* SkillComponent = Entity->EntitySkillComponent;
 
