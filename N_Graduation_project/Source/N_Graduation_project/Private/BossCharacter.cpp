@@ -14,6 +14,13 @@ ABossCharacter::ABossCharacter()
 		BossClass = Boss.Class;
 	}
 	CurrentHP=BossHP;
+
+	//LaserSocketNames = {"Red1","Red2","Red3","Red4"};
+	//static ConstructorHelpers::FClassFinder<AActor> LaserBPClassFinder(TEXT("/Game/Entity/Boss/Boss_Laser"));
+//if(LaserBPClassFinder.Succeeded())
+//{
+//	LaserBPClass = LaserBPClassFinder.Class;
+//}
 }
 UBossWidget* ABossCharacter::GetHUD() const
 {
@@ -36,7 +43,7 @@ void ABossCharacter::BeginPlay()
 		}
 	}
 	UpdateHP();
-	//Pattern1();
+	Pattern1();
 }
 
 void ABossCharacter::Pattern1(){
@@ -44,7 +51,7 @@ void ABossCharacter::Pattern1(){
 
 	BossPatternManager->Thunder();
 	UE_LOG(LogTemp,Warning,TEXT("Thunde Pattern1"));
-
+	//SpawnAndAttachLasers();
 
 	//}
 }
@@ -77,3 +84,33 @@ void ABossCharacter::UpdateHP(){
 void ABossCharacter::OnBossDead(){
 	Destroy();
 }
+//void ABossCharacter::SpawnAndAttachLasers()
+//{
+//	if(!LaserBPClass) return;
+//
+//	for(const FName& SocketName : LaserSocketNames)
+//	{
+//		FTransform SocketTransform = GetMesh()->GetSocketTransform(SocketName);
+//
+//		AActor* Laser = GetWorld()->SpawnActor<AActor>(LaserBPClass,SocketTransform);
+//		if(!Laser) continue;
+//
+//		// 1초 후 소켓에 부착 및 레이저 초기화
+//		FTimerHandle TimerHandle;
+//		GetWorld()->GetTimerManager().SetTimer(TimerHandle,[this,Laser,SocketName]()
+//		{
+//			if(!Laser) return;
+//
+//			// 어태치
+//			Laser->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,SocketName);
+//
+//			// 기능 초기화
+//			if(ALaserActor* LaserCast = Cast<ALaserActor>(Laser))
+//			{
+//				LaserCast->SetDamage(LaserDamage);
+//				LaserCast->ActivateLaser(); // 이펙트나 회전 시작 등
+//			}
+//
+//		},1.0f,false);
+//	}
+//}

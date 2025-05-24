@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Components/SphereComponent.h"
 #include "BossPatternManager.generated.h"
 
 UENUM(BlueprintType)
@@ -41,8 +42,12 @@ public:
 		float Delay;//Thunder delay
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	int ThunderCount;
-
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	float ThunderDamage;
+	UFUNCTION(BlueprintCallable)
+		void ApplyThunderDamage();
 	void Thunder();
+
 protected:
 	virtual void BeginPlay() override;
 	void SpawnThunder();
@@ -51,4 +56,14 @@ protected:
 		TSubclassOf<AActor> ThunderBPClass;
 	FTimerHandle ThunderTimerHandle;
 	int32 ThunderSpawnCount = 0;
+
+	UPROPERTY(VisibleAnywhere,Category="Component")
+		USphereComponent* SphereComponent;
+
+	UPROPERTY(EditAnywhere)
+		AActor* BossActor;
+
+	UPROPERTY(EditAnywhere)
+		float BossHeadHeightOffset = 200.f;  // 머리 위 오프셋
+
 };
