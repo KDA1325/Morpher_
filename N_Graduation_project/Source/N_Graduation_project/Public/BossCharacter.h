@@ -47,4 +47,17 @@ protected:
 		TSubclassOf<UUserWidget> BossClass;
 	UPROPERTY(EditAnywhere,Category = "UI")
 		UBossWidget* BossWidget;
+
+
+//레이저
+	void SpawnAndAttachLasers();
+
+	UPROPERTY(EditDefaultsOnly,Category = "Laser")
+		TSubclassOf<AActor> LaserBPClass;
+
+	UPROPERTY(EditDefaultsOnly,Category = "Laser")
+		int32 LaserDamage = 30;
+
+	UPROPERTY(EditDefaultsOnly,Category = "Laser")
+		TArray<FName> LaserSocketNames;
 };

@@ -3,6 +3,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "BossWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "Boss_Laser.h" 
+#include "MyGameInstance.h"
 
 ABossCharacter::ABossCharacter()
 {
@@ -15,12 +17,12 @@ ABossCharacter::ABossCharacter()
 	}
 	CurrentHP=BossHP;
 
-	//LaserSocketNames = {"Red1","Red2","Red3","Red4"};
-	//static ConstructorHelpers::FClassFinder<AActor> LaserBPClassFinder(TEXT("/Game/Entity/Boss/Boss_Laser"));
-//if(LaserBPClassFinder.Succeeded())
-//{
-//	LaserBPClass = LaserBPClassFinder.Class;
-//}
+	LaserSocketNames = {"Red1","Red2","Red3","Red4"};
+	static ConstructorHelpers::FClassFinder<AActor> LaserBPClassFinder(TEXT("/Game/Entity/Boss/Boss_Laser"));
+	if(LaserBPClassFinder.Succeeded())
+	{
+		LaserBPClass = LaserBPClassFinder.Class;
+	}
 }
 UBossWidget* ABossCharacter::GetHUD() const
 {
@@ -49,10 +51,13 @@ void ABossCharacter::BeginPlay()
 void ABossCharacter::Pattern1(){
 	///	if(SkillStart){
 
-	BossPatternManager->Thunder();
+	//BossPatternManager->Thunder();
 	UE_LOG(LogTemp,Warning,TEXT("Thunde Pattern1"));
-	//SpawnAndAttachLasers();
 
+	//얼마나 걸릴까
+	float Timer=2.0f;
+	FTimerHandle LaserDelayHandle;
+	GetWorldTimerManager().SetTimer(LaserDelayHandle,this,&ABossCharacter::SpawnAndAttachLasers,Timer,false);
 	//}
 }
 
@@ -84,33 +89,32 @@ void ABossCharacter::UpdateHP(){
 void ABossCharacter::OnBossDead(){
 	Destroy();
 }
-//void ABossCharacter::SpawnAndAttachLasers()
-//{
-//	if(!LaserBPClass) return;
-//
-//	for(const FName& SocketName : LaserSocketNames)
-//	{
-//		FTransform SocketTransform = GetMesh()->GetSocketTransform(SocketName);
-//
-//		AActor* Laser = GetWorld()->SpawnActor<AActor>(LaserBPClass,SocketTransform);
-//		if(!Laser) continue;
-//
-//		// 1초 후 소켓에 부착 및 레이저 초기화
-//		FTimerHandle TimerHandle;
-//		GetWorld()->GetTimerManager().SetTimer(TimerHandle,[this,Laser,SocketName]()
-//		{
-//			if(!Laser) return;
-//
-//			// 어태치
-//			Laser->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepWorldTransform,SocketName);
-//
-//			// 기능 초기화
-//			if(ALaserActor* LaserCast = Cast<ALaserActor>(Laser))
-//			{
-//				LaserCast->SetDamage(LaserDamage);
-//				LaserCast->ActivateLaser(); // 이펙트나 회전 시작 등
-//			}
-//
-//		},1.0f,false);
-//	}
-//}
+void ABossCharacter::SpawnAndAttachLasers()
+{
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+	if(!LaserBPClass) return;
+	MyGameInstance->Laser=true;
+	for(const FName& SocketName : LaserSocketNames)
+	{
+		FTransform SocketTransform = GetMesh()->GetSocketTransform(SocketName);
+
+		AActor* Laser = GetWorld()->SpawnActor<AActor>(LaserBPClass,SocketTransform);
+		if(!Laser) continue;
+		Laser->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,SocketName);
+
+		// 1초 후 소켓에 부착 및 레이저 초기화
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle,[this,Laser,SocketName]()
+		{
+			if(!Laser) return;
+
+			// 디태치
+			Laser->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+			if(!MyGameInstance) return;
+			MyGameInstance->Laser=false;
+			Laser->Destroy();
+		},4.0f,false);
+	}
+}
