@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "MyCharacterWidget.h" // Ä³¸¯ÅÍ HUD À§Á¬
+#include "MyCharacterWidget.h" // ìºë¦­í„° HUD ìœ„ì ¯
 #include "PieMenuWidget.h"
 #include "WidgetActor.generated.h"
 
@@ -19,9 +19,11 @@ protected:
 
 public:
 	bool Back_CacheFinalMouseAngle;
+	bool first=true;
 	float Before_Select = 0.0f;
 
 	void HidePieMenu();
+	void ShowDieWidget();
 	void ShowPieMenu();
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> HUDClass;
@@ -35,7 +37,15 @@ public:
 	UPROPERTY()
 	UPieMenuWidget* PieWidget;
 
-	// Á¢±Ù¿ë Getter ÇÔ¼ö
+	UPROPERTY(EditAnywhere,Category = "UI")
+		TSubclassOf<UUserWidget> DieClass;
+	
+
+	UPROPERTY(EditAnywhere,Category = "UI")
+	UUserWidget* DieWidget;
+	
+
+	// ì ‘ê·¼ìš© Getter í•¨ìˆ˜
 	UMyCharacterWidget* GetHUDWidget() const { return HUDWidget; }
 
 	UFUNCTION(BlueprintCallable, Category = "UI")

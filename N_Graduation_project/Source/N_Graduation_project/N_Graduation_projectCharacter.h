@@ -66,16 +66,20 @@ class AN_Graduation_projectCharacter : public ACharacter
 	UInputAction* RightClickAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* RightReleasedClickAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PieMenuAction;
 
 public:
 	AN_Graduation_projectCharacter();
 	void ChangePreset(FString Name);
+	void LoadPreset(FString PresetID);
 	void ToggleMaterial(bool bUseHitMaterial);
 	bool PlaySpecial = false;
 	bool PlayNomal = false;
 	bool OkTrans = true;
-
+	bool bCanMove = true;
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -151,7 +155,7 @@ private:
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UPlayerSkillComponent* PlayerSkillComponent;
-
+		
 	UPROPERTY(VisibleAnywhere)
 	UCharacterStateComponent* CharacterStateComponent;
 
@@ -161,11 +165,7 @@ public:
 	/** ������ �޴� �Լ� */
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	//���Ͱ� ���� ������� ó���ϴ� ������ �߰��ϱ� ���� �������̵�.
-	//DamageAmount �������� ��
-	//FDamageEvent const& DamageEvent ������ ����
-	//EventInstigator,//�������� �� ��Ʈ�ѷ�
-	//DamageCauser//�������� �� ���� ��ü
+
 
 	// ���� ���� Ȱ��ȭ
 	UPROPERTY(BlueprintReadWrite)
@@ -219,16 +219,17 @@ void TransformToEntity(int32 EntityID);*/
 	UPROPERTY(EditAnywhere)
 	float currentHP;
 
+	int changeCount=0;
 	int32 maxHp;
 	int32 moveSpeed;
-	FString NomalSkill;
+	FString NomalSkill="Skill_Slash";
 	FString SpecialSkill;
 	FString presetReference;
 
 	int32 currentSpeed;
 	int32 OriginalSpeed;
-	FString currentPreset;
-	FString pastPreset;
+	FString currentPreset= "PCPreset.uasset";
+	FString pastPreset= "PCPreset.uasset";
 
 
 	// MoveSpeed�� �����ϴ� �Լ�
@@ -242,17 +243,21 @@ void TransformToEntity(int32 EntityID);*/
 //	void DealDamageToPlayer();
 
 	bool bIsMoving;
-
+	bool bcanPie;
 	// �������� ��Ʈ�ڽ��� ���Ͽ� �����ϴ� �Լ� ����
 	UFUNCTION(BlueprintCallable, Category = "HitBox")
 	void SpawnHitBoxAtSocket(FName SocketName);
+	UFUNCTION(BlueprintCallable, Category = "HitBox")
+	void SpawnHitBoxAtSocket2(FName SocketName);
+
+	void TrySpawnHitBox(FName SocketName);
 
 	UFUNCTION()
 	void OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 private:
-	//UPROPERTY()
-	//UMaterialInterface* OriginalMaterial = nullptr;
+	UPROPERTY()
+		UMaterialInterface* HitMaterial = nullptr;
 
 	UPROPERTY()
 	UMaterialInterface* InvincibleOriginalMaterial = nullptr;
@@ -262,5 +267,16 @@ private:
 	FTimerHandle FlashTimerHandle2;
 	FTimerHandle FlashTimerHandle3;
 	FTimerHandle FlashTimerHandle4;
+
+	bool isDead=false;
+
 };
 
+/*
+
+	pastPreset = "PlayerCharacter";
+	NomalSkill = "Skill_Slash";
+
+	currentPreset = " ";
+	
+	*/
