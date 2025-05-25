@@ -18,7 +18,7 @@ ABossCharacter::ABossCharacter()
 	CurrentHP=BossHP;
 
 	LaserSocketNames = {"Red1","Red2","Red3","Red4"};
-	static ConstructorHelpers::FClassFinder<AActor> LaserBPClassFinder(TEXT("/Game/Entity/Boss/Boss_Laser"));
+	static ConstructorHelpers::FClassFinder<AActor> LaserBPClassFinder(TEXT("/Game/VFX/BP_Laser"));
 	if(LaserBPClassFinder.Succeeded())
 	{
 		LaserBPClass = LaserBPClassFinder.Class;
@@ -110,11 +110,11 @@ void ABossCharacter::SpawnAndAttachLasers()
 			if(!Laser) return;
 
 			// 디태치
-			Laser->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		//	Laser->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 			if(!MyGameInstance) return;
-			MyGameInstance->Laser=false;
-			Laser->Destroy();
+			//MyGameInstance->Laser=false;
+			//Laser->Destroy();
 		},4.0f,false);
 	}
 }
