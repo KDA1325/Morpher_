@@ -40,7 +40,22 @@ void UAutoLevelStreamingComponent::OnTriggerOverlap(AActor* OverlappedActor,AAct
 	// 플레이어만 작동하도록 설정
 	if(!OtherActor->IsA(ACharacter::StaticClass())) return;
 
-	// 로드
+	// 현재 레벨에 존재하는 스트리밍 레벨들 가져오기
+	UWorld* World = GetWorld();
+	if(!World) return;
+
+	// 현재 로드된 레벨 이름 저장
+	TSet<FName> CurrentLoadedLevels;
+	for(ULevelStreaming* StreamingLevel : World->GetStreamingLevels())
+	{
+		if(StreamingLevel && StreamingLevel->IsLevelLoaded())
+		{
+			FName LevelName = FName(*FPackageName::GetShortFName(StreamingLevel->GetWorldAssetPackageName()).ToString());
+			CurrentLoadedLevels.Add(LevelName);
+		}
+	}
+
+	// ConnectedLevels 로드
 	for(FName LevelName : ConnectedLevels)
 	{
 		if(!LoadedLevels.Contains(LevelName))
@@ -51,7 +66,7 @@ void UAutoLevelStreamingComponent::OnTriggerOverlap(AActor* OverlappedActor,AAct
 		}
 	}
 
-	// 언로드: 현재 로드된 것 중 ConnectedLevels에 없는 것은 제거
+	// 현재 로드되어 있는 레벨 중 ConnectedLevels에 없는 레벨 언로드 
 	TArray<FName> ToUnload;
 	for(FName Loaded : LoadedLevels)
 	{
@@ -63,8 +78,8 @@ void UAutoLevelStreamingComponent::OnTriggerOverlap(AActor* OverlappedActor,AAct
 		}
 	}
 
-	for(FName LevelName : ToUnload)
+	/*for(FName LevelName : ToUnload)
 	{
 		LoadedLevels.Remove(LevelName);
-	}
+	}*/
 }
