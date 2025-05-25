@@ -38,13 +38,13 @@ void UMyGameInstance::SaveToSaveData(UMySaveGame* SaveData)
 	SaveData->RoomName = SaveRoomName;
 	SaveData->SaveFinalAngle=PlayerFinalAngle;
 	SaveData->SavePlayerLocation = SaveLocation;
-	UE_LOG(LogTemp,Warning,TEXT("LoadGame SaveToSaveData SaveLocation: X=%f, Y=%f, Z=%f"),SaveData->SavePlayerLocation.X,SaveData->SavePlayerLocation.Y,SaveData->SavePlayerLocation.Z);
+//	UE_LOG(LogTemp,Warning,TEXT("LoadGame SaveToSaveData SaveLocation: X=%f, Y=%f, Z=%f"),SaveData->SavePlayerLocation.X,SaveData->SavePlayerLocation.Y,SaveData->SavePlayerLocation.Z);
 
 }
 
 void UMyGameInstance::SaveGame()
 {
-	UE_LOG(LogTemp,Warning,TEXT("SaveGame실행."));
+//	UE_LOG(LogTemp,Warning,TEXT("SaveGame실행."));
 
 	UMySaveGame* SaveData = Cast<UMySaveGame>(UGameplayStatics::CreateSaveGameObject(UMySaveGame::StaticClass()));
 	if(!SaveData) return;
@@ -56,18 +56,18 @@ void UMyGameInstance::SaveGame()
 
 void UMyGameInstance::LoadGame()
 {
-	UE_LOG(LogTemp,Warning,TEXT("LoadGame실행."));
+	//UE_LOG(LogTemp,Warning,TEXT("LoadGame실행."));
 	const FString SlotName = TEXT("MySaveSlot");
 	const int32 UserIndex = 0;
 	if(UGameplayStatics::DoesSaveGameExist(SlotName,UserIndex))
 	{
-		UE_LOG(LogTemp,Warning,TEXT("LoadGame DoesSaveGameExist실행."));
+		//UE_LOG(LogTemp,Warning,TEXT("LoadGame DoesSaveGameExist실행."));
 		USaveGame* LoadedGame = UGameplayStatics::LoadGameFromSlot(SlotName,UserIndex);
 		UMySaveGame* SaveData = Cast<UMySaveGame>(LoadedGame);
 
 		if(!SaveData)
 		{
-			UE_LOG(LogTemp,Warning,TEXT("LoadGame: SaveGame 파일이 현재 SaveGame 클래스와 호환되지 않음(삭제하겟단뜻)"));
+			//UE_LOG(LogTemp,Warning,TEXT("LoadGame: SaveGame 파일이 현재 SaveGame 클래스와 호환되지 않음(삭제하겟단뜻)"));
 
 			// 경로 수동 구성 및 삭제
 			FString SaveDir = FPaths::ProjectSavedDir() + TEXT("SaveGames/");
@@ -81,7 +81,7 @@ void UMyGameInstance::LoadGame()
 		AN_Graduation_projectCharacter* Player = Cast<AN_Graduation_projectCharacter>(UGameplayStatics::GetPlayerCharacter(this,0));
 		if(Player)
 		{
-			UE_LOG(LogTemp,Warning,TEXT("LoadGame Player실행."));
+		//	UE_LOG(LogTemp,Warning,TEXT("LoadGame Player실행."));
 
 			//UE_LOG(LogTemp,Error,TEXT("LoadGamePreset, CurrentPlayerCharacter: %s"),*CurrentPlayerCharacter);
 
@@ -92,14 +92,14 @@ void UMyGameInstance::LoadGame()
 			if(SaveData)
 			{
 				SaveRoomName=SaveData->RoomName;
-				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ Boar Opened: %s"),SaveData->Open_Boar ? TEXT("Yes") : TEXT("No"));
-				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ PlayerFullHP: %f"),SaveData->FullHP);
-				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ SaveFinalAngle: %f"),SaveData->SaveFinalAngle);
+				//UE_LOG(LogTemp,Warning,TEXT("LoadGame_ Boar Opened: %s"),SaveData->Open_Boar ? TEXT("Yes") : TEXT("No"));
+				//UE_LOG(LogTemp,Warning,TEXT("LoadGame_ PlayerFullHP: %f"),SaveData->FullHP);
+				//UE_LOG(LogTemp,Warning,TEXT("LoadGame_ SaveFinalAngle: %f"),SaveData->SaveFinalAngle);
 				SaveLocation = SaveData->SavePlayerLocation;
 				SaveLocation.Z += 100.0f; // Z축 위로 이동!
 				Player->SetActorLocation(SaveLocation);
-				UE_LOG(LogTemp,Warning,TEXT("LoadGame LoadGame SaveLocation: X=%f, Y=%f, Z=%f"),SaveLocation.X,SaveLocation.Y,SaveLocation.Z);
-				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ room name: %s"),*SaveData->RoomName.ToString());
+				/*UE_LOG(LogTemp,Warning,TEXT("LoadGame LoadGame SaveLocation: X=%f, Y=%f, Z=%f"),SaveLocation.X,SaveLocation.Y,SaveLocation.Z);
+				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ room name: %s"),*SaveData->RoomName.ToString());*/
 
 			}
 			//레[벨 스트리밍
