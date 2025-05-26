@@ -53,6 +53,10 @@ void ABossCharacter::Pattern1(){
 
 	//BossPatternManager->Thunder();
 	UE_LOG(LogTemp,Warning,TEXT("Thunde Pattern1"));
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+	if(!LaserBPClass) return;
+	MyGameInstance->Laser=true;
 
 	//얼마나 걸릴까
 	float Timer=2.0f;
@@ -91,10 +95,7 @@ void ABossCharacter::OnBossDead(){
 }
 void ABossCharacter::SpawnAndAttachLasers()
 {
-	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if(!MyGameInstance) return;
 	if(!LaserBPClass) return;
-	MyGameInstance->Laser=true;
 	for(const FName& SocketName : LaserSocketNames)
 	{
 		FTransform SocketTransform = GetMesh()->GetSocketTransform(SocketName);
