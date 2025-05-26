@@ -13,6 +13,7 @@ enum class ECharacterState : uint8
 	Move UMETA(DisplayName = "Move"),
 	Action UMETA(DisplayName = "Action"),
 	Dash UMETA(DisplayName = "Dash"),
+	Stun UMETA(DisplayName = "Stun"),
 	Dead UMETA(DisplayName = "Dead")
 };
 class AN_Graduation_projectCharacter;
@@ -27,16 +28,18 @@ public:
 
     ECharacterState CurrentState;
 
-    // »óÅÂ º¯°æ ÇÔ¼ö
+    // ìƒíƒœ ë³€ê²½ í•¨ìˆ˜
     void ChangeState(ECharacterState NewState);
 
-    // »óÅÂ º¯°æ ½Ã ÇÊ¿äÇÑ Çàµ¿ Á¦¾à Àû¿ë
+    // ìƒíƒœ ë³€ê²½ ì‹œ í•„ìš”í•œ í–‰ë™ ì œì•½ ì ìš©
     void ApplyActionRestrictions();
 
-    // ÇöÀç »óÅÂ¸¦ ¹İÈ¯ÇÏ´Â ÇÔ¼ö
+    // í˜„ì¬ ìƒíƒœë¥¼ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
     ECharacterState GetCurrentState() const { return CurrentState; }
 
     bool isAction;
     bool isDash;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+	bool isStunned;
 };

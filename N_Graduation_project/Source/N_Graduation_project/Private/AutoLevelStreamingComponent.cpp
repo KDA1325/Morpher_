@@ -1,0 +1,70 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#include "AutoLevelStreamingComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/LevelStreaming.h"
+#include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
+
+// Sets default values for this component's properties
+UAutoLevelStreamingComponent::UAutoLevelStreamingComponent()
+{
+	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
+	// off to improve performance if you don't need them.
+	PrimaryComponentTick.bCanEverTick = true;
+
+	// ...
+}
+
+
+// Called when the game starts
+void UAutoLevelStreamingComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// 이 Actor의 BeginOverlap에 이벤트 연결
+	if(AActor* Owner = GetOwner())
+	{
+		Owner->OnActorBeginOverlap.AddDynamic(this,&UAutoLevelStreamingComponent::OnTriggerOverlap);
+	}
+}
+
+
+// Called every frame
+void UAutoLevelStreamingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+}
+
+void UAutoLevelStreamingComponent::OnTriggerOverlap(AActor* OverlappedActor,AActor* OtherActor)
+{
+	// 플레이어만 작동하도록 설정
+	if(!OtherActor->IsA(ACharacter::StaticClass())) return;
+
+	// 로드
+	for(FName LevelName : ConnectedLevels)
+	{
+		if(!LoadedLevels.Contains(LevelName))
+		{
+			UGameplayStatics::LoadStreamLevel(this,LevelName,true,false,FLatentActionInfo());
+			LoadedLevels.Add(LevelName);
+			UE_LOG(LogTemp,Error,TEXT("Load Levels: %s"),*LevelName.ToString());
+		}
+	}
+
+	// 언로드: 현재 로드된 것 중 ConnectedLevels에 없는 것은 제거
+	TArray<FName> ToUnload;
+	for(FName Loaded : LoadedLevels)
+	{
+		if(!ConnectedLevels.Contains(Loaded))
+		{
+			UGameplayStatics::UnloadStreamLevel(this,Loaded,FLatentActionInfo(),false);
+			ToUnload.Add(Loaded);
+			UE_LOG(LogTemp,Error,TEXT("UnLoad Levels: %s"),*Loaded.ToString());
+		}
+	}
+
+	for(FName LevelName : ToUnload)
+	{
+		LoadedLevels.Remove(LevelName);
+	}
+}

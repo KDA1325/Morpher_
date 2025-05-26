@@ -5,6 +5,7 @@
 #include "ABGameSingleton.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -15,8 +16,8 @@ AEntityProjectile::AEntityProjectile()
 
 	// 발사체 이동 컴포넌트 설정
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
-	ProjectileMovement->InitialSpeed = 600.f;
-	ProjectileMovement->MaxSpeed = 600.f;
+	ProjectileMovement->InitialSpeed = 0.f;
+	ProjectileMovement->MaxSpeed = 0.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
 	ProjectileMovement->ProjectileGravityScale = 0.f;
@@ -36,9 +37,15 @@ void AEntityProjectile::BeginPlay()
 	Super::BeginPlay();
 
 
-	if(!CollisionComp)
+	/*if(!CollisionComp)
 	{
 		CollisionComp = FindComponentByClass<USphereComponent>();
+	}*/
+
+	CollisionComp = Cast<UPrimitiveComponent>(FindComponentByClass<USphereComponent>());
+	if(!CollisionComp)
+	{
+		CollisionComp = Cast<UPrimitiveComponent>(FindComponentByClass<UBoxComponent>());
 	}
 
 	if(CollisionComp && ProjectileMovement)
@@ -48,9 +55,19 @@ void AEntityProjectile::BeginPlay()
 		RootComponent = CollisionComp;
 
 		ProjectileMovement->SetUpdatedComponent(CollisionComp);
-		ProjectileMovement->Activate(true);
+		//ProjectileMovement->Activate(true);
 
-		//CollisionComp->OnComponentHit.AddDynamic(this,&AEntityProjectile::OnHit);
+		if(bAutoFireOnSpawn)
+		{
+			ProjectileMovement->Activate(true);
+		}
+		else
+		{
+			//FRotator FixRotation = GetActorRotation();
+			//FixRotation = FRotator(0.f,90.f,0.f); 
+			//SetActorRotation(FixRotation);
+		}
+
 		CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AEntityProjectile::OnOverlap);
 	}
 	else
@@ -71,36 +88,36 @@ void AEntityProjectile::InitProjectileBySkillData(const FSkillData & InSkillData
 	EffectDataArray = InEffectData;
 	SkillRange = InSkillData.SkillRange;
 
-	// 발사 속도 설정
-	if(ProjectileMovement)
-	{
-		ProjectileMovement->InitialSpeed = SkillData.ProjectileSpeed;
-		ProjectileMovement->MaxSpeed = SkillData.ProjectileSpeed;
+	//// 발사 속도 설정
+	//if(ProjectileMovement)
+	//{
+	//	ProjectileMovement->InitialSpeed = SkillData.ProjectileSpeed;
+	//	ProjectileMovement->MaxSpeed = SkillData.ProjectileSpeed;
 
-		//// 충돌 무시 설정
-		//if(GetOwner())
-		//{
-		//	ProjectileMovement->IgnoreActorWhenMoving(GetOwner(),true);
-		//}
-	}
+	//	//// 충돌 무시 설정
+	//	//if(GetOwner())
+	//	//{
+	//	//	ProjectileMovement->IgnoreActorWhenMoving(GetOwner(),true);
+	//	//}
+	//}
 
 	if(CollisionComp && GetOwner())
 	{
 		CollisionComp->IgnoreActorWhenMoving(GetOwner(),true);
 	}
 
-	// SkillRange까지 도달 후 투사체 삭제를 위한 타이머 
-	if(SkillData.ProjectileSpeed > 0.f)
-	{
-		float LifeTime = SkillData.SkillRange / SkillData.ProjectileSpeed;
-		GetWorld()->GetTimerManager().SetTimer(
-			DestroyTimerHandle,
-			this,
-			&AEntityProjectile::OnLifetimeExpired,
-			LifeTime,
-			false
-		);
-	}
+	//// SkillRange까지 도달 후 투사체 삭제를 위한 타이머 
+	//if(SkillData.ProjectileSpeed > 0.f)
+	//{
+	//	float LifeTime = SkillData.SkillRange / SkillData.ProjectileSpeed;
+	//	GetWorld()->GetTimerManager().SetTimer(
+	//		DestroyTimerHandle,
+	//		this,
+	//		&AEntityProjectile::OnLifetimeExpired,
+	//		LifeTime,
+	//		false
+	//	);
+	//}
 }
 
 //void AEntityProjectile::OnHit(UPrimitiveComponent* HitComp,AActor* OtherActor,UPrimitiveComponent* OtherComp,FVector NormalImpulse,const FHitResult& Hit)
@@ -195,11 +212,28 @@ void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
 	if(ProjectileMovement && CollisionComp)
 	{
 		ProjectileMovement->StopMovementImmediately();
-		ProjectileMovement->SetUpdatedComponent(CollisionComp);  // <-- 여기에 명시
+
+		ProjectileMovement->InitialSpeed = SkillData.ProjectileSpeed;
+		ProjectileMovement->MaxSpeed = SkillData.ProjectileSpeed;
+
+		ProjectileMovement->SetUpdatedComponent(CollisionComp);  
 		ProjectileMovement->SetVelocityInLocalSpace(ShootDirection * ProjectileMovement->InitialSpeed);
 		ProjectileMovement->Activate(true);
 
 		UE_LOG(LogTemp,Warning,TEXT("FireInDirection called! Velocity = %s"),*ProjectileMovement->Velocity.ToString());
+
+		// SkillRange까지 도달 후 투사체 삭제를 위한 타이머 
+		if(SkillData.ProjectileSpeed > 0.f)
+		{
+			float LifeTime = SkillData.SkillRange / SkillData.ProjectileSpeed;
+			GetWorld()->GetTimerManager().SetTimer(
+				DestroyTimerHandle,
+				this,
+				&AEntityProjectile::OnLifetimeExpired,
+				LifeTime,
+				false
+			);
+		}
 	}
 }
 

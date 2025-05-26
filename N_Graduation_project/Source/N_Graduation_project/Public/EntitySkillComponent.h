@@ -33,6 +33,11 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Skill")
+	FString NormalSkillID;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Skill")
+	FString SpecialSkillID;
 
 	// 쿨타임 플래그
 	UPROPERTY(BlueprintReadOnly, Category = "Skill|Cooldown")
@@ -40,6 +45,10 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Skill|Cooldown")
 	bool bCanUseSpecialSkill;
+
+
+
+
 
 
 private:
@@ -62,6 +71,12 @@ private:
 	void ExecuteSkill_FireBall(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData);
 
 	void ExecuteSkill_FreezeBreath(const FSkillData & SkillData,const TArray<FSkillEffectData>& EffectData);
+
+	void ExecuteSkill_EarthBreaker(const FSkillData & SkillData,const TArray<FSkillEffectData>& EffectData);
+
+	void ExecuteSkill_SplinterArrow(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData);
+
+	void ExecuteSkill_ShieldGuard(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData);
 
 	/* 쿨타임 관리 함수 */
 	void SetSkillTimer(float CooldownTime, FTimerDelegate TimerDelegate, bool bIsSpecial);

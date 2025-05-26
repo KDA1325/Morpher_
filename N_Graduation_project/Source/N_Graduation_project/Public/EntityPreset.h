@@ -54,6 +54,16 @@ public:
 	TArray<FSkillEffectData> NormalSkillEffectData;
 	TArray<FSkillEffectData> SpecialSkillEffectData;
 
+	UPROPERTY(EditAnywhere)
+	FString currentPreset;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	FString NormalSkillID;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	FString SpecialSkillID;
+
+
 	// HitBox를 위한 컨테이너 컴포넌트 (소켓 기준)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	USceneComponent* NormalHitBoxContainer;	
@@ -66,6 +76,9 @@ public:
 	// Special 스킬용 히트박스 컴포넌트 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	UBoxComponent* SpecialSkillHitBox;
+	// Special 스킬용 Sphere 히트박스 컴포넌트 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")
+	USphereComponent* SpecialSkillSphereHitBox;
 
 	UPROPERTY(EditAnywhere, Category = "Skill")
 	UAnimMontage* NormalSkillMontage;
@@ -81,16 +94,32 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
 	TSubclassOf<class AEntityProjectile> SpecialProjectileClass;
 
-	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
-	//TSubclassOf<AActor> NormalProjectileClass;
-	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Projectile")
-	//TSubclassOf<AEntityProjectile> SpecialProjectileClass;
+	//// 손에 붙일 화살
+	//UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+	//AEntityProjectile* PendingArrow;  
+
+	// 노말 화살 or 스페셜 센터 화살 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+	AEntityProjectile* Arrow;
+	
+	// 스페셜 서브 화살 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+	AEntityProjectile* SubArrow1;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+	AEntityProjectile* SubArrow2;
+
+	//UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+	//UChildActorComponent* SkillArrowChildComponent;
+
+
 
 	//스킬의 히트박스 컴포넌트를 생성 및 설정하는 함수 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void SetupHitBoxComponent(FSkillData& SkillData);
 
 	void ConfigureHitBox(UBoxComponent* HitBox);
+
+	void ConfigureSphereHitBox(USphereComponent * HitBox);
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ShowNormalHitBox();
@@ -99,16 +128,20 @@ public:
 	void HideNormalHitBox();
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ShowSpecialHitBox();
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void ShowSpecialSphereHitBox();
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void HideSpecialHitBox();
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void HideSpecialSphereHitBox();
 
 	void ShowHitBox();
 
-	void AnimNotify_ShowHitBox();
-	void AnimNotify_SpawnProjectile();
+	//void AnimNotify_ShowHitBox();
+	//void AnimNotify_SpawnProjectile();
 
-	void AnimNotify_SpawnProjectile_FireBall();
+	//void AnimNotify_SpawnProjectile_FireBall();
 
 	// 히트박스 Overlap 이벤트 처리 함수
 	UFUNCTION()
@@ -123,15 +156,31 @@ public:
 	// 스킬 시전 중 플래그: 돌진 스킬 시전 중엔 이동 업데이트 차단
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	bool bIsCastingSkill;
-
 	// 돌진 스킬 실행 시 저장할 방향 (설정 후 변화 없이 유지)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	FVector StoredDashDirection;
+
+	// 방어 중 플래그
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
+	bool bIsDefending;
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void PerformSkill_Charge();
 	void PerformSkill_FireBall();
 	void PerformSkill_FreezeBreath();
+	void PerformSkill_EarthBreaker();
+
+	void PerformSkill_Arrow();
+
+	void PerformSkill_SplinterArrow();
+
+	//void SpawnProjectile_Arrow();
+	void FireProjectile_Arrow();
+
+	// Skill_Arrow 시전 시 저장할 방향 (설정 후 변화 없이 유지)
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")
+	FVector ArrowDirection;
+
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void ExecuteChargeDash();
 
@@ -179,6 +228,8 @@ public:
 	bool bIsCharging = false;
 	// 프리징 관련 상태 변수
 	bool bIsFreezing = false;
+	// 스턴 관련 상태 변수 
+	bool bIsBreaking = false;
 
 	UPROPERTY()
 	float WildBoar_ChargeFloat;
@@ -187,6 +238,8 @@ public:
 	FVector ChargeDirection;
 	float ChargeDistance = 0.0f;
 	FVector ChargeTargetLocation;
+
+	void OnGuardEnded();
 
 	void StopMovement();
 
@@ -200,11 +253,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(EditAnywhere)
-	FString currentEntityGroupID;
-
-	UPROPERTY(EditAnywhere)
-	FString currentPreset;
 	// 최대 체력와 이동 속도
 	float MaxHp;
 	int32 currentSpeed;
@@ -248,6 +296,12 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	float GetHPRatio(); // 최대 HP로 나누기
+
+	//void Spawn_CenterArrow();
+
+	void Fire_AllArrows();
+
+	void PerformSkill_ShieldGuard();
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	EnumAttackType GetAttackType();

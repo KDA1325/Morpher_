@@ -34,7 +34,6 @@ void UEntitySkillComponent::BeginPlay()
 		UE_LOG(LogTemp,Error,TEXT("Owner entity is null"));
 		return;
 	}
-
 }
 
 // Called every frame
@@ -75,6 +74,7 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 		}
 
 		ExecuteSkill_FireBall(SkillData,EffectDataArray);
+
 	} else if(SkillID == "Skill_FreezeBreath")
 	{
 		if(!bCanUseSpecialSkill)
@@ -84,7 +84,38 @@ void UEntitySkillComponent::ExecuteSkill(const FString& SkillID)
 		}
 
 		ExecuteSkill_FreezeBreath(SkillData,EffectDataArray);
-	} else
+	}
+	else if(SkillID == "Skill_EarthBreaker")
+	{
+		if(!bCanUseSpecialSkill)
+		{
+			UE_LOG(LogTemp,Error,TEXT("skill is on cooldown"));
+			return;
+		}
+
+		ExecuteSkill_EarthBreaker(SkillData,EffectDataArray);
+	}
+	else if(SkillID == "Skill_SplinterArrow")
+	{
+		if(!bCanUseSpecialSkill)
+		{
+			UE_LOG(LogTemp,Error,TEXT("skill is on cooldown"));
+			return;
+		}
+
+		ExecuteSkill_SplinterArrow(SkillData,EffectDataArray);
+	}
+	else if(SkillID == "Skill_ShieldGuard")
+	{
+		if(!bCanUseSpecialSkill)
+		{
+			UE_LOG(LogTemp,Error,TEXT("skill is on cooldown"));
+			return;
+		}
+
+		ExecuteSkill_ShieldGuard(SkillData,EffectDataArray);
+	}
+	else
 	{
 		if(!bCanUseNormalSkill)
 		{
@@ -179,10 +210,10 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData,c
 		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
 		{
 			PathComp->Deactivate();
-			UE_LOG(LogTemp,Warning,TEXT("PathFollowingComponent deactivated for Bite skill"));
+			UE_LOG(LogTemp, Warning, TEXT("PathFollowingComponent deactivated for normal skill"));
 		}
 	}
-
+	OwnerEntity-> bUseControllerRotationYaw = false;
 	OwnerEntity->bIsCastingSkill = true;
 	bCanUseNormalSkill = false;
 
@@ -197,6 +228,8 @@ void UEntitySkillComponent::ExecuteHitBoxTypeSkill(const FSkillData& SkillData,c
 			AnimInst->Montage_Play(OwnerEntity->NormalSkillMontage);
 			UE_LOG(LogTemp,Warning,TEXT("Normal Skill Montage played"));
 
+
+			OwnerEntity-> bUseControllerRotationYaw = false;
 
 			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
 			FOnMontageEnded EndDelegate;
@@ -229,10 +262,11 @@ void UEntitySkillComponent::ExecuteProjectileTypeSkill(const FSkillData& SkillDa
 		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
 		{
 			PathComp->Deactivate();
-			UE_LOG(LogTemp,Warning,TEXT("PathFollowingComponent deactivated for Bite skill"));
+			UE_LOG(LogTemp,Warning,TEXT("PathFollowingComponent deactivated for Projectile skill"));
 		}
 	}
 
+	OwnerEntity-> bUseControllerRotationYaw = false;
 	OwnerEntity->bIsCastingSkill = true;
 	bCanUseNormalSkill = false;
 
@@ -327,7 +361,15 @@ void UEntitySkillComponent::ExecuteSkill_FireBall(const FSkillData& SkillData,co
 	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
 	if(AIController && AIController->BrainComponent)
 	{
-		AIController->StopMovement(); // 혹시 이전 경로 남아있으면 정지
+		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+		{
+			// 경로 추적 중단
+			PathComp->Deactivate();
+
+			AIController->StopMovement();
+			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before Launch Projectile"));
+		}
+
 		AIController->BrainComponent->StopLogic(TEXT("Fire Ball Skill Start"));
 		UE_LOG(LogTemp,Warning,TEXT("AI BrainComponent->StopLogic called"));
 	}
@@ -345,9 +387,16 @@ void UEntitySkillComponent::ExecuteSkill_FireBall(const FSkillData& SkillData,co
 		{
 			//OwnerEntity->bIsCastingSkill = false;
 			AIController->BrainComponent->RestartLogic();
+
+			APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(AIController->GetWorld(),0);
+			if(PlayerPawn)
+			{
+				AIController->SetFocus(PlayerPawn);
+				UE_LOG(LogTemp,Warning,TEXT("AI SetFocus to Player after RestartLogic"));
+			}
 			UE_LOG(LogTemp,Warning,TEXT("AI BrainComponent->RestartLogic called"));
 		}
-	},2.0f,false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
+	},3.3f,false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
 }
 
 void UEntitySkillComponent::ExecuteSkill_FreezeBreath(const FSkillData& SkillData,const TArray<FSkillEffectData>& EffectData)
@@ -397,4 +446,107 @@ void UEntitySkillComponent::ExecuteSkill_FreezeBreath(const FSkillData& SkillDat
 			UE_LOG(LogTemp,Warning,TEXT("AIController or BrainComponent is null at resume time"));
 		}
 	},2.0f,false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
+}
+
+void UEntitySkillComponent::ExecuteSkill_EarthBreaker(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
+{
+	if (!OwnerEntity)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
+		return;
+	}
+
+	OwnerEntity->bIsCastingSkill = true;
+
+	// 쿨타임 적용: 스킬 타입에 따라 타이머를 통해 재사용 가능 상태 복구
+	bCanUseSpecialSkill = false;
+	FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this,&UEntitySkillComponent::SpecialCooldown);
+	SetSkillTimer(SkillData.SkillCoolTime,SpecialDelegate,true);
+
+	// AI BehaviorTree 멈춤
+	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
+	if (AIController && AIController->BrainComponent)
+	{
+		AIController->StopMovement(); // 혹시 이전 경로 남아있으면 정지
+		AIController->BrainComponent->StopLogic(TEXT("Earth Breaker Skill Start"));
+		UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->StopLogic called"));
+	}
+
+	OwnerEntity->PerformSkill_EarthBreaker();
+
+	// 스킬 끝나고 다시 AI 로직 재개 (1.5초 후 정도로 가정)
+	FTimerHandle ResumeAITimer;
+	GetWorld()->GetTimerManager().SetTimer(ResumeAITimer, [AIController]()
+		{
+			if (AIController && AIController->BrainComponent)
+			{
+				AIController->BrainComponent->RestartLogic();
+				UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->RestartLogic called"));
+			}
+		}, 2.0f, false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
+}
+
+void UEntitySkillComponent::ExecuteSkill_SplinterArrow(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
+{
+	if (!OwnerEntity)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
+		return;
+	}
+
+	OwnerEntity->bIsCastingSkill = true;
+
+	// 쿨타임 적용: 스킬 타입에 따라 타이머를 통해 재사용 가능 상태 복구
+	bCanUseSpecialSkill = false;
+	FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this,&UEntitySkillComponent::SpecialCooldown);
+	SetSkillTimer(SkillData.SkillCoolTime,SpecialDelegate,true);
+
+	// AI BehaviorTree 멈춤
+	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
+	if (AIController && AIController->BrainComponent)
+	{
+		AIController->StopMovement(); // 혹시 이전 경로 남아있으면 정지
+		AIController->BrainComponent->StopLogic(TEXT("Splinter Arrow Skill Start"));
+		UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->StopLogic called"));
+	}
+
+	OwnerEntity->PerformSkill_SplinterArrow();
+
+	// 스킬 끝나고 다시 AI 로직 재개 
+	FTimerHandle ResumeAITimer;
+	GetWorld()->GetTimerManager().SetTimer(ResumeAITimer, [AIController]()
+	{
+		if (AIController && AIController->BrainComponent)
+		{
+			AIController->BrainComponent->RestartLogic();
+			UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->RestartLogic called"));
+		}		
+	}, 2.0f, false);  // 시간은 애니메이션 길이에 맞춰 조절 가능
+}
+
+void UEntitySkillComponent::ExecuteSkill_ShieldGuard(const FSkillData& SkillData, const TArray<FSkillEffectData>& EffectData)
+{
+	if (!OwnerEntity)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Owner entity is null"));
+		return;
+	}
+
+	OwnerEntity->bIsCastingSkill = true;
+
+	// 쿨타임 적용: 스킬 타입에 따라 타이머를 통해 재사용 가능 상태 복구
+	bCanUseSpecialSkill = false;
+	FTimerDelegate SpecialDelegate = FTimerDelegate::CreateUObject(this,&UEntitySkillComponent::SpecialCooldown);
+	SetSkillTimer(SkillData.SkillCoolTime,SpecialDelegate,true);
+
+	// AI BehaviorTree 멈춤
+	AAIController* AIController = Cast<AAIController>(OwnerEntity->GetController());
+	if (AIController && AIController->BrainComponent)
+	{
+		AIController->StopMovement(); // 혹시 이전 경로 남아있으면 정지
+		AIController->BrainComponent->StopLogic(TEXT("Shield Guard Skill Start"));
+		UE_LOG(LogTemp, Warning, TEXT("AI BrainComponent->StopLogic called"));
+	}
+
+	OwnerEntity->PerformSkill_ShieldGuard();
 }
