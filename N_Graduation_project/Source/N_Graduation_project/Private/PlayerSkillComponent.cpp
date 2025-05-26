@@ -343,6 +343,8 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 	if(CanUseNomalSkill)
 	{
+		bIsSpecialAttack = false;
+
 		FSkillData SkillData;
 		if(!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID,SkillData)) return;
 
@@ -389,6 +391,7 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 
 	if(CanUseSpecialSkill)
 	{
+		bIsSpecialAttack = true;
 		FSkillData SkillData;
 		if(!UABGameSingleton::Get().GetSkillDataBySkillID(SkillID,SkillData)) return;
 
@@ -747,6 +750,12 @@ void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage,bool bInterr
 	{
 		UE_LOG(LogTemp,Warning,TEXT("Skill Animation Ended: Montage is null."));
 	}
+
+	if(bIsSpecialAttack)
+	{
+		bIsSpecialAttack = false;
+	}
+
 	AN_Graduation_projectCharacter* MyChar = GetOwner<AN_Graduation_projectCharacter>();
 	MyChar->EndAction();
 }

@@ -13,7 +13,23 @@ void UAnimNotify_ShowHitBox::Notify(USkeletalMeshComponent* MeshComp,UAnimSequen
 		return;
 
 	Entity->ShowHitBox();  // 내부에서 bIsCharging 판단 후 알아서 분기
-	UE_LOG(LogTemp,Error,TEXT("AnimNotify_ShowHitBox called — HitBox Shown"));
+	//UE_LOG(LogTemp,Error,TEXT("AnimNotify_ShowHitBox called — HitBox Shown"));
+
+	UE_LOG(LogTemp,Error,TEXT("[NOTIFY] ShowHitBox called — %s"),*Entity->GetName());
+
+	if(Entity->bIsBreaking)
+	{
+		UE_LOG(LogTemp,Error,TEXT("[NOTIFY] bIsBreaking is TRUE"));
+	} else if(Entity->bIsCharging)
+	{
+		UE_LOG(LogTemp,Error,TEXT("[NOTIFY] bIsCharging is TRUE"));
+	} else if(Entity->bIsFreezing)
+	{
+		UE_LOG(LogTemp,Error,TEXT("[NOTIFY] bIsFreezing is TRUE"));
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("[NOTIFY] Normal Skill will show"));
+	}
 }
 
 
