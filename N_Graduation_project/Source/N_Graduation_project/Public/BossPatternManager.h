@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "BossPatternManager.generated.h"
 
@@ -18,35 +18,49 @@ USTRUCT(BlueprintType)
 struct FPatternData
 {
 	GENERATED_BODY()
-
-		UPROPERTY(EditAnywhere)
+		FPatternData()
+		: PatternType(EPatternType::Thunder) // 기본값 설정 (필요하면 변경)
+		,Delay(0.f)
+		,Thundercount(0.f) // ← 여기서 반드시 초기화
+	{}
+	UPROPERTY(EditAnywhere)
 		EPatternType PatternType;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-		float Delay ;
+		float Delay;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-		float Thundercount;
+		float Thundercount;;
 };
 
 
 UCLASS()
-class N_GRADUATION_PROJECT_API ABossPatternManager : public APawn
+class N_GRADUATION_PROJECT_API ABossPatternManager: public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	ABossPatternManager();
+
+	void Thunder();
+	void SpawnAndAttachLasers();
+
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 		float Delay;//Thunder delay
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	int ThunderCount;
+		int ThunderCount;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	float ThunderDamage;
+		float ThunderDamage;
 	UFUNCTION(BlueprintCallable)
-		void ApplyThunderDamage();
-	void Thunder();
+
+	void ApplyThunderDamage();
+
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<AActor> LaserBPClass;
+
+	UPROPERTY(EditDefaultsOnly)
+		TArray<FName> LaserSocketNames;
 
 protected:
 	virtual void BeginPlay() override;
@@ -54,6 +68,7 @@ protected:
 
 	UPROPERTY(EditAnywhere,Category = "Spawn")
 		TSubclassOf<AActor> ThunderBPClass;
+
 	FTimerHandle ThunderTimerHandle;
 	int32 ThunderSpawnCount = 0;
 
@@ -65,5 +80,7 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 		float BossHeadHeightOffset = 200.f;  // 머리 위 오프셋
+	//UFUNCTION(BlueprintCallable)
+	//	void PlayThunderAnimation();
 
 };

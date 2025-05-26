@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "MyGameInstance.h"
+#include "BossCharacter.h"
 
 ABossPatternManager::ABossPatternManager()
 {
@@ -11,12 +12,30 @@ ABossPatternManager::ABossPatternManager()
 	SphereComponent = nullptr;
 	ThunderCount=5;
 
+	LaserSocketNames = {"Red1","Red2","Red3","Red4"};
+	//LaserSocketNames = {"Red1"};
+	static ConstructorHelpers::FClassFinder<AActor> LaserBPClassFinder(TEXT("/Game/VFX/BP_Laser"));
+	if(LaserBPClassFinder.Succeeded())
+	{
+		LaserBPClass = LaserBPClassFinder.Class;
+	}
+
 }
 
 void ABossPatternManager::BeginPlay()
 {
 	Super::BeginPlay();
-
+	if(!BossActor)
+	{
+		BossActor = UGameplayStatics::GetActorOfClass(GetWorld(),ABossCharacter::StaticClass());
+		if(BossActor)
+		{
+			UE_LOG(LogTemp,Warning,TEXT("BossActor 자동 할당됨: %s"),*BossActor->GetName());
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("BossActor 자동 할당 실패! 레벨에 ABossCharacter가 배치되었는지 확인하세요."));
+		}
+	}
 }
 
 void ABossPatternManager::SpawnThunder()
@@ -36,16 +55,18 @@ void ABossPatternManager::SpawnThunder()
 
 	GetWorld()->SpawnActor<AActor>(ThunderBPClass,PlayerLocation,SpawnRotation,SpawnParams);
 	UE_LOG(LogTemp,Warning,TEXT("Thunder %d번째 소환"),ThunderSpawnCount + 1);
-	if(BossActor)
-	{
-		FVector BossHeadLocation = BossActor->GetActorLocation() + FVector(0,0,BossHeadHeightOffset); // 머리 위 위치 조절
-		GetWorld()->SpawnActor<AActor>(ThunderBPClass,BossHeadLocation,SpawnRotation,SpawnParams);
-		UE_LOG(LogTemp,Warning,TEXT("보스 머리 위 번개 생성"));
-	}
+	//if(BossActor)
+	//{
+	//	FVector BossHeadLocation = BossActor->GetActorLocation() + FVector(0,0,BossHeadHeightOffset); // 머리 위 위치 조절
+	//	GetWorld()->SpawnActor<AActor>(ThunderBPClass,BossHeadLocation,SpawnRotation,SpawnParams);
+	//	UE_LOG(LogTemp,Warning,TEXT("보스 머리 위 번개 생성"));
+	//}
 	ThunderSpawnCount++;
 
 	if(ThunderSpawnCount >= ThunderCount)
 	{
+		UE_LOG(LogTemp,Warning,TEXT("ThunderSpawnCount"));
+
 		GetWorldTimerManager().ClearTimer(ThunderTimerHandle);
 		ThunderSpawnCount = 0;  // 초기화 
 		MyGameInstance->Thunder = false;
@@ -55,7 +76,8 @@ void ABossPatternManager::SpawnThunder()
 }
  
 void ABossPatternManager::Thunder(){
-	UE_LOG(LogTemp,Warning,TEXT("Thunder 성공"));
+	UE_LOG(LogTemp,Warning,TEXT(" 성공"));
+
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
 	UClass* LoadedClass = LoadObject<UClass>(nullptr,TEXT("/Game/Entity/Boss/Boss_Thunder.Boss_Thunder_C"));
@@ -96,7 +118,6 @@ void ABossPatternManager::ApplyThunderDamage()
 
 		UE_LOG(LogTemp,Warning,TEXT("폭발 범위 내 감지된 액터: %s"),*Actor->GetName());
 
-		// Barrel인 경우 연쇄 폭발 처리
 		if(Actor->ActorHasTag(FName("Player")))
 		{
 			// 데미지 처리
@@ -105,4 +126,45 @@ void ABossPatternManager::ApplyThunderDamage()
 		}
 	}
 
+}
+void ABossPatternManager::SpawnAndAttachLasers()
+{
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+	MyGameInstance->Laser=true;
+	UE_LOG(LogTemp,Warning,TEXT("SpawnAndAttachLasers"));
+
+	if(!LaserBPClass) {
+		UE_LOG(LogTemp,Warning,TEXT("SpawnAndAttachLasers LaserBPClass 없음"));
+
+		return;
+	}
+	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor); 
+	if(!BossChar) {
+		UE_LOG(LogTemp,Warning,TEXT("SpawnAndAttachLasers BossChar 없.음.%s"),*GetNameSafe(BossActor));
+		return; 
+	}
+	for(const FName& SocketName : LaserSocketNames)
+	{ 
+		FTransform SocketTransform =BossChar-> GetMesh()->GetSocketTransform(SocketName);
+
+		AActor* Laser = GetWorld()->SpawnActor<AActor>(LaserBPClass,SocketTransform);
+		if(!Laser) continue;
+		Laser->AttachToComponent(BossChar->GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,SocketName);
+		UE_LOG(LogTemp,Warning,TEXT("SpawnAndAttachLasers AttachToComponent"));
+
+		// 1초 후 소켓에 부착 및 레이저 초기화
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle,[this,Laser,SocketName]()
+		{
+			if(!Laser) return;
+
+			// 디태치
+			Laser->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+			if(!MyGameInstance) return;
+			MyGameInstance->Laser=false;
+			Laser->Destroy();
+		},5.0f,false);
+	}
 }

@@ -22,7 +22,7 @@ public:
 	ABossCharacter();
 
 	UPROPERTY(BlueprintReadWrite)
-		bool SkillStart;
+		bool SkillStart=false;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -55,8 +55,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly,Category = "Laser")
 		TSubclassOf<AActor> LaserBPClass;
 
-	UPROPERTY(EditDefaultsOnly,Category = "Laser")
-		int32 LaserDamage = 30;
 
 	UPROPERTY(EditDefaultsOnly,Category = "Laser")
 		TArray<FName> LaserSocketNames;
