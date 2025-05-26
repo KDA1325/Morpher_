@@ -14,10 +14,11 @@ ABossCharacter::ABossCharacter()
 	if(Boss.Succeeded())
 	{
 		BossClass = Boss.Class;
-	}
+	} 
 	CurrentHP=BossHP;
 
 	LaserSocketNames = {"Red1","Red2","Red3","Red4"};
+	//LaserSocketNames = {"Red1"};
 	static ConstructorHelpers::FClassFinder<AActor> LaserBPClassFinder(TEXT("/Game/VFX/BP_Laser"));
 	if(LaserBPClassFinder.Succeeded())
 	{
