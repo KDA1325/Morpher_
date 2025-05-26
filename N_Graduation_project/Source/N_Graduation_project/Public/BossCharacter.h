@@ -22,7 +22,7 @@ public:
 	ABossCharacter();
 
 	UPROPERTY(BlueprintReadWrite)
-		bool SkillStart;
+		bool SkillStart=false;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -47,4 +47,5 @@ protected:
 		TSubclassOf<UUserWidget> BossClass;
 	UPROPERTY(EditAnywhere,Category = "UI")
 		UBossWidget* BossWidget;
+
 };

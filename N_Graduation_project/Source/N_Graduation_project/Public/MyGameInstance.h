@@ -46,4 +46,9 @@ public:
 	void InitFromSaveData(UMySaveGame* SaveData);
 	void SaveToSaveData(UMySaveGame* SaveData);
 	void OnStreamLevelLoaded();
+
+	UPROPERTY(BlueprintReadWrite)
+		bool Thunder=false;
+	UPROPERTY(BlueprintReadWrite)
+		bool Laser=false;
 };

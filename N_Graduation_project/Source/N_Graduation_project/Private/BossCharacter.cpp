@@ -3,17 +3,21 @@
 #include "Kismet/GameplayStatics.h"
 #include "BossWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "Boss_Laser.h" 
+#include "MyGameInstance.h"
 
 ABossCharacter::ABossCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
+	 
 	static ConstructorHelpers::FClassFinder<UUserWidget> Boss(TEXT("WidgetBlueprint'/Game/Entity/Boss/BP_BossHPWidget.BP_BossHPWidget_C'"));
 	if(Boss.Succeeded())
 	{
 		BossClass = Boss.Class;
 	}
 	CurrentHP=BossHP;
+	//BossPatternManager =CreateDefaultSubobject<ABossPatternManager>(TEXT("BossPatternManager"));
+
 }
 UBossWidget* ABossCharacter::GetHUD() const
 {
@@ -35,18 +39,34 @@ void ABossCharacter::BeginPlay()
 			BossWidget->AddToViewport();
 		}
 	}
+	BossPatternManager = GetWorld()->SpawnActor<ABossPatternManager>(ABossPatternManager::StaticClass(),FVector::ZeroVector,FRotator::ZeroRotator);
 	UpdateHP();
-	//Pattern1();
+	Pattern1();
 }
 
 void ABossCharacter::Pattern1(){
-	///	if(SkillStart){
+	UE_LOG(LogTemp,Warning,TEXT("Pattern1 실행"));
 
-	BossPatternManager->Thunder();
-	UE_LOG(LogTemp,Warning,TEXT("Thunde Pattern1"));
+	//if(SkillStart==true){
 
+	
+		//BossPatternManager->Thunder();
+		UE_LOG(LogTemp,Warning,TEXT("Thunde Pattern1"));
+	
+	//	BossPatternManager->SpawnAndAttachLasers();
+		
+		if(BossPatternManager)
+		{
+			float Timer = 1.0f;
+			FTimerHandle LaserDelayHandle;
+			GetWorld()->GetTimerManager().SetTimer(
+				LaserDelayHandle,
+				FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::SpawnAndAttachLasers),
+				Timer,
+				false
+			);
+		}
 
-	//}
 }
 
 float ABossCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
