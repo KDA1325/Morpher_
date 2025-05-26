@@ -9,7 +9,7 @@
 ABossCharacter::ABossCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	 
+
 	static ConstructorHelpers::FClassFinder<UUserWidget> Boss(TEXT("WidgetBlueprint'/Game/Entity/Boss/BP_BossHPWidget.BP_BossHPWidget_C'"));
 	if(Boss.Succeeded())
 	{
@@ -49,23 +49,25 @@ void ABossCharacter::Pattern1(){
 
 	//if(SkillStart==true){
 
-	
+
 		//BossPatternManager->Thunder();
-		UE_LOG(LogTemp,Warning,TEXT("Thunde Pattern1"));
-	
+	UE_LOG(LogTemp,Warning,TEXT("Thunde Pattern1"));
+
 	//	BossPatternManager->SpawnAndAttachLasers();
-		
-		if(BossPatternManager)
-		{
-			float Timer = 1.0f;
-			FTimerHandle LaserDelayHandle;
-			GetWorld()->GetTimerManager().SetTimer(
-				LaserDelayHandle,
-				FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::SpawnAndAttachLasers),
-				Timer,
-				false
-			);
-		}
+
+	//if(BossPatternManager)
+	//{
+	//	float Timer = 1.0f;
+	//	FTimerHandle LaserDelayHandle;
+	//	GetWorld()->GetTimerManager().SetTimer(LaserDelayHandle,
+	//		FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::SpawnAndAttachLasers),
+	//		Timer,false);
+	//}
+
+	UE_LOG(LogTemp,Warning,TEXT("Pattern1 실행"));
+
+		BossPatternManager->StartSpinningBarrageSequence(5);
+
 
 }
 

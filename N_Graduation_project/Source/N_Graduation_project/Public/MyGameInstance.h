@@ -51,4 +51,6 @@ public:
 		bool Thunder=false;
 	UPROPERTY(BlueprintReadWrite)
 		bool Laser=false;
+	UPROPERTY(BlueprintReadWrite)
+		bool Spin=false;
 };

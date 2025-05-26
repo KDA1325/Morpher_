@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
+#include "BossProjectile.h"
+
+
 #include "BossPatternManager.generated.h"
 
 UENUM(BlueprintType)
@@ -95,5 +98,16 @@ public:
 		TArray<FName> Spinning2SocketNames;
 	UPROPERTY(EditDefaultsOnly)
 		TSubclassOf<AActor> SpinningBPClass;
+	UFUNCTION(BlueprintCallable)
+		void SpinningBarrage();
+
+	void StartSpinningBarrageSequence(int num);
+	void SpinningBarrageTick();
+
+private:
+	int ProjectileSpeed=300;
+	float ApplyDamageAmount=10.f;
+	int SpinningBarrageCount=0;
+	FTimerHandle SpinningBarrageTimerHandle;
 
 };

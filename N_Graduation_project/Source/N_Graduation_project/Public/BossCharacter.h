@@ -47,5 +47,7 @@ protected:
 		TSubclassOf<UUserWidget> BossClass;
 	UPROPERTY(EditAnywhere,Category = "UI")
 		UBossWidget* BossWidget;
-
+public:
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Spin")
+		TSubclassOf<ABossProjectile> ProjectileClass;
 };
