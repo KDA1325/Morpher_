@@ -42,32 +42,32 @@ class N_GRADUATION_PROJECT_API ABossPatternManager: public AActor
 public:
 	// Sets default values for this actor's properties
 	ABossPatternManager();
+protected:
+	virtual void BeginPlay() override;
 
+public:
+	//전기기둥
 	void Thunder();
 	void SpawnAndAttachLasers();
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 		float Delay;//Thunder delay
+
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 		int ThunderCount;
+
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 		float ThunderDamage;
+
 	UFUNCTION(BlueprintCallable)
-
 	void ApplyThunderDamage();
-
-	UPROPERTY(EditDefaultsOnly)
-		TSubclassOf<AActor> LaserBPClass;
-
-	UPROPERTY(EditDefaultsOnly)
-		TArray<FName> LaserSocketNames;
-
-protected:
-	virtual void BeginPlay() override;
-	void SpawnThunder();
 
 	UPROPERTY(EditAnywhere,Category = "Spawn")
 		TSubclassOf<AActor> ThunderBPClass;
+
+protected:
+	//레이저
+	void SpawnThunder();
 
 	FTimerHandle ThunderTimerHandle;
 	int32 ThunderSpawnCount = 0;
@@ -80,7 +80,20 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 		float BossHeadHeightOffset = 200.f;  // 머리 위 오프셋
-	//UFUNCTION(BlueprintCallable)
-	//	void PlayThunderAnimation();
+public:
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<AActor> LaserBPClass;
+
+	UPROPERTY(EditDefaultsOnly)
+		TArray<FName> LaserSocketNames;
+
+public:
+	// 회전 투사체
+	UPROPERTY(EditDefaultsOnly)
+		TArray<FName> Spinning1SocketNames;
+	UPROPERTY(EditDefaultsOnly)
+		TArray<FName> Spinning2SocketNames;
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<AActor> SpinningBPClass;
 
 };

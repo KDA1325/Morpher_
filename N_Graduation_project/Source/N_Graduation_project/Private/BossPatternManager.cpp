@@ -13,13 +13,19 @@ ABossPatternManager::ABossPatternManager()
 	ThunderCount=5;
 
 	LaserSocketNames = {"Red1","Red2","Red3","Red4"};
-	//LaserSocketNames = {"Red1"};
 	static ConstructorHelpers::FClassFinder<AActor> LaserBPClassFinder(TEXT("/Game/VFX/BP_Laser"));
 	if(LaserBPClassFinder.Succeeded())
 	{
 		LaserBPClass = LaserBPClassFinder.Class;
 	}
 
+	Spinning1SocketNames = {"core1","core3","core5","core7"};
+	Spinning2SocketNames= {"core2","core4","core6","core8"};
+		static ConstructorHelpers::FClassFinder<AActor> SpinBPClassFinder(TEXT("/Game/Entity/Boss/Boss_Projectile"));
+	if(LaserBPClassFinder.Succeeded())
+	{
+		SpinningBPClass = SpinBPClassFinder.Class;
+	}
 }
 
 void ABossPatternManager::BeginPlay()
@@ -153,18 +159,17 @@ void ABossPatternManager::SpawnAndAttachLasers()
 		Laser->AttachToComponent(BossChar->GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,SocketName);
 		UE_LOG(LogTemp,Warning,TEXT("SpawnAndAttachLasers AttachToComponent"));
 
-		// 1초 후 소켓에 부착 및 레이저 초기화
 		FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle,[this,Laser,SocketName]()
 		{
 			if(!Laser) return;
 
 			// 디태치
-			Laser->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			//Laser->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 			if(!MyGameInstance) return;
-			MyGameInstance->Laser=false;
-			Laser->Destroy();
+			//MyGameInstance->Laser=false;
+		//	Laser->Destroy();
 		},5.0f,false);
 	}
 }

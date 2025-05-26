@@ -48,14 +48,4 @@ protected:
 	UPROPERTY(EditAnywhere,Category = "UI")
 		UBossWidget* BossWidget;
 
-
-//레이저
-	void SpawnAndAttachLasers();
-
-	UPROPERTY(EditDefaultsOnly,Category = "Laser")
-		TSubclassOf<AActor> LaserBPClass;
-
-
-	UPROPERTY(EditDefaultsOnly,Category = "Laser")
-		TArray<FName> LaserSocketNames;
 };
