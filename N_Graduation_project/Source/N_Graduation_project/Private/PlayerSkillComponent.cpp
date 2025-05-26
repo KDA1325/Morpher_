@@ -73,6 +73,7 @@ void UPlayerSkillComponent::BeginPlay()
 	{
 		UE_LOG(LogTemp,Warning,TEXT("Failed to create ChargeDecalComponent"));
 	}
+	ChargeDecalComponent->SetVisibility(false);
 }
 void UPlayerSkillComponent::SetHitBox(UBoxComponent* InHitBox)
 {
@@ -507,6 +508,8 @@ void UPlayerSkillComponent::SpawnChargeIndicator(FVector Start,FVector End)
 		ChargeDecalComponent->RegisterComponent();
 		ChargeDecalComponent->AttachToComponent(Cast<AActor>(GetOwner())->GetRootComponent(),FAttachmentTransformRules::KeepWorldTransform);
 		ChargeDecalComponent->SetDecalMaterial(ChargeDecalMaterial);
+		ChargeDecalComponent->SetVisibility(true);
+
 	}
 	FVector MidPoint = (Start + End) * 0.5f;
 	float Length = FVector::Distance(Start,End);
