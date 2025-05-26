@@ -24,8 +24,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Level Streaming")
-	TArray<FName> ConnectedLevels;
+	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Level Streaming")
+	//TArray<FName> ConnectedLevels;
 
 	UFUNCTION()
 	void OnTriggerOverlap(AActor* OverlappedActor,AActor* OtherActor);
