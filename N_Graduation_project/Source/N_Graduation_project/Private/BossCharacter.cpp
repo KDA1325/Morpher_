@@ -50,14 +50,14 @@ void ABossCharacter::Pattern1(){
 	//if(SkillStart==true){
 
 	
-		BossPatternManager->Thunder();
+		//BossPatternManager->Thunder();
 		UE_LOG(LogTemp,Warning,TEXT("Thunde Pattern1"));
 	
 	//	BossPatternManager->SpawnAndAttachLasers();
 		
 		if(BossPatternManager)
 		{
-			float Timer = 10.0f;
+			float Timer = 1.0f;
 			FTimerHandle LaserDelayHandle;
 			GetWorld()->GetTimerManager().SetTimer(
 				LaserDelayHandle,
