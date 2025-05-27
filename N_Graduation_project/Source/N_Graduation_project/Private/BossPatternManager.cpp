@@ -6,6 +6,9 @@
 #include "MyGameInstance.h"
 #include "BossCharacter.h"
 #include "BossProjectile.h"
+#include "HealCrystal.h"
+
+
 ABossPatternManager::ABossPatternManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -19,13 +22,30 @@ ABossPatternManager::ABossPatternManager()
 		LaserBPClass = LaserBPClassFinder.Class;
 	}
 
-	Spinning1SocketNames = {"core1","core3","core5","core7"};
-	Spinning2SocketNames= {"core2","core4","core6","core8"};
+	Spinning1SocketNames = {"spin1","spin3","spin5","spin7"};
+	Spinning2SocketNames= {"spin2","spin4","spin6","spin8"};
 	static ConstructorHelpers::FClassFinder<AActor> SpinBPClassFinder(TEXT("/Game/Entity/Boss/Boss_Projectile"));
-	if(LaserBPClassFinder.Succeeded())
+	if(SpinBPClassFinder.Succeeded())
 	{
 		SpinningBPClass = SpinBPClassFinder.Class;
 	}
+	
+	CrystalSocketNames = {"Crystal1","Crystal2","Crystal3"};
+	static ConstructorHelpers::FClassFinder<AActor> BlackClassFinder(TEXT("/Game/Entity/Boss/BlackCrystal"));
+	if(BlackClassFinder.Succeeded())
+	{
+		BlackCryBPClass = BlackClassFinder.Class;
+	}	static ConstructorHelpers::FClassFinder<AActor> RedClassFinder(TEXT("/Game/Entity/Boss/RedCrystal"));
+	if(RedClassFinder.Succeeded())
+	{
+		RedCryBPClass = RedClassFinder.Class;
+	}
+	static ConstructorHelpers::FClassFinder<AActor> BlueClassFinder(TEXT("/Game/Entity/Boss/BlueCrystal"));
+	if(BlueClassFinder.Succeeded())
+	{
+		BlueCryBPClass = BlueClassFinder.Class;
+	}
+	
 }
 
 void ABossPatternManager::BeginPlay()
@@ -265,4 +285,55 @@ void ABossPatternManager::SpinningBarrageTick()
 
 	SpinningBarrage();
 	SpinningBarrageCount++;
+}
+void ABossPatternManager::HealCrystal()
+{
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+
+	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor);
+	if(!BossChar || !BossChar->GetMesh()) return;
+
+	for(int32 i = 0; i < CrystalSocketNames.Num(); ++i)
+	{
+		TSubclassOf<AActor> SelectedClass = nullptr;
+
+		if(i == 0 && BlackCryBPClass) SelectedClass = BlackCryBPClass;
+		else if(i == 1 && RedCryBPClass) SelectedClass = RedCryBPClass;
+		else if(i == 2 && BlueCryBPClass) SelectedClass = BlueCryBPClass;
+
+		if(SelectedClass)
+		{
+			FName SocketName = CrystalSocketNames[i];
+			FTransform SocketTransform = BossChar->GetMesh()->GetSocketTransform(SocketName);
+			SocketTransform.AddToTranslation(FVector(0,0,50));
+
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+			AActor* SpawnedCrystal = GetWorld()->SpawnActor<AActor>(SelectedClass,SocketTransform,SpawnParams);
+			if(!SpawnedCrystal)
+			{
+				UE_LOG(LogTemp,Error,TEXT("HealCrystal: SpawnActor 실패! %d"),i);
+				continue;
+			}
+
+			UE_LOG(LogTemp,Warning,TEXT("HealCrystal: 크리스탈 스폰 성공: %s"),*SpawnedCrystal->GetName());
+
+			SpawnedCrystal->AttachToComponent(
+				BossChar->GetMesh(),
+				FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+				SocketName
+			);
+
+
+			AHealCrystal* HealCrystal = Cast<AHealCrystal>(SpawnedCrystal);
+			if(HealCrystal)
+			{
+				HealCrystal->BossActor = BossChar;         
+				HealCrystal->StartCrystal(5);             // 각 크리스탈 별로 타이머 시작
+			}
+		}
+
+	}
 }

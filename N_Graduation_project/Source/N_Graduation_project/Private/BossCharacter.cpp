@@ -15,7 +15,8 @@ ABossCharacter::ABossCharacter()
 	{
 		BossClass = Boss.Class;
 	}
-	CurrentHP=BossHP;
+	//CurrentHP=BossHP;
+	CurrentHP=200;
 	//BossPatternManager =CreateDefaultSubobject<ABossPatternManager>(TEXT("BossPatternManager"));
 
 }
@@ -66,8 +67,8 @@ void ABossCharacter::Pattern1(){
 
 	UE_LOG(LogTemp,Warning,TEXT("Pattern1 실행"));
 
-		BossPatternManager->StartSpinningBarrageSequence(5);
-
+	//	BossPatternManager->StartSpinningBarrageSequence(5);
+	BossPatternManager->HealCrystal();
 
 }
 
@@ -85,12 +86,19 @@ void ABossCharacter::SetHP(int NewHP)
 	//	PastCurrentHP = CurrentHP;
 	CurrentHP = NewHP;
 	UpdateHP();
+	UE_LOG(LogTemp,Log,TEXT("CurrentHP HealHP(200) 결과: %d"),CurrentHP);
+
 
 
 	if(CurrentHP == 0)
 	{
 		OnBossDead();
 	}
+}
+void ABossCharacter::HealHP(int DamageAmount){
+	CurrentHP = FMath::Clamp(CurrentHP + DamageAmount,0,BossHP); // 안전하게 조정
+	SetHP(CurrentHP); // 이걸로 UI까지 갱신되도록	SetHP(CurrentHP);
+
 }
 void ABossCharacter::UpdateHP(){
 	BossWidget->UpdateHPBar(CurrentHP);

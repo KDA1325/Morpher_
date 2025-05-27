@@ -110,4 +110,17 @@ private:
 	int SpinningBarrageCount=0;
 	FTimerHandle SpinningBarrageTimerHandle;
 
+public:
+	//회복 수정체
+	UPROPERTY(EditDefaultsOnly)
+		TArray<FName> CrystalSocketNames;
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<AActor> BlackCryBPClass;
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<AActor> BlueCryBPClass;
+	UPROPERTY(EditDefaultsOnly)
+		TSubclassOf<AActor> RedCryBPClass;
+
+	void HealCrystal();
+
 };

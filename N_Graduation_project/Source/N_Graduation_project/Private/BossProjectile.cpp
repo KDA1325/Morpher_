@@ -12,7 +12,7 @@ ABossProjectile::ABossProjectile(){
 	ProjectileMovement->MaxSpeed = 300;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
-//	ProjectileMovement->ProjectileGravityScale = 0.04f; 
+	ProjectileMovement->ProjectileGravityScale = 0; 
 
 } 
 
@@ -33,7 +33,7 @@ void ABossProjectile::InitProjectileBySkillData(float Speed,float damage)
 
 	if(CollisionComp && ProjectileMovement)
 	{
-		ProjectileMovement->ProjectileGravityScale = FMath::RandRange(0.03f,0.4f); //랜덤한 값을 줌
+		//ProjectileMovement->ProjectileGravityScale = FMath::RandRange(0.03f,0.2f); //랜덤한 값을 줌
 
 		//UE_LOG(LogTemp,Warning,TEXT("SpinningBarrage CollisionComp found: %s"),*CollisionComp->GetName());
 

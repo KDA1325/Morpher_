@@ -13,7 +13,7 @@ class BossPatternManager;
 class UBossWidget;
 
 UCLASS()
-class N_GRADUATION_PROJECT_API ABossCharacter : public ACharacter
+class N_GRADUATION_PROJECT_API ABossCharacter: public ACharacter
 {
 	GENERATED_BODY()
 
@@ -23,12 +23,16 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 		bool SkillStart=false;
+	void HealHP(int DamageAmount);
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
+		int CurrentHP;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	UPROPERTY(BlueprintReadOnly,meta = (AllowPrivateAccess = "true"))
-	ABossPatternManager* BossPatternManager;
+		ABossPatternManager* BossPatternManager;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 		UWidgetComponent* BossHPWidgetComponent;
@@ -36,12 +40,11 @@ protected:
 	virtual float TakeDamage(float DamageAmount,struct FDamageEvent const& DamageEvent,class AController* EventInstigator,AActor* DamageCauser) override;
 	void SetHP(int NewHP);
 	void UpdateHP();
+
 	void OnBossDead();
 	UBossWidget* GetHUD() const;
 
 	int BossHP=2000;
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
-	int CurrentHP;
 
 	UPROPERTY(EditAnywhere,Category = "UI")
 		TSubclassOf<UUserWidget> BossClass;
