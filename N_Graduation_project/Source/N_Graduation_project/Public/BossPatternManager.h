@@ -15,6 +15,9 @@ enum class EPatternType: uint8
 {
 	Thunder,
 	Laser,
+	Spin,
+	Heal,
+	Meteor,
 
 };
 USTRUCT(BlueprintType)
@@ -123,4 +126,18 @@ public:
 
 	void HealCrystal();
 
+	//메테오
+	UFUNCTION(BlueprintCallable)
+		void ApplyMeteorDamage();
+	// Meteor 관련 변수
+	FTimerHandle MeteorTimerHandle;
+	int32 MeteorSpawnCount = 0;
+	UPROPERTY(BlueprintReadWrite)
+	int32 MeteorTotalCount = 50;
+	UPROPERTY(BlueprintReadWrite)
+	int32 MeteorsPerSecond = 1;
+	void Meteor();
+	void SpawnMeteorBatch();
+	TSubclassOf<AActor> MeteorBPClass;
+	FVector GetRandomMeteorLocation(); // 랜덤 생성 함수
 };

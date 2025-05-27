@@ -29,7 +29,7 @@ ABossPatternManager::ABossPatternManager()
 	{
 		SpinningBPClass = SpinBPClassFinder.Class;
 	}
-	
+
 	CrystalSocketNames = {"Crystal1","Crystal2","Crystal3"};
 	static ConstructorHelpers::FClassFinder<AActor> BlackClassFinder(TEXT("/Game/Entity/Boss/BlackCrystal"));
 	if(BlackClassFinder.Succeeded())
@@ -45,7 +45,7 @@ ABossPatternManager::ABossPatternManager()
 	{
 		BlueCryBPClass = BlueClassFinder.Class;
 	}
-	
+
 }
 
 void ABossPatternManager::BeginPlay()
@@ -260,7 +260,7 @@ void ABossPatternManager::SpinningBarrage()
 }
 void ABossPatternManager::StartSpinningBarrageSequence(int num)
 {
-	 SpinningBarrageCount = num;
+	SpinningBarrageCount = num;
 
 	GetWorld()->GetTimerManager().SetTimer(
 		SpinningBarrageTimerHandle,
@@ -319,7 +319,7 @@ void ABossPatternManager::HealCrystal()
 			}
 
 			UE_LOG(LogTemp,Warning,TEXT("HealCrystal: 크리스탈 스폰 성공: %s"),*SpawnedCrystal->GetName());
-
+			MyGameInstance->BossHeal=true;
 			SpawnedCrystal->AttachToComponent(
 				BossChar->GetMesh(),
 				FAttachmentTransformRules::SnapToTargetNotIncludingScale,
@@ -330,10 +330,108 @@ void ABossPatternManager::HealCrystal()
 			AHealCrystal* HealCrystal = Cast<AHealCrystal>(SpawnedCrystal);
 			if(HealCrystal)
 			{
-				HealCrystal->BossActor = BossChar;         
+				HealCrystal->BossActor = BossChar;
 				HealCrystal->StartCrystal(5);             // 각 크리스탈 별로 타이머 시작
 			}
 		}
 
+	}
+}
+
+void ABossPatternManager::Meteor()
+{
+
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+
+	// 동적 로드
+	UClass* LoadedClass = LoadObject<UClass>(nullptr,TEXT("/Game/Entity/Boss/Boss_Meteor.Boss_Meteor_C"));
+	if(LoadedClass)
+	{
+		MeteorBPClass = LoadedClass;
+		UE_LOG(LogTemp,Warning,TEXT("MeteorBPClass 로드 성공"));
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("MeteorBPClass 로드 실패"));
+		return;
+	}
+
+	MeteorSpawnCount = 0;
+	GetWorldTimerManager().SetTimer(
+		MeteorTimerHandle,
+		this,
+		&ABossPatternManager::SpawnMeteorBatch,
+		0.1f,  // 초당 1회
+		true
+	);
+}
+
+void ABossPatternManager::SpawnMeteorBatch()
+{
+	if(!MeteorBPClass) return;
+
+	for(int i = 0; i < MeteorsPerSecond; ++i)
+	{
+		if(MeteorSpawnCount >= MeteorTotalCount)
+			break;
+
+		FVector SpawnLocation = GetRandomMeteorLocation();
+		FRotator SpawnRotation = FRotator::ZeroRotator;
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		GetWorld()->SpawnActor<AActor>(MeteorBPClass,SpawnLocation,SpawnRotation,SpawnParams);
+		UE_LOG(LogTemp,Warning,TEXT("Meteor %d번째 소환"),MeteorSpawnCount + 1);
+
+		MeteorSpawnCount++;
+	}
+
+	if(MeteorSpawnCount >= MeteorTotalCount)
+	{
+		GetWorldTimerManager().ClearTimer(MeteorTimerHandle);
+		MeteorSpawnCount = 0;
+	}
+}
+
+FVector ABossPatternManager::GetRandomMeteorLocation()
+{
+	// 맵 또는 보스 기준 랜덤 위치 설정 (원하는 범위 조정 가능)
+	FVector Origin(0.0f,0.0f,0); // 높은 Z 위치에서 낙하
+	float RangeXY = 3000.0f;
+	FVector RandomOffset = FVector(
+		FMath::FRandRange(-RangeXY,RangeXY),
+		FMath::FRandRange(-RangeXY,RangeXY),
+		0.0f
+	);
+	return Origin + RandomOffset;
+}
+void ABossPatternManager::ApplyMeteorDamage(){
+	SphereComponent = FindComponentByClass<USphereComponent>();
+	if(SphereComponent)
+	{
+		SphereComponent->SetGenerateOverlapEvents(true);
+		UE_LOG(LogTemp,Log,TEXT("Meteor: SphereComponent 세팅 완료"));
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("Meteor: SphereComponent가 NULL입니다! BP에서 설정되었는지 확인하세요"));
+	}
+
+	TArray<AActor*> OverlappingActors;
+	SphereComponent->GetOverlappingActors(OverlappingActors);
+
+	for(AActor* Actor : OverlappingActors)
+	{
+		if(!Actor || Actor == this)
+			continue;
+
+
+		if(Actor->ActorHasTag(FName("Player")))
+		{
+			// 데미지 처리
+			AController* InstigatorController = GetInstigatorController();
+			UGameplayStatics::ApplyDamage(Actor,40,InstigatorController,this,nullptr);
+		}
 	}
 }

@@ -61,4 +61,6 @@ public:
 		bool Laser=false;
 	UPROPERTY(BlueprintReadWrite)
 		bool Spin=false;
+	UPROPERTY(BlueprintReadWrite)
+		bool BossHeal=false;
 };

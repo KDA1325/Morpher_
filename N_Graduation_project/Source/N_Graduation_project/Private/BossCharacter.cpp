@@ -5,6 +5,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Boss_Laser.h" 
 #include "MyGameInstance.h"
+#include "NiagaraFunctionLibrary.h"  
 
 ABossCharacter::ABossCharacter()
 {
@@ -68,8 +69,8 @@ void ABossCharacter::Pattern1(){
 	UE_LOG(LogTemp,Warning,TEXT("Pattern1 실행"));
 
 	//	BossPatternManager->StartSpinningBarrageSequence(5);
-	BossPatternManager->HealCrystal();
-
+	//BossPatternManager->HealCrystal();
+	BossPatternManager->Meteor();
 }
 
 float ABossCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
@@ -98,7 +99,19 @@ void ABossCharacter::SetHP(int NewHP)
 void ABossCharacter::HealHP(int DamageAmount){
 	CurrentHP = FMath::Clamp(CurrentHP + DamageAmount,0,BossHP); // 안전하게 조정
 	SetHP(CurrentHP); // 이걸로 UI까지 갱신되도록	SetHP(CurrentHP);
+	if(HealEffect)
+	{
 
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			HealEffect,
+			GetActorLocation() + FVector(0,0,-500),
+			FRotator::ZeroRotator,//회전
+			FVector(100.0f),  //스케일
+			true,           // Auto Destroy
+			true            // Auto Activate
+		);
+	}
 }
 void ABossCharacter::UpdateHP(){
 	BossWidget->UpdateHPBar(CurrentHP);

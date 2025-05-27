@@ -2,7 +2,8 @@
 #include "TimerManager.h"
 #include "GameFramework/Actor.h"
 #include "BossCharacter.h" 
-
+#include "MyGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 // Called when the game starts or when spawned
 AHealCrystal::AHealCrystal(){
 
@@ -41,7 +42,8 @@ void AHealCrystal::StartCrystal(float LimitTime)
 void AHealCrystal::OnCrystalTimeExpired()
 {
 	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor);
-
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
 	if(BossChar)
 	{
 		if(bIsDestroyed==false)
@@ -53,6 +55,8 @@ void AHealCrystal::OnCrystalTimeExpired()
 
 		}
 	}
+	MyGameInstance->BossHeal=false;
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 	Destroy(); // 크리스탈 제거
 }
 float AHealCrystal::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)

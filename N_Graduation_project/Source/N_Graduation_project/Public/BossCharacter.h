@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "BossPatternManager.h"
 #include "Components/WidgetComponent.h"
+#include "NiagaraSystem.h"
 
 #include "BossCharacter.generated.h"
 
@@ -53,4 +54,8 @@ protected:
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Spin")
 		TSubclassOf<ABossProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere,Category="Effects")
+		UNiagaraSystem* HealEffect;
+
 };
