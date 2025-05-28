@@ -29,13 +29,6 @@ void AHealCrystal::StartCrystal(float LimitTime)
 		false
 	);
 	NomalHeal();
-	//GetWorld()->GetTimerManager().SetTimer(
-	//HealLoopTimerHandle,
-	//this,
-	//&AHealCrystal::NomalHeal,
-	//LimitTime,
-	//false
-	//);
 
 }
 

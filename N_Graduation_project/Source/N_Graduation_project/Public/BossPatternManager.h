@@ -36,7 +36,7 @@ struct FPatternData
 		float Delay;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-		float Thundercount;;
+		float Thundercount=5;
 };
 
 
@@ -70,7 +70,7 @@ public:
 
 	UPROPERTY(EditAnywhere,Category = "Spawn")
 		TSubclassOf<AActor> ThunderBPClass;
-
+	bool thunderOnce=false;
 protected:
 	//레이저
 	void SpawnThunder();
@@ -140,4 +140,8 @@ public:
 	void SpawnMeteorBatch();
 	TSubclassOf<AActor> MeteorBPClass;
 	FVector GetRandomMeteorLocation(); // 랜덤 생성 함수
+
+	//ㅠㅔ이즈
+void StartPhase1();
+void StartPhase2();
 };

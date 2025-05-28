@@ -817,7 +817,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 					}
 					//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
 				} else {
-					UGameplayStatics::ApplyDamage(TargetActor,10000,MyChar->GetController(),MyChar,nullptr);
+					UGameplayStatics::ApplyDamage(TargetActor,700,MyChar->GetController(),MyChar,nullptr);
 					UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
 					if(TargetActor->ActorHasTag(FName("Barrel")))
 					{

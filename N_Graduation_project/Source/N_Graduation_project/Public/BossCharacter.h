@@ -22,8 +22,6 @@ public:
 	// Sets default values for this character's properties
 	ABossCharacter();
 
-	UPROPERTY(BlueprintReadWrite)
-		bool SkillStart=false;
 	void HealHP(int DamageAmount);
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 		int CurrentHP;
@@ -37,7 +35,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 		UWidgetComponent* BossHPWidgetComponent;
-	void Pattern1();
+
 	virtual float TakeDamage(float DamageAmount,struct FDamageEvent const& DamageEvent,class AController* EventInstigator,AActor* DamageCauser) override;
 	void SetHP(int NewHP);
 	void UpdateHP();
@@ -46,6 +44,7 @@ protected:
 	UBossWidget* GetHUD() const;
 
 	int BossHP=2000;
+
 
 	UPROPERTY(EditAnywhere,Category = "UI")
 		TSubclassOf<UUserWidget> BossClass;
@@ -57,5 +56,12 @@ public:
 
 	UPROPERTY(EditAnywhere,Category="Effects")
 		UNiagaraSystem* HealEffect;
+	void Pattern1();
 
+
+private:
+	FTimerHandle LaserDelayHandle;
+	FTimerHandle SpinDelayHandle;
+	FTimerHandle HealDelayHandle;
+	FTimerHandle MDelayHandle; 
 };

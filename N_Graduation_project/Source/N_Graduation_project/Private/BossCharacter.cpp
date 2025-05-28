@@ -16,8 +16,8 @@ ABossCharacter::ABossCharacter()
 	{
 		BossClass = Boss.Class;
 	}
-	//CurrentHP=BossHP;
-	CurrentHP=200;
+	CurrentHP=BossHP;
+	//CurrentHP=200;
 	//BossPatternManager =CreateDefaultSubobject<ABossPatternManager>(TEXT("BossPatternManager"));
 
 }
@@ -45,34 +45,26 @@ void ABossCharacter::BeginPlay()
 	UpdateHP();
 	Pattern1();
 }
+void ABossCharacter::Pattern1()
+{
+	if(!BossPatternManager) return;
+	//번개
+	BossPatternManager->Thunder();
+	//BossPatternManager->SpawnAndAttachLasers();
 
-void ABossCharacter::Pattern1(){
-	UE_LOG(LogTemp,Warning,TEXT("Pattern1 실행"));
-
-	//if(SkillStart==true){
-
-
-		//BossPatternManager->Thunder();
-	UE_LOG(LogTemp,Warning,TEXT("Thunde Pattern1"));
-
-	//	BossPatternManager->SpawnAndAttachLasers();
-
-	//if(BossPatternManager)
-	//{
-	//	float Timer = 1.0f;
-	//	FTimerHandle LaserDelayHandle;
-	//	GetWorld()->GetTimerManager().SetTimer(LaserDelayHandle,
-	//		FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::SpawnAndAttachLasers),
-	//		Timer,false);
-	//}
-
-	UE_LOG(LogTemp,Warning,TEXT("Pattern1 실행"));
-
-	//	BossPatternManager->StartSpinningBarrageSequence(5);
-	//BossPatternManager->HealCrystal();
-	BossPatternManager->Meteor();
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	//레이저
+	TimerManager.SetTimer(LaserDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::SpawnAndAttachLasers),7.f,false);
+	//투사체
+	GetWorld()->GetTimerManager().SetTimer(SpinDelayHandle,FTimerDelegate::CreateLambda([this]()
+	{
+		BossPatternManager->StartSpinningBarrageSequence(5);
+	}),14.f,false);
+	//메테오
+	TimerManager.SetTimer(MDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::Meteor),20.f,false);
+	//회복
+	TimerManager.SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::HealCrystal),27.f,false);
 }
-
 float ABossCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
 	// 데미지 로그 출력	
@@ -88,8 +80,6 @@ void ABossCharacter::SetHP(int NewHP)
 	CurrentHP = NewHP;
 	UpdateHP();
 	UE_LOG(LogTemp,Log,TEXT("CurrentHP HealHP(200) 결과: %d"),CurrentHP);
-
-
 
 	if(CurrentHP == 0)
 	{

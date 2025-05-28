@@ -62,6 +62,7 @@ void ABossPatternManager::BeginPlay()
 			UE_LOG(LogTemp,Error,TEXT("BossActor 자동 할당 실패! 레벨에 ABossCharacter가 배치되었는지 확인하세요."));
 		}
 	}
+
 }
 
 void ABossPatternManager::SpawnThunder()
@@ -96,6 +97,7 @@ void ABossPatternManager::SpawnThunder()
 		GetWorldTimerManager().ClearTimer(ThunderTimerHandle);
 		ThunderSpawnCount = 0;  // 초기화 
 		MyGameInstance->Thunder = false;
+		thunderOnce=false;
 
 	}
 
@@ -104,24 +106,25 @@ void ABossPatternManager::SpawnThunder()
 void ABossPatternManager::Thunder(){
 	UE_LOG(LogTemp,Warning,TEXT(" 성공"));
 
-	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if(!MyGameInstance) return;
-	UClass* LoadedClass = LoadObject<UClass>(nullptr,TEXT("/Game/Entity/Boss/Boss_Thunder.Boss_Thunder_C"));
-	if(LoadedClass)
-	{
-		ThunderBPClass = LoadedClass;
-		UE_LOG(LogTemp,Warning,TEXT("ThunderBPClass 동적 로드 성공"));
+	if(thunderOnce==false){
+		thunderOnce=true;
+		auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+		if(!MyGameInstance) return;
+		UClass* LoadedClass = LoadObject<UClass>(nullptr,TEXT("/Game/Entity/Boss/Boss_Thunder.Boss_Thunder_C"));
+		if(LoadedClass)
+		{
+			ThunderBPClass = LoadedClass;
+			UE_LOG(LogTemp,Warning,TEXT("ThunderBPClass 동적 로드 성공"));
 
-	} else
-	{
-		UE_LOG(LogTemp,Warning,TEXT("ThunderBPClass 로드 실패"));
+		} else
+		{
+			UE_LOG(LogTemp,Warning,TEXT("ThunderBPClass 로드 실패"));
+		}
+
+		GetWorldTimerManager().SetTimer(ThunderTimerHandle,this,&ABossPatternManager::SpawnThunder,1.0f,true);
+		MyGameInstance->Thunder = true;
 	}
-
-	GetWorldTimerManager().SetTimer(ThunderTimerHandle,this,&ABossPatternManager::SpawnThunder,1.0f,true);
-	MyGameInstance->Thunder = true;
-
 }
-
 void ABossPatternManager::ApplyThunderDamage()
 {
 	SphereComponent = FindComponentByClass<USphereComponent>();
@@ -185,12 +188,12 @@ void ABossPatternManager::SpawnAndAttachLasers()
 			if(!Laser) return;
 
 			// 디태치
-			//Laser->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			Laser->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 			if(!MyGameInstance) return;
-			//MyGameInstance->Laser=false;
-		//	Laser->Destroy();
-		},5.0f,false);
+			MyGameInstance->Laser=false;
+			Laser->Destroy();
+		},6.0f,false);
 	}
 }
 void ABossPatternManager::SpinningBarrage()
@@ -331,7 +334,7 @@ void ABossPatternManager::HealCrystal()
 			if(HealCrystal)
 			{
 				HealCrystal->BossActor = BossChar;
-				HealCrystal->StartCrystal(5);             // 각 크리스탈 별로 타이머 시작
+				HealCrystal->StartCrystal(15);             // 각 크리스탈 별로 타이머 시작
 			}
 		}
 
@@ -434,4 +437,28 @@ void ABossPatternManager::ApplyMeteorDamage(){
 			UGameplayStatics::ApplyDamage(Actor,40,InstigatorController,this,nullptr);
 		}
 	}
+}
+
+void ABossPatternManager::StartPhase1()
+{
+	Thunder();
+
+	//FTimerHandle LaserDelayHandle;
+	//GetWorld()->GetTimerManager().SetTimer(LaserDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::SpawnAndAttachLasers),7.f,false);
+
+	//FTimerHandle SpinDelayHandle;
+	//GetWorld()->GetTimerManager().SetTimer(SpinDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::SpinningBarrage),12.f,false);
+
+	//FTimerHandle HealDelayHandle;
+	//GetWorld()->GetTimerManager().SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::HealCrystal),146.f,false);
+
+	//FTimerHandle MDelayHandle;
+	//GetWorld()->GetTimerManager().SetTimer(MDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::Meteor),34.f,false);
+
+}
+
+void ABossPatternManager::StartPhase2()
+{
+
+
 }
