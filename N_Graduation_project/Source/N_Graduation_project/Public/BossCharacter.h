@@ -52,16 +52,25 @@ protected:
 		UBossWidget* BossWidget;
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Spin")
-		TSubclassOf<ABossProjectile> ProjectileClass;
+		TSubclassOf<ABossProjectile> ProjectileClass;	
+	UPROPERTY(EditDefaultsOnly,Category = "Spin")
+		TSubclassOf<AActor> SpinningBP2Class;
+	UPROPERTY(EditDefaultsOnly,Category = "Spin")
+		TSubclassOf<AActor> SpinningBP2_2Class;
 
 	UPROPERTY(EditAnywhere,Category="Effects")
 		UNiagaraSystem* HealEffect;
 	void Pattern1();
-
+	void Pattern2();
+	void ExecuteBossPattern();
+	void ExecuteBossPattern2();
+	bool bPhase2Started=false;
 
 private:
 	FTimerHandle LaserDelayHandle;
 	FTimerHandle SpinDelayHandle;
 	FTimerHandle HealDelayHandle;
 	FTimerHandle MDelayHandle; 
+	FTimerHandle PatternLoopHandle;
+	FTimerHandle PatternLoopHandle2;
 };

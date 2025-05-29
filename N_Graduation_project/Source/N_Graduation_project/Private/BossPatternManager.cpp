@@ -7,7 +7,7 @@
 #include "BossCharacter.h"
 #include "BossProjectile.h"
 #include "HealCrystal.h"
-
+#include "BossProjectile2.h"
 
 ABossPatternManager::ABossPatternManager()
 {
@@ -24,11 +24,12 @@ ABossPatternManager::ABossPatternManager()
 
 	Spinning1SocketNames = {"spin1","spin3","spin5","spin7"};
 	Spinning2SocketNames= {"spin2","spin4","spin6","spin8"};
-	static ConstructorHelpers::FClassFinder<AActor> SpinBPClassFinder(TEXT("/Game/Entity/Boss/Boss_Projectile"));
-	if(SpinBPClassFinder.Succeeded())
-	{
-		SpinningBPClass = SpinBPClassFinder.Class;
-	}
+	//static ConstructorHelpers::FClassFinder<AActor> SpinBPClassFinder(TEXT("/Game/Entity/Boss/Boss_Projectile"));
+	//if(SpinBPClassFinder.Succeeded())
+	//{
+	//	SpinningBPClass = SpinBPClassFinder.Class;
+	//}
+
 
 	CrystalSocketNames = {"Crystal1","Crystal2","Crystal3"};
 	static ConstructorHelpers::FClassFinder<AActor> BlackClassFinder(TEXT("/Game/Entity/Boss/BlackCrystal"));
@@ -289,6 +290,106 @@ void ABossPatternManager::SpinningBarrageTick()
 	SpinningBarrage();
 	SpinningBarrageCount++;
 }
+
+void ABossPatternManager::StartSpinningBarrageSequence2(int num)
+{
+	SpinningBarrageCount = num;
+
+	GetWorld()->GetTimerManager().SetTimer(
+		SpinningBarrageTimerHandle2,
+		this,
+		&ABossPatternManager::SpinningBarrageTick2,
+		0.2f,
+		true
+	);
+}
+
+void ABossPatternManager::SpinningBarrageTick2()
+{
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+	if(SpinningBarrageCount >= 15) // 0.2초 × 15 = 3초
+	{
+		GetWorld()->GetTimerManager().ClearTimer(SpinningBarrageTimerHandle2);
+		MyGameInstance->Spin=false;
+
+		return;
+	}
+
+	SpinningBarrage2();
+	SpinningBarrageCount++;
+}
+
+void ABossPatternManager::SpinningBarrage2()
+{
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+
+	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor);
+
+	if(!BossChar->ProjectileClass || !BossChar) {
+		UE_LOG(LogTemp,Error,TEXT("SpinningBarrage ProjectileClass or BossMesh not set!"));
+		return;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	for(const FName& SocketName : Spinning1SocketNames)
+	{
+		MyGameInstance->Spin=true;
+		FTransform SocketTransform =BossChar-> GetMesh()->GetSocketTransform(SocketName);
+		FVector SpawnLocation = SocketTransform.GetLocation();
+		FVector FireDirection = SocketTransform.GetRotation().GetForwardVector(); // 소켓의 전방 방향
+		FRotator SpawnRotation = FireDirection.Rotation();
+
+		ABossProjectile2* SpawnedProjectile = GetWorld()->SpawnActor<ABossProjectile2>(
+			BossChar->SpinningBP2Class,SpawnLocation,SpawnRotation,SpawnParams);
+
+		if(SpawnedProjectile)
+		{
+		
+			SpawnedProjectile->InitProjectileBySkillData(450,25);
+			SpawnedProjectile->FireInDirection(FireDirection);
+
+			UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
+		}
+	}
+	for(const FName& SocketName : Spinning2SocketNames)
+	{
+		FTransform SocketTransform =BossChar-> GetMesh()->GetSocketTransform(SocketName);
+		FVector SpawnLocation = SocketTransform.GetLocation();
+		FVector FireDirection = SocketTransform.GetRotation().GetForwardVector(); // 소켓의 전방 방향
+		FRotator SpawnRotation = FireDirection.Rotation();
+
+		ABossProjectile2* SpawnedProjectile2 = GetWorld()->SpawnActor<ABossProjectile2>(
+			BossChar->SpinningBP2_2Class,SpawnLocation,SpawnRotation,SpawnParams);
+
+		if(SpawnedProjectile2)
+		{
+			FSkillData SkillData;
+			TArray<FSkillEffectData> EffectDataArray;
+
+			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_ThrowRock",SkillData) &&
+				UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_ThrowRock",EffectDataArray))
+			{
+				SpawnedProjectile2->InitProjectileBySkillData(500,25);
+				SpawnedProjectile2->FireInDirection(FireDirection);
+				//SpawnedProjectile2->FireInDirection(FireDirection);
+
+				UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
+			} else
+			{
+				UE_LOG(LogTemp,Error,TEXT("SpinningBarrage Failed to load Skill_ThrowRock data!"));
+			}
+		}
+	}
+}
+
+
+
 void ABossPatternManager::HealCrystal()
 {
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
@@ -441,7 +542,7 @@ void ABossPatternManager::ApplyMeteorDamage(){
 
 void ABossPatternManager::StartPhase1()
 {
-	Thunder();
+//	Thunder();
 
 	//FTimerHandle LaserDelayHandle;
 	//GetWorld()->GetTimerManager().SetTimer(LaserDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::SpawnAndAttachLasers),7.f,false);

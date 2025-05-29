@@ -42,15 +42,11 @@ void AHealCrystal::OnCrystalTimeExpired()
 		if(bIsDestroyed==false)
 		{
 			BossChar->HealHP(200);
-		} else
-		{
-			BossChar->HealHP(Heal);
-
-		}
+		} 
 	}
-	MyGameInstance->BossHeal=false;
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 	Destroy(); // 크리스탈 제거
+	MyGameInstance->BossHeal=false;
 }
 float AHealCrystal::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {

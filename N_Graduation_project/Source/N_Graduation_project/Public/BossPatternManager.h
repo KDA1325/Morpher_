@@ -18,17 +18,16 @@ enum class EPatternType: uint8
 	Spin,
 	Heal,
 	Meteor,
-
 };
 USTRUCT(BlueprintType)
 struct FPatternData
 {
 	GENERATED_BODY()
-		FPatternData()
-		: PatternType(EPatternType::Thunder) // 기본값 설정 (필요하면 변경)
-		,Delay(0.f)
-		,Thundercount(0.f) // ← 여기서 반드시 초기화
-	{}
+	//	FPatternData()
+	//	: PatternType(EPatternType::Thunder) // 기본값 설정 (필요하면 변경)
+	//	,Delay(0.f)
+	//	,Thundercount(0.f) // ← 여기서 반드시 초기화
+	//{}
 	UPROPERTY(EditAnywhere)
 		EPatternType PatternType;
 
@@ -101,17 +100,24 @@ public:
 		TArray<FName> Spinning2SocketNames;
 	UPROPERTY(EditDefaultsOnly)
 		TSubclassOf<AActor> SpinningBPClass;
+
 	UFUNCTION(BlueprintCallable)
 		void SpinningBarrage();
+	UFUNCTION(BlueprintCallable)
+		void SpinningBarrage2();
 
 	void StartSpinningBarrageSequence(int num);
 	void SpinningBarrageTick();
-
+	void StartSpinningBarrageSequence2(int num);
+	void SpinningBarrageTick2();
+	
 private:
 	int ProjectileSpeed=300;
 	float ApplyDamageAmount=10.f;
 	int SpinningBarrageCount=0;
 	FTimerHandle SpinningBarrageTimerHandle;
+	FTimerHandle SpinningBarrageTimerHandle2;
+	// 기존 includes 및 클래스 정의 안에 아래 함수 추가
 
 public:
 	//회복 수정체
@@ -144,4 +150,7 @@ public:
 	//ㅠㅔ이즈
 void StartPhase1();
 void StartPhase2();
+
+private:
+	int NextPatternIndex = 0;
 };

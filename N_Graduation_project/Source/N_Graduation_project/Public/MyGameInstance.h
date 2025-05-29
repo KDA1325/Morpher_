@@ -63,4 +63,6 @@ public:
 		bool Spin=false;
 	UPROPERTY(BlueprintReadWrite)
 		bool BossHeal=false;
+	UPROPERTY(BlueprintReadWrite)
+		bool part2=false;
 };
