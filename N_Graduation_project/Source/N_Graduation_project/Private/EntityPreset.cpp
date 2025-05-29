@@ -1667,7 +1667,7 @@ void AEntityPreset::Fire_AllArrows()
 				// 초기화
 				Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
 
-				UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_SplinterArrow sub data!"));
+				//UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_SplinterArrow sub data!"));
 
 				ArrowList.Add(Arrow);
 			}
