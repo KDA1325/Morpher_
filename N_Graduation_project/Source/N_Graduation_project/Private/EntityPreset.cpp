@@ -438,6 +438,7 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			SpecialSkillHitBox->SetBoxExtent(HalfExtent);
 
 			// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
+			// -> 확장 후 앞으로 밀기
 			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
 			// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
 			FVector NewRelativeLocation = FVector(0.0f,0.0f,HalfExtent.X);
@@ -446,6 +447,69 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			UE_LOG(LogTemp,Warning,TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
 				*HalfExtent.ToString(),*NewRelativeLocation.ToString());
 		} 
+		else if(SkillData.SkillNameID == "Skill_TailSwing")
+		{
+			// Normal 히트박스 생성
+			if(!NormalSkillHitBox)
+			{
+				NormalSkillHitBox = NewObject<UBoxComponent>(this,TEXT("NormalSkillHitBox"));
+				if(NormalSkillHitBox)
+				{
+					NormalSkillHitBox->RegisterComponent();
+					NormalSkillHitBox->AttachToComponent(Container,FAttachmentTransformRules::KeepRelativeTransform);
+					HideNormalHitBox();
+
+					ConfigureHitBox(NormalSkillHitBox);
+					NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this,&AEntityPreset::OnNormalHitBoxOverlap);
+				}
+			}
+
+			// TailSwing의 타격 범위 설정
+			FVector HalfExtent = FVector(SkillData.SkillTypeSizeX / 2.0f,50.0f,SkillData.SkillTypeSizeY / 2.0f);
+			NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+			// 항상 동일한 회전으로 고정
+			//FRotator FixedRotation = FRotator(0.0f,90.0f,0.0f);  // TailSocket 기준 +Y방향 회전
+			//NormalSkillHitBox->SetRelativeRotation(FixedRotation);
+
+			// 소켓 기준 +Y 방향으로 한 쪽만 퍼지도록 위치 조정
+			FVector NewRelativeLocation = FVector(-HalfExtent.X, 0.0f,0.0f);
+			NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			UE_LOG(LogTemp,Warning,TEXT("[TailSwing] HalfExtent=%s, RelLocation=%s"),
+		*HalfExtent.ToString(),*NewRelativeLocation.ToString());
+
+			/*UE_LOG(LogTemp,Warning,TEXT("[TailSwing] HalfExtent=%s, RelLocation=%s, Rotation=%s"),
+				*HalfExtent.ToString(),*NewRelativeLocation.ToString(),*FixedRotation.ToString());*/
+
+			//// 부채꼴 히트박스처럼 보이도록 범위 설정
+			//FVector HalfExtent = FVector(SkillData.SkillTypeSizeX/2.0f, 50.0f, SkillData.SkillTypeSizeY / 2.0f);
+			//NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+			//// TailSocket의 +Y 방향으로 히트박스를 옮김
+
+			//// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
+			//// -> 확장 후 앞으로 밀기
+			//// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
+			//// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
+			//FVector NewRelativeLocation = FVector(0.0f,HalfExtent.Y,0.0f);
+			////FVector NewRelativeLocation = FVector(0.0f,HalfExtent.Y,0.0f);
+			//NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			//UE_LOG(LogTemp,Warning,TEXT("[TailSwing] HalfExtent=%s, RelLocation=%s"),
+			//	*HalfExtent.ToString(),*NewRelativeLocation.ToString());
+
+			////// 범위 설정 
+			////FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
+			////NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+			////// 히트박스 오프셋 적용 
+			////FVector NewRelativeLocation = FVector(0.0f, 0.0f,HalfExtent.Y);
+			////NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			////UE_LOG(LogTemp,Warning,TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+			////	*HalfExtent.ToString(),*NewRelativeLocation.ToString());
+		}
 		else if(SkillData.SkillNameID == "Skill_FreezeBreath")
 		{
 			// Special 히트박스 생성
