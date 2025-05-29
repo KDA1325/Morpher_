@@ -87,6 +87,12 @@ void UPlayerSkillComponent::SetHitBox2(UBoxComponent* InHitBox)
 	UE_LOG(LogTemp,Warning,TEXT("papago PlayerHitBox2 Address: %p"),PlayerHitBox2);
 
 }
+void UPlayerSkillComponent::SetHitSphere(USphereComponent* HitSphere)
+{
+	PlayerHitSphere = HitSphere;
+	UE_LOG(LogTemp,Warning,TEXT("papago PlayerHitSphere Address: %p"),PlayerHitSphere);
+
+}
 /* 스킬 관련 */
 void UPlayerSkillComponent::OnDefenseSkill()
 {
@@ -206,6 +212,24 @@ void UPlayerSkillComponent::SettingHitBox2(const FSkillData& SkillData)
 		OnceHitBox = true;
 	}
 }
+void UPlayerSkillComponent::SettingHitSphere(const FSkillData& SkillData)
+{
+	if(PlayerHitSphere)
+	{
+		UE_LOG(LogTemp,Log,TEXT("SettingHitSphere"));
+
+		// Sphere 반지름 설정 (X 값을 기준으로 사용)
+		PlayerHitSphere->SetSphereRadius(SkillData.SkillTypeSizeX);
+
+		// 위치 오프셋 조정 (전방으로 밀어내는 용도)
+		FVector NewRelativeLocation = FVector::ZeroVector;
+		PlayerHitSphere->SetRelativeLocation(NewRelativeLocation);
+
+		OnceHitBox = true;
+	}
+}
+
+
 void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 {
 	if(PlayerHitBox)
@@ -240,10 +264,28 @@ void UPlayerSkillComponent::OnHitBox2(const FSkillData& SkillData)
 
 	}
 }
+void UPlayerSkillComponent::OnHitSphere(const FSkillData& SkillData)
+{
+	if(PlayerHitSphere)
+	{
+		PlayerHitSphere->SetVisibility(true);
+		PlayerHitSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 키기
+
+		//UE_LOG(LogTemp,Warning,TEXT("[PlayerHitSphere] On OnHitBox"));
+		//UE_LOG(LogTemp,Warning,TEXT("[PlayerHitSphere] On PlayerHitBox  Address: %p"),PlayerHitSphere);
+
+	} else
+	{
+		//UE_LOG(LogTemp,Error,TEXT("[OnHitBox] Failed to find HitBox "));
+		//UE_LOG(LogTemp,Warning,TEXT("[OnHitBox] On Failed PlayerHitBox Address: %p"),PlayerHitBox2);
+
+	}
+}
+
 void UPlayerSkillComponent::HideHitBox()
 {
-	PlayerHitBox->SetVisibility(false);  // 자식까지 숨기기
-	PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
+	//PlayerHitBox->SetVisibility(false);  // 자식까지 숨기기
+	//PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
 	// 스킬 컴포넌트 내부에서 소유 액터를 통해 접근
 	UE_LOG(LogTemp,Warning,TEXT("papago hidden PlayerHitBox  Address: %p"),PlayerHitBox);
 
@@ -257,6 +299,16 @@ void UPlayerSkillComponent::HideHitBox2()
 	// 스킬 컴포넌트 내부에서 소유 액터를 통해 접근
 
 	UE_LOG(LogTemp,Warning,TEXT("papago hidden PlayerHitBox2  Address: %p"),PlayerHitBox2);
+
+	// 데미지 체크 초기화
+	DamagedActors.Empty();
+}
+void UPlayerSkillComponent::HideSphere()
+{
+	PlayerHitSphere->SetVisibility(false);  // 자식까지 숨기기
+	PlayerHitSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
+	// 스킬 컴포넌트 내부에서 소유 액터를 통해 접근
+	UE_LOG(LogTemp,Warning,TEXT("papago hidden PlayerHitSphere  Address: %p"),PlayerHitSphere);
 
 	// 데미지 체크 초기화
 	DamagedActors.Empty();
@@ -327,7 +379,10 @@ void UPlayerSkillComponent::VisibleShapeBox(const FString& SkillID)
 
 		} else if(SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
 		{
-			//	 Sphere 관련 처리 추가
+			if(PlayerHitSphere){
+				SettingHitSphere(SkillData);
+				OnHitSphere(SkillData);
+			}
 		}
 	} else if(SkillData.SkillType == EnumSkillType::Projectile)
 	{
@@ -452,6 +507,10 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 				}
 
 			}
+		}
+		if(SkillData.SkillNameID == "Skill_EarthBreaker")
+		{
+			VisibleShapeBox(SkillID);
 		}
 		CanUseSpecialSkill = false;
 

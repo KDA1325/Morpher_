@@ -14,6 +14,7 @@
 //class Forward declarations;
 class AActor;
 class UBoxComponent;
+class USphereComponent;
 class UArrowComponent;
 
 
@@ -49,9 +50,13 @@ public:
 		UBoxComponent* PlayerHitBox;
 	UPROPERTY()
 		UBoxComponent* PlayerHitBox2;
+	UPROPERTY()
+		USphereComponent* PlayerHitSphere;
 
 	void SetHitBox(UBoxComponent* NewHitBox);
 	void SetHitBox2(UBoxComponent* NewHitBox);
+	void SetHitSphere(USphereComponent* HitSphere);
+
 
 	// 거리 감지
 	UFUNCTION(BlueprintCallable,Category = "Skill")
@@ -74,9 +79,12 @@ public:
 	void OnHitBox(const FSkillData& SkillData);
 	void SettingHitBox2(const FSkillData& SkillData); // 히트박스 초기화
 	void OnHitBox2(const FSkillData& SkillData);
+	void SettingHitSphere(const FSkillData& SkillData); // 히트박스 초기화
+	void OnHitSphere(const FSkillData& SkillData);
 	// 히트박스 활성화
 	void HideHitBox();     // 히트박스 비활성화
 	void HideHitBox2();     // 히트박스 비활성화
+	void HideSphere();
 	void SkillAnimation(const FString& EffectID);
 	void EndSkillAnimation(UAnimMontage* Montage,bool bInterrupted);
 	void SkillEffect(const FString& SkillNameID);
