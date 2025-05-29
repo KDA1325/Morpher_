@@ -864,7 +864,7 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket(FName SocketName)
 		HitBox->SetGenerateOverlapEvents(true);
 		HitBox->ComponentTags.Add(FName("HitBox"));
 
-		HitBox->SetHiddenInGame(false); // 히트박스 안보이게-> true
+		HitBox->SetHiddenInGame(true); // 히트박스 안보이게-> true
 
 		PlayerSkillComponent->SetHitBox(HitBox);
 		//UE_LOG(LogTemp,Warning,TEXT("Playerpapago hHitBox Address: %p"),HitBox);
@@ -987,10 +987,9 @@ void AN_Graduation_projectCharacter::SpawnHitSphereAtSocket(FName SocketName)
 		HitSphere->SetGenerateOverlapEvents(true);
 
 		HitSphere->ComponentTags.Add(FName("HitSphere"));
-		HitSphere->SetHiddenInGame(false);
+		HitSphere->SetHiddenInGame(true);
 		HitSphere->SetRelativeLocation(FVector(30.f,30.f,50.f));
 		PlayerSkillComponent->SetHitSphere(HitSphere);
-	//	PlayerSkillComponent->HideHitBox(); // 필요시 이 메서드도 Sphere용으로 분리 권장
 	}
 
 	HitSphere->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,SocketName);

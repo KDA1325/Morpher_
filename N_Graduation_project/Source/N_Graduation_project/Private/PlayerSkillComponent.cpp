@@ -22,6 +22,10 @@
 #include "EntityPreset.h"
 #include "FireFloor.h"
 #include "FrozeFloor.h"
+#include "BrainComponent.h"
+
+
+
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -284,8 +288,8 @@ void UPlayerSkillComponent::OnHitSphere(const FSkillData& SkillData)
 
 void UPlayerSkillComponent::HideHitBox()
 {
-	//PlayerHitBox->SetVisibility(false);  // 자식까지 숨기기
-	//PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
+	PlayerHitBox->SetVisibility(false);  // 자식까지 숨기기
+	PlayerHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
 	// 스킬 컴포넌트 내부에서 소유 액터를 통해 접근
 	UE_LOG(LogTemp,Warning,TEXT("papago hidden PlayerHitBox  Address: %p"),PlayerHitBox);
 
@@ -441,6 +445,12 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 {
+	UWorld* World = GetWorld();
+	if(!World)
+	{
+		UE_LOG(LogTemp,Error,TEXT("GetWorld() is nullptr in SpecialSkillPlay"));
+		return;
+	}
 	//UE_LOG(LogTemp, Warning, TEXT("kakao On SpecialSkillPlay"));
 	distance = MeasureDistanceToMonster();
 
@@ -511,7 +521,19 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		if(SkillData.SkillNameID == "Skill_EarthBreaker")
 		{
 			VisibleShapeBox(SkillID);
+
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(
+				TimerHandle,
+				FTimerDelegate::CreateLambda([this]()
+			{
+				SkillEffect("Skill_EarthBreaker");
+			}),
+				3.3f,
+				false
+			);
 		}
+
 		CanUseSpecialSkill = false;
 
 		// 스킬 애니메이션
@@ -855,22 +877,37 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 				DamageAmount = Effect.EffectValue01;
 				if(MyChar->TestMode == false) {
 					// 데미지
-					UGameplayStatics::ApplyDamage(TargetActor,DamageAmount,MyChar->GetController(),MyChar,nullptr);
-					UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
-					if(TargetActor->ActorHasTag(FName("Barrel")))
-					{
-						UE_LOG(LogTemp,Warning,TEXT("Barrel이여 작동하거라"));
+					if(SkillNameID=="Skill_ArmSwing"){
+						float LocalDamage = DamageAmount;
+						FTimerHandle TimerHandle;
+						GetWorld()->GetTimerManager().SetTimer(
+							TimerHandle,
+							FTimerDelegate::CreateLambda([this,TargetActor,LocalDamage,MyChar]() {
+							UGameplayStatics::ApplyDamage(TargetActor,DamageAmount,MyChar->GetController(),MyChar,nullptr);
+							UE_LOG(LogTemp,Warning,TEXT("3초 후 데미지 적용됨: %s, Damage: %f"),*TargetActor->GetName(),DamageAmount);
+						}),
+							1.2f,
+							false
+						);
+					}
+					else{
+						UGameplayStatics::ApplyDamage(TargetActor,DamageAmount,MyChar->GetController(),MyChar,nullptr);
+						UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
 						if(TargetActor->ActorHasTag(FName("Barrel")))
 						{
-							if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(TargetActor))
+							UE_LOG(LogTemp,Warning,TEXT("Barrel이여 작동하거라"));
+							if(TargetActor->ActorHasTag(FName("Barrel")))
 							{
-								StunBarrel->WorkBarrel(DamageAmount); // AStunBarrel 고유 로직
-							} else if(ABarrel* NormalBarrel = Cast<ABarrel>(TargetActor))
-							{
-								NormalBarrel->WorkBarrel(DamageAmount); // ABarrel 로직
-							} else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(TargetActor)){
-								FireBarrel->WorkBarrel(DamageAmount); // FireBarrel 로직
+								if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(TargetActor))
+								{
+									StunBarrel->WorkBarrel(DamageAmount); // AStunBarrel 고유 로직
+								} else if(ABarrel* NormalBarrel = Cast<ABarrel>(TargetActor))
+								{
+									NormalBarrel->WorkBarrel(DamageAmount); // ABarrel 로직
+								} else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(TargetActor)){
+									FireBarrel->WorkBarrel(DamageAmount); // FireBarrel 로직
 
+								}
 							}
 						}
 					}
@@ -969,8 +1006,41 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 					TargetActor->Destroy();
 				}
 
+			}	
+			if(Effect.EffectType == EnumEffectType::Stun){
+				for(AActor* Target : DamagedActors)
+				{
+					if(IsValid(Target)){
+						if(Target)
+						{
+							// Target이 Pawn이면 AI 컨트롤러 접근 시도
+							if(APawn* Pawn = Cast<APawn>(Target))
+							{
+								if(AAIController* AICon = Cast<AAIController>(Pawn->GetController()))
+								{
+									AICon->StopMovement();
+									if(AICon->BrainComponent)
+										AICon->BrainComponent->StopLogic(TEXT("Stunned"));
+
+									// 2초 후 리스타트
+									FTimerHandle TimerHandle;
+									GetWorld()->GetTimerManager().SetTimer(TimerHandle,[AICon]()
+									{
+										if(AICon && AICon->BrainComponent)
+										{
+											UE_LOG(LogTemp,Warning,TEXT("stun 적용"));
+
+											AICon->BrainComponent->RestartLogic();
+										}
+									},Effect.EffectValue01,false);
+								}
+							}
+						}
+					}
+				}
 			}
 		}
+
 		// 그 후 데미지 적용
 		UE_LOG(LogTemp,Warning,TEXT("SkillEffect 실행됨! DamageAmount: %f"),DamageAmount);
 

@@ -93,7 +93,6 @@ public:
 	void SpecialSetSkillTimer(float Count,FTimerDelegate Call);  // 타이머 설정 함수
 	void ChargeSkillTimer(float Delay,FTimerDelegate Call);  // 타이머 설정 함수
 
-
 	UPROPERTY(BlueprintReadWrite)
 		float DamageAmount;
 
@@ -109,6 +108,7 @@ private:
 	FTimerHandle NomalSkillTimerHandle;
 	FTimerHandle SpecialSkillTimerHandle;
 	FTimerHandle ChargeSkillTimerHandle;
+	FTimerHandle DamageTimerHandle;
 
 	// 플레이어와의 거리
 	float distance;
@@ -151,4 +151,6 @@ public:
 	UPROPERTY(EditDefaultsOnly,Category = "Effect")
 		TSoftObjectPtr<UParticleSystem> ShieldParticle;
 	UParticleSystemComponent* ShieldParticleComp = nullptr;
+
+
 };

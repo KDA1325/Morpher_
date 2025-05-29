@@ -2,7 +2,7 @@
 #include "EntityPreset.h"
 #include "ABGameSingleton.h"
 #include "TimerManager.h"
-
+#include "N_Graduation_project/N_Graduation_projectCharacter.h"
 void UAnimNotify_ShowHitBox::Notify(USkeletalMeshComponent* MeshComp,UAnimSequenceBase* Animation)
 {
 	if(!MeshComp)
