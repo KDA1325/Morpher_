@@ -74,12 +74,13 @@ class AN_Graduation_projectCharacter : public ACharacter
 public:
 	AN_Graduation_projectCharacter();
 	void ChangePreset(FString Name);
-	void LoadPreset(FString PresetID);
+//	void LoadPreset(FString PresetID);
 	void ToggleMaterial(bool bUseHitMaterial);
 	bool PlaySpecial = false;
 	bool PlayNomal = false;
 	bool OkTrans = true;
 	bool bCanMove = true;
+	bool noDamage = false;
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);

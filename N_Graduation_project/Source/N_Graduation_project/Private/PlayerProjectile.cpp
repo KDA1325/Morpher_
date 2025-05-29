@@ -110,8 +110,8 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 		{
 			UE_LOG(LogTemp,Warning,TEXT("Tag: %s"),*Tag.ToString());
 		}
-	}		
-	
+	}
+
 	if(OtherActor->ActorHasTag("FireCrystal"))
 	{
 		UE_LOG(LogTemp,Warning,TEXT("FireCrystal activated!"));
@@ -126,15 +126,16 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 		{
 			switch(Effect.EffectType)
 			{
-				/*case EnumEffectType::Damage:
-				UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
-				break;*/
+			case EnumEffectType::Damage:
+			UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+			break;
 			case EnumEffectType::AOEDamage:
 			{
 				// 광역 대미지 처리, 몬스터용 로직엔 추가할 필요 없을 듯(플레이어 쪽에 추가하기)
 				FVector Origin = GetActorLocation(); // AOE 중심
 				float Radius = Effect.EffectValue02;
-				 Damage = Effect.EffectValue01;
+				Damage = Effect.EffectValue01;
+				UGameplayStatics::ApplyDamage(OtherActor,Damage,GetInstigatorController(),this,nullptr);
 
 				TArray<AActor*> OverlappingActors;
 				UGameplayStatics::GetAllActorsOfClass(GetWorld(),AN_Graduation_projectCharacter::StaticClass(),OverlappingActors);
@@ -142,13 +143,14 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 				for(AActor* Actor : OverlappingActors)
 				{
 					if(Actor->ActorHasTag("Monster"))
-					{
-						float Distance = FVector::Dist(Actor->GetActorLocation(),Origin);
-						if(Distance <= Radius)
-						{
-							UGameplayStatics::ApplyDamage(Actor,Damage,GetInstigatorController(),this,nullptr);
+					{//
+						//float Distance = FVector::Dist(Actor->GetActorLocation(),Origin);
+						//if(Distance <= Radius)
+						//{
+
+							//UGameplayStatics::ApplyDamage(Actor,Damage,GetInstigatorController(),this,nullptr);
 							UE_LOG(LogTemp,Warning,TEXT("AOE Damage applied to %s"),*Actor->GetName());
-						}
+						//}
 					}
 				}
 				break;
@@ -157,7 +159,7 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 				float ApplyDuration = Effect.EffectValue01;
 				float DPS = Effect.EffectValue02;
 				ApplyFireDOT(OtherActor,DPS,ApplyDuration);
-					UE_LOG(LogTemp,Warning,TEXT("FireFloor EnumEffectType::Fire!"));
+				UE_LOG(LogTemp,Warning,TEXT("FireFloor EnumEffectType::Fire!"));
 
 				if(OtherActor->ActorHasTag(FName("FireFloor")))
 				{
