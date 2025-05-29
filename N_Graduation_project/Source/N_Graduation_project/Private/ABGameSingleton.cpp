@@ -144,22 +144,17 @@ UABGameSingleton& UABGameSingleton::Get()
 	}
 
 	// CastChecked로 강력하게 검사, GEngine에 있는 아까 적용한 GameSingleton을 가져오기
-	//UABGameSingleton* Singleton = CastChecked<UABGameSingleton>(GEngine->GameSingleton);
-	//if (Singleton)
-	//{
-	//	return *Singleton;
-	//}
-	UABGameSingleton* Singleton = Cast<UABGameSingleton>(GEngine->GameSingleton);
-	if(!Singleton)
+	UABGameSingleton* Singleton = CastChecked<UABGameSingleton>(GEngine->GameSingleton);
+	if (Singleton)
 	{
-		UE_LOG(LogABGameSingleton,Error,TEXT("GameSingleton is not of type UABGameSingleton."));
-		static UABGameSingleton* Dummy = NewObject<UABGameSingleton>();
-		return *Dummy;
+		return *Singleton;
 	}
+
 	// 혹시 몰라서 만약 Singleton이 null 값이라면 에러를 띄우도록 함
 	// 코드의 흐름을 위해서 return값의 인스턴스를 생성하고 리턴함
-	UE_LOG(LogABGameSingleton, Error, TEXT("Invalide Game Singleton"));
-	return *Singleton;
+	UE_LOG(LogABGameSingleton,Error,TEXT("Invalid Game Singleton"));
+
+	return *NewObject<UABGameSingleton>();
 }
 
 // Entity GroupID를 키 값으로 Data 검색 

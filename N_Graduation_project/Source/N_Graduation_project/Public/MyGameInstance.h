@@ -22,13 +22,21 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		FVector SaveLocation;
 
+	//bool Player_Ok = true;
+	//bool WildBoar_Ok = false;
+	//bool Inpermon_OK = false;
+	//bool SkeletonWarrior_OK = false;
+	//bool StoneGolem_OK = false;
+	//bool SkeletonArcher_OK = false;
+	//bool Freezard_OK = false;
+
 	bool Player_Ok = true;
-	bool WildBoar_Ok = false;
-	bool Inpermon_OK = false;
-	bool SkeletonWarrior_OK = false;
-	bool StoneGolem_OK = false;
-	bool SkeletonArcher_OK = false;
-	bool Freezard_OK = false;
+	bool WildBoar_Ok = true;
+	bool Inpermon_OK = true;
+	bool SkeletonWarrior_OK = true;
+	bool StoneGolem_OK = true;
+	bool SkeletonArcher_OK = true;
+	bool Freezard_OK = true;
 
 	float PlayerFullHP=150;
 	float PlayerFinalAngle=102.f
@@ -51,4 +59,10 @@ public:
 		bool Thunder=false;
 	UPROPERTY(BlueprintReadWrite)
 		bool Laser=false;
+	UPROPERTY(BlueprintReadWrite)
+		bool Spin=false;
+	UPROPERTY(BlueprintReadWrite)
+		bool BossHeal=false;
+	UPROPERTY(BlueprintReadWrite)
+		bool part2=false;
 };

@@ -37,7 +37,7 @@ void APlayerProjectile::BeginPlay()
 
 	if(CollisionComp && ProjectileMovement)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("CollisionComp found: %s"),*CollisionComp->GetName());
+		//UE_LOG(LogTemp,Warning,TEXT("CollisionComp found: %s"),*CollisionComp->GetName());
 
 		RootComponent = CollisionComp;
 
@@ -47,7 +47,7 @@ void APlayerProjectile::BeginPlay()
 		CollisionComp->OnComponentBeginOverlap.AddDynamic(this,&APlayerProjectile::OnOverlap);
 	} else
 	{
-		UE_LOG(LogTemp,Error,TEXT("Hitbox is null in BeginPlay! Check BP binding."));
+		//UE_LOG(LogTemp,Error,TEXT("Hitbox is null in BeginPlay! Check BP binding."));
 	}
 }
 
@@ -111,8 +111,14 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			UE_LOG(LogTemp,Warning,TEXT("Tag: %s"),*Tag.ToString());
 		}
 	}
+
+	if(OtherActor->ActorHasTag("FireCrystal"))
+	{
+		UE_LOG(LogTemp,Warning,TEXT("FireCrystal activated!"));
+		OtherActor->Destroy();
+	}
 	// 몬스터만 처리
-	if(OtherActor->ActorHasTag("Monster")|| OtherActor->ActorHasTag("FireFloor")||OtherActor->ActorHasTag("FrozeFloor"))
+	if(OtherActor->ActorHasTag("Monster")|| OtherActor->ActorHasTag("FireFloor")||OtherActor->ActorHasTag("FrozeFloor")||OtherActor->ActorHasTag("FireCrystal"))
 	{
 		UE_LOG(LogTemp,Warning,TEXT("OtherActor->ActorHasTag(Floor"));
 
@@ -120,27 +126,31 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 		{
 			switch(Effect.EffectType)
 			{
-			/*case EnumEffectType::Damage:
+			case EnumEffectType::Damage:
 			UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
-			break;*/
+			break;
 			case EnumEffectType::AOEDamage:
 			{
 				// 광역 대미지 처리, 몬스터용 로직엔 추가할 필요 없을 듯(플레이어 쪽에 추가하기)
-				FVector Origin = GetActorLocation();
+				FVector Origin = GetActorLocation(); // AOE 중심
 				float Radius = Effect.EffectValue02;
+				Damage = Effect.EffectValue01;
+				UGameplayStatics::ApplyDamage(OtherActor,Damage,GetInstigatorController(),this,nullptr);
+
 				TArray<AActor*> OverlappingActors;
 				UGameplayStatics::GetAllActorsOfClass(GetWorld(),AN_Graduation_projectCharacter::StaticClass(),OverlappingActors);
 
 				for(AActor* Actor : OverlappingActors)
 				{
-					if(Actor->ActorHasTag("Player"))
-					{
-						float Distance = FVector::Dist(Actor->GetActorLocation(),Origin);
-						if(Distance <= Radius)
-						{
-							UGameplayStatics::ApplyDamage(Actor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
-							UE_LOG(LogTemp,Warning,TEXT("AOE Damage to %s"),*Actor->GetName());
-						}
+					if(Actor->ActorHasTag("Monster"))
+					{//
+						//float Distance = FVector::Dist(Actor->GetActorLocation(),Origin);
+						//if(Distance <= Radius)
+						//{
+
+							//UGameplayStatics::ApplyDamage(Actor,Damage,GetInstigatorController(),this,nullptr);
+							UE_LOG(LogTemp,Warning,TEXT("AOE Damage applied to %s"),*Actor->GetName());
+						//}
 					}
 				}
 				break;
@@ -156,7 +166,7 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 					if(AFireFloor* FireFloor = Cast<AFireFloor>(OtherActor))
 					{
 						FireFloor->On_Fire(); //화염 킴
-						UE_LOG(LogTemp,Warning,TEXT("FireFloor activated!"));
+						//UE_LOG(LogTemp,Warning,TEXT("FireFloor activated!"));
 					}
 				}
 				if(OtherActor->ActorHasTag("FrozeFloor"))
@@ -164,21 +174,25 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 					if(AFrozeFloor* FrozeFloor = Cast<AFrozeFloor>(OtherActor))
 					{
 						FrozeFloor->Off_Froze(); //빙결 킴 코드
-						UE_LOG(LogTemp,Warning,TEXT("FrozeFloor activated!"));
+						//	UE_LOG(LogTemp,Warning,TEXT("FrozeFloor activated!"));
 
 					}
 				}
+				if(OtherActor->ActorHasTag("FireCrystal"))
+				{
+					UE_LOG(LogTemp,Warning,TEXT("FireCrystal activated!"));
+					OtherActor->Destroy();
+				}
 				break;
 			}
-									 break;
+
 			}
+
+			Destroy(); // 충돌 후 제거
 		}
 
-		Destroy(); // 충돌 후 제거
 	}
-
 }
-
 void APlayerProjectile::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration)
 {
 	if(!Target || DamagePerSecond <= 0.f || ApplyDuration <= 0.f) return;

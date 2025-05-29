@@ -5,6 +5,9 @@
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "MyGameInstance.h"
 #include "BossCharacter.h"
+#include "BossProjectile.h"
+#include "HealCrystal.h"
+#include "BossProjectile2.h"
 
 ABossPatternManager::ABossPatternManager()
 {
@@ -19,13 +22,31 @@ ABossPatternManager::ABossPatternManager()
 		LaserBPClass = LaserBPClassFinder.Class;
 	}
 
-	Spinning1SocketNames = {"core1","core3","core5","core7"};
-	Spinning2SocketNames= {"core2","core4","core6","core8"};
-		static ConstructorHelpers::FClassFinder<AActor> SpinBPClassFinder(TEXT("/Game/Entity/Boss/Boss_Projectile"));
-	if(LaserBPClassFinder.Succeeded())
+	Spinning1SocketNames = {"spin1","spin3","spin5","spin7"};
+	Spinning2SocketNames= {"spin2","spin4","spin6","spin8"};
+	//static ConstructorHelpers::FClassFinder<AActor> SpinBPClassFinder(TEXT("/Game/Entity/Boss/Boss_Projectile"));
+	//if(SpinBPClassFinder.Succeeded())
+	//{
+	//	SpinningBPClass = SpinBPClassFinder.Class;
+	//}
+
+
+	CrystalSocketNames = {"Crystal1","Crystal2","Crystal3"};
+	static ConstructorHelpers::FClassFinder<AActor> BlackClassFinder(TEXT("/Game/Entity/Boss/BlackCrystal"));
+	if(BlackClassFinder.Succeeded())
 	{
-		SpinningBPClass = SpinBPClassFinder.Class;
+		BlackCryBPClass = BlackClassFinder.Class;
+	}	static ConstructorHelpers::FClassFinder<AActor> RedClassFinder(TEXT("/Game/Entity/Boss/RedCrystal"));
+	if(RedClassFinder.Succeeded())
+	{
+		RedCryBPClass = RedClassFinder.Class;
 	}
+	static ConstructorHelpers::FClassFinder<AActor> BlueClassFinder(TEXT("/Game/Entity/Boss/BlueCrystal"));
+	if(BlueClassFinder.Succeeded())
+	{
+		BlueCryBPClass = BlueClassFinder.Class;
+	}
+
 }
 
 void ABossPatternManager::BeginPlay()
@@ -42,6 +63,7 @@ void ABossPatternManager::BeginPlay()
 			UE_LOG(LogTemp,Error,TEXT("BossActor 자동 할당 실패! 레벨에 ABossCharacter가 배치되었는지 확인하세요."));
 		}
 	}
+
 }
 
 void ABossPatternManager::SpawnThunder()
@@ -76,32 +98,34 @@ void ABossPatternManager::SpawnThunder()
 		GetWorldTimerManager().ClearTimer(ThunderTimerHandle);
 		ThunderSpawnCount = 0;  // 초기화 
 		MyGameInstance->Thunder = false;
+		thunderOnce=false;
 
 	}
 
 }
- 
+
 void ABossPatternManager::Thunder(){
 	UE_LOG(LogTemp,Warning,TEXT(" 성공"));
 
-	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if(!MyGameInstance) return;
-	UClass* LoadedClass = LoadObject<UClass>(nullptr,TEXT("/Game/Entity/Boss/Boss_Thunder.Boss_Thunder_C"));
-	if(LoadedClass)
-	{ 
-		ThunderBPClass = LoadedClass;
-		UE_LOG(LogTemp,Warning,TEXT("ThunderBPClass 동적 로드 성공"));
-		
-	} else
-	{
-		UE_LOG(LogTemp,Warning,TEXT("ThunderBPClass 로드 실패"));
+	if(thunderOnce==false){
+		thunderOnce=true;
+		auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+		if(!MyGameInstance) return;
+		UClass* LoadedClass = LoadObject<UClass>(nullptr,TEXT("/Game/Entity/Boss/Boss_Thunder.Boss_Thunder_C"));
+		if(LoadedClass)
+		{
+			ThunderBPClass = LoadedClass;
+			UE_LOG(LogTemp,Warning,TEXT("ThunderBPClass 동적 로드 성공"));
+
+		} else
+		{
+			UE_LOG(LogTemp,Warning,TEXT("ThunderBPClass 로드 실패"));
+		}
+
+		GetWorldTimerManager().SetTimer(ThunderTimerHandle,this,&ABossPatternManager::SpawnThunder,1.0f,true);
+		MyGameInstance->Thunder = true;
 	}
-
-	GetWorldTimerManager().SetTimer(ThunderTimerHandle,this,&ABossPatternManager::SpawnThunder,1.0f,true);
-	MyGameInstance->Thunder = true;
-
 }
-
 void ABossPatternManager::ApplyThunderDamage()
 {
 	SphereComponent = FindComponentByClass<USphereComponent>();
@@ -145,13 +169,13 @@ void ABossPatternManager::SpawnAndAttachLasers()
 
 		return;
 	}
-	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor); 
+	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor);
 	if(!BossChar) {
 		UE_LOG(LogTemp,Warning,TEXT("SpawnAndAttachLasers BossChar 없.음.%s"),*GetNameSafe(BossActor));
-		return; 
+		return;
 	}
 	for(const FName& SocketName : LaserSocketNames)
-	{ 
+	{
 		FTransform SocketTransform =BossChar-> GetMesh()->GetSocketTransform(SocketName);
 
 		AActor* Laser = GetWorld()->SpawnActor<AActor>(LaserBPClass,SocketTransform);
@@ -165,11 +189,377 @@ void ABossPatternManager::SpawnAndAttachLasers()
 			if(!Laser) return;
 
 			// 디태치
-			//Laser->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			Laser->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 			if(!MyGameInstance) return;
-			//MyGameInstance->Laser=false;
-		//	Laser->Destroy();
-		},5.0f,false);
+			MyGameInstance->Laser=false;
+			Laser->Destroy();
+		},6.0f,false);
 	}
+}
+void ABossPatternManager::SpinningBarrage()
+{
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+
+	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor);
+
+	if(!BossChar->ProjectileClass || !BossChar) {
+		UE_LOG(LogTemp,Error,TEXT("SpinningBarrage ProjectileClass or BossMesh not set!"));
+		return;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	for(const FName& SocketName : Spinning1SocketNames)
+	{
+		MyGameInstance->Spin=true;
+		FTransform SocketTransform =BossChar-> GetMesh()->GetSocketTransform(SocketName);
+		FVector SpawnLocation = SocketTransform.GetLocation();
+		FVector FireDirection = SocketTransform.GetRotation().GetForwardVector(); // 소켓의 전방 방향
+		FRotator SpawnRotation = FireDirection.Rotation();
+
+		ABossProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABossProjectile>(
+			BossChar->ProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+
+		if(SpawnedProjectile)
+		{
+			SpawnedProjectile->InitProjectileBySkillData(ProjectileSpeed,ApplyDamageAmount);
+			SpawnedProjectile->FireInDirection(FireDirection);
+
+			UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
+		}
+	}
+	for(const FName& SocketName : Spinning2SocketNames)
+	{
+		FTransform SocketTransform =BossChar-> GetMesh()->GetSocketTransform(SocketName);
+		FVector SpawnLocation = SocketTransform.GetLocation();
+		FVector FireDirection = SocketTransform.GetRotation().GetForwardVector(); // 소켓의 전방 방향
+		FRotator SpawnRotation = FireDirection.Rotation();
+
+		ABossProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABossProjectile>(
+			BossChar->ProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+
+		if(SpawnedProjectile)
+		{
+			FSkillData SkillData;
+			TArray<FSkillEffectData> EffectDataArray;
+
+			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_ThrowRock",SkillData) &&
+				UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_ThrowRock",EffectDataArray))
+			{
+				SpawnedProjectile->InitProjectileBySkillData(ProjectileSpeed,ApplyDamageAmount);
+				SpawnedProjectile->FireInDirection(FireDirection);
+
+				UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
+			} else
+			{
+				UE_LOG(LogTemp,Error,TEXT("SpinningBarrage Failed to load Skill_ThrowRock data!"));
+			}
+		}
+	}
+}
+void ABossPatternManager::StartSpinningBarrageSequence(int num)
+{
+	SpinningBarrageCount = num;
+
+	GetWorld()->GetTimerManager().SetTimer(
+		SpinningBarrageTimerHandle,
+		this,
+		&ABossPatternManager::SpinningBarrageTick,
+		0.2f,
+		true
+	);
+}
+
+void ABossPatternManager::SpinningBarrageTick()
+{
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+	if(SpinningBarrageCount >= 15) // 0.2초 × 15 = 3초
+	{
+		GetWorld()->GetTimerManager().ClearTimer(SpinningBarrageTimerHandle);
+		MyGameInstance->Spin=false;
+
+		return;
+	}
+
+	SpinningBarrage();
+	SpinningBarrageCount++;
+}
+
+void ABossPatternManager::StartSpinningBarrageSequence2(int num)
+{
+	SpinningBarrageCount = num;
+
+	GetWorld()->GetTimerManager().SetTimer(
+		SpinningBarrageTimerHandle2,
+		this,
+		&ABossPatternManager::SpinningBarrageTick2,
+		0.2f,
+		true
+	);
+}
+
+void ABossPatternManager::SpinningBarrageTick2()
+{
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+	if(SpinningBarrageCount >= 15) // 0.2초 × 15 = 3초
+	{
+		GetWorld()->GetTimerManager().ClearTimer(SpinningBarrageTimerHandle2);
+		MyGameInstance->Spin=false;
+
+		return;
+	}
+
+	SpinningBarrage2();
+	SpinningBarrageCount++;
+}
+
+void ABossPatternManager::SpinningBarrage2()
+{
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+
+	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor);
+
+	if(!BossChar->ProjectileClass || !BossChar) {
+		UE_LOG(LogTemp,Error,TEXT("SpinningBarrage ProjectileClass or BossMesh not set!"));
+		return;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	for(const FName& SocketName : Spinning1SocketNames)
+	{
+		MyGameInstance->Spin=true;
+		FTransform SocketTransform =BossChar-> GetMesh()->GetSocketTransform(SocketName);
+		FVector SpawnLocation = SocketTransform.GetLocation();
+		FVector FireDirection = SocketTransform.GetRotation().GetForwardVector(); // 소켓의 전방 방향
+		FRotator SpawnRotation = FireDirection.Rotation();
+
+		ABossProjectile2* SpawnedProjectile = GetWorld()->SpawnActor<ABossProjectile2>(
+			BossChar->SpinningBP2Class,SpawnLocation,SpawnRotation,SpawnParams);
+
+		if(SpawnedProjectile)
+		{
+		
+			SpawnedProjectile->InitProjectileBySkillData(450,25);
+			SpawnedProjectile->FireInDirection(FireDirection);
+
+			UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
+		}
+	}
+	for(const FName& SocketName : Spinning2SocketNames)
+	{
+		FTransform SocketTransform =BossChar-> GetMesh()->GetSocketTransform(SocketName);
+		FVector SpawnLocation = SocketTransform.GetLocation();
+		FVector FireDirection = SocketTransform.GetRotation().GetForwardVector(); // 소켓의 전방 방향
+		FRotator SpawnRotation = FireDirection.Rotation();
+
+		ABossProjectile2* SpawnedProjectile2 = GetWorld()->SpawnActor<ABossProjectile2>(
+			BossChar->SpinningBP2_2Class,SpawnLocation,SpawnRotation,SpawnParams);
+
+		if(SpawnedProjectile2)
+		{
+			FSkillData SkillData;
+			TArray<FSkillEffectData> EffectDataArray;
+
+			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_ThrowRock",SkillData) &&
+				UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_ThrowRock",EffectDataArray))
+			{
+				SpawnedProjectile2->InitProjectileBySkillData(500,25);
+				SpawnedProjectile2->FireInDirection(FireDirection);
+				//SpawnedProjectile2->FireInDirection(FireDirection);
+
+				UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
+			} else
+			{
+				UE_LOG(LogTemp,Error,TEXT("SpinningBarrage Failed to load Skill_ThrowRock data!"));
+			}
+		}
+	}
+}
+
+
+
+void ABossPatternManager::HealCrystal()
+{
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+
+	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor);
+	if(!BossChar || !BossChar->GetMesh()) return;
+
+	for(int32 i = 0; i < CrystalSocketNames.Num(); ++i)
+	{
+		TSubclassOf<AActor> SelectedClass = nullptr;
+
+		if(i == 0 && BlackCryBPClass) SelectedClass = BlackCryBPClass;
+		else if(i == 1 && RedCryBPClass) SelectedClass = RedCryBPClass;
+		else if(i == 2 && BlueCryBPClass) SelectedClass = BlueCryBPClass;
+
+		if(SelectedClass)
+		{
+			FName SocketName = CrystalSocketNames[i];
+			FTransform SocketTransform = BossChar->GetMesh()->GetSocketTransform(SocketName);
+			SocketTransform.AddToTranslation(FVector(0,0,50));
+
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+			AActor* SpawnedCrystal = GetWorld()->SpawnActor<AActor>(SelectedClass,SocketTransform,SpawnParams);
+			if(!SpawnedCrystal)
+			{
+				UE_LOG(LogTemp,Error,TEXT("HealCrystal: SpawnActor 실패! %d"),i);
+				continue;
+			}
+
+			UE_LOG(LogTemp,Warning,TEXT("HealCrystal: 크리스탈 스폰 성공: %s"),*SpawnedCrystal->GetName());
+			MyGameInstance->BossHeal=true;
+			SpawnedCrystal->AttachToComponent(
+				BossChar->GetMesh(),
+				FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+				SocketName
+			);
+
+
+			AHealCrystal* HealCrystal = Cast<AHealCrystal>(SpawnedCrystal);
+			if(HealCrystal)
+			{
+				HealCrystal->BossActor = BossChar;
+				HealCrystal->StartCrystal(15);             // 각 크리스탈 별로 타이머 시작
+			}
+		}
+
+	}
+}
+
+void ABossPatternManager::Meteor()
+{
+
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+
+	// 동적 로드
+	UClass* LoadedClass = LoadObject<UClass>(nullptr,TEXT("/Game/Entity/Boss/Boss_Meteor.Boss_Meteor_C"));
+	if(LoadedClass)
+	{
+		MeteorBPClass = LoadedClass;
+		UE_LOG(LogTemp,Warning,TEXT("MeteorBPClass 로드 성공"));
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("MeteorBPClass 로드 실패"));
+		return;
+	}
+
+	MeteorSpawnCount = 0;
+	GetWorldTimerManager().SetTimer(
+		MeteorTimerHandle,
+		this,
+		&ABossPatternManager::SpawnMeteorBatch,
+		0.1f,  // 초당 1회
+		true
+	);
+}
+
+void ABossPatternManager::SpawnMeteorBatch()
+{
+	if(!MeteorBPClass) return;
+
+	for(int i = 0; i < MeteorsPerSecond; ++i)
+	{
+		if(MeteorSpawnCount >= MeteorTotalCount)
+			break;
+
+		FVector SpawnLocation = GetRandomMeteorLocation();
+		FRotator SpawnRotation = FRotator::ZeroRotator;
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		GetWorld()->SpawnActor<AActor>(MeteorBPClass,SpawnLocation,SpawnRotation,SpawnParams);
+		UE_LOG(LogTemp,Warning,TEXT("Meteor %d번째 소환"),MeteorSpawnCount + 1);
+
+		MeteorSpawnCount++;
+	}
+
+	if(MeteorSpawnCount >= MeteorTotalCount)
+	{
+		GetWorldTimerManager().ClearTimer(MeteorTimerHandle);
+		MeteorSpawnCount = 0;
+	}
+}
+
+FVector ABossPatternManager::GetRandomMeteorLocation()
+{
+	// 맵 또는 보스 기준 랜덤 위치 설정 (원하는 범위 조정 가능)
+	FVector Origin(0.0f,0.0f,0); // 높은 Z 위치에서 낙하
+	float RangeXY = 3000.0f;
+	FVector RandomOffset = FVector(
+		FMath::FRandRange(-RangeXY,RangeXY),
+		FMath::FRandRange(-RangeXY,RangeXY),
+		0.0f
+	);
+	return Origin + RandomOffset;
+}
+void ABossPatternManager::ApplyMeteorDamage(){
+	SphereComponent = FindComponentByClass<USphereComponent>();
+	if(SphereComponent)
+	{
+		SphereComponent->SetGenerateOverlapEvents(true);
+		UE_LOG(LogTemp,Log,TEXT("Meteor: SphereComponent 세팅 완료"));
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("Meteor: SphereComponent가 NULL입니다! BP에서 설정되었는지 확인하세요"));
+	}
+
+	TArray<AActor*> OverlappingActors;
+	SphereComponent->GetOverlappingActors(OverlappingActors);
+
+	for(AActor* Actor : OverlappingActors)
+	{
+		if(!Actor || Actor == this)
+			continue;
+
+
+		if(Actor->ActorHasTag(FName("Player")))
+		{
+			// 데미지 처리
+			AController* InstigatorController = GetInstigatorController();
+			UGameplayStatics::ApplyDamage(Actor,40,InstigatorController,this,nullptr);
+		}
+	}
+}
+
+void ABossPatternManager::StartPhase1()
+{
+//	Thunder();
+
+	//FTimerHandle LaserDelayHandle;
+	//GetWorld()->GetTimerManager().SetTimer(LaserDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::SpawnAndAttachLasers),7.f,false);
+
+	//FTimerHandle SpinDelayHandle;
+	//GetWorld()->GetTimerManager().SetTimer(SpinDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::SpinningBarrage),12.f,false);
+
+	//FTimerHandle HealDelayHandle;
+	//GetWorld()->GetTimerManager().SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::HealCrystal),146.f,false);
+
+	//FTimerHandle MDelayHandle;
+	//GetWorld()->GetTimerManager().SetTimer(MDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::Meteor),34.f,false);
+
+}
+
+void ABossPatternManager::StartPhase2()
+{
+
+
 }

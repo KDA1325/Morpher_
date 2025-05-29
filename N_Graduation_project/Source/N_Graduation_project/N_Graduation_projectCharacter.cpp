@@ -442,7 +442,7 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
-	if(TestMode == false) {
+	if(TestMode == false||noDamage==false) {
 		//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
 		if(IsInvincible||PlayerSkillComponent->IsDefending) {
 			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
@@ -465,11 +465,12 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 	}
 
 	else {
+
 		PlayerSkillComponent->CanUseNomalSkill = true;
 		On_invincibility_Implementation();
 		// 데미지 로그 출력	
 		float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
-		UE_LOG(LogTemp,Error,TEXT("Player TakeDamage  %f"),DamageAmount);
+		UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
 
 		return FinalDamage;
 	}
@@ -756,7 +757,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 
 	else if(currentPreset == "StoneGolemPreset.uasset")
 	{
-		FSoftObjectPath MeshPath(TEXT("/Game/Asset/SyntyAsset/PolygonFantasyRivals/Meshes/New_Characters/SK_BR_Character_ElementalGolem_01.SK_BR_Character_ElementalGolem_01"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/StonGolem/StonGolem_walk.StonGolem_walk"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Characters/MyGameCharacter/ThirdPerson_AnimBP.ThirdPerson_AnimBP_C"));
 
 		//<피격을 위해 이거 3개 필수>

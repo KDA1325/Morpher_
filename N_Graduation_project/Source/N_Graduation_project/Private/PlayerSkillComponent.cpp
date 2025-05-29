@@ -817,7 +817,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 					}
 					//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
 				} else {
-					UGameplayStatics::ApplyDamage(TargetActor,10000,MyChar->GetController(),MyChar,nullptr);
+					UGameplayStatics::ApplyDamage(TargetActor,700,MyChar->GetController(),MyChar,nullptr);
 					UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
 					if(TargetActor->ActorHasTag(FName("Barrel")))
 					{
@@ -842,6 +842,10 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 				float KnockbackDuration = Effect.EffectValue02;
 
 				ApplyKnockback(TargetActor,KnockbackDistance,KnockbackDuration);
+				if(TargetActor->ActorHasTag("BlackCrystal"))
+				{
+					TargetActor->Destroy();
+				}
 				UE_LOG(LogTemp,Warning,TEXT("넉백 TargetActor: %s KnockbackDistance: %f KnockbackDuration: %f"),
 					   *TargetActor->GetName(),KnockbackDistance,KnockbackDuration);
 
@@ -892,16 +896,19 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 					if(AFireFloor* FireFloor = Cast<AFireFloor>(TargetActor))
 					{
 						FireFloor->Off_Fire(); //화염 끔 코드
-					} 
+					}
 				}
 				if(TargetActor->ActorHasTag(FName("FrozeFloor")))
 				{
 					if(AFrozeFloor* FrozeFloor = Cast<AFrozeFloor>(TargetActor))
 					{
 						FrozeFloor->On_Froze(); //빙결 킴 코드
-					} 
+					}
 				}
-
+				if(TargetActor->ActorHasTag(FName("BlueCrystal")))
+				{
+					TargetActor->Destroy();
+				}
 
 			}
 		}
