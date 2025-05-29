@@ -227,7 +227,7 @@ public:
 	// 돌진 관련 상태 변수
 	bool bIsCharging = false;
 	// 프리징 관련 상태 변수
-	bool bIsFreezing = false;
+	bool bIsBreath = false;
 	// 스턴 관련 상태 변수 
 	bool bIsBreaking = false;
 

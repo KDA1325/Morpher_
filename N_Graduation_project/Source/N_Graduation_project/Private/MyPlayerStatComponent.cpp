@@ -15,6 +15,7 @@ UMyPlayerStatComponent::UMyPlayerStatComponent()
 	PastCurrentHP = 150;
 	MonsterName = "PlayerCharacter";
 	Change = true;
+	bIsFreezing = false;
 }
 
 UMyCharacterWidget* UMyPlayerStatComponent::GetHUD() const
@@ -44,6 +45,7 @@ void UMyPlayerStatComponent::BeginPlay()
 	}
 
 	UpdateHUD(); // ���� ���� �� HUD �ʱ�ȭ
+
 }
 
 void UMyPlayerStatComponent::SetHP(float NewHP)
