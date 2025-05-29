@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
@@ -9,7 +9,7 @@
 class AN_Graduation_projectCharacter;
 class UWidgetActor;
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Custom),meta=(BlueprintSpawnableComponent))
 class N_GRADUATION_PROJECT_API UMyPlayerStatComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -57,4 +57,10 @@ public:
 	bool Change;
 
 	FTimerHandle ManaRegenTimerHandle;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Stat")
+	bool bIsFreezing;
+
+	UPROPERTY()
+	FTimerHandle FreezeTimerHandle;
 };

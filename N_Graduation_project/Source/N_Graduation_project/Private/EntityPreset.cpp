@@ -12,6 +12,7 @@
 #include "WidgetActor.h"
 #include "CharacterStateComponent.h"
 #include "BrainComponent.h"
+#include "MyPlayerStatComponent.h"
 #include "Components/SphereComponent.h"
 
 
@@ -444,7 +445,8 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 
 			UE_LOG(LogTemp,Warning,TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
 				*HalfExtent.ToString(),*NewRelativeLocation.ToString());
-		} else if(SkillData.SkillNameID == "Skill_FreezeBreath")
+		} 
+		else if(SkillData.SkillNameID == "Skill_FreezeBreath")
 		{
 			// Special 히트박스 생성
 			if(!SpecialSkillHitBox)
@@ -477,7 +479,8 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 
 			UE_LOG(LogTemp,Warning,TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
 				*HalfExtent.ToString(),*NewRelativeLocation.ToString());
-		} else
+		} 
+		else
 		{
 			// Normal 히트박스 생성
 			if(!NormalSkillHitBox)
@@ -733,7 +736,9 @@ void AEntityPreset::HideSpecialSphereHitBox()
 
 void AEntityPreset::ShowHitBox()
 {
-	if(bIsCharging || bIsFreezing)
+	// 여기가 문제 
+	//if(bIsCharging || bIsFreezing)
+	if(bIsCharging || bIsBreath)
 	{
 		ShowSpecialHitBox();
 	} else if(bIsBreaking)
@@ -839,30 +844,69 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 				if(Duration > 0.f && SlowFactor > 0.f)
 				{
 					UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
+					UMyPlayerStatComponent* StateComp = PlayerCharacter->FindComponentByClass<UMyPlayerStatComponent>();
+					//UMyPlayerStatComponent* StateComp = PlayerCharacter->CharacterStateComponent;
+
 					if(MoveComp)
 					{
 						float OriginalSpeed = MoveComp->MaxWalkSpeed;
-						float NewSpeed = OriginalSpeed / SlowFactor;
 
-						MoveComp->MaxWalkSpeed = NewSpeed;
+						if(!StateComp->bIsFreezing)
+						{
+							float NewSpeed = OriginalSpeed / SlowFactor;
+							StateComp->bIsFreezing = true;
 
-						UE_LOG(LogTemp,Warning,TEXT("Freezing applied to %s → NewSpeed: %.1f for %.1f seconds"),*PlayerCharacter->GetName(),NewSpeed,Duration);
+							MoveComp->MaxWalkSpeed = NewSpeed;
+						
+							UE_LOG(LogTemp,Warning,TEXT("Freezing applied to %s → NewSpeed: %.1f for %.1f seconds"),*PlayerCharacter->GetName(),NewSpeed,Duration);
+						}
+						else
+						{
+							UE_LOG(LogTemp,Warning,TEXT("[Freeze] 이미 적용됨 → 지속시간만 연장"));
+						}
 
-						// 일정 시간 뒤에 원래 속도로 복원
-						FTimerHandle RestoreHandle;
-						FTimerDelegate RestoreDelegate;
+						// 기존 남은 시간 가져오기
+						float RemainingTime = GetWorld()->GetTimerManager().GetTimerRemaining(StateComp->FreezeTimerHandle);
 
-						// 캡처값 반드시 복사
-						RestoreDelegate.BindLambda([=]() {
-							if(PlayerCharacter && PlayerCharacter->GetCharacterMovement())
+						// 기존 타이머 클리어
+						GetWorld()->GetTimerManager().ClearTimer(StateComp->FreezeTimerHandle);
+
+						// 새로 설정: 남은 시간 + 추가 시간
+						float TotalDuration = FMath::Max(0.0f,RemainingTime) + Duration;
+
+						FTimerDelegate FreezeEndDelegate = FTimerDelegate::CreateLambda([=]()
+						{
+							if(PlayerCharacter && PlayerCharacter->GetCharacterMovement() && StateComp)
 							{
 								PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = OriginalSpeed;
-								UE_LOG(LogTemp,Warning,TEXT("Freezing ended: Restored speed %.1f to %s"),OriginalSpeed,*PlayerCharacter->GetName());
+								StateComp->bIsFreezing = false;
+
+								UE_LOG(LogTemp,Warning,TEXT("[Freeze] 해제됨 → Speed 복구: %.1f"), OriginalSpeed);
 							}
 						});
 
-						GetWorld()->GetTimerManager().SetTimer(RestoreHandle,RestoreDelegate,Duration,false);
+						GetWorld()->GetTimerManager().SetTimer(StateComp->FreezeTimerHandle,FreezeEndDelegate,TotalDuration,false);
 					}
+						//// 남은 시간만 연장
+						//FTimerManager& TimerMgr = GetWorld()->GetTimerManager();
+						//FTimerHandle& FreezeTimerHandle = PlayerCharacter->CharacterStateComponent->FreezeTimerHandle;
+
+						//// 일정 시간 뒤에 원래 속도로 복원
+						//FTimerHandle RestoreHandle;
+						//FTimerDelegate RestoreDelegate;
+
+						//// 캡처값 반드시 복사
+						//RestoreDelegate.BindLambda([=]() {
+						//	if(PlayerCharacter && PlayerCharacter->CharacterStateComponent)
+						//	{
+						//		PlayerCharacter->CharacterStateComponent->bIsFreezing = false;
+						//		PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = OriginalSpeed;
+
+						//		UE_LOG(LogTemp,Warning,TEXT("Freezing ended: Restored speed %.1f to %s"),OriginalSpeed,*PlayerCharacter->GetName());
+						//	}
+						//});
+
+						//GetWorld()->GetTimerManager().SetTimer(RestoreHandle,RestoreDelegate,Duration,false);
 				}
 			}
 
@@ -1078,15 +1122,17 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage,bool bInterrupted)
 	if(bIsBreaking)
 	{
 		bIsBreaking = false;
-	}/*
+	}
+	else if(bIsBreath)
+	{
+		bIsBreath = false;
+	}
+	/*
 	else if(bIsCharging)
 	{
 		bIsCharging = false;
 	}
-	else if(bIsFreezing)
-	{
-		bIsFreezing = false;
-	}*/
+	*/
 
 	// AI 경로 추적 활성화
 	if(AAIController* AIController = Cast<AAIController>(GetController()))
@@ -1343,7 +1389,7 @@ void AEntityPreset::PerformSkill_FreezeBreath()
 	// 스킬 시전 플래그 설정
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
 	bIsCastingSkill = true;
-	bIsFreezing = true;
+	bIsBreath = true;
 
 	// AI 경로 추적 중지 
 	if(AAIController* AIController = Cast<AAIController>(GetController()))
