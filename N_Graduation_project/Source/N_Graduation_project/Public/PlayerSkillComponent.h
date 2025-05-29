@@ -40,7 +40,7 @@ public:
 	bool OnceHitBox;
 
 	UPROPERTY(BlueprintReadWrite)
-	bool bIsSpecialAttack = false;
+		bool bIsSpecialAttack = false;
 
 	// 현재 스킬 ID
 	FString CurrentSkillID;
@@ -99,7 +99,7 @@ public:
 	UPROPERTY()
 		TSet<AActor*> DamagedActors; // 데미지를 받은 몬스터 저장
 
-//	TArray<AActor*> SnapshotDamagedActors;
+	//	TArray<AActor*> SnapshotDamagedActors;
 protected:
 	virtual void BeginPlay() override;
 
@@ -133,7 +133,7 @@ public:
 	void DrawChargePath();
 	void SpawnChargeIndicator(FVector Start,FVector End);
 	void ApplyKnockback(AActor* TargetActor,float Distance,float Duration);
-	
+
 	// 원숭이 관련
 	void SpawnProjectile_ThrowRock();
 	void SpawnProjectile_FireBall();
@@ -142,15 +142,33 @@ public:
 		bool Notify_Player_Projectile;
 
 	UPROPERTY(EditDefaultsOnly,Category="Projectile")
-		TSubclassOf<class APlayerProjectile> NomalProjectileClass;
-		
+		TSubclassOf<class APlayerProjectile> NormalProjectileClass;
+
 	UPROPERTY(EditDefaultsOnly,Category="Projectile")
 		TSubclassOf<class APlayerProjectile> SpecialProjectileClass;
-	
+
 	// 실드 이펙트
 	UPROPERTY(EditDefaultsOnly,Category = "Effect")
 		TSoftObjectPtr<UParticleSystem> ShieldParticle;
 	UParticleSystemComponent* ShieldParticleComp = nullptr;
 
 
+	//궁수
+	UPROPERTY(EditDefaultsOnly,Category = "Projectile")
+		TSubclassOf<class APlayerProjectile> ArrowNormalProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly,Category = "Projectile")
+		TSubclassOf<class APlayerProjectile> ArrowSpecialProjectileClass;
+	
+	void PerformSkill_Arrow();
+	void FireProjectile_Arrow();
+	void Fire_AllArrows();
+	void PerformSkill_SplinterArrow();
+	bool bIsCastingSkill=false;
+
+	// 스페셜 서브 화살 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+		APlayerProjectile* SubArrow1;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+		APlayerProjectile* SubArrow2;
 };

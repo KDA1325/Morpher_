@@ -37,5 +37,7 @@ private:
 	UAnimMontage* m_Freezard2;
 	UAnimMontage* m_Stone1;
 	UAnimMontage* m_Stone2;
+	UAnimMontage* m_Arrow1;
+	UAnimMontage* m_Arrow2;
 
 };

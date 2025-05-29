@@ -45,6 +45,12 @@ UActionAnimInstance::UActionAnimInstance()
 
 	FSoftObjectPath Stone2MontagePath(TEXT("/Game/Gamin/StoneGolem/StonGolem_Earthbreaker_Anim_Montage.StonGolem_Earthbreaker_Anim_Montage"));
 	m_Stone2= Cast<UAnimMontage>(Stone2MontagePath.TryLoad());
+	
+	FSoftObjectPath Arrow1MontagePath(TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_attack1_Anim_Montage.SkeletonArcher_attack1_Anim_Montage"));
+	m_Arrow1= Cast<UAnimMontage>(Arrow1MontagePath.TryLoad());
+
+	//FSoftObjectPath Arrow2MontagePath(TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_attack1_Anim_Montage.SkeletonArcher_attack1_Anim_Montage"));
+	//m_Arrow2= Cast<UAnimMontage>(Arrow2MontagePath.TryLoad());
 
 
 	
@@ -120,6 +126,13 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Stone2->GetName());
 
 		Montage_Play(m_Stone2);
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+
+	}
+	else if(EffectID=="Skill_Arrow"||EffectID=="Skill_SplinterArrow"){
+		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Arrow1->GetName());
+
+		Montage_Play(m_Arrow1);
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
 
 	} else{

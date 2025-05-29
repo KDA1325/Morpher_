@@ -38,13 +38,32 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	static ConstructorHelpers::FClassFinder<APlayerProjectile> ProjectileBP(TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_ThrowRock"));
 	if(ProjectileBP.Succeeded())
 	{
-		NomalProjectileClass = ProjectileBP.Class;
+		NormalProjectileClass = ProjectileBP.Class;
 	}
 	static ConstructorHelpers::FClassFinder<APlayerProjectile> SProjectileBP(TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_FireBall"));
 	if(SProjectileBP.Succeeded())
 	{
 		SpecialProjectileClass = SProjectileBP.Class;
 	}
+
+	static ConstructorHelpers::FClassFinder<APlayerProjectile> NormalProjBP(
+		TEXT("/Game/Entity/BP/BP_Player_SkeletonArcher_Projectile_Arrow")
+	);
+	if(NormalProjBP.Succeeded())
+	{
+		ArrowNormalProjectileClass = NormalProjBP.Class;
+	}
+
+	static ConstructorHelpers::FClassFinder<APlayerProjectile> SpecialProjBP(
+		TEXT("/Game/Entity/BP/BP_Player_SkeletonArcher_Projectile_Arrow1")
+	);
+	if(SpecialProjBP.Succeeded())
+	{
+		ArrowSpecialProjectileClass = SpecialProjBP.Class;
+	}
+
+
+
 
 	//실드 이펙트
 	ShieldParticle = TSoftObjectPtr<UParticleSystem>(FSoftObjectPath(TEXT("/Game/Asset/FXAsset/LoPoPack/Particles/Par_LoPo_Shield_01.Par_LoPo_Shield_01")));
@@ -445,12 +464,12 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 {
-	UWorld* World = GetWorld();
-	if(!World)
-	{
-		UE_LOG(LogTemp,Error,TEXT("GetWorld() is nullptr in SpecialSkillPlay"));
-		return;
-	}
+	//UWorld* World = GetWorld();
+	//if(!World)
+	//{
+	//	UE_LOG(LogTemp,Error,TEXT("GetWorld() is nullptr in SpecialSkillPlay"));
+	//	return;
+	//}
 	//UE_LOG(LogTemp, Warning, TEXT("kakao On SpecialSkillPlay"));
 	distance = MeasureDistanceToMonster();
 
@@ -697,7 +716,7 @@ void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor,float Distance,fl
 void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 {
 	// 스폰할 투사체 클래스 설정 확인
-	if(!NomalProjectileClass)
+	if(!NormalProjectileClass)
 	{
 		UE_LOG(LogTemp,Error,TEXT("NomalProjectileClass not set!"));
 		return;
@@ -721,7 +740,7 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 
 	// 투사체 스폰
 	APlayerProjectile* SpawnedProjectile = GetWorld()->SpawnActor<APlayerProjectile>(
-		NomalProjectileClass,SpawnLocation,Direction.Rotation(),SpawnParams
+		NormalProjectileClass,SpawnLocation,Direction.Rotation(),SpawnParams
 	);
 
 	if(SpawnedProjectile)
@@ -748,9 +767,9 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 void UPlayerSkillComponent::SpawnProjectile_FireBall()
 {
 	// 스폰할 투사체 클래스 설정 확인
-	if(!SpecialProjectileClass)
+	if(!ArrowSpecialProjectileClass)
 	{
-		UE_LOG(LogTemp,Error,TEXT("SpecialProjectileClass not set!"));
+		UE_LOG(LogTemp,Error,TEXT("ArrowSpecialProjectileClass not set!"));
 		return;
 	}
 
@@ -772,7 +791,7 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 
 	// 투사체 스폰
 	APlayerProjectile* SpawnedProjectile = GetWorld()->SpawnActor<APlayerProjectile>(
-		SpecialProjectileClass,SpawnLocation,Direction.Rotation(),SpawnParams
+		ArrowSpecialProjectileClass,SpawnLocation,Direction.Rotation(),SpawnParams
 	);
 
 	if(SpawnedProjectile)
@@ -795,7 +814,133 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 		UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
 	}
 }
+void UPlayerSkillComponent::PerformSkill_Arrow()
+{
+	if(!ArrowNormalProjectileClass) return;
 
+	bIsCastingSkill = true;
+
+	// 소유 액터가 캐릭터인지 확인
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if(!OwnerCharacter) return;
+
+	// AI 경로 추적 관련 코드는 플레이어에선 생략하거나 필요하면 커스텀 처리
+
+	// 애니메이션 몽타주 실행
+	SkillAnimation("Skill_Arrow");
+}
+
+void UPlayerSkillComponent::FireProjectile_Arrow()
+{
+	if(!ArrowNormalProjectileClass) return;
+
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if(!OwnerCharacter) return;
+
+	FVector SpawnLocation = OwnerCharacter->GetMesh()->GetSocketLocation(TEXT("ArrowSocket"));
+	FVector Direction = OwnerCharacter->GetMesh()->GetRightVector();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = OwnerCharacter;
+	SpawnParams.Instigator = OwnerCharacter->GetInstigator();
+
+	FRotator SpawnRotation = Direction.Rotation();
+
+	UWorld* World = GetWorld();
+	if(!World) return;
+
+	APlayerProjectile* SpawnedProjectile = World->SpawnActor<APlayerProjectile>(ArrowNormalProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+	if(SpawnedProjectile)
+	{
+		FSkillData SkillData;
+		TArray<FSkillEffectData> EffectDataArray;
+
+		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+		{
+			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
+			SpawnedProjectile->FireInDirection(Direction);
+			// OwnerCharacter->bUseControllerRotationYaw = true; // 필요시
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+		}
+	}
+}
+
+void UPlayerSkillComponent::PerformSkill_SplinterArrow()
+{
+	if(!ArrowSpecialProjectileClass) return;
+
+	bIsCastingSkill = true;
+
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if(!OwnerCharacter) return;
+
+	SkillAnimation("Skill_SplinterArrow");
+}
+
+void UPlayerSkillComponent::Fire_AllArrows()
+{
+	if(!ArrowSpecialProjectileClass) return;
+
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if(!OwnerCharacter) return;
+
+	TArray<APlayerProjectile*> ArrowList;
+
+	FSkillData SkillData;
+	TArray<FSkillEffectData> EffectDataArray;
+
+	TArray<FName> Sockets = {TEXT("ArrowSocket"),TEXT("ArrowSubSocket_1"),TEXT("ArrowSubSocket_2")};
+
+	UWorld* World = GetWorld();
+	if(!World) return;
+
+	for(FName SocketName : Sockets)
+	{
+		FVector SpawnLoc = OwnerCharacter->GetMesh()->GetSocketLocation(SocketName);
+		FRotator SpawnRot = OwnerCharacter->GetMesh()->GetSocketRotation(SocketName);
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.Owner = OwnerCharacter;
+		SpawnParams.Instigator = OwnerCharacter->GetInstigator();
+
+		APlayerProjectile* Arrow = World->SpawnActor<APlayerProjectile>(ArrowSpecialProjectileClass,SpawnLoc,SpawnRot,SpawnParams);
+		if(Arrow)
+		{
+			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_SplinterArrow",SkillData) &&
+				UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_SplinterArrow",EffectDataArray))
+			{
+				Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+				ArrowList.Add(Arrow);
+			}
+		}
+	}
+
+	for(int i = 0; i < ArrowList.Num(); ++i)
+	{
+		APlayerProjectile* CurrentArrow = ArrowList[i];
+		if(!CurrentArrow) continue;
+
+		FName SocketName = Sockets.IsValidIndex(i) ? Sockets[i] : NAME_None;
+		if(SocketName == NAME_None) continue;
+
+	//	FTransform SocketTransform = OwnerCharacter->GetMesh()->GetSocketTransform(SocketName,RTS_World);
+	//	FVector FireDirection = SocketTransform.GetRotation().GetForwardVector();
+		FVector SocketLoc = OwnerCharacter->GetMesh()->GetSocketLocation(SocketName);
+		FVector FireDirection = OwnerCharacter->GetActorForwardVector(); // 더 안전함
+
+		CurrentArrow->FireInDirection(FireDirection);
+
+		CurrentArrow->FireInDirection(FireDirection);
+		// OwnerCharacter->bUseControllerRotationYaw = true; // 필요시
+
+		UE_LOG(LogTemp,Warning,TEXT("Fired arrow %d → Dir: %s"),i,*FireDirection.ToString());
+	}
+}
 void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("On SkillAnimation"));
@@ -889,8 +1034,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 							1.2f,
 							false
 						);
-					}
-					else{
+					} else{
 						UGameplayStatics::ApplyDamage(TargetActor,DamageAmount,MyChar->GetController(),MyChar,nullptr);
 						UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
 						if(TargetActor->ActorHasTag(FName("Barrel")))
@@ -1006,7 +1150,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 					TargetActor->Destroy();
 				}
 
-			}	
+			}
 			if(Effect.EffectType == EnumEffectType::Stun){
 				for(AActor* Target : DamagedActors)
 				{

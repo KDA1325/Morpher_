@@ -443,7 +443,15 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
-	if(TestMode == false||noDamage==false) {
+	if(noDamage==true){
+		PlayerSkillComponent->CanUseNomalSkill = true;
+		//	On_invincibility_Implementation();
+			// 데미지 로그 출력	
+		float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
+		UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
+
+	}
+	if(TestMode == false) {
 		//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
 		if(IsInvincible||PlayerSkillComponent->IsDefending) {
 			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
