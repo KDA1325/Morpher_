@@ -18,7 +18,7 @@
 #include "CharacterStateComponent.h" //state
 #include "MySaveGame.h"
 #include "MyGameInstance.h"
-
+#include "Components/SphereComponent.h"
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
@@ -129,6 +129,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	m_pMeshCom = GetMesh();
 	FOnTimelineFloat DashCallback;
 	SpawnHitBoxAtSocket("AttachHitBox");
+
 	//UE_LOG(LogTemp,Log,TEXT("캐릭터 BeginPlay실시, player: %s"),*currentPreset);
 	PlayerSword = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Player_sword")));
 	isDead=false;
@@ -442,7 +443,15 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
-	if(TestMode == false||noDamage==false) {
+	if(noDamage==true){
+		PlayerSkillComponent->CanUseNomalSkill = true;
+		//	On_invincibility_Implementation();
+			// 데미지 로그 출력	
+		float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
+		UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
+
+	}
+	if(TestMode == false) {
 		//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
 		if(IsInvincible||PlayerSkillComponent->IsDefending) {
 			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
@@ -757,30 +766,30 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 
 	else if(currentPreset == "StoneGolemPreset.uasset")
 	{
-		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/StonGolem/StonGolem_walk.StonGolem_walk"));
-		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Characters/MyGameCharacter/ThirdPerson_AnimBP.ThirdPerson_AnimBP_C"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/StoneGolem/StonGolem_walk.StonGolem_walk"));
+		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/StoneGolem/StonGolem_Skeleton_AnimBP.StonGolem_Skeleton_AnimBP_C"));
 
 		//<피격을 위해 이거 3개 필수>
-		UMaterialInterface* GolemMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Asset/SyntyAsset/PolygonFantasyRivals/Materials/M_FantasyRivals_01_A.M_FantasyRivals_01_A.lambert2'"));
+		UMaterialInterface* GolemMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Asset/SyntyAsset/PolygonFantasyRivals/Materials/M_FantasyRivals_01_A.M_FantasyRivals_01_A'"));
 		InvincibleOriginalMaterial = GolemMaterial;
 		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh)
 		{
-			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
+			GetMesh()->SetRelativeScale3D(FVector(2.0f,2.0f,2.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 
-			SpawnHitBoxAtSocket("AttachHitBox");
+			SpawnHitBoxAtSocket("ArmSocket2");
 			TrySpawnHitBox("AttachHitBox2");
-
+			SpawnHitSphereAtSocket("BreakerSocket2");
 		}
 	} else if(currentPreset == "SkeletonWarriorPreset.uasset")
-	{//Content/Animation/Skeleton/SK_Chr_Skeleton_Ranger_01.uasset
+	{
 		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Skeleton/SK_Chr_Skeleton_LightArmor_01.SK_Chr_Skeleton_LightArmor_01"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Characters/MyGameCharacter/SkeletonWarrior_AnimBP.SkeletonWarrior_AnimBP_C"));
-		//Content/Characters/MyGameCharacter/SkeletonWarrior_AnimBP.uasset
+
 		//<피격을 위해 이거 3개 필수>
 		UMaterialInterface* WarriorMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Animation/Skeleton/M_PolygonDarkFantasy_01_A.M_PolygonDarkFantasy_01_A"));
 		InvincibleOriginalMaterial = WarriorMaterial;
@@ -799,8 +808,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		}
 	} else if(currentPreset == "SkeletonArcherPreset.uasset")
 	{
-		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Skeleton/SK_Chr_Skeleton_Ranger_01.SK_Chr_Skeleton_Ranger_01"));
-		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Characters/MyGameCharacter/SkeletonArcher_AnimBP.SkeletonArcher_AnimBP_C"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_attack1.SkeletonArcher_attack1"));
+		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_Skeleton_AnimBP.SkeletonArcher_Skeleton_AnimBP_C"));
 		//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Animation/Skeleton/M_PolygonDarkFantasy_01_A.uasset
 		//<피격을 위해 이거 3개 필수>
 		UMaterialInterface* ArcherMaterial =  LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Animation/Skeleton/M_PolygonDarkFantasy_01_A.M_PolygonDarkFantasy_01_A"));
@@ -942,6 +951,59 @@ void AN_Graduation_projectCharacter::SpawnHitBoxAtSocket2(FName SocketName)
 	HitBox2->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,SocketName);
 	PlayerSkillComponent->SetHitBox(HitBox2);
 
+}
+void AN_Graduation_projectCharacter::SpawnHitSphereAtSocket(FName SocketName)
+{
+	if(!GetMesh()->DoesSocketExist(SocketName))
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Socket '%s' does not exist on the mesh."),*SocketName.ToString());
+		return;
+	}
+
+	USphereComponent* HitSphere = nullptr;
+
+	// 이미 존재하는 히트스피어 찾기
+	TArray<USphereComponent*> Components;
+	GetComponents<USphereComponent>(Components);
+
+	for(USphereComponent* Comp : Components)
+	{
+		if(Comp && Comp->GetName().Contains(TEXT("HitSphere")))
+		{
+			HitSphere = Comp;
+			break;
+		}
+	}
+
+	if(!HitSphere)
+	{
+		HitSphere = NewObject<USphereComponent>(this);
+		HitSphere->Rename(TEXT("HitSphere"));
+
+		HitSphere->RegisterComponent();
+		HitSphere->OnComponentBeginOverlap.AddDynamic(this,&AN_Graduation_projectCharacter::OnHitboxOverlap);
+
+		// 크기 설정
+		HitSphere->SetSphereRadius(40.f); // 원하는 크기로 조절
+
+		// 충돌 설정
+		HitSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		HitSphere->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+		HitSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		HitSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECollisionResponse::ECR_Overlap);
+		HitSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic,ECollisionResponse::ECR_Overlap);
+		HitSphere->SetGenerateOverlapEvents(true);
+
+		HitSphere->ComponentTags.Add(FName("HitSphere"));
+		HitSphere->SetHiddenInGame(true);
+		HitSphere->SetRelativeLocation(FVector(30.f,30.f,50.f));
+		PlayerSkillComponent->SetHitSphere(HitSphere);
+	}
+
+	HitSphere->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale,SocketName);
+	PlayerSkillComponent->SetHitSphere(HitSphere);
+
+	//UE_LOG(LogTemp, Warning, TEXT("HitSphere attached to socket: %s"), *SocketName.ToString());
 }
 
 void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)

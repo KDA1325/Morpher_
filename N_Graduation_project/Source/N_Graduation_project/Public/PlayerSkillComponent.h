@@ -14,6 +14,7 @@
 //class Forward declarations;
 class AActor;
 class UBoxComponent;
+class USphereComponent;
 class UArrowComponent;
 
 
@@ -39,7 +40,7 @@ public:
 	bool OnceHitBox;
 
 	UPROPERTY(BlueprintReadWrite)
-	bool bIsSpecialAttack = false;
+		bool bIsSpecialAttack = false;
 
 	// 현재 스킬 ID
 	FString CurrentSkillID;
@@ -49,9 +50,13 @@ public:
 		UBoxComponent* PlayerHitBox;
 	UPROPERTY()
 		UBoxComponent* PlayerHitBox2;
+	UPROPERTY()
+		USphereComponent* PlayerHitSphere;
 
 	void SetHitBox(UBoxComponent* NewHitBox);
 	void SetHitBox2(UBoxComponent* NewHitBox);
+	void SetHitSphere(USphereComponent* HitSphere);
+
 
 	// 거리 감지
 	UFUNCTION(BlueprintCallable,Category = "Skill")
@@ -74,9 +79,12 @@ public:
 	void OnHitBox(const FSkillData& SkillData);
 	void SettingHitBox2(const FSkillData& SkillData); // 히트박스 초기화
 	void OnHitBox2(const FSkillData& SkillData);
+	void SettingHitSphere(const FSkillData& SkillData); // 히트박스 초기화
+	void OnHitSphere(const FSkillData& SkillData);
 	// 히트박스 활성화
 	void HideHitBox();     // 히트박스 비활성화
 	void HideHitBox2();     // 히트박스 비활성화
+	void HideSphere();
 	void SkillAnimation(const FString& EffectID);
 	void EndSkillAnimation(UAnimMontage* Montage,bool bInterrupted);
 	void SkillEffect(const FString& SkillNameID);
@@ -85,14 +93,13 @@ public:
 	void SpecialSetSkillTimer(float Count,FTimerDelegate Call);  // 타이머 설정 함수
 	void ChargeSkillTimer(float Delay,FTimerDelegate Call);  // 타이머 설정 함수
 
-
 	UPROPERTY(BlueprintReadWrite)
 		float DamageAmount;
 
 	UPROPERTY()
 		TSet<AActor*> DamagedActors; // 데미지를 받은 몬스터 저장
 
-//	TArray<AActor*> SnapshotDamagedActors;
+	//	TArray<AActor*> SnapshotDamagedActors;
 protected:
 	virtual void BeginPlay() override;
 
@@ -101,6 +108,7 @@ private:
 	FTimerHandle NomalSkillTimerHandle;
 	FTimerHandle SpecialSkillTimerHandle;
 	FTimerHandle ChargeSkillTimerHandle;
+	FTimerHandle DamageTimerHandle;
 
 	// 플레이어와의 거리
 	float distance;
@@ -125,7 +133,7 @@ public:
 	void DrawChargePath();
 	void SpawnChargeIndicator(FVector Start,FVector End);
 	void ApplyKnockback(AActor* TargetActor,float Distance,float Duration);
-	
+
 	// 원숭이 관련
 	void SpawnProjectile_ThrowRock();
 	void SpawnProjectile_FireBall();
@@ -134,13 +142,33 @@ public:
 		bool Notify_Player_Projectile;
 
 	UPROPERTY(EditDefaultsOnly,Category="Projectile")
-		TSubclassOf<class APlayerProjectile> NomalProjectileClass;
-		
+		TSubclassOf<class APlayerProjectile> NormalProjectileClass;
+
 	UPROPERTY(EditDefaultsOnly,Category="Projectile")
 		TSubclassOf<class APlayerProjectile> SpecialProjectileClass;
-	
+
 	// 실드 이펙트
 	UPROPERTY(EditDefaultsOnly,Category = "Effect")
 		TSoftObjectPtr<UParticleSystem> ShieldParticle;
 	UParticleSystemComponent* ShieldParticleComp = nullptr;
+
+
+	//궁수
+	UPROPERTY(EditDefaultsOnly,Category = "Projectile")
+		TSubclassOf<class APlayerProjectile> ArrowNormalProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly,Category = "Projectile")
+		TSubclassOf<class APlayerProjectile> ArrowSpecialProjectileClass;
+	
+	void PerformSkill_Arrow();
+	void FireProjectile_Arrow();
+	void Fire_AllArrows();
+	void PerformSkill_SplinterArrow();
+	bool bIsCastingSkill=false;
+
+	// 스페셜 서브 화살 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+		APlayerProjectile* SubArrow1;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+		APlayerProjectile* SubArrow2;
 };

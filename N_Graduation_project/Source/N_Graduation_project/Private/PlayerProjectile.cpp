@@ -2,6 +2,7 @@
 #include "ABGameSingleton.h"
 #include "GameFramework/ProjectileMovementComponent.h" //발사체
 #include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "FireFloor.h"
@@ -30,6 +31,7 @@ APlayerProjectile::APlayerProjectile()
 void APlayerProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+
 	if(!CollisionComp)
 	{
 		CollisionComp = FindComponentByClass<USphereComponent>();
@@ -73,18 +75,7 @@ void APlayerProjectile::InitProjectileBySkillData(const FSkillData& InSkillData,
 		CollisionComp->IgnoreActorWhenMoving(GetOwner(),true);
 	}
 
-	// SkillRange까지 도달 후 투사체 삭제를 위한 타이머 
-	if(SkillData.ProjectileSpeed > 0.f)
-	{
-		float LifeTime = SkillData.SkillRange / SkillData.ProjectileSpeed;
-		GetWorld()->GetTimerManager().SetTimer(
-			DestroyTimerHandle,
-			this,
-			&APlayerProjectile::OnLifetimeExpired,
-			LifeTime,
-			false
-		);
-	}
+	
 }
 
 void APlayerProjectile::FireInDirection(const FVector& ShootDirection)
@@ -96,6 +87,18 @@ void APlayerProjectile::FireInDirection(const FVector& ShootDirection)
 		ProjectileMovement->SetVelocityInLocalSpace(ShootDirection * ProjectileMovement->InitialSpeed);
 		ProjectileMovement->Activate(true);
 		UE_LOG(LogTemp,Warning,TEXT("PPAP FireInDirection called! Velocity = %s"),*ProjectileMovement->Velocity.ToString());
+	}
+	// SkillRange까지 도달 후 투사체 삭제를 위한 타이머 
+	if(SkillData.ProjectileSpeed > 0.f)
+	{
+		float LifeTime = SkillData.SkillRange / SkillData.ProjectileSpeed;
+		GetWorld()->GetTimerManager().SetTimer(
+			DestroyTimerHandle,
+			this,
+			&APlayerProjectile::OnLifetimeExpired,
+			LifeTime,
+			false
+		);
 	}
 }
 

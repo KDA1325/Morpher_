@@ -25,4 +25,8 @@ void UAnimNotify_ProjectileArrow::Notify(USkeletalMeshComponent * MeshComp,UAnim
 
 		//UE_LOG(LogTemp,Warning,TEXT("[ProjectileArrow] Arrow fired"));
 	}
+	else if(AN_Graduation_projectCharacter* Player = Cast<AN_Graduation_projectCharacter>(MeshComp->GetOwner()))
+	{
+		Player->PlayerSkillComponent->FireProjectile_Arrow();
+	}
 }
