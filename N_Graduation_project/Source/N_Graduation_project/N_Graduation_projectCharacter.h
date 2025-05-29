@@ -171,6 +171,8 @@ public:
 	// ���� ���� Ȱ��ȭ
 	UPROPERTY(BlueprintReadWrite)
 	bool TestMode = false;
+	UPROPERTY(BlueprintReadWrite)
+	bool TestMode2 = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool IsInvincible;

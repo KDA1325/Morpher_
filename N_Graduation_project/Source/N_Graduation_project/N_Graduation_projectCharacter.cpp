@@ -239,7 +239,7 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 
 	} else
 	{
-	//	UE_LOG(LogTemplateCharacter,Error,TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."),*GetNameSafe(this));
+		//	UE_LOG(LogTemplateCharacter,Error,TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."),*GetNameSafe(this));
 	}
 }
 void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue& Value)
@@ -263,7 +263,7 @@ void AN_Graduation_projectCharacter::EndShield()
 
 	if(currentPreset  == "SkeletonWarrior"){
 		PlayerSkillComponent->OffDefenseSkill();
-	//	UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
+		//	UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
 	}
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
@@ -365,9 +365,15 @@ void AN_Graduation_projectCharacter::RotateCharacterToCursor()
 				FVector CharacterLocation = GetActorLocation();
 
 				// Calculate the desired rotation
+				//FRotator LookAtRotation = (TargetLocation - CharacterLocation).Rotation();
+				//LookAtRotation.Pitch = 0.0f; // Lock Pitch
+				//LookAtRotation.Roll = 0.0f; // Lock Roll
+
+				// Z 값 고정 (수평 방향만 계산)
+				TargetLocation.Z = CharacterLocation.Z;
+
+				// Calculate the desired rotation
 				FRotator LookAtRotation = (TargetLocation - CharacterLocation).Rotation();
-				LookAtRotation.Pitch = 0.0f; // Lock Pitch
-				LookAtRotation.Roll = 0.0f; // Lock Roll
 
 				// Smooth rotation
 				FRotator CurrentRotation = GetActorRotation();
@@ -443,22 +449,27 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
-	if(noDamage==true){
+	if(TestMode2==true){
+		TestMode=true;
+	}
+	if(TestMode ==true){
+
 		PlayerSkillComponent->CanUseNomalSkill = true;
-		//	On_invincibility_Implementation();
-			// 데미지 로그 출력	
+		On_invincibility_Implementation();
+		// 데미지 로그 출력	
 		float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
 		UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
 
+		return FinalDamage;
 	}
-	if(TestMode == false) {
+	else {
 		//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
 		if(IsInvincible||PlayerSkillComponent->IsDefending) {
 			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
 			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 			PlayerSkillComponent->CanUseNomalSkill = true;
 
-			return 0.0f;//무적상태라면 리턴.
+				return 0.0f;//무적상태라면 리턴.
 
 		} else
 		{
@@ -473,16 +484,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 		}
 	}
 
-	else {
 
-		PlayerSkillComponent->CanUseNomalSkill = true;
-		On_invincibility_Implementation();
-		// 데미지 로그 출력	
-		float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
-		UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
-
-		return FinalDamage;
-	}
 }
 void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 {
@@ -547,16 +549,16 @@ void AN_Graduation_projectCharacter::ToggleMaterial(bool bUseHitMaterial)
 
 		}
 	} else	{
-	//	UE_LOG(LogTemp,Error,TEXT("MeshComponent is null!"));
+		//	UE_LOG(LogTemp,Error,TEXT("MeshComponent is null!"));
 		return;
 	}
 }
 
 void AN_Graduation_projectCharacter::UpdateEntityData()
 {
-//	UE_LOG(LogTemp,Error,TEXT("Loadgame UpdateEntityData 실행됨"));
+	//	UE_LOG(LogTemp,Error,TEXT("Loadgame UpdateEntityData 실행됨"));
 
-	
+
 	if(UABGameSingleton::Get().GetEntityDataByGroupID(currentPreset,EntityData))
 	{
 		if(PlayerStatComponent->CurrentMana >= EntityData.TransManaCost) 		OkTrans = true;
@@ -571,7 +573,7 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 			*EntityData.EntityName,EntityData.HP,EntityData.MoveSpeed);
 
 	} else{
-//		UE_LOG(LogTemp,Error,TEXT("Loadgame EntityData 찾기 실패: %s"),*currentPreset);
+		//		UE_LOG(LogTemp,Error,TEXT("Loadgame EntityData 찾기 실패: %s"),*currentPreset);
 	}
 	// currentPreset!=클릭한 버튼의 캐릭터이름 이면..
 	if(pastPreset != currentPreset) {

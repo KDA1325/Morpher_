@@ -1020,7 +1020,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 			if(Effect.EffectType == EnumEffectType::Damage)
 			{
 				DamageAmount = Effect.EffectValue01;
-				if(MyChar->TestMode == false) {
+				if(MyChar->TestMode2 == false) {
 					// 데미지
 					if(SkillNameID=="Skill_ArmSwing"){
 						float LocalDamage = DamageAmount;
