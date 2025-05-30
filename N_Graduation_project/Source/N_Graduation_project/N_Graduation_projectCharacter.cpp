@@ -742,13 +742,22 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	else if(currentPreset == "InpermonPreset.uasset")
 	{
 		//<변신을 위해 이거 2개 필수>
-		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/InferMon/InferMon_idle.InferMon_idle"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/InferMon/InferMon_UVW.InferMon_UVW"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/InferMon/Infermon_Skeleton_AnimBP.Infermon_Skeleton_AnimBP_C"));
 
 		//<피격을 위해 이거 3개 필수>
-		UMaterialInterface* InpermonMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Gamin/InferMon/standardSurface1.standardSurface1'"));
-		InvincibleOriginalMaterial = InpermonMaterial;
-		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
+		UMaterialInterface* Mat0 = LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Gamin/InferMon/InferMon_UVW_solid_Mat.InferMon_UVW_solid_Mat"));
+		UMaterialInterface* Mat1 = LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Gamin/InferMon/InferMon_tail_UVW_solid_Mat.InferMon_tail_UVW_solid_Mat"));
+		UMaterialInterface* Mat2 = LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Gamin/InferMon/InferMon_body_UVW_solid_Mat.InferMon_body_UVW_solid_Mat"));
+		if(Mat0 && Mat1 && Mat2)
+		{
+			MeshComponent->SetMaterial(0,Mat0);
+			MeshComponent->SetMaterial(1,Mat1);
+			MeshComponent->SetMaterial(2,Mat2);
+		}
+		//UMaterialInterface* InpermonMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Gamin/InferMon/standardSurface1.standardSurface1'"));
+		//InvincibleOriginalMaterial = InpermonMaterial;
+		//MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh && NewAnimBP)
