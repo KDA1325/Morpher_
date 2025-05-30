@@ -14,7 +14,7 @@
 #include "BrainComponent.h"
 #include "MyPlayerStatComponent.h"
 #include "Components/SphereComponent.h"
-
+#include "NormalAttackDamageType.h"
 
 AEntityPreset::AEntityPreset()
 {
@@ -831,9 +831,19 @@ void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedCompone
 				case EnumEffectType::Damage:
 				{
 					float DamageToApply = Effect.EffectValue01;
-					UGameplayStatics::ApplyDamage(OtherActor,DamageToApply,GetController(),this,nullptr);
-					UE_LOG(LogTemp,Warning,TEXT("Normal HitBox Overlap: Applied Damage %f to %s"),
-						DamageToApply,*OtherActor->GetName());
+					if(Effect.SkillNameID=="Skill_SkeletonSlash"||Effect.SkillNameID=="Skill_Bite"
+						||Effect.SkillNameID=="Skill_ArmSwing"||Effect.SkillNameID=="Skill_TailSwing"){
+						UE_LOG(LogTemp,Error,TEXT("무적 모드 데미지"));
+
+						UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,UNormalAttackDamageType::StaticClass());
+					}
+					else{
+						UE_LOG(LogTemp,Error,TEXT("무적 모드 아님"));
+
+						UGameplayStatics::ApplyDamage(OtherActor,DamageToApply,GetController(),this,nullptr);
+						UE_LOG(LogTemp,Warning,TEXT("Normal HitBox Overlap: Applied Damage %f to %s"),
+							DamageToApply,*OtherActor->GetName());
+					}
 					break;
 				}
 				case EnumEffectType::KnockBack:

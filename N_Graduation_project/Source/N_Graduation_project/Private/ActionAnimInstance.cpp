@@ -28,10 +28,10 @@ UActionAnimInstance::UActionAnimInstance()
 	FSoftObjectPath Special_InpermonMontagePath(TEXT("/Game/Gamin/InferMon/InferMon_FireBall_Anim_Montage.InferMon_FireBall_Anim_Montage"));
 	m_Inpermon2 = Cast<UAnimMontage>(Special_InpermonMontagePath.TryLoad());
 
-	FSoftObjectPath SkeletonSlashMontagePath(TEXT("/Game/Animation/Skeleton/Skeletion_attack_Montage.Skeletion_attack_Montage"));
+	FSoftObjectPath SkeletonSlashMontagePath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Attack_Anim_Montage.SkeletonWarrior_Attack_Anim_Montage"));
 	m_SkeletonSlash = Cast<UAnimMontage>(SkeletonSlashMontagePath.TryLoad());
 
-	FSoftObjectPath SkeletonGaurdMontagePath(TEXT("/Game/Animation/Skeleton/Retarget_Shield_Anim__Montage.Retarget_Shield_Anim__Montage"));
+	FSoftObjectPath SkeletonGaurdMontagePath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Shield_Guard_Anim_Montage1.SkeletonWarrior_Shield_Guard_Anim_Montage1"));
 	m_Gaurd= Cast<UAnimMontage>(SkeletonGaurdMontagePath.TryLoad());
 	
 	FSoftObjectPath Freezard1MontagePath(TEXT("/Game/Gamin/Freezard/freezard_attack_Anim_Montage.freezard_attack_Anim_Montage"));
@@ -49,8 +49,8 @@ UActionAnimInstance::UActionAnimInstance()
 	FSoftObjectPath Arrow1MontagePath(TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_attack1_Anim_Montage.SkeletonArcher_attack1_Anim_Montage"));
 	m_Arrow1= Cast<UAnimMontage>(Arrow1MontagePath.TryLoad());
 
-	//FSoftObjectPath Arrow2MontagePath(TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_attack1_Anim_Montage.SkeletonArcher_attack1_Anim_Montage"));
-	//m_Arrow2= Cast<UAnimMontage>(Arrow2MontagePath.TryLoad());
+	FSoftObjectPath Arrow2MontagePath(TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_attack1_Anim_Montage2.SkeletonArcher_attack1_Anim_Montage2"));
+	m_Arrow2= Cast<UAnimMontage>(Arrow2MontagePath.TryLoad());
 
 
 	
@@ -129,10 +129,16 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
 
 	}
-	else if(EffectID=="Skill_Arrow"||EffectID=="Skill_SplinterArrow"){
+	else if(EffectID=="Skill_Arrow"){
 		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Arrow1->GetName());
 
 		Montage_Play(m_Arrow1);
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+
+	}else if(EffectID=="Skill_SplinterArrow"){
+		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Arrow2->GetName());
+
+		Montage_Play(m_Arrow2);
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
 
 	} else{

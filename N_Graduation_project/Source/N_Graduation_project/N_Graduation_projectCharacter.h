@@ -7,6 +7,11 @@
 #include "ABGameSingleton.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Engine/EngineTypes.h"             
+#include "GameFramework/DamageType.h"        
+#include "Kismet/GameplayStatics.h"          
+#include "NormalAttackDamageType.h"         
+
 #include "N_Graduation_projectCharacter.generated.h"
 
 class UPlayerSkillComponent;
@@ -171,6 +176,8 @@ public:
 	// ���� ���� Ȱ��ȭ
 	UPROPERTY(BlueprintReadWrite)
 	bool TestMode = false;
+	UPROPERTY(BlueprintReadWrite)
+	bool TestMode2 = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool IsInvincible;

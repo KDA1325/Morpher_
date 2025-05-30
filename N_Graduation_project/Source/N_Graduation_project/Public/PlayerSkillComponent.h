@@ -166,6 +166,9 @@ public:
 	void PerformSkill_SplinterArrow();
 	bool bIsCastingSkill=false;
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
+		APlayerProjectile* Arrow;
+
 	// 스페셜 서브 화살 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Projectile")
 		APlayerProjectile* SubArrow1;

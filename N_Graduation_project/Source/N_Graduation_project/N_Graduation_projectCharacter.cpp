@@ -19,6 +19,10 @@
 #include "MySaveGame.h"
 #include "MyGameInstance.h"
 #include "Components/SphereComponent.h"
+#include "Engine/EngineTypes.h"              // FDamageEvent
+#include "GameFramework/DamageType.h"        // UDamageType
+#include "NormalAttackDamageType.h"          // 커스텀 데미지 타입
+#include "Engine/DamageEvents.h"
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
@@ -127,6 +131,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	// Call the base class    
 	Super::BeginPlay();
 	m_pMeshCom = GetMesh();
+
 	FOnTimelineFloat DashCallback;
 	SpawnHitBoxAtSocket("AttachHitBox");
 
@@ -239,7 +244,7 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 
 	} else
 	{
-	//	UE_LOG(LogTemplateCharacter,Error,TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."),*GetNameSafe(this));
+		//	UE_LOG(LogTemplateCharacter,Error,TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."),*GetNameSafe(this));
 	}
 }
 void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue& Value)
@@ -252,18 +257,16 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 	}
 	if(PlayerSkillComponent->CanUseSpecialSkill == true) {
 		PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
-		//PlaySpecial = true;	
+		//PlaySpecial = true;			
+		UE_LOG(LogTemp,Warning,TEXT("실드 우클릭"));
+
 	} else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
-	//UE_LOG(LogTemp,Warning,TEXT("실드 우클릭"));
 }
 void AN_Graduation_projectCharacter::EndShield()
-{
-	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if(!MyGameInstance) return;
-
-	if(currentPreset  == "SkeletonWarrior"){
+{		
+	if(currentPreset  == "SkeletonWarriorPreset.uasset"){
 		PlayerSkillComponent->OffDefenseSkill();
-	//	UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
+		UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
 	}
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
@@ -365,9 +368,15 @@ void AN_Graduation_projectCharacter::RotateCharacterToCursor()
 				FVector CharacterLocation = GetActorLocation();
 
 				// Calculate the desired rotation
+				//FRotator LookAtRotation = (TargetLocation - CharacterLocation).Rotation();
+				//LookAtRotation.Pitch = 0.0f; // Lock Pitch
+				//LookAtRotation.Roll = 0.0f; // Lock Roll
+
+				// Z 값 고정 (수평 방향만 계산)
+				TargetLocation.Z = CharacterLocation.Z;
+
+				// Calculate the desired rotation
 				FRotator LookAtRotation = (TargetLocation - CharacterLocation).Rotation();
-				LookAtRotation.Pitch = 0.0f; // Lock Pitch
-				LookAtRotation.Roll = 0.0f; // Lock Roll
 
 				// Smooth rotation
 				FRotator CurrentRotation = GetActorRotation();
@@ -443,22 +452,40 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
-	if(noDamage==true){
+	bool bFromNormalHitBox=false;
+	if(DamageEvent.DamageTypeClass)
+	{
+		UDamageType* DamageTypeCDO = DamageEvent.DamageTypeClass->GetDefaultObject<UDamageType>();
+
+		// 예시: NormalAttackDamageType 인지 확인
+		if(DamageTypeCDO->IsA(UNormalAttackDamageType::StaticClass()))
+		{
+			bFromNormalHitBox=true;
+			UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: NormalAttackDamageType"));
+		} else
+		{
+			bFromNormalHitBox=false;
+			UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: %s"),*DamageTypeCDO->GetClass()->GetName());
+		}
+	}
+	if(TestMode ==true){
+
 		PlayerSkillComponent->CanUseNomalSkill = true;
-		//	On_invincibility_Implementation();
-			// 데미지 로그 출력	
+		On_invincibility_Implementation();
+		// 데미지 로그 출력	
 		float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
 		UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
 
+		return FinalDamage;
 	}
-	if(TestMode == false) {
+	else {
 		//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
-		if(IsInvincible||PlayerSkillComponent->IsDefending) {
+		if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) {
 			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
 			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 			PlayerSkillComponent->CanUseNomalSkill = true;
 
-			return 0.0f;//무적상태라면 리턴.
+				return 0.0f;//무적상태라면 리턴.
 
 		} else
 		{
@@ -473,16 +500,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 		}
 	}
 
-	else {
 
-		PlayerSkillComponent->CanUseNomalSkill = true;
-		On_invincibility_Implementation();
-		// 데미지 로그 출력	
-		float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
-		UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
-
-		return FinalDamage;
-	}
 }
 void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 {
@@ -547,16 +565,16 @@ void AN_Graduation_projectCharacter::ToggleMaterial(bool bUseHitMaterial)
 
 		}
 	} else	{
-	//	UE_LOG(LogTemp,Error,TEXT("MeshComponent is null!"));
+		//	UE_LOG(LogTemp,Error,TEXT("MeshComponent is null!"));
 		return;
 	}
 }
 
 void AN_Graduation_projectCharacter::UpdateEntityData()
 {
-//	UE_LOG(LogTemp,Error,TEXT("Loadgame UpdateEntityData 실행됨"));
+	//	UE_LOG(LogTemp,Error,TEXT("Loadgame UpdateEntityData 실행됨"));
 
-	
+
 	if(UABGameSingleton::Get().GetEntityDataByGroupID(currentPreset,EntityData))
 	{
 		if(PlayerStatComponent->CurrentMana >= EntityData.TransManaCost) 		OkTrans = true;
@@ -571,7 +589,7 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 			*EntityData.EntityName,EntityData.HP,EntityData.MoveSpeed);
 
 	} else{
-//		UE_LOG(LogTemp,Error,TEXT("Loadgame EntityData 찾기 실패: %s"),*currentPreset);
+		//		UE_LOG(LogTemp,Error,TEXT("Loadgame EntityData 찾기 실패: %s"),*currentPreset);
 	}
 	// currentPreset!=클릭한 버튼의 캐릭터이름 이면..
 	if(pastPreset != currentPreset) {
@@ -724,13 +742,22 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	else if(currentPreset == "InpermonPreset.uasset")
 	{
 		//<변신을 위해 이거 2개 필수>
-		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/InferMon/InferMon_idle.InferMon_idle"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/InferMon/InferMon_UVW.InferMon_UVW"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/InferMon/Infermon_Skeleton_AnimBP.Infermon_Skeleton_AnimBP_C"));
 
 		//<피격을 위해 이거 3개 필수>
-		UMaterialInterface* InpermonMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Gamin/InferMon/standardSurface1.standardSurface1'"));
-		InvincibleOriginalMaterial = InpermonMaterial;
-		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
+		UMaterialInterface* Mat0 = LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Gamin/InferMon/InferMon_UVW_solid_Mat.InferMon_UVW_solid_Mat"));
+		UMaterialInterface* Mat1 = LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Gamin/InferMon/InferMon_tail_UVW_solid_Mat.InferMon_tail_UVW_solid_Mat"));
+		UMaterialInterface* Mat2 = LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Gamin/InferMon/InferMon_body_UVW_solid_Mat.InferMon_body_UVW_solid_Mat"));
+		if(Mat0 && Mat1 && Mat2)
+		{
+			MeshComponent->SetMaterial(0,Mat0);
+			MeshComponent->SetMaterial(1,Mat1);
+			MeshComponent->SetMaterial(2,Mat2);
+		}
+		//UMaterialInterface* InpermonMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Gamin/InferMon/standardSurface1.standardSurface1'"));
+		//InvincibleOriginalMaterial = InpermonMaterial;
+		//MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh && NewAnimBP)
@@ -747,7 +774,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/Freezard/Freezard_Skeleton_AnimBP.Freezard_Skeleton_AnimBP_C"));
 
 		//<피격을 위해 이거 3개 필수>
-		UMaterialInterface* FreezardMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Gamin/Freezard/standardSurface1.standardSurface1'"));
+		UMaterialInterface* FreezardMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Gamin/Freezard/FreeZard_solid_Mat.FreeZard_solid_Mat'"));
 		InvincibleOriginalMaterial = FreezardMaterial;
 		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
@@ -787,8 +814,10 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		}
 	} else if(currentPreset == "SkeletonWarriorPreset.uasset")
 	{
-		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Skeleton/SK_Chr_Skeleton_LightArmor_01.SK_Chr_Skeleton_LightArmor_01"));
-		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Characters/MyGameCharacter/SkeletonWarrior_AnimBP.SkeletonWarrior_AnimBP_C"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Shield_Guard.SkeletonWarrior_Shield_Guard"));
+		//FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_idle_Skeleton.SkeletonWarrior_idle_Skeleton"));
+
+		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Skeleton_AnimBP.SkeletonWarrior_Skeleton_AnimBP_C"));
 
 		//<피격을 위해 이거 3개 필수>
 		UMaterialInterface* WarriorMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Animation/Skeleton/M_PolygonDarkFantasy_01_A.M_PolygonDarkFantasy_01_A"));
@@ -802,8 +831,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 
-			SpawnHitBoxAtSocket("AttachHitBox");
-			TrySpawnHitBox("AttachHitBox2");
+		//	SpawnHitBoxAtSocket("AttachHitBox");
+		//	TrySpawnHitBox("AttachHitBox2");
 
 		}
 	} else if(currentPreset == "SkeletonArcherPreset.uasset")
@@ -823,8 +852,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 
-			SpawnHitBoxAtSocket("AttachHitBox");
-			TrySpawnHitBox("AttachHitBox2");
+			//SpawnHitBoxAtSocket("AttachHitBox");
+			//TrySpawnHitBox("AttachHitBox2");
 
 		}
 	}
