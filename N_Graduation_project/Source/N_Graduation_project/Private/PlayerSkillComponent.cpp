@@ -444,7 +444,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 		if(StatComponent && StatComponent->HUDWidget)
 		{
-			StatComponent->HUDWidget->UpdateNomalSkillCooldown(SkillData.SkillCoolTime,CanUseNomalSkill,CanUseSpecialSkill);
+			StatComponent->HUDWidget->UpdateNomalSkillCooldown(SkillData.SkillCoolTime/3,CanUseNomalSkill,CanUseSpecialSkill);
 			StatComponent->HUDWidget->CanNomal = false;
 		}
 
@@ -456,7 +456,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		// 쿨타임 타이머 설정
 		FTimerDelegate NomalCooldownEnd;
 		NomalCooldownEnd.BindUObject(this,&UPlayerSkillComponent::NomalCooldown);
-		SetSkillTimer(SkillData.SkillCoolTime,NomalCooldownEnd);
+		SetSkillTimer(SkillData.SkillCoolTime/3,NomalCooldownEnd);
 	} else
 	{
 		UE_LOG(LogTemp,Warning,TEXT("kakao No CanUseNomalSkill"));
@@ -514,7 +514,7 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 		if(StatComponent && StatComponent->HUDWidget)
 		{
-			StatComponent->HUDWidget->UpdateSpecialSkillCooldown(SkillData.SkillCoolTime,CanUseNomalSkill,CanUseSpecialSkill);
+			StatComponent->HUDWidget->UpdateSpecialSkillCooldown(SkillData.SkillCoolTime/3,CanUseNomalSkill,CanUseSpecialSkill);
 			StatComponent->HUDWidget->CanSpecial = false;
 		}
 
@@ -562,7 +562,7 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 
 		FTimerDelegate SpecialCooldownEnd;
 		SpecialCooldownEnd.BindUObject(this,&UPlayerSkillComponent::SpecialCooldown);
-		SpecialSetSkillTimer(SkillData.SkillCoolTime,SpecialCooldownEnd);
+		SpecialSetSkillTimer(SkillData.SkillCoolTime/3,SpecialCooldownEnd);
 	} else
 	{
 		UE_LOG(LogTemp,Warning,TEXT("kakao No CanUseSpecialSkill"));
