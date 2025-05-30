@@ -730,7 +730,8 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
 	if(!MeshComp) return;
 
-	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	//FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowHead"));
 	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
 
 	// 스폰 파라미터
@@ -781,7 +782,8 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
 	if(!MeshComp) return;
 
-	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	//FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowHead"));
 	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
 
 	// 스폰 파라미터
