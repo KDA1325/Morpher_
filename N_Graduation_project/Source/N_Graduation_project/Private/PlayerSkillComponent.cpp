@@ -55,12 +55,14 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	}
 
 	static ConstructorHelpers::FClassFinder<APlayerProjectile> SpecialProjBP(
-		TEXT("/Game/Entity/BP/BP_Player_SkeletonArcher_Projectile_Arrow1")
+				TEXT("/Game/Entity/BP/BP_Player_SkeletonArcher_Projectile_Arrow")
+//		TEXT("/Game/Entity/BP/BP_Player_SkeletonArcher_Projectile_Arrow1")
 	);
 	if(SpecialProjBP.Succeeded())
 	{
 		ArrowSpecialProjectileClass = SpecialProjBP.Class;
 	}
+	
 
 
 
@@ -97,6 +99,7 @@ void UPlayerSkillComponent::BeginPlay()
 		UE_LOG(LogTemp,Warning,TEXT("Failed to create ChargeDecalComponent"));
 	}
 	ChargeDecalComponent->SetVisibility(false);
+
 }
 void UPlayerSkillComponent::SetHitBox(UBoxComponent* InHitBox)
 {
@@ -767,9 +770,9 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 void UPlayerSkillComponent::SpawnProjectile_FireBall()
 {
 	// 스폰할 투사체 클래스 설정 확인
-	if(!ArrowSpecialProjectileClass)
+	if(!SpecialProjectileClass)
 	{
-		UE_LOG(LogTemp,Error,TEXT("ArrowSpecialProjectileClass not set!"));
+		UE_LOG(LogTemp,Error,TEXT("SpecialProjectileClass not set!"));
 		return;
 	}
 
@@ -791,7 +794,7 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 
 	// 투사체 스폰
 	APlayerProjectile* SpawnedProjectile = GetWorld()->SpawnActor<APlayerProjectile>(
-		ArrowSpecialProjectileClass,SpawnLocation,Direction.Rotation(),SpawnParams
+		SpecialProjectileClass,SpawnLocation,Direction.Rotation(),SpawnParams
 	);
 
 	if(SpawnedProjectile)
@@ -818,16 +821,23 @@ void UPlayerSkillComponent::PerformSkill_Arrow()
 {
 	if(!ArrowNormalProjectileClass) return;
 
-	bIsCastingSkill = true;
+	//bIsCastingSkill = true;
 
 	// 소유 액터가 캐릭터인지 확인
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if(!OwnerCharacter) return;
+		SkillAnimation("Skill_Arrow");
+	
+}
+void UPlayerSkillComponent::PerformSkill_SplinterArrow()
+{
+	if(!ArrowSpecialProjectileClass) return;
 
-	// AI 경로 추적 관련 코드는 플레이어에선 생략하거나 필요하면 커스텀 처리
+	//bIsCastingSkill = true;
 
-	// 애니메이션 몽타주 실행
-	SkillAnimation("Skill_Arrow");
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if(!OwnerCharacter) return;
+	SkillAnimation("Skill_SplinterArrow"); 
 }
 
 void UPlayerSkillComponent::FireProjectile_Arrow()
@@ -837,56 +847,83 @@ void UPlayerSkillComponent::FireProjectile_Arrow()
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if(!OwnerCharacter) return;
 
-	FVector SpawnLocation = OwnerCharacter->GetMesh()->GetSocketLocation(TEXT("ArrowSocket"));
-	FVector Direction = OwnerCharacter->GetMesh()->GetRightVector();
+	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
+	if(!MeshComp) return;
+
+	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
+
+	// 스폰 파라미터
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = OwnerCharacter;
+	SpawnParams.Instigator = OwnerCharacter;
+
+	APlayerProjectile* SpawnedProjectile = GetWorld()->SpawnActor<APlayerProjectile>(
+		ArrowNormalProjectileClass,SpawnLocation,Direction.Rotation(),SpawnParams
+	);
+	if(SpawnedProjectile)
+	{
+		FSkillData SkillData;
+		TArray<FSkillEffectData> EffectDataArray;
+
+		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_FireBall",SkillData) &&
+			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_FireBall",EffectDataArray))
+		{
+			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
+			SpawnedProjectile->FireInDirection(Direction);
+			UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_FireBall"));
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_FireBall data!"));
+		}
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
+	}
+
+	/*FVector SpawnLocation = OwnerCharacter->GetMesh()->GetSocketLocation(TEXT("ArrowSocket"));
+	FTransform SocketTransform = OwnerCharacter->GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+	FVector FireDirection = SocketTransform.GetUnitAxis(EAxis::X);
+	FRotator SpawnRotation = FireDirection.Rotation();
+
+	DrawDebugLine(GetWorld(),SpawnLocation,SpawnLocation + FireDirection * 500.0f,FColor::Red,false,2.0f,0,2.0f);
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Owner = OwnerCharacter;
 	SpawnParams.Instigator = OwnerCharacter->GetInstigator();
 
-	FRotator SpawnRotation = Direction.Rotation();
+	APlayerProjectile* SpawnedProjectile = GetWorld()->SpawnActor<APlayerProjectile>(ArrowNormalProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
 
-	UWorld* World = GetWorld();
-	if(!World) return;
-
-	APlayerProjectile* SpawnedProjectile = World->SpawnActor<APlayerProjectile>(ArrowNormalProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
 	if(SpawnedProjectile)
 	{
 		FSkillData SkillData;
 		TArray<FSkillEffectData> EffectDataArray;
 
 		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
-			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+		   UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
 		{
 			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
-			SpawnedProjectile->FireInDirection(Direction);
-			// OwnerCharacter->bUseControllerRotationYaw = true; // 필요시
+			SpawnedProjectile->FireInDirection(FireDirection);
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
 		}
-	}
+	}*/
 }
 
-void UPlayerSkillComponent::PerformSkill_SplinterArrow()
-{
-	if(!ArrowSpecialProjectileClass) return;
-
-	bIsCastingSkill = true;
-
-	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-	if(!OwnerCharacter) return;
-
-	SkillAnimation("Skill_SplinterArrow");
-}
-
+// 노티파이에서 실행 : 화살 스폰 및 모든 화살 발사  
 void UPlayerSkillComponent::Fire_AllArrows()
 {
 	if(!ArrowSpecialProjectileClass) return;
 
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if(!OwnerCharacter) return;
+
+	UE_LOG(LogTemp,Error,TEXT("Arrow Fire_AllArrows실행됨"));
+	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
+	if(!MeshComp) return;
 
 	TArray<APlayerProjectile*> ArrowList;
 
@@ -895,20 +932,23 @@ void UPlayerSkillComponent::Fire_AllArrows()
 
 	TArray<FName> Sockets = {TEXT("ArrowSocket"),TEXT("ArrowSubSocket_1"),TEXT("ArrowSubSocket_2")};
 
-	UWorld* World = GetWorld();
-	if(!World) return;
+	//UWorld* World = GetWorld();
+	//if(!World) return;
 
 	for(FName SocketName : Sockets)
 	{
-		FVector SpawnLoc = OwnerCharacter->GetMesh()->GetSocketLocation(SocketName);
-		FRotator SpawnRot = OwnerCharacter->GetMesh()->GetSocketRotation(SocketName);
+		FTransform SocketTransform = OwnerCharacter->GetMesh()->GetSocketTransform(SocketName,RTS_World);
+		FVector SpawnLocation = SocketTransform.GetLocation();
+		FRotator SpawnRotation = SocketTransform.GetRotation().Rotator();
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		SpawnParams.Owner = OwnerCharacter;
 		SpawnParams.Instigator = OwnerCharacter->GetInstigator();
 
-		APlayerProjectile* Arrow = World->SpawnActor<APlayerProjectile>(ArrowSpecialProjectileClass,SpawnLoc,SpawnRot,SpawnParams);
+		 Arrow = GetWorld()->SpawnActor<APlayerProjectile>(
+			ArrowSpecialProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+
 		if(Arrow)
 		{
 			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_SplinterArrow",SkillData) &&
@@ -919,26 +959,31 @@ void UPlayerSkillComponent::Fire_AllArrows()
 			}
 		}
 	}
-
+	// 모든 화살 발사
 	for(int i = 0; i < ArrowList.Num(); ++i)
 	{
 		APlayerProjectile* CurrentArrow = ArrowList[i];
-		if(!CurrentArrow) continue;
+		FName SocketName ;
+		if(i == 0)
+			SocketName = TEXT("ArrowSocket");
+		else if(i == 1)
+			SocketName = TEXT("ArrowSubSocket_1");
+		else if(i == 2)
+			SocketName = TEXT("ArrowSubSocket_2");
+		if(CurrentArrow)
+		{
+			/*FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName);
+			FVector FireDirection = GetMesh()->GetSocketRotation(SocketName).Vector();*/
+			/*FVector FireDirection = GetMesh()->GetSocketRotation(SocketName).Vector();
+			CurrentArrow->FireInDirection(FireDirection);*/
+			AActor* OwnerActor = GetOwner();
+			ACharacter* CharacterOwner = Cast<ACharacter>(OwnerActor);
+			FTransform SocketTransform = OwnerCharacter->GetMesh()->GetSocketTransform(SocketName,RTS_World);
+			FVector FireDirection = SocketTransform.GetUnitAxis(EAxis::X); // <-- 전방축 정확히 추출
 
-		FName SocketName = Sockets.IsValidIndex(i) ? Sockets[i] : NAME_None;
-		if(SocketName == NAME_None) continue;
-
-	//	FTransform SocketTransform = OwnerCharacter->GetMesh()->GetSocketTransform(SocketName,RTS_World);
-	//	FVector FireDirection = SocketTransform.GetRotation().GetForwardVector();
-		FVector SocketLoc = OwnerCharacter->GetMesh()->GetSocketLocation(SocketName);
-		FVector FireDirection = OwnerCharacter->GetActorForwardVector(); // 더 안전함
-
-		CurrentArrow->FireInDirection(FireDirection);
-
-		CurrentArrow->FireInDirection(FireDirection);
-		// OwnerCharacter->bUseControllerRotationYaw = true; // 필요시
-
-		UE_LOG(LogTemp,Warning,TEXT("Fired arrow %d → Dir: %s"),i,*FireDirection.ToString());
+			CurrentArrow->FireInDirection(FireDirection);
+			UE_LOG(LogTemp,Warning,TEXT("Fired arrow %d → Dir: %s"),i,*FireDirection.ToString());
+		}
 	}
 }
 void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
