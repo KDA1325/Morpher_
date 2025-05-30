@@ -67,7 +67,7 @@ void ABossProjectile::InitProjectileBySkillData(float Speed,float damage)
 
 	if(ProjectileMovement->InitialSpeed > 0.f)
 	{
-		float LifeTime = 5;
+		float LifeTime = 7;
 		GetWorld()->GetTimerManager().SetTimer(
 			DestroyTimerHandle,
 			this,

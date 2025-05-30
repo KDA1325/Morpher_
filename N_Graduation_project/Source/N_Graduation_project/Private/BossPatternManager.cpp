@@ -270,7 +270,7 @@ void ABossPatternManager::StartSpinningBarrageSequence(int num)
 		SpinningBarrageTimerHandle,
 		this,
 		&ABossPatternManager::SpinningBarrageTick,
-		0.2f,
+		0.5f,
 		true
 	);
 }
@@ -279,7 +279,7 @@ void ABossPatternManager::SpinningBarrageTick()
 {
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
-	if(SpinningBarrageCount >= 15) // 0.2초 × 15 = 3초
+	if(SpinningBarrageCount >= 30) //
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpinningBarrageTimerHandle);
 		MyGameInstance->Spin=false;
@@ -299,7 +299,7 @@ void ABossPatternManager::StartSpinningBarrageSequence2(int num)
 		SpinningBarrageTimerHandle2,
 		this,
 		&ABossPatternManager::SpinningBarrageTick2,
-		0.2f,
+		0.5f,
 		true
 	);
 }
@@ -308,7 +308,7 @@ void ABossPatternManager::SpinningBarrageTick2()
 {
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
-	if(SpinningBarrageCount >= 15) // 0.2초 × 15 = 3초
+	if(SpinningBarrageCount >= 30) //
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpinningBarrageTimerHandle2);
 		MyGameInstance->Spin=false;

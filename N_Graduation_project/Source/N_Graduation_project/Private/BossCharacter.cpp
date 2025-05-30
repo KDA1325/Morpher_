@@ -115,16 +115,16 @@ void ABossCharacter::Pattern1()
 	//투사체
 	GetWorld()->GetTimerManager().SetTimer(SpinDelayHandle,FTimerDelegate::CreateLambda([this]()
 	{
-		BossPatternManager->StartSpinningBarrageSequence(5);
-	}),16.f,false);
+		BossPatternManager->StartSpinningBarrageSequence(6);
+	}),13.f,false);
 	//회복
-	TimerManager.SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::HealCrystal),27.f,false);
+	TimerManager.SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::HealCrystal),25.f,false);
 
 	GetWorld()->GetTimerManager().SetTimer(
 		PatternLoopHandle,
 		this,
 		&ABossCharacter::ExecuteBossPattern,
-		47.f,false
+		50.f,false
 	);
 
 
@@ -158,14 +158,13 @@ void ABossCharacter::ExecuteBossPattern()
 	break;
 	case 2:
 	MyGameInstance->Laser=false;
-	BossPatternManager->StartSpinningBarrageSequence(5);
-
+	BossPatternManager->StartSpinningBarrageSequence(6);
 	Delay = 10.f;
 	break;
 	case 3:
 	MyGameInstance->Laser=false;
 	BossPatternManager->HealCrystal();
-	Delay = 16.f;
+	Delay = 15.5f;
 	break;
 	default:
 	UE_LOG(LogTemp,Warning,TEXT("Invalid PatternIndex: %d"),PatternIndex);
@@ -217,16 +216,18 @@ void ABossCharacter::ExecuteBossPattern2()
 	BossPatternManager->Thunder();
 	Delay = 10.f;
 	break;
+
 	case 1:
 	BossPatternManager->SpawnAndAttachLasers();
 	Delay = 8.f;
 	break;
+
 	case 2:
 	MyGameInstance->Laser=false;
-
-	BossPatternManager->StartSpinningBarrageSequence2(5);
+	BossPatternManager->StartSpinningBarrageSequence2(7);
 	Delay = 10.f;
 	break;
+
 	case 3:
 	MyGameInstance->Laser=false;
 
@@ -237,7 +238,7 @@ void ABossCharacter::ExecuteBossPattern2()
 	MyGameInstance->Laser=false;
 
 	BossPatternManager->HealCrystal();
-	Delay = 16.f;
+	Delay = 15.5f;
 	break;
 	default:
 	UE_LOG(LogTemp,Warning,TEXT("Invalid PatternIndex: %d"),PatternIndex);
