@@ -36,12 +36,14 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	CanUseSpecialSkill = true;
 	DamageAmount = 50;
 
-	static ConstructorHelpers::FClassFinder<APlayerProjectile> ProjectileBP(TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_ThrowRock"));
+	static ConstructorHelpers::FClassFinder<APlayerProjectile> ProjectileBP(
+		TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_ThrowRock"));
 	if(ProjectileBP.Succeeded())
 	{
 		NormalProjectileClass = ProjectileBP.Class;
 	}
-	static ConstructorHelpers::FClassFinder<APlayerProjectile> SProjectileBP(TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_FireBall"));
+	static ConstructorHelpers::FClassFinder<APlayerProjectile> SProjectileBP(
+		TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_FireBall"));
 	if(SProjectileBP.Succeeded())
 	{
 		SpecialProjectileClass = SProjectileBP.Class;
@@ -719,7 +721,7 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 	// 스폰할 투사체 클래스 설정 확인
 	if(!NormalProjectileClass)
 	{
-		UE_LOG(LogTemp,Error,TEXT("NomalProjectileClass not set!"));
+	//	UE_LOG(LogTemp,Error,TEXT("NomalProjectileClass not set!"));
 		return;
 	}
 
@@ -730,8 +732,8 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
 	if(!MeshComp) return;
 
-	//FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
-	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowHead"));
+	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	//FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowHead"));
 	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
 
 	// 스폰 파라미터
@@ -755,15 +757,16 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 		{
 			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
 			SpawnedProjectile->FireInDirection(Direction);
-			UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_ThrowRock"));
+		//	UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_ThrowRock"));
 		} else
 		{
-			UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_ThrowRock data!"));
+			//UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_ThrowRock data!"));
 		}
 	} else
 	{
-		UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
+		//UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
 	}
+//	UE_LOG(LogTemp,Warning,TEXT("Projectile class is: %s"),*GetNameSafe(NormalProjectileClass));
 }
 
 void UPlayerSkillComponent::SpawnProjectile_FireBall()
@@ -771,7 +774,7 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 	// 스폰할 투사체 클래스 설정 확인
 	if(!SpecialProjectileClass)
 	{
-		UE_LOG(LogTemp,Error,TEXT("SpecialProjectileClass not set!"));
+		//UE_LOG(LogTemp,Error,TEXT("SpecialProjectileClass not set!"));
 		return;
 	}
 
@@ -782,8 +785,8 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
 	if(!MeshComp) return;
 
-	//FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
-	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowHead"));
+	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	//FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowHead"));
 	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
 
 	// 스폰 파라미터
@@ -807,15 +810,16 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 		{
 			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
 			SpawnedProjectile->FireInDirection(Direction);
-			UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_FireBall"));
+			//UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_FireBall"));
 		} else
 		{
-			UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_FireBall data!"));
+			//UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_FireBall data!"));
 		}
 	} else
 	{
-		UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
+		//UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
 	}
+	UE_LOG(LogTemp,Warning,TEXT("Projectile class is: %s"),*GetNameSafe(SpecialProjectileClass));
 }
 void UPlayerSkillComponent::PerformSkill_Arrow()
 {
@@ -850,7 +854,7 @@ void UPlayerSkillComponent::FireProjectile_Arrow()
 	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
 	if(!MeshComp) return;
 
-	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ArrowSocket"));
 	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
 
 	// 스폰 파라미터

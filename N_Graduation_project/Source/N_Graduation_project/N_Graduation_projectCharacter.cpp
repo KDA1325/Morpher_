@@ -137,6 +137,15 @@ void AN_Graduation_projectCharacter::BeginPlay()
 
 	//UE_LOG(LogTemp,Log,TEXT("캐릭터 BeginPlay실시, player: %s"),*currentPreset);
 	PlayerSword = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Player_sword")));
+	SkeletonBow =  Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Bow")));
+	SkeletonShield = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Shield")));
+	SkeletonSword = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Skel_Sword")));
+	if(SkeletonSword){
+		SkeletonBow ->SetHiddenInGame(true);
+		SkeletonShield ->SetHiddenInGame(true);
+		SkeletonSword->SetHiddenInGame(true);
+		//UE_LOG(LogTemp,Log,TEXT("스켈레톤칼 방패 있음"))}
+	}
 	isDead=false;
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
 	DashCallback.BindUFunction(this,FName("DashInterpReturn"));
@@ -263,7 +272,7 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 	} else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
 }
 void AN_Graduation_projectCharacter::EndShield()
-{		
+{
 	if(currentPreset  == "SkeletonWarriorPreset.uasset"){
 		PlayerSkillComponent->OffDefenseSkill();
 		UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
@@ -477,15 +486,14 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 		UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
 
 		return FinalDamage;
-	}
-	else {
+	} else {
 		//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
 		if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) {
 			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
 			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 			PlayerSkillComponent->CanUseNomalSkill = true;
 
-				return 0.0f;//무적상태라면 리턴.
+			return 0.0f;//무적상태라면 리턴.
 
 		} else
 		{
@@ -815,8 +823,6 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	} else if(currentPreset == "SkeletonWarriorPreset.uasset")
 	{
 		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Shield_Guard.SkeletonWarrior_Shield_Guard"));
-		//FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_idle_Skeleton.SkeletonWarrior_idle_Skeleton"));
-
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Skeleton_AnimBP.SkeletonWarrior_Skeleton_AnimBP_C"));
 
 		//<피격을 위해 이거 3개 필수>
@@ -827,17 +833,19 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh)
 		{
+			SkeletonShield ->SetHiddenInGame(false);
+			SkeletonSword->SetHiddenInGame(false);
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 
-		//	SpawnHitBoxAtSocket("AttachHitBox");
-		//	TrySpawnHitBox("AttachHitBox2");
+			//	SpawnHitBoxAtSocket("AttachHitBox");
+			//	TrySpawnHitBox("AttachHitBox2");
 
 		}
 	} else if(currentPreset == "SkeletonArcherPreset.uasset")
 	{
-		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_attack1.SkeletonArcher_attack1"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_idle.SkeletonArcher_idle"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_Skeleton_AnimBP.SkeletonArcher_Skeleton_AnimBP_C"));
 		//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Animation/Skeleton/M_PolygonDarkFantasy_01_A.uasset
 		//<피격을 위해 이거 3개 필수>
@@ -848,6 +856,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh)
 		{
+			SkeletonBow ->SetHiddenInGame(false);
+
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
@@ -1078,7 +1088,11 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 
 		if(PlayerSword)
 		{
+			SkeletonBow ->SetHiddenInGame(true);
+
 			PlayerSword->SetHiddenInGame(true);
+			SkeletonShield ->SetHiddenInGame(true);
+			SkeletonSword->SetHiddenInGame(true);
 		} else
 		{
 			//UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
