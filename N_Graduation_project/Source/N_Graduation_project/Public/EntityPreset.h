@@ -279,8 +279,11 @@ public:
 
 	// MaxHP를 설정하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Data")
-	void SetHP(float NewHP);	
-	
+	void SetHP(float NewHP);
+	void DelayedDestroy();
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Materials")
+	UMaterialInterface* DeathMaterial;
 
 	// MoveSpeed를 설정하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Data")

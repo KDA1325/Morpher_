@@ -14,6 +14,7 @@
 #include "BrainComponent.h"
 #include "MyPlayerStatComponent.h"
 #include "Components/SphereComponent.h"
+#include "TimerManager.h"
 #include "NormalAttackDamageType.h"
 
 AEntityPreset::AEntityPreset()
@@ -196,17 +197,17 @@ void AEntityPreset::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 float AEntityPreset::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
+	// 대미지 원인이 플레이어 캐릭터 스킬인지 확인
+	AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(DamageCauser);
+	//ACharacter* PlayerCharacter = Cast<ACharacter>(DamageCauser);
+	UE_LOG(LogTemp,Warning,TEXT("DamageCauser: %s (%s)"),*GetNameSafe(DamageCauser),DamageCauser ? *DamageCauser->GetClass()->GetName() : TEXT("nullptr"));
+
+	UPlayerSkillComponent* PlayerSkillComponent = PlayerCharacter->FindComponentByClass<UPlayerSkillComponent>();
+
 	// 방어 중
 	if(this->bIsDefending)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("[TakeDamage] Monster %s (%p) is defending."),*GetName(),this);
-
-		// 대미지 원인이 플레이어 캐릭터 스킬인지 확인
-		AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(DamageCauser);
-		//ACharacter* PlayerCharacter = Cast<ACharacter>(DamageCauser);
-		UE_LOG(LogTemp,Warning,TEXT("DamageCauser: %s (%s)"),*GetNameSafe(DamageCauser),DamageCauser ? *DamageCauser->GetClass()->GetName() : TEXT("nullptr"));
-
-		UPlayerSkillComponent* PlayerSkillComponent = PlayerCharacter->FindComponentByClass<UPlayerSkillComponent>();
 
 		// 플레이어 캐릭터 스킬이 !bIsSpecialAttack = 노멀 스킬이라면
 		if(PlayerSkillComponent)
@@ -273,10 +274,32 @@ void AEntityPreset::SetHP(float NewHP)
 
 			}
 		}
-		UE_LOG(LogTemp,Warning,TEXT("banana Entity Die"));
-		Destroy();
+		//UE_LOG(LogTemp,Warning,TEXT("banana Entity Die"));
+
+		if(GetMesh())
+		{
+			if(DeathMaterial)
+			{
+				GetMesh()->SetMaterial(0, DeathMaterial);
+				UE_LOG(LogTemp,Warning,TEXT("banana DeathMaterial 적용됨: %s"),*DeathMaterial->GetName());
+			} else
+			{
+				UE_LOG(LogTemp,Warning,TEXT("DeathMaterial이 설정되어 있지 않음!"));
+			}
+		}
+
+		FTimerHandle DestroyTimerHandle;
+		GetWorldTimerManager().SetTimer(DestroyTimerHandle,this,&AEntityPreset::DelayedDestroy,0.2f,false);
+
+		UE_LOG(LogTemp,Warning,TEXT("banana Entity Die)"));
+		//Destroy();
 	}
 
+}
+
+void AEntityPreset::DelayedDestroy()
+{
+	Destroy();
 }
 
 void AEntityPreset::ApplyDamage(float DamageAmount)
