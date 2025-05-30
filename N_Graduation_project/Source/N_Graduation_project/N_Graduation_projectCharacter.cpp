@@ -765,7 +765,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/Freezard/Freezard_Skeleton_AnimBP.Freezard_Skeleton_AnimBP_C"));
 
 		//<피격을 위해 이거 3개 필수>
-		UMaterialInterface* FreezardMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Gamin/Freezard/standardSurface1.standardSurface1'"));
+		UMaterialInterface* FreezardMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Gamin/Freezard/FreeZard_solid_Mat.FreeZard_solid_Mat'"));
 		InvincibleOriginalMaterial = FreezardMaterial;
 		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
