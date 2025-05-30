@@ -32,14 +32,14 @@ void UCharacterStateComponent::ChangeState(ECharacterState NewState)
 			{
 				if(NewState == ECharacterState::Move || NewState == ECharacterState::Idle || NewState == ECharacterState::Action)
 				{
-					MyCharacter->TestMode = true;
+					MyCharacter->IsInvincible = true;
 					UE_LOG(LogTemp,Log,TEXT("noDamage true"));
 
 					GetWorld()->GetTimerManager().SetTimer(
 						NoDamageTimerHandle,
 						FTimerDelegate::CreateLambda([MyCharacter]()
 					{
-						MyCharacter->TestMode = false;
+						MyCharacter->IsInvincible = false;
 						UE_LOG(LogTemp,Log,TEXT("noDamage false"));
 					}),
 						0.4f, // 0.4초 후 실행
