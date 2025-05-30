@@ -1226,6 +1226,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 											AICon->BrainComponent->RestartLogic();
 										}
 									},Effect.EffectValue01,false);
+									//},10,false);
 								}
 							}
 						}

@@ -110,7 +110,9 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 		PastMaxHP = NewMaxHP;
 		PastCurrentHP = CurrentHP;
 		UE_LOG(LogTemp, Log, TEXT("maxhp %f %f "), PastCurrentHP,PastMaxHP);
-
+		if(CurrentHP==0){
+			CurrentHP=150;
+		}
 		if (UMyCharacterWidget* HUD = GetHUD())
 		{
 			GetWorld()->GetTimerManager().SetTimer(ManaRegenTimerHandle, this, &UMyPlayerStatComponent::RegenerateMana, 4.0f, true);
@@ -153,6 +155,7 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 		Change = false;
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("마나가 부족합니다")));
 	}
+	
 }
 
 void UMyPlayerStatComponent::UpdateHUD()

@@ -193,6 +193,8 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void On_invincibility();
+	UFUNCTION(BlueprintImplementableEvent)
+	void DeadEvent();
 
 	UFUNCTION(BlueprintCallable)
 	void OnPlayerDead();
@@ -245,7 +247,10 @@ void TransformToEntity(int32 EntityID);*/
 
 	int32 currentSpeed;
 	int32 OriginalSpeed;
+
+	UPROPERTY(BlueprintReadOnly)
 	FString currentPreset= "PCPreset.uasset";
+
 	FString pastPreset= "PCPreset.uasset";
 
 
@@ -285,7 +290,7 @@ private:
 	FTimerHandle FlashTimerHandle2;
 	FTimerHandle FlashTimerHandle3;
 	FTimerHandle FlashTimerHandle4;
-
+public:
 	bool isDead=false;
 
 };

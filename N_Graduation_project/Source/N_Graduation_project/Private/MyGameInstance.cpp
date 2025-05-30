@@ -100,7 +100,11 @@ void UMyGameInstance::LoadGame()
 				Player->SetActorLocation(SaveLocation);
 				/*UE_LOG(LogTemp,Warning,TEXT("LoadGame LoadGame SaveLocation: X=%f, Y=%f, Z=%f"),SaveLocation.X,SaveLocation.Y,SaveLocation.Z);
 				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ room name: %s"),*SaveData->RoomName.ToString());*/
-
+				//Player->ChangePreset("PCPreset.uasset");
+				Player->ChangePreset("PlayerCharacter");
+				Player->currentHP=150;
+				Player->isDead=false;
+				Player->On_invincibility_Implementation();
 			}
 			//레[벨 스트리밍
 			AActor* CallbackTarget = UGameplayStatics::GetPlayerCharacter(this,0); 
@@ -112,6 +116,9 @@ void UMyGameInstance::LoadGame()
 
 			UGameplayStatics::LoadStreamLevel(this,FName(*SaveData->RoomName.ToString()),true,false,LatentInfo);
 		
+			//AN_Graduation_projectCharacter* Player = Cast<AN_Graduation_projectCharacter>(UGameplayStatics::GetPlayerCharacter(this,0));
+			//if(Player){
+			//}
 		}
 	}
 }

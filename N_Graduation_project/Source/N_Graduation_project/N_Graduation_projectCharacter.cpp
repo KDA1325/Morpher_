@@ -131,7 +131,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	// Call the base class    
 	Super::BeginPlay();
 	m_pMeshCom = GetMesh();
-
+	isDead=false;
 	FOnTimelineFloat DashCallback;
 	SpawnHitBoxAtSocket("AttachHitBox");
 
@@ -477,7 +477,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 			UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: %s"),*DamageTypeCDO->GetClass()->GetName());
 		}
 	}
-	if(TestMode ==true){
+	if(TestMode ==true||isDead==true){
 
 		PlayerSkillComponent->CanUseNomalSkill = true;
 		On_invincibility_Implementation();
@@ -668,12 +668,13 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 	}
 	// HP가 0이 되었을 때 처리할 로직
 	UE_LOG(LogTemp,Warning,TEXT("Player is dead"));
+	DeadEvent();
 	isDead=true;
 	bcanPie=false;
-	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if(!MyGameInstance) return;
-	MyGameInstance->LoadGame();
-	WidgetActor->ShowDieWidget();
+	//auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	//if(!MyGameInstance) return;
+	//MyGameInstance->LoadGame();
+	//WidgetActor->ShowDieWidget();
 }
 
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
@@ -1098,7 +1099,7 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 			//UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
 		}		UpdateEntityData();
 		if(OkTrans) {
-			//UE_LOG(LogTemp,Warning,TEXT("ChangePreset 변신완 "));
+			UE_LOG(LogTemp,Warning,TEXT("ChangePreset 변신완 "));
 
 			SetPreset(EntityData.PresetReference);
 			WidgetActor->Back_CacheFinalMouseAngle = false;
