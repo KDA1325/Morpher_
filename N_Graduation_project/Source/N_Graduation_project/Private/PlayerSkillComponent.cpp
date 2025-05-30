@@ -23,6 +23,7 @@
 #include "FireFloor.h"
 #include "FrozeFloor.h"
 #include "BrainComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 
 
@@ -57,18 +58,14 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	static ConstructorHelpers::FClassFinder<APlayerProjectile> SpecialProjBP(
 				TEXT("/Game/Entity/BP/BP_Player_SkeletonArcher_Projectile_Arrow")
 //		TEXT("/Game/Entity/BP/BP_Player_SkeletonArcher_Projectile_Arrow1")
-	);
+);
 	if(SpecialProjBP.Succeeded())
 	{
 		ArrowSpecialProjectileClass = SpecialProjBP.Class;
 	}
-	
-
-
-
 
 	//실드 이펙트
-	ShieldParticle = TSoftObjectPtr<UParticleSystem>(FSoftObjectPath(TEXT("/Game/Asset/FXAsset/LoPoPack/Particles/Par_LoPo_Shield_01.Par_LoPo_Shield_01")));
+	ShieldParticle = TSoftObjectPtr<UParticleSystem>(FSoftObjectPath(TEXT("/Game/Asset/Par_LoPo_Shield_01111.Par_LoPo_Shield_01111")));
 	// TSoftObjectPtr에서 실제로 로드할 수 있도록 LoadSynchronous 사용
 	ShieldParticle.LoadSynchronous();
 	if(ShieldParticle.IsValid())
@@ -123,12 +120,11 @@ void UPlayerSkillComponent::SetHitSphere(USphereComponent* HitSphere)
 void UPlayerSkillComponent::OnDefenseSkill()
 {
 	IsDefending = true;
-	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 
-	StatComponent->HUDWidget->SkeletonGuard=true;
+	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 	if(StatComponent && StatComponent->HUDWidget)
 	{
-		StatComponent->HUDWidget->bHolding=true;
+		StatComponent->HUDWidget->bHolding = true;
 	}
 }
 
@@ -149,24 +145,26 @@ void UPlayerSkillComponent::OffDefenseSkill()
 	AActor* OwnerActor = GetOwner();
 	ACharacter* CharacterOwner = Cast<ACharacter>(OwnerActor);
 
-	if(ShieldParticle.IsValid()){
-		if(UAnimInstance* AnimInstance = CharacterOwner->GetMesh()->GetAnimInstance())
+	//if(ShieldParticle.IsValid()){
+	if(UAnimInstance* AnimInstance = CharacterOwner->GetMesh()->GetAnimInstance())
+	{
+		if(UAnimMontage* PausedMontage = AnimInstance->GetCurrentActiveMontage())
 		{
-			if(UAnimMontage* PausedMontage = AnimInstance->GetCurrentActiveMontage())
-			{
-				AnimInstance->Montage_Resume(PausedMontage);
-				UE_LOG(LogTemp,Warning,TEXT("방어 해제 → 몽타주 다시 재생됨: %s"),*PausedMontage->GetName());
-			} else
-			{
-				UE_LOG(LogTemp,Warning,TEXT("재생 중인 몽타주가 없습니다."));
-			}
+			AnimInstance->Montage_Resume(PausedMontage);
+			UE_LOG(LogTemp,Warning,TEXT("OffDefenseSkill 방어 해제 → 몽타주 다시 재생됨: %s"),*PausedMontage->GetName());
+		} else
+		{
+			UE_LOG(LogTemp,Warning,TEXT("OffDefenseSkill 재생 중인 몽타주가 없습니다."));
 		}
 	}
+	
 	//실드 이펙트
 	if(ShieldParticleComp) {
 		ShieldParticleComp->DestroyComponent();  // 이펙트 삭제
 		ShieldParticleComp = nullptr;  // 변수 초기화
+		CanUseSpecialSkill = true;
 	}
+
 }
 void UPlayerSkillComponent::SetSkillTimer(float Count,FTimerDelegate End)
 {
@@ -826,8 +824,8 @@ void UPlayerSkillComponent::PerformSkill_Arrow()
 	// 소유 액터가 캐릭터인지 확인
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if(!OwnerCharacter) return;
-		SkillAnimation("Skill_Arrow");
-	
+	SkillAnimation("Skill_Arrow");
+
 }
 void UPlayerSkillComponent::PerformSkill_SplinterArrow()
 {
@@ -837,7 +835,7 @@ void UPlayerSkillComponent::PerformSkill_SplinterArrow()
 
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if(!OwnerCharacter) return;
-	SkillAnimation("Skill_SplinterArrow"); 
+	SkillAnimation("Skill_SplinterArrow");
 }
 
 void UPlayerSkillComponent::FireProjectile_Arrow()
@@ -946,8 +944,8 @@ void UPlayerSkillComponent::Fire_AllArrows()
 		SpawnParams.Owner = OwnerCharacter;
 		SpawnParams.Instigator = OwnerCharacter->GetInstigator();
 
-		 Arrow = GetWorld()->SpawnActor<APlayerProjectile>(
-			ArrowSpecialProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+		Arrow = GetWorld()->SpawnActor<APlayerProjectile>(
+		   ArrowSpecialProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
 
 		if(Arrow)
 		{

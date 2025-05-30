@@ -28,10 +28,10 @@ UActionAnimInstance::UActionAnimInstance()
 	FSoftObjectPath Special_InpermonMontagePath(TEXT("/Game/Gamin/InferMon/InferMon_FireBall_Anim_Montage.InferMon_FireBall_Anim_Montage"));
 	m_Inpermon2 = Cast<UAnimMontage>(Special_InpermonMontagePath.TryLoad());
 
-	FSoftObjectPath SkeletonSlashMontagePath(TEXT("/Game/Animation/Skeleton/Skeletion_attack_Montage.Skeletion_attack_Montage"));
+	FSoftObjectPath SkeletonSlashMontagePath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Attack_Anim_Montage.SkeletonWarrior_Attack_Anim_Montage"));
 	m_SkeletonSlash = Cast<UAnimMontage>(SkeletonSlashMontagePath.TryLoad());
 
-	FSoftObjectPath SkeletonGaurdMontagePath(TEXT("/Game/Animation/Skeleton/Retarget_Shield_Anim__Montage.Retarget_Shield_Anim__Montage"));
+	FSoftObjectPath SkeletonGaurdMontagePath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Shield_Guard_Anim_Montage1.SkeletonWarrior_Shield_Guard_Anim_Montage1"));
 	m_Gaurd= Cast<UAnimMontage>(SkeletonGaurdMontagePath.TryLoad());
 	
 	FSoftObjectPath Freezard1MontagePath(TEXT("/Game/Gamin/Freezard/freezard_attack_Anim_Montage.freezard_attack_Anim_Montage"));

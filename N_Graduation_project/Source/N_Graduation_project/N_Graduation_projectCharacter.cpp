@@ -253,18 +253,16 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 	}
 	if(PlayerSkillComponent->CanUseSpecialSkill == true) {
 		PlayerSkillComponent->SpecialSkillPlay(SpecialSkill);
-		//PlaySpecial = true;	
+		//PlaySpecial = true;			
+		UE_LOG(LogTemp,Warning,TEXT("실드 우클릭"));
+
 	} else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
-	//UE_LOG(LogTemp,Warning,TEXT("실드 우클릭"));
 }
 void AN_Graduation_projectCharacter::EndShield()
-{
-	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if(!MyGameInstance) return;
-
-	if(currentPreset  == "SkeletonWarrior"){
+{		
+	if(currentPreset  == "SkeletonWarriorPreset.uasset"){
 		PlayerSkillComponent->OffDefenseSkill();
-		//	UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
+		UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
 	}
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
@@ -790,8 +788,10 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		}
 	} else if(currentPreset == "SkeletonWarriorPreset.uasset")
 	{
-		FSoftObjectPath MeshPath(TEXT("/Game/Animation/Skeleton/SK_Chr_Skeleton_LightArmor_01.SK_Chr_Skeleton_LightArmor_01"));
-		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Characters/MyGameCharacter/SkeletonWarrior_AnimBP.SkeletonWarrior_AnimBP_C"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Shield_Guard.SkeletonWarrior_Shield_Guard"));
+		//FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_idle_Skeleton.SkeletonWarrior_idle_Skeleton"));
+
+		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Skeleton_AnimBP.SkeletonWarrior_Skeleton_AnimBP_C"));
 
 		//<피격을 위해 이거 3개 필수>
 		UMaterialInterface* WarriorMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Animation/Skeleton/M_PolygonDarkFantasy_01_A.M_PolygonDarkFantasy_01_A"));
@@ -805,8 +805,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 
-			SpawnHitBoxAtSocket("AttachHitBox");
-			TrySpawnHitBox("AttachHitBox2");
+		//	SpawnHitBoxAtSocket("AttachHitBox");
+		//	TrySpawnHitBox("AttachHitBox2");
 
 		}
 	} else if(currentPreset == "SkeletonArcherPreset.uasset")
@@ -826,8 +826,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 
-			SpawnHitBoxAtSocket("AttachHitBox");
-			TrySpawnHitBox("AttachHitBox2");
+			//SpawnHitBoxAtSocket("AttachHitBox");
+			//TrySpawnHitBox("AttachHitBox2");
 
 		}
 	}
