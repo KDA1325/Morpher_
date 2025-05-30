@@ -19,6 +19,10 @@
 #include "MySaveGame.h"
 #include "MyGameInstance.h"
 #include "Components/SphereComponent.h"
+#include "Engine/EngineTypes.h"              // FDamageEvent
+#include "GameFramework/DamageType.h"        // UDamageType
+#include "NormalAttackDamageType.h"          // 커스텀 데미지 타입
+#include "Engine/DamageEvents.h"
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
@@ -448,8 +452,21 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
-	if(TestMode2==true){
-		TestMode=true;
+	bool bFromNormalHitBox=false;
+	if(DamageEvent.DamageTypeClass)
+	{
+		UDamageType* DamageTypeCDO = DamageEvent.DamageTypeClass->GetDefaultObject<UDamageType>();
+
+		// 예시: NormalAttackDamageType 인지 확인
+		if(DamageTypeCDO->IsA(UNormalAttackDamageType::StaticClass()))
+		{
+			bFromNormalHitBox=true;
+			UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: NormalAttackDamageType"));
+		} else
+		{
+			bFromNormalHitBox=false;
+			UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: %s"),*DamageTypeCDO->GetClass()->GetName());
+		}
 	}
 	if(TestMode ==true){
 
@@ -463,7 +480,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 	}
 	else {
 		//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
-		if(IsInvincible||PlayerSkillComponent->IsDefending) {
+		if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) {
 			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
 			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 			PlayerSkillComponent->CanUseNomalSkill = true;
