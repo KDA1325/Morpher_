@@ -671,8 +671,22 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 	DeadEvent();
 	isDead=true;
 	bcanPie=false;
+	
 	//auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	//if(!MyGameInstance) return;
+	//// 1. 레벨 언로드
+	//UGameplayStatics::UnloadStreamLevel(this,FName(*MyGameInstance->SaveRoomName.ToString()),FLatentActionInfo(),false);
+
+	//// 2. 잠시 후, 다시 로드 (OnLevelUnloaded 콜백에서 로드)
+	//FLatentActionInfo LatentUnloadInfo;
+	//LatentUnloadInfo.CallbackTarget = this;
+	//LatentUnloadInfo.ExecutionFunction = FName("OnLevelUnloaded"); // 언로드 완료 후 호출할 함수
+	//LatentUnloadInfo.Linkage = 0;
+	//LatentUnloadInfo.UUID = __LINE__;
+
+	//UGameplayStatics::UnloadStreamLevel(this,FName(*MyGameInstance->SaveRoomName.ToString()),LatentUnloadInfo,false);
+
+	
 	//MyGameInstance->LoadGame();
 	//WidgetActor->ShowDieWidget();
 }

@@ -107,6 +107,7 @@ void UMyGameInstance::LoadGame()
 				Player->On_invincibility_Implementation();
 			}
 			//레[벨 스트리밍
+
 			AActor* CallbackTarget = UGameplayStatics::GetPlayerCharacter(this,0); 
 			FLatentActionInfo LatentInfo;
 			LatentInfo.CallbackTarget = CallbackTarget;
