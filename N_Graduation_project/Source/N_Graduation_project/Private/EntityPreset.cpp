@@ -289,7 +289,7 @@ void AEntityPreset::SetHP(float NewHP)
 		}
 
 		FTimerHandle DestroyTimerHandle;
-		GetWorldTimerManager().SetTimer(DestroyTimerHandle,this,&AEntityPreset::DelayedDestroy,0.2f,false);
+		GetWorldTimerManager().SetTimer(DestroyTimerHandle,this,&AEntityPreset::DelayedDestroy,0.33f,false);
 
 		UE_LOG(LogTemp,Warning,TEXT("banana Entity Die)"));
 		//Destroy();
