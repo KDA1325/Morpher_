@@ -131,7 +131,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	// Call the base class    
 	Super::BeginPlay();
 	m_pMeshCom = GetMesh();
-	isDead=false;
+
 	FOnTimelineFloat DashCallback;
 	SpawnHitBoxAtSocket("AttachHitBox");
 
@@ -146,6 +146,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 		SkeletonSword->SetHiddenInGame(true);
 		//UE_LOG(LogTemp,Log,TEXT("스켈레톤칼 방패 있음"))}
 	}
+
 	isDead=false;
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
 	DashCallback.BindUFunction(this,FName("DashInterpReturn"));
@@ -272,7 +273,7 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 	} else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
 }
 void AN_Graduation_projectCharacter::EndShield()
-{
+{		
 	if(currentPreset  == "SkeletonWarriorPreset.uasset"){
 		PlayerSkillComponent->OffDefenseSkill();
 		UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
@@ -477,7 +478,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 			UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: %s"),*DamageTypeCDO->GetClass()->GetName());
 		}
 	}
-	if(TestMode ==true||isDead==true){
+	if(TestMode ==true){
 
 		PlayerSkillComponent->CanUseNomalSkill = true;
 		On_invincibility_Implementation();
@@ -486,14 +487,15 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 		UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
 
 		return FinalDamage;
-	} else {
+	}
+	else {
 		//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
 		if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) {
 			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
 			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 			PlayerSkillComponent->CanUseNomalSkill = true;
 
-			return 0.0f;//무적상태라면 리턴.
+				return 0.0f;//무적상태라면 리턴.
 
 		} else
 		{
@@ -668,27 +670,12 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 	}
 	// HP가 0이 되었을 때 처리할 로직
 	UE_LOG(LogTemp,Warning,TEXT("Player is dead"));
-	DeadEvent();
 	isDead=true;
 	bcanPie=false;
-	//bCanMove=false;
-	//auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	//if(!MyGameInstance) return;
-	//// 1. 레벨 언로드
-	//UGameplayStatics::UnloadStreamLevel(this,FName(*MyGameInstance->SaveRoomName.ToString()),FLatentActionInfo(),false);
-
-	//// 2. 잠시 후, 다시 로드 (OnLevelUnloaded 콜백에서 로드)
-	//FLatentActionInfo LatentUnloadInfo;
-	//LatentUnloadInfo.CallbackTarget = this;
-	//LatentUnloadInfo.ExecutionFunction = FName("OnLevelUnloaded"); // 언로드 완료 후 호출할 함수
-	//LatentUnloadInfo.Linkage = 0;
-	//LatentUnloadInfo.UUID = __LINE__;
-
-	//UGameplayStatics::UnloadStreamLevel(this,FName(*MyGameInstance->SaveRoomName.ToString()),LatentUnloadInfo,false);
-
-	
-	//MyGameInstance->LoadGame();
-	//WidgetActor->ShowDieWidget();
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+	MyGameInstance->LoadGame();
+	WidgetActor->ShowDieWidget();
 }
 
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
@@ -838,6 +825,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 	} else if(currentPreset == "SkeletonWarriorPreset.uasset")
 	{
 		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Shield_Guard.SkeletonWarrior_Shield_Guard"));
+		//FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_idle_Skeleton.SkeletonWarrior_idle_Skeleton"));
+
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Skeleton_AnimBP.SkeletonWarrior_Skeleton_AnimBP_C"));
 
 		//<피격을 위해 이거 3개 필수>
@@ -847,20 +836,19 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh)
-		{
-			SkeletonShield ->SetHiddenInGame(false);
-			SkeletonSword->SetHiddenInGame(false);
+		{SkeletonShield ->SetHiddenInGame(false);
+SkeletonSword->SetHiddenInGame(false);
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 
-			//	SpawnHitBoxAtSocket("AttachHitBox");
-			//	TrySpawnHitBox("AttachHitBox2");
+		//	SpawnHitBoxAtSocket("AttachHitBox");
+		//	TrySpawnHitBox("AttachHitBox2");
 
 		}
 	} else if(currentPreset == "SkeletonArcherPreset.uasset")
 	{
-		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_idle.SkeletonArcher_idle"));
+		FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_attack1.SkeletonArcher_attack1"));
 		TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_Skeleton_AnimBP.SkeletonArcher_Skeleton_AnimBP_C"));
 		//D:/GitHub/N-Graduation-project/N_Graduation_project/Content/Animation/Skeleton/M_PolygonDarkFantasy_01_A.uasset
 		//<피격을 위해 이거 3개 필수>
@@ -871,8 +859,6 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh)
 		{
-			SkeletonBow ->SetHiddenInGame(false);
-
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
@@ -1105,15 +1091,15 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 		{
 			SkeletonBow ->SetHiddenInGame(true);
 
-			PlayerSword->SetHiddenInGame(true);
-			SkeletonShield ->SetHiddenInGame(true);
-			SkeletonSword->SetHiddenInGame(true);
+PlayerSword->SetHiddenInGame(true);
+SkeletonShield ->SetHiddenInGame(true);
+SkeletonSword->SetHiddenInGame(true);
 		} else
 		{
 			//UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
 		}		UpdateEntityData();
 		if(OkTrans) {
-			UE_LOG(LogTemp,Warning,TEXT("ChangePreset 변신완 "));
+			//UE_LOG(LogTemp,Warning,TEXT("ChangePreset 변신완 "));
 
 			SetPreset(EntityData.PresetReference);
 			WidgetActor->Back_CacheFinalMouseAngle = false;
