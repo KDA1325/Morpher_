@@ -671,7 +671,7 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 	DeadEvent();
 	isDead=true;
 	bcanPie=false;
-	
+	//bCanMove=false;
 	//auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	//if(!MyGameInstance) return;
 	//// 1. 레벨 언로드

@@ -104,7 +104,8 @@ void UMyGameInstance::LoadGame()
 				Player->ChangePreset("PlayerCharacter");
 				Player->currentHP=150;
 				Player->isDead=false;
-				Player->On_invincibility_Implementation();
+				//Player->bCanMove=true;
+				//Player->On_invincibility_Implementation();
 			}
 			//레[벨 스트리밍
 

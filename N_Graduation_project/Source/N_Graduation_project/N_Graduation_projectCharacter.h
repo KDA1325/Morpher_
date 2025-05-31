@@ -249,9 +249,9 @@ void TransformToEntity(int32 EntityID);*/
 	int32 OriginalSpeed;
 
 	UPROPERTY(BlueprintReadOnly)
-	FString currentPreset= "PCPreset.uasset";
+	FString currentPreset= "PlayerCharacter";
 
-	FString pastPreset= "PCPreset.uasset";
+	FString pastPreset= "PlayerCharacter";
 
 
 	// MoveSpeed�� �����ϴ� �Լ�
