@@ -129,6 +129,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	UStaticMeshComponent* PlayerSword;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Weapon")
+		UStaticMeshComponent* SkeletonSword;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Weapon")
+		UStaticMeshComponent* SkeletonShield;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Weapon")
+		UStaticMeshComponent* SkeletonBow;
 private:
 	FVector MouseWorldPosition;
 	FVector MouseWorldDirection;

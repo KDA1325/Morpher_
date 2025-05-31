@@ -137,6 +137,16 @@ void AN_Graduation_projectCharacter::BeginPlay()
 
 	//UE_LOG(LogTemp,Log,TEXT("캐릭터 BeginPlay실시, player: %s"),*currentPreset);
 	PlayerSword = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Player_sword")));
+	SkeletonBow =  Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Bow")));
+	SkeletonShield = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Shield")));
+	SkeletonSword = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Skel_Sword")));
+	if(SkeletonSword){
+		SkeletonBow ->SetHiddenInGame(true);
+		SkeletonShield ->SetHiddenInGame(true);
+		SkeletonSword->SetHiddenInGame(true);
+		//UE_LOG(LogTemp,Log,TEXT("스켈레톤칼 방패 있음"))}
+	}
+	
 	isDead=false;
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
 	DashCallback.BindUFunction(this,FName("DashInterpReturn"));
@@ -827,6 +837,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh)
 		{
+			SkeletonShield ->SetHiddenInGame(false);
+			SkeletonSword->SetHiddenInGame(false);
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
@@ -851,7 +863,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
-
+			SkeletonBow ->SetHiddenInGame(false);
 			//SpawnHitBoxAtSocket("AttachHitBox");
 			//TrySpawnHitBox("AttachHitBox2");
 
@@ -1078,7 +1090,11 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 
 		if(PlayerSword)
 		{
+			SkeletonBow ->SetHiddenInGame(true);
+
 			PlayerSword->SetHiddenInGame(true);
+			SkeletonShield ->SetHiddenInGame(true);
+			SkeletonSword->SetHiddenInGame(true);
 		} else
 		{
 			//UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
