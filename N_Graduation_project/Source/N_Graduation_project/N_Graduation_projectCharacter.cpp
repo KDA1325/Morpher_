@@ -1158,6 +1158,16 @@ void AN_Graduation_projectCharacter::ApplyStun(float Duration)
 			// 스케일 조절
 			NiagaraComp->SetWorldScale3D(FVector(1.f));
 		} 
+		// 일정 시간 후 자동 제거
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle,[NiagaraComp]()
+		{
+			if(NiagaraComp)
+			{
+				NiagaraComp->Deactivate();
+				NiagaraComp->DestroyComponent();
+			}
+		},Duration,false);
 	}
 }
 
@@ -1182,6 +1192,16 @@ void AN_Graduation_projectCharacter::ApplyFire(float Duration)
 			// 스케일 조절
 			NiagaraComp->SetWorldScale3D(FVector(0.25f));  
 		}
+		// 일정 시간 후 자동 제거
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle,[NiagaraComp]()
+		{
+			if(NiagaraComp)
+			{
+				NiagaraComp->Deactivate();
+				NiagaraComp->DestroyComponent();
+			}
+		},Duration,false);
 	}
 }
 
