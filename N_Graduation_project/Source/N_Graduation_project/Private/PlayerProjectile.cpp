@@ -7,6 +7,8 @@
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "FireFloor.h"
 #include "FrozeFloor.h"
+#include "EntityPreset.h"
+
 APlayerProjectile::APlayerProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -169,6 +171,13 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 				ApplyFireDOT(OtherActor,DPS,ApplyDuration);
 				UE_LOG(LogTemp,Warning,TEXT("FireFloor EnumEffectType::Fire!"));
 
+				if(OtherActor->ActorHasTag(FName("Monster")))
+				{
+					if(AEntityPreset* Entity = Cast<AEntityPreset>(OtherActor))
+					{
+						Entity->bIsVisibleEffectFire = true;
+					}
+				}
 				if(OtherActor->ActorHasTag(FName("FireFloor")))
 				{
 					if(AFireFloor* FireFloor = Cast<AFireFloor>(OtherActor))
@@ -217,6 +226,9 @@ void APlayerProjectile::ApplyFireDOT(AActor* Target,float DamagePerSecond,float 
 			});
 			GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
 		}
+
+		AEntityPreset* Entity = Cast<AEntityPreset>(Target);
+		Entity->bIsVisibleEffectFire = false;
 	}
 }
 
