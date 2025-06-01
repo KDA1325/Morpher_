@@ -1143,7 +1143,7 @@ void AN_Graduation_projectCharacter::ApplyStun(float Duration)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ ApplyStun"));
 
-		UNiagaraFunctionLibrary::SpawnSystemAttached(
+		UNiagaraComponent* NiagaraComp =UNiagaraFunctionLibrary::SpawnSystemAttached(
 			StunEffect,
 			GetMesh(),
 			FName("Stun"),
@@ -1152,6 +1152,12 @@ void AN_Graduation_projectCharacter::ApplyStun(float Duration)
 			EAttachLocation::KeepRelativeOffset,
 			true
 		);
+
+		if(NiagaraComp)
+		{
+			// 스케일 조절
+			NiagaraComp->SetWorldScale3D(FVector(1.f));
+		} 
 	}
 }
 
@@ -1174,7 +1180,7 @@ void AN_Graduation_projectCharacter::ApplyFire(float Duration)
 		if(NiagaraComp)
 		{
 			// 스케일 조절
-			NiagaraComp->SetWorldScale3D(FVector(0.2f));  
+			NiagaraComp->SetWorldScale3D(FVector(0.25f));  
 		}
 	}
 }
