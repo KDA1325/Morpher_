@@ -57,6 +57,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	USoundBase* GuardHitSound;
 
+	UPROPERTY(EditAnywhere)
+	USoundBase* ShieldEndSound;
+
 	FABEntityData EntityData;
 	FSkillData NormalSkillData;
 	FSkillData SpecialSkillData;

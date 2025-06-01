@@ -72,6 +72,12 @@ AEntityPreset::AEntityPreset()
 	{
 		GuardHitSound = GuardHitSoundObj.Object;
 	}
+	
+	static ConstructorHelpers::FObjectFinder<USoundBase>ShieldEndSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/ShieldGuardEnd.ShieldGuardEnd'"));
+	if(ShieldEndSoundObj.Succeeded())
+	{
+		ShieldEndSound = ShieldEndSoundObj.Object;
+	}
 
 	//SkillArrowChildComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("SkillArrowChildComponent"));
 	////SkillArrowChildComponent->SetupAttachment(RootComponent); // 또는 RootComponent
@@ -1455,6 +1461,10 @@ void AEntityPreset::OnGuardEnded()
 	// 스킬 종료 처리 
 	bIsCastingSkill = false;
 	this->bIsDefending = false;
+
+	// 이펙트 해제 사운드
+	UGameplayStatics::PlaySoundAtLocation(this,ShieldEndSound,GetActorLocation(),0.9f);
+
 	UE_LOG(LogTemp,Warning,TEXT("방어 종료"));
 
 	// AI 경로 추적 활성화
