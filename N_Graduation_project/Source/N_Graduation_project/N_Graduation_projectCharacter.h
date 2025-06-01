@@ -143,6 +143,9 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Weapon")
 		UStaticMeshComponent* SkeletonBow;
 
+	UPROPERTY(EditAnywhere)
+		USoundBase* HitSound;
+
 private:
 	FVector MouseWorldPosition;
 	FVector MouseWorldDirection;

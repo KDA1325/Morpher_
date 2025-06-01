@@ -143,6 +143,11 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 		FireEffect = FireEffectAsset.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<USoundBase>HitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Hit.Hit'"));
+	if(HitSoundObj.Succeeded())
+	{
+		HitSound = HitSoundObj.Object;
+	}
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -495,36 +500,56 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 			if(DamageTypeCDO->IsA(UNormalAttackDamageType::StaticClass()))
 			{
 				bFromNormalHitBox=true;
+				
+				// 방어 중일 때 히트 사운드
+				//UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+
 				UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: NormalAttackDamageType"));
-			} else
+			} 
+			else
 			{
 				bFromNormalHitBox=false;
+
+				// 히트 사운드
+				UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+
 				UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: %s"),*DamageTypeCDO->GetClass()->GetName());
 			}
 		}
-		if(TestMode ==true){
-
+		if(TestMode ==true)
+		{
 			PlayerSkillComponent->CanUseNomalSkill = true;
 			On_invincibility_Implementation();
+
+			// 히트 사운드
+			UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+			
 			// 데미지 로그 출력	
 			float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
 			UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
 
 			return FinalDamage;
-		} else {
+		} 
+		else 
+		{
 			//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
-			if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) {
+			if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) 
+			{
 				UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
 				//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 				PlayerSkillComponent->CanUseNomalSkill = true;
 
 				return 0.0f;//무적상태라면 리턴.
-
-			} else
+			} 
+			else
 			{
 				PlayerSkillComponent->CanUseNomalSkill = true;
 				PlayerStatComponent->ApplyDamage(DamageAmount);
 				On_invincibility_Implementation();
+				
+				// 히트 사운드
+				//UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+
 				// 데미지 로그 출력	
 				float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
 				UE_LOG(LogTemp,Error,TEXT("Player TakeDamage  %f"),DamageAmount);
