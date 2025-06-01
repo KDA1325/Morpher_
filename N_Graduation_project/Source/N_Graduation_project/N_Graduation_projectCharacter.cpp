@@ -148,6 +148,12 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	{
 		HitSound = HitSoundObj.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>GuardHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/ShieldGuard.ShieldGuard'"));
+	if(GuardHitSoundObj.Succeeded())
+	{
+		GuardHitSound = GuardHitSoundObj.Object;
+	}
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -502,7 +508,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 				bFromNormalHitBox=true;
 				
 				// 방어 중일 때 히트 사운드
-				//UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+				UGameplayStatics::PlaySoundAtLocation(this,GuardHitSound,GetActorLocation(),0.75f);
 
 				UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: NormalAttackDamageType"));
 			} 
