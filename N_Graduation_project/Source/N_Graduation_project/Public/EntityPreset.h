@@ -63,6 +63,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	USoundBase* FireSound;
 
+	UPROPERTY(EditAnywhere)
+	FString SoundSkillID;
+
 	FABEntityData EntityData;
 	FSkillData NormalSkillData;
 	FSkillData SpecialSkillData;

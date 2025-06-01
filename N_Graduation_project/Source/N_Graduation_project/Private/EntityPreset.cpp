@@ -34,6 +34,8 @@ AEntityPreset::AEntityPreset()
 	currentSpeed = 0;
 	MaxHp = 100.0f;
 
+	SoundSkillID = nullptr;
+
 	NormalSkillHitBox = nullptr;
 	SpecialSkillHitBox = nullptr;
 
@@ -735,6 +737,37 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			////UE_LOG(LogTemp,Warning,TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
 			////	*HalfExtent.ToString(),*NewRelativeLocation.ToString());
 		}
+		else if(SkillData.SkillNameID == "Skill_ArmSwing")
+		{
+			SoundSkillID = "Skill_ArmSwing";
+
+			// Normal 히트박스 생성
+			if(!NormalSkillHitBox)
+			{
+				NormalSkillHitBox = NewObject<UBoxComponent>(this,TEXT("NormalSkillHitBox"));
+				if(NormalSkillHitBox)
+				{
+					NormalSkillHitBox->RegisterComponent();
+					NormalSkillHitBox->AttachToComponent(NormalHitBoxContainer,FAttachmentTransformRules::KeepRelativeTransform);
+
+					HideNormalHitBox();
+
+					ConfigureHitBox(NormalSkillHitBox);
+
+					// Overlap 이벤트 바인딩 
+					NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this,&AEntityPreset::OnNormalHitBoxOverlap);
+				}
+			}
+
+			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f,50.0f,SkillData.SkillTypeSizeX / 2.0f);
+			NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+			FVector NewRelativeLocation = FVector(0.0f,0.0f,HalfExtent.X);
+			NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			UE_LOG(LogTemp,Warning,TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+				*HalfExtent.ToString(),*NewRelativeLocation.ToString());
+		}
 		else if(SkillData.SkillNameID == "Skill_FreezeBreath")
 		{
 			// Special 히트박스 생성
@@ -1286,6 +1319,7 @@ void AEntityPreset::PerformSkill_Charge()
 	// 스킬 시전 플래그 설정
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
 	bIsCastingSkill = true;
+	SoundSkillID = "Skill_Charge";
 
 	ChargeDirection = GetActorForwardVector().GetSafeNormal();
 	ChargeStartLocation = GetActorLocation();
@@ -1441,6 +1475,7 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage,bool bInterrupted)
 		bIsCharging = false;
 	}
 	*/
+	SoundSkillID = nullptr;
 
 	// AI 경로 추적 활성화
 	if(AAIController* AIController = Cast<AAIController>(GetController()))

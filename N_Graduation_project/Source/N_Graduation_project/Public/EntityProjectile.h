@@ -62,6 +62,12 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")
 	TArray<FSkillEffectData> EffectDataArray;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FString SoundSkillID;
+
+	//UPROPERTY(EditAnywhere)
+	//USoundBase* FireEffectHitSound;
+
 	// 스킬 데이터 기반 발사체 설정 
 	void InitProjectileBySkillData(const FSkillData& InSkillData,const TArray<FSkillEffectData>& InEffectData);
 

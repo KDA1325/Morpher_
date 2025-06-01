@@ -151,6 +151,13 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 		USoundBase* FireEffectSound;
+
+	UPROPERTY(EditAnywhere)
+		USoundBase* FireEffectHitSound;
+	UPROPERTY(EditAnywhere)
+		USoundBase* ChargeEffectHitSound;
+	UPROPERTY(EditAnywhere)
+		USoundBase* ArmSwingEffectHitSound;
 private:
 	FVector MouseWorldPosition;
 	FVector MouseWorldDirection;

@@ -30,6 +30,13 @@ AEntityProjectile::AEntityProjectile()
 	bApplyFireDot = false;
 	FireDamage = 0.f;
 	FireDuration = 0.f;
+	SoundSkillID = nullptr;
+	//static ConstructorHelpers::FObjectFinder<USoundBase>FireEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/FireBall.FireBall'"));
+	//if(FireEffectHitSoundObj.Succeeded())
+	//{
+	//	FireEffectHitSound = FireEffectHitSoundObj.Object;
+	//}
+
 }
 
 // Called when the game starts or when spawned
@@ -158,12 +165,20 @@ void AEntityProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			switch(Effect.EffectType)
 			{
 			case EnumEffectType::Damage:
-			if(Effect.SkillNameID=="Skill_ThrowRock"||Effect.SkillNameID=="Skill_Arrow"){
+			if(Effect.SkillNameID=="Skill_ThrowRock"||Effect.SkillNameID=="Skill_Arrow")
+			{
 				UE_LOG(LogTemp,Error,TEXT("무적 모드 프로젝트타일"));
 
 				UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,UNormalAttackDamageType::StaticClass());
 			}
-			else{
+			else if(Effect.SkillNameID=="Skill_FireBall")
+			{
+				SoundSkillID = "Skill_FireBall";
+				UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+				SoundSkillID = nullptr;
+			}
+			else
+			{
 				UE_LOG(LogTemp,Error,TEXT("무적 모드 아님"));
 
 				UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
