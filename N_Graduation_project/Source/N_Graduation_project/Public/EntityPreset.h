@@ -48,6 +48,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	float CurrentHP;
 
+	UPROPERTY(EditAnywhere)
+	USoundBase* DeathSound;
 
 	FABEntityData EntityData;
 	FSkillData NormalSkillData;

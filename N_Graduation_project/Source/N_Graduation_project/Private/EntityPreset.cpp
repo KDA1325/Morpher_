@@ -18,6 +18,7 @@
 #include "NiagaraComponent.h"
 #include "TimerManager.h"
 #include "NormalAttackDamageType.h"
+#include "Kismet/GameplayStatics.h"
 
 AEntityPreset::AEntityPreset()
 {
@@ -54,6 +55,12 @@ AEntityPreset::AEntityPreset()
 	FireEffectComp->SetupAttachment(GetMesh());
 	FireEffectComp->SetAutoActivate(false);
 
+	static ConstructorHelpers::FObjectFinder<USoundBase>DeathSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/EntityDeath.EntityDeath'"));
+	if(DeathSoundObj.Succeeded())
+	{
+		DeathSound = DeathSoundObj.Object;
+		
+	}
 
 	//SkillArrowChildComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("SkillArrowChildComponent"));
 	////SkillArrowChildComponent->SetupAttachment(RootComponent); // 또는 RootComponent
@@ -441,6 +448,9 @@ void AEntityPreset::SetHP(float NewHP)
 				UE_LOG(LogTemp,Warning,TEXT("DeathMaterial이 설정되어 있지 않음!"));
 			}
 		}
+
+		// 사운드 재생 
+		UGameplayStatics::PlaySoundAtLocation(this,DeathSound,GetActorLocation(), 0.75f);
 
 		FTimerHandle DestroyTimerHandle;
 		GetWorldTimerManager().SetTimer(DestroyTimerHandle,this,&AEntityPreset::DelayedDestroy,0.33f,false);
