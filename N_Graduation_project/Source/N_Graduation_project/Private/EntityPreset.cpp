@@ -59,7 +59,12 @@ AEntityPreset::AEntityPreset()
 	if(DeathSoundObj.Succeeded())
 	{
 		DeathSound = DeathSoundObj.Object;
-		
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>HitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Hit.Hit'"));
+	if(HitSoundObj.Succeeded())
+	{
+		HitSound = HitSoundObj.Object;
 	}
 
 	//SkillArrowChildComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("SkillArrowChildComponent"));
@@ -343,9 +348,16 @@ float AEntityPreset::TakeDamage(float DamageAmount,FDamageEvent const& DamageEve
 				UE_LOG(LogTemp,Error,TEXT("PlayerSkillComponent is NULL"));
 			}
 		}
+		else
+		{
+			// 히트 사운드
+			UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+		}
 	}
 	else if(DamageCauser->ActorHasTag(FName("PlayerProjectile")))
 	{
+		// 히트 사운드
+		UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
 		UE_LOG(LogTemp,Warning,TEXT("TakeDamage: Hit by PlayerProjectile"));
 	}
 	else
