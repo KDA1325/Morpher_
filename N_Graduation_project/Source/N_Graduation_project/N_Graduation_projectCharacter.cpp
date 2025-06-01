@@ -161,6 +161,12 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	{
 		FireEffectSound = FireEffectSoundObj.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>FireEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/FireBall.FireBall'"));
+	if(FireEffectHitSoundObj.Succeeded())
+	{
+		FireEffectHitSound = FireEffectHitSoundObj.Object;
+	}
 	
 	static ConstructorHelpers::FObjectFinder<USoundBase>ChargeEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Charge.Charge'"));
 	if(ChargeEffectHitSoundObj.Succeeded())
@@ -547,12 +553,12 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 				else if(AEntityPreset* entity = Cast<AEntityPreset>(DamageCauser))
 				{
 					// 스킬이 Charge라면 전용 사운드 재생 
-					if(entityProjectile->SoundSkillID == "Skill_Charge")
+					if(entity->SoundSkillID == "Skill_Charge")
 					{
 						UGameplayStatics::PlaySoundAtLocation(this,ChargeEffectHitSound,GetActorLocation(),0.9f);
 					}
 					// 스킬이 ArmSwing이라면 전용 사운드 재생 
-					else if(entityProjectile->SoundSkillID == "Skill_ArmSwing")
+					else if(entity->SoundSkillID == "Skill_ArmSwing")
 					{
 						UGameplayStatics::PlaySoundAtLocation(this,ArmSwingEffectHitSound,GetActorLocation(),0.9f);
 					}

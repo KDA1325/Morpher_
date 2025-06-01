@@ -135,8 +135,19 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			switch(Effect.EffectType)
 			{
 			case EnumEffectType::Damage:
-			UE_LOG(LogTemp,Warning,TEXT("데미지 실행됨"));
-			UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+			if(Effect.SkillNameID == "Skill_FireBall")
+			{
+				SoundSkillID = "Skill_FireBall";
+				UE_LOG(LogTemp,Warning,TEXT("플레이어가 Skill_FireBall 공격"));
+				UE_LOG(LogTemp,Warning,TEXT("데미지 실행됨"));
+				UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+				SoundSkillID = nullptr;
+			}
+			else
+			{
+				UE_LOG(LogTemp,Warning,TEXT("데미지 실행됨"));
+				UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+			}
 			break;
 			case EnumEffectType::AOEDamage:
 			{

@@ -45,6 +45,9 @@ public:
 	// 현재 스킬 ID
 	FString CurrentSkillID;
 
+	UPROPERTY(VisibleAnywhere)
+	FString SoundSkillID;
+
 	// 히트박스 관련 변수들
 	UPROPERTY()
 		UBoxComponent* PlayerHitBox;

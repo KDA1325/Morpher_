@@ -64,6 +64,15 @@ public:
 	USoundBase* FireSound;
 
 	UPROPERTY(EditAnywhere)
+		USoundBase* FireEffectHitSound;
+
+	UPROPERTY(EditAnywhere)
+		USoundBase* ChargeEffectHitSound;
+
+	UPROPERTY(EditAnywhere)
+		USoundBase* ArmSwingEffectHitSound;
+
+	UPROPERTY(EditAnywhere)
 	FString SoundSkillID;
 
 	FABEntityData EntityData;

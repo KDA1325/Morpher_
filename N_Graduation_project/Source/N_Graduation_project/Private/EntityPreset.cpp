@@ -17,6 +17,7 @@
 #include "Components/ActorComponent.h"
 #include "NiagaraComponent.h"
 #include "TimerManager.h"
+#include "PlayerProjectile.h"
 #include "NormalAttackDamageType.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -81,11 +82,23 @@ AEntityPreset::AEntityPreset()
 		ShieldEndSound = ShieldEndSoundObj.Object;
 	}
 	
-	/*static ConstructorHelpers::FObjectFinder<USoundBase>FireSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Fire.Fire'"));
-	if(FireSoundObj.Succeeded())
+	static ConstructorHelpers::FObjectFinder<USoundBase>FireEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/FireBall.FireBall'"));
+	if(FireEffectHitSoundObj.Succeeded())
 	{
-		FireSound = FireSoundObj.Object;
-	}*/
+		FireEffectHitSound = FireEffectHitSoundObj.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>ChargeEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Charge.Charge'"));
+	if(ChargeEffectHitSoundObj.Succeeded())
+	{
+		ChargeEffectHitSound = ChargeEffectHitSoundObj.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>ArmSwingEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/ArmSwingHit.ArmSwingHit'"));
+	if(ArmSwingEffectHitSoundObj.Succeeded())
+	{
+		ArmSwingEffectHitSound = ArmSwingEffectHitSoundObj.Object;
+	}
 
 	//SkillArrowChildComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("SkillArrowChildComponent"));
 	////SkillArrowChildComponent->SetupAttachment(RootComponent); // 또는 RootComponent
@@ -378,15 +391,42 @@ float AEntityPreset::TakeDamage(float DamageAmount,FDamageEvent const& DamageEve
 		}
 		else
 		{
-			// 히트 사운드
-			UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+			if(PlayerSkillComponent->SoundSkillID == "Skill_Charge")
+			{
+				// Skill_Charge 히트 사운드
+				UE_LOG(LogTemp,Error,TEXT("몬스터 ChargeEffectHitSound 재생"));
+				UGameplayStatics::PlaySoundAtLocation(this,ChargeEffectHitSound,GetActorLocation(),0.90f);
+			}
+			else if(PlayerSkillComponent->SoundSkillID == "Skill_ArmSwing")
+			{
+				// Skill_ArmSwing 히트 사운드
+				UE_LOG(LogTemp,Error,TEXT("몬스터 ArmSwingEffectHitSound 재생"));
+				UGameplayStatics::PlaySoundAtLocation(this,ArmSwingEffectHitSound,GetActorLocation(),0.90f);
+			}
+			
 		}
 	}
 	else if(DamageCauser->ActorHasTag(FName("PlayerProjectile")))
 	{
+		APlayerProjectile* PlayerProjectile = Cast<APlayerProjectile>(DamageCauser);
+		if(PlayerProjectile->SoundSkillID == "Skill_FireBall")
+		{
+			// FireBall 피격 사운드 
+			UE_LOG(LogTemp,Error,TEXT("몬스터 FireEffectHitSound 재생"));
+			UGameplayStatics::PlaySoundAtLocation(this,FireEffectHitSound,GetActorLocation(),0.9f);
+		}
+		else
+		{
+			// 히트 사운드
+			UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+			UE_LOG(LogTemp,Warning,TEXT("TakeDamage: Hit by PlayerProjectile"));
+		}
+	}
+	else if(DamageCauser->ActorHasTag(FName("Object")))
+	{
 		// 히트 사운드
 		UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
-		UE_LOG(LogTemp,Warning,TEXT("TakeDamage: Hit by PlayerProjectile"));
+		UE_LOG(LogTemp,Warning,TEXT("TakeDamage: Hit by Object"));
 	}
 	else
 	{
