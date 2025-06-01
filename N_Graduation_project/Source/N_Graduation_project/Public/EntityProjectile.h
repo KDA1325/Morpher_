@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ABEntityData.h"
+#include "EntityPreset.h"
 #include "SkillData.h"
 #include "SkillEffectData.h"
 #include "GameFramework/Actor.h"
@@ -29,6 +30,7 @@ public:
 	// Components
 	//UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Components")
 	//class USphereComponent* CollisionComp;
+	//AEntityPreset* Entity;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Collision")
 	class UPrimitiveComponent* CollisionComp;

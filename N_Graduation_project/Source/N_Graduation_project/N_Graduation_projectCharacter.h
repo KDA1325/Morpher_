@@ -147,7 +147,10 @@ public:
 		USoundBase* HitSound;
 
 	UPROPERTY(EditAnywhere)
-		USoundBase* GuardHitSound;
+		USoundBase* GuardHitSound;	
+	
+	UPROPERTY(EditAnywhere)
+		USoundBase* FireEffectSound;
 private:
 	FVector MouseWorldPosition;
 	FVector MouseWorldDirection;

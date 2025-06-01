@@ -78,6 +78,12 @@ AEntityPreset::AEntityPreset()
 	{
 		ShieldEndSound = ShieldEndSoundObj.Object;
 	}
+	
+	/*static ConstructorHelpers::FObjectFinder<USoundBase>FireSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Fire.Fire'"));
+	if(FireSoundObj.Succeeded())
+	{
+		FireSound = FireSoundObj.Object;
+	}*/
 
 	//SkillArrowChildComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("SkillArrowChildComponent"));
 	////SkillArrowChildComponent->SetupAttachment(RootComponent); // 또는 RootComponent
@@ -273,6 +279,9 @@ void AEntityPreset::Tick(float DeltaTime)
 		if(FireEffectComp && !FireEffectComp->IsActive())
 		{
 			FireEffectComp->Activate();
+
+			//UGameplayStatics::PlaySoundAtLocation(this,FireSound,GetActorLocation(),0.9f);
+			
 			UE_LOG(LogTemp,Warning,TEXT("FireEffect 활성화"));
 		}
 	} 
@@ -1624,6 +1633,8 @@ void AEntityPreset::SpawnProjectile_FireBall()
 
 	if(SpawnedProjectile)
 	{
+		//SpawnedProjectile->Entity = this;
+
 		// Skill 데이터 테이블에서 "Skill_FireBall" 데이터 가져오기
 		FSkillData SkillData;
 		TArray<FSkillEffectData> EffectDataArray;
@@ -1644,6 +1655,7 @@ void AEntityPreset::SpawnProjectile_FireBall()
 		}
 	}
 }
+
 void AEntityPreset::PerformSkill_FireBall()
 {
 	if(!SpecialSkillMontage) return;
@@ -1685,6 +1697,13 @@ void AEntityPreset::PerformSkill_FireBall()
 		UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_FireBall: SpecialSkillMontage is not set"));
 	}
 }
+
+//void AEntityPreset::PlayFireSound()
+//{
+//	// 화상 사운드
+//	UGameplayStatics::PlaySoundAtLocation(this,FireSound,GetActorLocation(),0.9f);
+//}
+
 void AEntityPreset::PerformSkill_FreezeBreath()
 {
 	if(!SpecialSkillMontage) return;

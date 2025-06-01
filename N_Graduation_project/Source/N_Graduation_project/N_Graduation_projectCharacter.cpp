@@ -154,6 +154,12 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	{
 		GuardHitSound = GuardHitSoundObj.Object;
 	}
+	
+	static ConstructorHelpers::FObjectFinder<USoundBase>FireEffectSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Fire.Fire'"));
+	if(FireEffectSoundObj.Succeeded())
+	{
+		FireEffectSound = FireEffectSoundObj.Object;
+	}
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -1229,6 +1235,8 @@ void AN_Graduation_projectCharacter::ApplyFire(float Duration)
 		{
 			// 스케일 조절
 			ActiveFireEffect->SetWorldScale3D(FVector(0.25f));
+
+			UGameplayStatics::PlaySoundAtLocation(this,FireEffectSound,GetActorLocation(),0.9f);
 		}
 		// 일정 시간 후 자동 제거
 		FTimerHandle TimerHandle;
