@@ -39,8 +39,7 @@ public:
 	bool Freezard_OK = true;
 
 	float PlayerFullHP=150;
-	float PlayerFinalAngle=102.f
-		;
+	float PlayerFinalAngle=102.f;
 	//게임 시작 시 자동 로드
 	void Init();
 
@@ -53,7 +52,7 @@ public:
 	// 내부 사용 함수
 	void InitFromSaveData(UMySaveGame* SaveData);
 	void SaveToSaveData(UMySaveGame* SaveData);
-	void OnStreamLevelLoaded();
+	//void OnStreamLevelLoaded();
 
 	UPROPERTY(BlueprintReadWrite)
 		bool Thunder=false;

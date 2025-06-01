@@ -147,8 +147,8 @@ public:
 		USoundBase* HitSound;
 
 	UPROPERTY(EditAnywhere)
-		USoundBase* GuardHitSound;	
-	
+		USoundBase* GuardHitSound;
+
 	UPROPERTY(EditAnywhere)
 		USoundBase* FireEffectSound;
 private:
@@ -286,23 +286,26 @@ private:
 	FTimerHandle FlashTimerHandle4;
 
 	FTimerHandle FireEffectTimerHandle;
-public:
-	UPROPERTY(BlueprintReadOnly)
-		bool isStun=false;
-	UPROPERTY(BlueprintReadOnly)
-		bool isFire=false;
-	//UPROPERTY(EditDefaultsOnly,Category = "Effects")
-	//	UNiagaraSystem* StunEffect;
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyStun(float Duration);
+	FTimerHandle StunEffectTimerHandle;
 
-	//UPROPERTY(EditDefaultsOnly,Category = "Effects")
-//		UNiagaraSystem* FireEffect;
-//	UNiagaraComponent* ActiveFireEffect;
-	//UNiagaraComponent* ActivesStunEffect;
-	UFUNCTION(BlueprintImplementableEvent)
-	void ApplyFire(float Duration);
-	//bool IsPendingKill=true;
+public:
+	//UPROPERTY(BlueprintReadOnly)
+	//	bool isStun=false;
+	//UPROPERTY(BlueprintReadOnly)
+	//	bool isFire=false;
+
+	UPROPERTY(EditDefaultsOnly,Category = "Effects")
+		UNiagaraSystem* StunEffect;
+	//UFUNCTION(BlueprintImplementableEvent)
+		void ApplyStun(float Duration);
+	UNiagaraComponent* ActiveStunEffect= nullptr;
+
+	UPROPERTY(EditDefaultsOnly,Category = "Effects")
+		UNiagaraSystem* FireEffect;
+//	UFUNCTION(BlueprintImplementableEvent)
+		void ApplyFire(float Duration);
+	UNiagaraComponent* ActiveFireEffect= nullptr;
+
 	UPROPERTY()
 		TArray<UMaterialInterface*> OriginalMaterials;
 	UPROPERTY()

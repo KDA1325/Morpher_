@@ -130,6 +130,7 @@ void AStunBarrel::EndtExplosion()
 		if(Actor->ActorHasTag(FName("Player"))){
 			AN_Graduation_projectCharacter* MyChar = Cast<AN_Graduation_projectCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
 			MyChar->StartAction();
+			MyChar->ApplyStun(2);
 			UE_LOG(LogTemp,Warning,TEXT("폭발 Player"));
 
 			FTimerHandle TimerHandle;
