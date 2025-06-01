@@ -20,7 +20,8 @@ UActionAnimInstance::UActionAnimInstance()
 	//FSoftObjectPath BiteMontagePath(TEXT("/Game/Animation/WildBoar_Bite_Anim_Montage.WildBoar_Bite_Anim_Montage")); //기존 몽타주
 	FSoftObjectPath BiteMontagePath(TEXT("/Game/Gamin/Bore_UVW/Bore_attack_uvw_Anim_Montage.Bore_attack_uvw_Anim_Montage"));
 	M_Bite = Cast<UAnimMontage>(BiteMontagePath.TryLoad());
-
+	FSoftObjectPath Bite2MontagePath(TEXT("/Game/Gamin/Bore_UVW/Bore_run_uvw_Anim_Montage.Bore_run_uvw_Anim_Montage"));
+	M_Bite2 = Cast<UAnimMontage>(Bite2MontagePath.TryLoad());
 
 	FSoftObjectPath Nomal_InpermonMontagePath(TEXT("/Game/Gamin/InferMon/InferMon_attack_Anim_Montage.InferMon_attack_Anim_Montage"));
 	m_Inpermon1 = Cast<UAnimMontage>(Nomal_InpermonMontagePath.TryLoad());
@@ -64,13 +65,15 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		Montage_Play(M_Slash);
 		// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
-	} else if(EffectID == "Skill_Bite" || EffectID=="Skill_Charge") {
+	} else if(EffectID == "Skill_Bite") {
 		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*M_Bite->GetName());
-		UE_LOG(LogTemp,Warning,TEXT("Playing Skill_Bite 실행됨"));
 		Montage_Play(M_Bite);
-		//	float PlayResult = Montage_Play(M_Bite);
-		//	UE_LOG(LogTemp, Warning, TEXT("Montage_Play result: %f"), PlayResult);
-
+			// 애니메이션 종료 이벤트 바인딩
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+	} else if(EffectID=="Skill_Charge") {
+		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*M_Bite2->GetName());
+		UE_LOG(LogTemp,Warning,TEXT("Playing Skill_Bite2 실행됨"));
+		Montage_Play(M_Bite2);
 			// 애니메이션 종료 이벤트 바인딩
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
 	} else if(EffectID == "Skill_ThrowRock") {
