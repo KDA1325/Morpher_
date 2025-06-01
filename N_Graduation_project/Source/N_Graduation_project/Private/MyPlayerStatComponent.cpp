@@ -110,7 +110,9 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 		PastMaxHP = NewMaxHP;
 		PastCurrentHP = CurrentHP;
 		UE_LOG(LogTemp, Log, TEXT("maxhp %f %f "), PastCurrentHP,PastMaxHP);
-
+		if(CurrentHP<=0){
+			CurrentHP=150;
+		}
 		if (UMyCharacterWidget* HUD = GetHUD())
 		{
 			GetWorld()->GetTimerManager().SetTimer(ManaRegenTimerHandle, this, &UMyPlayerStatComponent::RegenerateMana, 4.0f, true);

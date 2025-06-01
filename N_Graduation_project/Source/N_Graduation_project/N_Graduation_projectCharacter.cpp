@@ -23,6 +23,8 @@
 #include "GameFramework/DamageType.h"        // UDamageType
 #include "NormalAttackDamageType.h"          // 커스텀 데미지 타입
 #include "Engine/DamageEvents.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
@@ -124,6 +126,23 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 
 	bIsMoving = true;
 	bcanPie=true;
+
+	//이펙트
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> StunEffectAsset(TEXT("/Game/VFX/NG_Stun.NG_Stun"));
+	if(StunEffectAsset.Succeeded())
+	{
+		UE_LOG(LogTemp,Log,TEXT("StunEffectAsset 있음"));
+
+		StunEffect = StunEffectAsset.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> FireEffectAsset(TEXT("/Game/0525NewAsset/EffectAsset/EmpowermentAura/Niagara/NS_StylizedRootBeam7.NS_StylizedRootBeam7"));
+	if(FireEffectAsset.Succeeded())
+	{
+		UE_LOG(LogTemp,Log,TEXT("FireEffectAsset 있음"));
+
+		FireEffect = FireEffectAsset.Object;
+	}
+
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -137,6 +156,16 @@ void AN_Graduation_projectCharacter::BeginPlay()
 
 	//UE_LOG(LogTemp,Log,TEXT("캐릭터 BeginPlay실시, player: %s"),*currentPreset);
 	PlayerSword = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Player_sword")));
+	SkeletonBow =  Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Bow")));
+	SkeletonShield = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Shield")));
+	SkeletonSword = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Skel_Sword")));
+	if(SkeletonSword){
+		SkeletonBow ->SetHiddenInGame(true);
+		SkeletonShield ->SetHiddenInGame(true);
+		SkeletonSword->SetHiddenInGame(true);
+		//UE_LOG(LogTemp,Log,TEXT("스켈레톤칼 방패 있음"))}
+	}
+
 	isDead=false;
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
 	DashCallback.BindUFunction(this,FName("DashInterpReturn"));
@@ -168,6 +197,9 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	else{
 		MyGameInstance->LoadGame();
 	}
+
+	/*ApplyStun(10);
+	ApplyFire(15);*/
 }
 void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
@@ -263,7 +295,7 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 	} else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
 }
 void AN_Graduation_projectCharacter::EndShield()
-{		
+{
 	if(currentPreset  == "SkeletonWarriorPreset.uasset"){
 		PlayerSkillComponent->OffDefenseSkill();
 		UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
@@ -452,55 +484,56 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
-	bool bFromNormalHitBox=false;
-	if(DamageEvent.DamageTypeClass)
+	if(isDead==false)
 	{
-		UDamageType* DamageTypeCDO = DamageEvent.DamageTypeClass->GetDefaultObject<UDamageType>();
+		bool bFromNormalHitBox=false;
+		if(DamageEvent.DamageTypeClass)
+		{
+			UDamageType* DamageTypeCDO = DamageEvent.DamageTypeClass->GetDefaultObject<UDamageType>();
 
-		// 예시: NormalAttackDamageType 인지 확인
-		if(DamageTypeCDO->IsA(UNormalAttackDamageType::StaticClass()))
-		{
-			bFromNormalHitBox=true;
-			UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: NormalAttackDamageType"));
-		} else
-		{
-			bFromNormalHitBox=false;
-			UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: %s"),*DamageTypeCDO->GetClass()->GetName());
+			// 예시: NormalAttackDamageType 인지 확인
+			if(DamageTypeCDO->IsA(UNormalAttackDamageType::StaticClass()))
+			{
+				bFromNormalHitBox=true;
+				UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: NormalAttackDamageType"));
+			} else
+			{
+				bFromNormalHitBox=false;
+				UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: %s"),*DamageTypeCDO->GetClass()->GetName());
+			}
 		}
-	}
-	if(TestMode ==true){
+		if(TestMode ==true){
 
-		PlayerSkillComponent->CanUseNomalSkill = true;
-		On_invincibility_Implementation();
-		// 데미지 로그 출력	
-		float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
-		UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
-
-		return FinalDamage;
-	}
-	else {
-		//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
-		if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) {
-			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
-			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 			PlayerSkillComponent->CanUseNomalSkill = true;
-
-				return 0.0f;//무적상태라면 리턴.
-
-		} else
-		{
-			PlayerSkillComponent->CanUseNomalSkill = true;
-			PlayerStatComponent->ApplyDamage(DamageAmount);
 			On_invincibility_Implementation();
 			// 데미지 로그 출력	
 			float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
-			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage  %f"),DamageAmount);
+			UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
 
 			return FinalDamage;
+		} else {
+			//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
+			if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) {
+				UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
+				//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
+				PlayerSkillComponent->CanUseNomalSkill = true;
+
+				return 0.0f;//무적상태라면 리턴.
+
+			} else
+			{
+				PlayerSkillComponent->CanUseNomalSkill = true;
+				PlayerStatComponent->ApplyDamage(DamageAmount);
+				On_invincibility_Implementation();
+				// 데미지 로그 출력	
+				float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
+				UE_LOG(LogTemp,Error,TEXT("Player TakeDamage  %f"),DamageAmount);
+
+				return FinalDamage;
+			}
 		}
 	}
-
-
+	return 0;
 }
 void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 {
@@ -662,10 +695,11 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 	UE_LOG(LogTemp,Warning,TEXT("Player is dead"));
 	isDead=true;
 	bcanPie=false;
-	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if(!MyGameInstance) return;
-	MyGameInstance->LoadGame();
-	WidgetActor->ShowDieWidget();
+	DeadEvent();
+	//auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	//if(!MyGameInstance) return;
+	//MyGameInstance->LoadGame();
+	//WidgetActor->ShowDieWidget();
 }
 
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
@@ -827,12 +861,14 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh)
 		{
+			SkeletonShield ->SetHiddenInGame(false);
+			SkeletonSword->SetHiddenInGame(false);
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 
-		//	SpawnHitBoxAtSocket("AttachHitBox");
-		//	TrySpawnHitBox("AttachHitBox2");
+			//	SpawnHitBoxAtSocket("AttachHitBox");
+			//	TrySpawnHitBox("AttachHitBox2");
 
 		}
 	} else if(currentPreset == "SkeletonArcherPreset.uasset")
@@ -851,7 +887,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			GetMesh()->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
-
+			SkeletonBow ->SetHiddenInGame(false);
 			//SpawnHitBoxAtSocket("AttachHitBox");
 			//TrySpawnHitBox("AttachHitBox2");
 
@@ -1078,7 +1114,11 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 
 		if(PlayerSword)
 		{
+			SkeletonBow ->SetHiddenInGame(true);
+
 			PlayerSword->SetHiddenInGame(true);
+			SkeletonShield ->SetHiddenInGame(true);
+			SkeletonSword->SetHiddenInGame(true);
 		} else
 		{
 			//UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
@@ -1095,49 +1135,48 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 	}
 
 }
-//void AN_Graduation_projectCharacter:: LoadPreset(FString PresetID){
-//	if(PlayerSword)
-//	{
-//		PlayerSword->SetHiddenInGame(true);
-//	} else
-//	{
-//		UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
-//	}
-//	FString CleanName;
-//	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-//	if(!MyGameInstance) return;
-//	// 확장자 제거
-//	if(MyGameInstance->CurrentPlayerCharacter!="PCPreset.uasset"){ 
-//	FString FileName = FPaths::GetBaseFilename(MyGameInstance->CurrentPlayerCharacter);
-//	CleanName = FileName;
-//	CleanName.RemoveFromEnd(TEXT("Preset"));}
-//	else{
-//		CleanName="PlayerCharacter";
-//	}
-//	if(UABGameSingleton::Get().GetEntityDataByGroupID(CleanName,EntityData))
-//	{
-//		if(PlayerStatComponent->CurrentMana >= EntityData.TransManaCost) 		OkTrans = true;
-//		if(!(PlayerStatComponent->CurrentMana >= EntityData.TransManaCost))		OkTrans = false;
-//
-//		InvincibleOriginalMaterial = nullptr;
-//		//SetActorLabel(EntityData.EntityName);
-//		SetMoveSpeed(1000);
-//		NomalSkill = EntityData.NormalSkill;
-//		SpecialSkill = EntityData.SpecialSkill;
-//		UE_LOG(LogTemp,Error,TEXT("Loadgame LoadPreset Entity Name: %s, HP: %d, Move Speed: %d"),
-//			*EntityData.EntityName,EntityData.HP,EntityData.MoveSpeed);
-//		UE_LOG(LogTemp,Error,TEXT("Loadgame LoadPreset EntityData 찾기 성공: %s"),*CleanName);
-//
-//	} else{
-//			UE_LOG(LogTemp,Error,TEXT("Loadgame LoadPreset EntityData 찾기 실패: %s"),*CleanName);
-//	}
-//
-//	UE_LOG(LogTemp,Error,TEXT("Loadgame LoadPreset 실행됨"));
-//	PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID,EntityData.HP,EntityData.TransManaCost);
-//	pastPreset = MyGameInstance->CurrentPlayerCharacter;
-//	SetPreset(EntityData.PresetReference);
-//	WidgetActor->Back_CacheFinalMouseAngle = false;
-//
-//
-//	USkeletalMeshComponent* MeshComponent = GetMesh();
-//}
+
+// 이펙트
+void AN_Graduation_projectCharacter::ApplyStun(float Duration)
+{
+	if(StunEffect)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ ApplyStun"));
+
+		UNiagaraFunctionLibrary::SpawnSystemAttached(
+			StunEffect,
+			GetMesh(),
+			FName("Stun"),
+			FVector(0.f,0.f,0.f),
+			FRotator::ZeroRotator,
+			EAttachLocation::KeepRelativeOffset,
+			true
+		);
+	}
+}
+
+
+void AN_Graduation_projectCharacter::ApplyFire(float Duration)
+{
+	if(FireEffect)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ FireEffect"));
+
+		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(FireEffect,
+			GetMesh(),
+			FName("Fire"),
+			FVector(0.f,0.f,0.f),
+			FRotator(90.f,180.f,90.f),
+			EAttachLocation::KeepRelativeOffset,
+			true
+		);
+
+		if(NiagaraComp)
+		{
+			// 스케일 조절
+			NiagaraComp->SetWorldScale3D(FVector(0.2f));  
+		}
+	}
+}
+
+

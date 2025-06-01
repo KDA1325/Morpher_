@@ -14,8 +14,8 @@ struct FRoomSaveData
 		UPROPERTY()
 		FName RoomID;
 
-	UPROPERTY()
-		bool bIsCleared;
+	//UPROPERTY()
+	//	bool bIsCleared;
 };
 
 UCLASS()

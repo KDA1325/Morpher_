@@ -270,7 +270,7 @@ void ABossPatternManager::StartSpinningBarrageSequence(int num)
 		SpinningBarrageTimerHandle,
 		this,
 		&ABossPatternManager::SpinningBarrageTick,
-		0.2f,
+		0.5f,
 		true
 	);
 }
@@ -279,7 +279,7 @@ void ABossPatternManager::SpinningBarrageTick()
 {
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
-	if(SpinningBarrageCount >= 15) // 0.2초 × 15 = 3초
+	if(SpinningBarrageCount >= 30) //
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpinningBarrageTimerHandle);
 		MyGameInstance->Spin=false;
@@ -299,7 +299,7 @@ void ABossPatternManager::StartSpinningBarrageSequence2(int num)
 		SpinningBarrageTimerHandle2,
 		this,
 		&ABossPatternManager::SpinningBarrageTick2,
-		0.2f,
+		0.5f,
 		true
 	);
 }
@@ -308,7 +308,7 @@ void ABossPatternManager::SpinningBarrageTick2()
 {
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
-	if(SpinningBarrageCount >= 15) // 0.2초 × 15 = 3초
+	if(SpinningBarrageCount >= 30) //
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpinningBarrageTimerHandle2);
 		MyGameInstance->Spin=false;
@@ -350,7 +350,7 @@ void ABossPatternManager::SpinningBarrage2()
 
 		if(SpawnedProjectile)
 		{
-		
+
 			SpawnedProjectile->InitProjectileBySkillData(450,25);
 			SpawnedProjectile->FireInDirection(FireDirection);
 
@@ -542,19 +542,19 @@ void ABossPatternManager::ApplyMeteorDamage(){
 
 void ABossPatternManager::StartPhase1()
 {
-//	Thunder();
+	//	Thunder();
 
-	//FTimerHandle LaserDelayHandle;
-	//GetWorld()->GetTimerManager().SetTimer(LaserDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::SpawnAndAttachLasers),7.f,false);
+		//FTimerHandle LaserDelayHandle;
+		//GetWorld()->GetTimerManager().SetTimer(LaserDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::SpawnAndAttachLasers),7.f,false);
 
-	//FTimerHandle SpinDelayHandle;
-	//GetWorld()->GetTimerManager().SetTimer(SpinDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::SpinningBarrage),12.f,false);
+		//FTimerHandle SpinDelayHandle;
+		//GetWorld()->GetTimerManager().SetTimer(SpinDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::SpinningBarrage),12.f,false);
 
-	//FTimerHandle HealDelayHandle;
-	//GetWorld()->GetTimerManager().SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::HealCrystal),146.f,false);
+		//FTimerHandle HealDelayHandle;
+		//GetWorld()->GetTimerManager().SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::HealCrystal),146.f,false);
 
-	//FTimerHandle MDelayHandle;
-	//GetWorld()->GetTimerManager().SetTimer(MDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::Meteor),34.f,false);
+		//FTimerHandle MDelayHandle;
+		//GetWorld()->GetTimerManager().SetTimer(MDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::Meteor),34.f,false);
 
 }
 

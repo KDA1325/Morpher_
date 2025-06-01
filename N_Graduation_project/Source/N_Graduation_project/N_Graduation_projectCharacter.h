@@ -11,7 +11,8 @@
 #include "GameFramework/DamageType.h"        
 #include "Kismet/GameplayStatics.h"          
 #include "NormalAttackDamageType.h"         
-
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 #include "N_Graduation_projectCharacter.generated.h"
 
 class UPlayerSkillComponent;
@@ -25,61 +26,61 @@ struct FInputActionValue;
 class UCharacterStateComponent;
 class UWidgetActor;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter,Log,All);
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHealthChanged);
 
-UCLASS(config = Game, Blueprintable)
+UCLASS(config = Game,Blueprintable)
 
-class AN_Graduation_projectCharacter : public ACharacter
+class AN_Graduation_projectCharacter: public ACharacter
 {
 	GENERATED_BODY()
 
-	//UFUNCTION()
-	//void OnHealthChanged();
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
+		//UFUNCTION()
+		//void OnHealthChanged();
+		/** Camera boom positioning the camera behind the character */
+		UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = Camera,meta = (AllowPrivateAccess = "true"))
+		USpringArmComponent* CameraBoom;
 
 	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = Camera,meta = (AllowPrivateAccess = "true"))
+		UCameraComponent* FollowCamera;
 
 	/** MappingContext */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputMappingContext* DefaultMappingContext;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = Input,meta = (AllowPrivateAccess = "true"))
+		UInputMappingContext* DefaultMappingContext;
 
 	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* JumpAction;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = Input,meta = (AllowPrivateAccess = "true"))
+		UInputAction* JumpAction;
 
 	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MoveAction;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = Input,meta = (AllowPrivateAccess = "true"))
+		UInputAction* MoveAction;
 
 	/** Look Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* LookAction;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = Input,meta = (AllowPrivateAccess = "true"))
+		UInputAction* LookAction;
 
 	/** Dash Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* DashAction;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = Input,meta = (AllowPrivateAccess = "true"))
+		UInputAction* DashAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* LeftClickAction;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = Input,meta = (AllowPrivateAccess = "true"))
+		UInputAction* LeftClickAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* RightClickAction;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = Input,meta = (AllowPrivateAccess = "true"))
+		UInputAction* RightClickAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* RightReleasedClickAction;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = Input,meta = (AllowPrivateAccess = "true"))
+		UInputAction* RightReleasedClickAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* PieMenuAction;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = Input,meta = (AllowPrivateAccess = "true"))
+		UInputAction* PieMenuAction;
 
 public:
 	AN_Graduation_projectCharacter();
 	void ChangePreset(FString Name);
-//	void LoadPreset(FString PresetID);
+	//	void LoadPreset(FString PresetID);
 	void ToggleMaterial(bool bUseHitMaterial);
 	bool PlaySpecial = false;
 	bool PlayNomal = false;
@@ -102,7 +103,7 @@ protected:
 	void DashCheck(const FInputActionValue& Value);
 
 	// ��� ��� ���� 
-	void Dash(const FVector DashDir, const FVector DashVel);
+	void Dash(const FVector DashDir,const FVector DashVel);
 
 	//���콺 ��Ŭ��
 	void NomalSkillAction(const FInputActionValue& Value);
@@ -119,35 +120,48 @@ protected:
 
 public:
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE class USpringArmComponent* GetCameraBoom() const {
+		return CameraBoom;
+	}
 	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE class UCameraComponent* GetFollowCamera() const {
+		return FollowCamera;
+	}
 
 	UPROPERTY()
-	UWidgetActor* WidgetActor;
+		UWidgetActor* WidgetActor;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-	UStaticMeshComponent* PlayerSword;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Weapon")
+		UStaticMeshComponent* PlayerSword;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Weapon")
+		UStaticMeshComponent* SkeletonSword;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Weapon")
+		UStaticMeshComponent* SkeletonShield;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Weapon")
+		UStaticMeshComponent* SkeletonBow;
 
 private:
 	FVector MouseWorldPosition;
 	FVector MouseWorldDirection;
 
 	// Dash �Ÿ�
-	UPROPERTY(EditAnywhere, Category = "Dash", meta = (AllowPrivateAccess = "true"))
-	float DashDistance;
+	UPROPERTY(EditAnywhere,Category = "Dash",meta = (AllowPrivateAccess = "true"))
+		float DashDistance;
 
 	// Dash�� ������ Ÿ�Ӷ���
 	UPROPERTY()
-	UTimelineComponent* DashTimeline;
+		UTimelineComponent* DashTimeline;
 
 	// Ÿ�Ӷ��ο� ����� Ŀ��
 	UPROPERTY()
-	UCurveFloat* DashCurve;
+		UCurveFloat* DashCurve;
 
 	// Ÿ�Ӷ��ο� �ִ� Ŀ�갡 ����Ǹ鼭 ����� �Լ� 
 	UFUNCTION()
-	void DashInterpReturn(float value);
+		void DashInterpReturn(float value);
 
 	// Dash�� �����ϴ� ����
 	FVector DashDirection;
@@ -159,62 +173,46 @@ private:
 
 
 public:
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UPlayerSkillComponent* PlayerSkillComponent;
-		
+	UPROPERTY(BlueprintReadOnly,meta = (AllowPrivateAccess = "true"))
+		UPlayerSkillComponent* PlayerSkillComponent;
+
 	UPROPERTY(VisibleAnywhere)
-	UCharacterStateComponent* CharacterStateComponent;
+		UCharacterStateComponent* CharacterStateComponent;
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void DeadEvent();
 
 	/** ü�� ������Ʈ */
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UMyPlayerStatComponent* PlayerStatComponent;
+	UPROPERTY(BlueprintReadOnly,meta = (AllowPrivateAccess = "true"))
+		UMyPlayerStatComponent* PlayerStatComponent;
 	/** ������ �޴� �Լ� */
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	UFUNCTION(BlueprintCallable,Category = "Player Stats")
+		virtual float TakeDamage(float DamageAmount,struct FDamageEvent const& DamageEvent,class AController* EventInstigator,AActor* DamageCauser) override;
 
 
 	// ���� ���� Ȱ��ȭ
 	UPROPERTY(BlueprintReadWrite)
-	bool TestMode = false;
+		bool TestMode = false;
 	UPROPERTY(BlueprintReadWrite)
-	bool TestMode2 = false;
+		bool TestMode2 = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool IsInvincible;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+		bool IsInvincible;
 
 	UFUNCTION(BlueprintNativeEvent)
-	void On_invincibility();
+		void On_invincibility();
 
 	UFUNCTION(BlueprintCallable)
-	void OnPlayerDead();
-	// ���� ���� �ν��Ͻ�
-	/*private:
-		TSubclassOf<UUserWidget> CharacterHealthBarWidgetClass;
-		UUserWidget* CharacterHealthBarWidget;
-	void SpawnWidget();
-*/
-//UFUNCTION()
-//void UpdateHUD();
+		void OnPlayerDead();
 
-//UPROPERTY(EditDefaultsOnly, Category = "UI")
-//TSubclassOf<class UUserWidget> HUDClass;
-
-//UPROPERTY()
-//class UUserWidget* HUDWidget;
-
-
-// ĳ���� ���� �޼ҵ�
-/*UFUNCTION(EditAnywhere, BlueprintCallable, Category = "Stat")
-void TransformToEntity(int32 EntityID);*/
-
-// ������ GroupID�� Ű ������ ������ �����͸� �����ϴ� �Լ�
-	UFUNCTION(BlueprintCallable, Category = "Stat")
-	void UpdateEntityData();
+	// ������ GroupID�� Ű ������ ������ �����͸� �����ϴ� �Լ�
+	UFUNCTION(BlueprintCallable,Category = "Stat")
+		void UpdateEntityData();
 
 
 	// ���� ĳ���� ������ ����
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
-	FABEntityData EntityData;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Stat")
+		FABEntityData EntityData;
 
 	/* ĳ������ ���� ü��
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
@@ -222,10 +220,10 @@ void TransformToEntity(int32 EntityID);*/
 
 	// �޽� ���� �׽�Ʈ�� ���� 
 	UPROPERTY(VisibleAnywhere)
-	USkeletalMeshComponent* m_pMeshCom;
+		USkeletalMeshComponent* m_pMeshCom;
 
 	UPROPERTY(EditAnywhere)
-	float currentHP;
+		float currentHP;
 
 	int changeCount=0;
 	int32 maxHp;
@@ -236,8 +234,9 @@ void TransformToEntity(int32 EntityID);*/
 
 	int32 currentSpeed;
 	int32 OriginalSpeed;
-	FString currentPreset= "PCPreset.uasset";
-	FString pastPreset= "PCPreset.uasset";
+	UPROPERTY(BlueprintReadOnly)
+		FString currentPreset= "PlayerCharacter";
+	FString pastPreset= "PlayerCharacter";
 
 
 	// MoveSpeed�� �����ϴ� �Լ�
@@ -253,32 +252,40 @@ void TransformToEntity(int32 EntityID);*/
 	bool bIsMoving;
 	bool bcanPie;
 	// �������� ��Ʈ�ڽ��� ���Ͽ� �����ϴ� �Լ� ����
-	UFUNCTION(BlueprintCallable, Category = "HitBox")
-	void SpawnHitBoxAtSocket(FName SocketName);
-	UFUNCTION(BlueprintCallable, Category = "HitBox")
-	void SpawnHitBoxAtSocket2(FName SocketName);
+	UFUNCTION(BlueprintCallable,Category = "HitBox")
+		void SpawnHitBoxAtSocket(FName SocketName);
+	UFUNCTION(BlueprintCallable,Category = "HitBox")
+		void SpawnHitBoxAtSocket2(FName SocketName);
 
 	void TrySpawnHitBox(FName SocketName);
 	UFUNCTION(BlueprintCallable,Category = "HitBox")
-	void SpawnHitSphereAtSocket(FName SocketName);
+		void SpawnHitSphereAtSocket(FName SocketName);
 	UFUNCTION()
-	void OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		void OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult);
 
+	bool isDead=false;
 private:
 	UPROPERTY()
 		UMaterialInterface* HitMaterial = nullptr;
 
 	UPROPERTY()
-	UMaterialInterface* InvincibleOriginalMaterial = nullptr;
+		UMaterialInterface* InvincibleOriginalMaterial = nullptr;
 	int Tcount;
 	//감박이 타이머
 	FTimerHandle FlashTimerHandle1;
 	FTimerHandle FlashTimerHandle2;
 	FTimerHandle FlashTimerHandle3;
 	FTimerHandle FlashTimerHandle4;
+public:
+	UPROPERTY(EditDefaultsOnly,Category = "Effects")
+		UNiagaraSystem* StunEffect;
 
-	bool isDead=false;
+	void ApplyStun(float Duration);
 
+	UPROPERTY(EditDefaultsOnly,Category = "Effects")
+		UNiagaraSystem* FireEffect;
+
+	void ApplyFire(float Duration);
 };
 
 /*
@@ -287,5 +294,5 @@ private:
 	NomalSkill = "Skill_Slash";
 
 	currentPreset = " ";
-	
+
 	*/

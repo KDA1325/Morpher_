@@ -32,7 +32,7 @@ struct FPatternData
 		EPatternType PatternType;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-		float Delay;
+		float Delay=1.0f;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 		float Thundercount=5;
@@ -56,7 +56,7 @@ public:
 	void SpawnAndAttachLasers();
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-		float Delay;//Thunder delay
+		float Delay=1.f;//Thunder delay
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 		int ThunderCount;
