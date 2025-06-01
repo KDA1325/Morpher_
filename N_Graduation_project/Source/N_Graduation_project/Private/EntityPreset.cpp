@@ -66,6 +66,12 @@ AEntityPreset::AEntityPreset()
 	{
 		HitSound = HitSoundObj.Object;
 	}
+	
+	static ConstructorHelpers::FObjectFinder<USoundBase>GuardHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/ShieldGuard.ShieldGuard'"));
+	if(GuardHitSoundObj.Succeeded())
+	{
+		GuardHitSound = GuardHitSoundObj.Object;
+	}
 
 	//SkillArrowChildComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("SkillArrowChildComponent"));
 	////SkillArrowChildComponent->SetupAttachment(RootComponent); // 또는 RootComponent
@@ -336,14 +342,19 @@ float AEntityPreset::TakeDamage(float DamageAmount,FDamageEvent const& DamageEve
 				// 플레이어가 노말 스킬 공격을 했을 때
 				if(!PlayerSkillComponent->bIsSpecialAttack)
 				{
+					// 방어 중 히트 사운드
+					UGameplayStatics::PlaySoundAtLocation(this,GuardHitSound,GetActorLocation(),0.75f);
+
 					UE_LOG(LogTemp,Warning,TEXT("[Defending]: Ignore Normal Skill Damage"));
 
 					return 0.0f;
-				} else
+				} 
+				else
 				{
 					UE_LOG(LogTemp,Error,TEXT("[Defending]: Take Special Attack Damage"));
 				}
-			} else
+			} 
+			else
 			{
 				UE_LOG(LogTemp,Error,TEXT("PlayerSkillComponent is NULL"));
 			}
