@@ -8,6 +8,7 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "NormalAttackDamageType.h"
+#include "N_Graduation_project/N_Graduation_projectCharacter.h"
 // Sets default values
 AEntityProjectile::AEntityProjectile()
 {
@@ -191,8 +192,11 @@ void AEntityProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			//}
 			case EnumEffectType::Fire:
 			// 불 디버프 적용
+			AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(OtherActor);
+			if(!PlayerCharacter) return;
 			float ApplyDuration = Effect.EffectValue01;
 			float DPS = Effect.EffectValue02;
+			PlayerCharacter->ApplyFire(ApplyDuration);
 			ApplyFireDOT(OtherActor,DPS,ApplyDuration);
 			break;
 			}

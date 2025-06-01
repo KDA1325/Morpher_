@@ -289,7 +289,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly,Category = "Effects")
 		UNiagaraSystem* FireEffect;
-
+	UNiagaraComponent* ActiveFireEffect;
 	void ApplyFire(float Duration);
 };
 

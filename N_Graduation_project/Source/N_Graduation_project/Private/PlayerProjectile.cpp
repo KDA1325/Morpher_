@@ -7,8 +7,6 @@
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "FireFloor.h"
 #include "FrozeFloor.h"
-#include "EntityPreset.h"
-
 APlayerProjectile::APlayerProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -85,7 +83,7 @@ void APlayerProjectile::InitProjectileBySkillData(const FSkillData& InSkillData,
 
 	}
 
-	
+
 }
 
 void APlayerProjectile::FireInDirection(const FVector& ShootDirection)
@@ -130,82 +128,75 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 	// 몬스터만 처리
 	if(OtherActor->ActorHasTag("Monster")|| OtherActor->ActorHasTag("FireFloor")||OtherActor->ActorHasTag("FrozeFloor")||OtherActor->ActorHasTag("FireCrystal"))
 	{
-		UE_LOG(LogTemp,Warning,TEXT("OtherActor->ActorHasTag(Floor)"));
+		UE_LOG(LogTemp,Warning,TEXT("OtherActor->ActorHasTag(Floor"));
 
 		for(const FSkillEffectData& Effect : EffectDataArray)
 		{
 			switch(Effect.EffectType)
 			{
-				case EnumEffectType::Damage:	
-				{
-					UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
-					break;
-				}
-				case EnumEffectType::AOEDamage:
-				{
-					// 광역 대미지 처리, 몬스터용 로직엔 추가할 필요 없을 듯(플레이어 쪽에 추가하기)
-					FVector Origin = GetActorLocation(); // AOE 중심
-					float Radius = Effect.EffectValue02;
-					Damage = Effect.EffectValue01;
-					UGameplayStatics::ApplyDamage(OtherActor,Damage,GetInstigatorController(),this,nullptr);
+			case EnumEffectType::Damage:
+			UE_LOG(LogTemp,Warning,TEXT("데미지 실행됨"));
+			UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+			break;
+			case EnumEffectType::AOEDamage:
+			{
+				// 광역 대미지 처리, 몬스터용 로직엔 추가할 필요 없을 듯(플레이어 쪽에 추가하기)
+				FVector Origin = GetActorLocation(); // AOE 중심
+				float Radius = Effect.EffectValue02;
+				Damage = Effect.EffectValue01;
+				UGameplayStatics::ApplyDamage(OtherActor,Damage,GetInstigatorController(),this,nullptr);
 
-					TArray<AActor*> OverlappingActors;
-					UGameplayStatics::GetAllActorsOfClass(GetWorld(),AN_Graduation_projectCharacter::StaticClass(),OverlappingActors);
-	
-					for(AActor* Actor : OverlappingActors)
-					{
-						if(Actor->ActorHasTag("Monster"))
-						{//
-							//float Distance = FVector::Dist(Actor->GetActorLocation(),Origin);
-							//if(Distance <= Radius)
-							//{
+				TArray<AActor*> OverlappingActors;
+				UGameplayStatics::GetAllActorsOfClass(GetWorld(),AN_Graduation_projectCharacter::StaticClass(),OverlappingActors);
+
+				for(AActor* Actor : OverlappingActors)
+				{
+					if(Actor->ActorHasTag("Monster"))
+					{//
+						//float Distance = FVector::Dist(Actor->GetActorLocation(),Origin);
+						//if(Distance <= Radius)
+						//{
 
 							//UGameplayStatics::ApplyDamage(Actor,Damage,GetInstigatorController(),this,nullptr);
-							UE_LOG(LogTemp,Warning,TEXT("AOE Damage applied to %s"),*Actor->GetName());
-							//}
-						}
+						UE_LOG(LogTemp,Warning,TEXT("AOE Damage applied to %s"),*Actor->GetName());
+						//}
 					}
-					break;
 				}
-				case EnumEffectType::Fire:
-				{
-					float ApplyDuration = Effect.EffectValue01;
-					float DPS = Effect.EffectValue02;
-					ApplyFireDOT(OtherActor,DPS,ApplyDuration);
-					UE_LOG(LogTemp,Warning,TEXT("FireFloor EnumEffectType::Fire!"));
-					
-					if(OtherActor->ActorHasTag(FName("Monster")))
-					{
-						if(AEntityPreset* Entity = Cast<AEntityPreset>(OtherActor))
-						{
-							Entity->bIsVisibleEffectFire = true;
-						}						
-					}
-					if(OtherActor->ActorHasTag(FName("FireFloor")))
-					{
-						if(AFireFloor* FireFloor = Cast<AFireFloor>(OtherActor))
-						{
-							FireFloor->On_Fire(); //화염 킴
-							//UE_LOG(LogTemp,Warning,TEXT("FireFloor activated!"));
-						}
-					}
-					if(OtherActor->ActorHasTag("FrozeFloor"))
-					{
-						if(AFrozeFloor* FrozeFloor = Cast<AFrozeFloor>(OtherActor))
-						{
-							FrozeFloor->Off_Froze(); //빙결 킴 코드
-							//	UE_LOG(LogTemp,Warning,TEXT("FrozeFloor activated!"));
-						
-						}
-					}
-					if(OtherActor->ActorHasTag("FireCrystal"))
-					{
-						UE_LOG(LogTemp,Warning,TEXT("FireCrystal activated!"));
-						OtherActor->Destroy();
-					}
-					break;				
-				}
+				break;
 			}
+			case EnumEffectType::Fire:{
+				float ApplyDuration = Effect.EffectValue01;
+				float DPS = Effect.EffectValue02;
+				ApplyFireDOT(OtherActor,DPS,ApplyDuration);
+				UE_LOG(LogTemp,Warning,TEXT("FireFloor EnumEffectType::Fire!"));
+
+				if(OtherActor->ActorHasTag(FName("FireFloor")))
+				{
+					if(AFireFloor* FireFloor = Cast<AFireFloor>(OtherActor))
+					{
+						FireFloor->On_Fire(); //화염 킴
+						//UE_LOG(LogTemp,Warning,TEXT("FireFloor activated!"));
+					}
+				}
+				if(OtherActor->ActorHasTag("FrozeFloor"))
+				{
+					if(AFrozeFloor* FrozeFloor = Cast<AFrozeFloor>(OtherActor))
+					{
+						FrozeFloor->Off_Froze(); //빙결 킴 코드
+						//	UE_LOG(LogTemp,Warning,TEXT("FrozeFloor activated!"));
+
+					}
+				}
+				if(OtherActor->ActorHasTag("FireCrystal"))
+				{
+					UE_LOG(LogTemp,Warning,TEXT("FireCrystal activated!"));
+					OtherActor->Destroy();
+				}
+				break;
+			}
+
+			}
+
 			Destroy(); // 충돌 후 제거
 		}
 
@@ -227,9 +218,6 @@ void APlayerProjectile::ApplyFireDOT(AActor* Target,float DamagePerSecond,float 
 			});
 			GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
 		}
-
-		AEntityPreset* Entity = Cast<AEntityPreset>(Target);
-		Entity->bIsVisibleEffectFire = false;
 	}
 }
 

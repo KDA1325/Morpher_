@@ -1224,7 +1224,7 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 							{
 								PlayerCharacter->CharacterStateComponent->isStunned = false;
 								PlayerCharacter->bCanMove = true;
-
+								PlayerCharacter->ApplyStun(Effect.EffectValue01);
 								UE_LOG(LogTemp,Warning,TEXT("Stun ended for %s"),*PlayerCharacter->GetName());
 							}
 						});

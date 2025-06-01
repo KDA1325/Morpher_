@@ -1173,8 +1173,15 @@ void AN_Graduation_projectCharacter::ApplyStun(float Duration)
 	if(StunEffect)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ ApplyStun"));
-
-		UNiagaraFunctionLibrary::SpawnSystemAttached(
+		// 기존 이펙트가 있으면 정리
+		if(ActiveFireEffect)
+		{
+			UE_LOG(LogTemp,Warning,TEXT("기존 FireEffect 제거 후 새로 생성"));
+			ActiveFireEffect->Deactivate();
+			ActiveFireEffect->DestroyComponent();
+			ActiveFireEffect = nullptr;
+		}
+		ActiveFireEffect =UNiagaraFunctionLibrary::SpawnSystemAttached(
 			StunEffect,
 			GetMesh(),
 			FName("Stun"),
@@ -1183,6 +1190,22 @@ void AN_Graduation_projectCharacter::ApplyStun(float Duration)
 			EAttachLocation::KeepRelativeOffset,
 			true
 		);
+
+		if(ActiveFireEffect)
+		{
+			// 스케일 조절
+			ActiveFireEffect->SetWorldScale3D(FVector(1.f));
+		} 
+		// 일정 시간 후 자동 제거
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle,[this]()
+		{
+			if(ActiveFireEffect)
+			{
+				ActiveFireEffect->Deactivate();
+				ActiveFireEffect->DestroyComponent();
+			}
+		},Duration,false);
 	}
 }
 
@@ -1193,7 +1216,7 @@ void AN_Graduation_projectCharacter::ApplyFire(float Duration)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ FireEffect"));
 
-		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(FireEffect,
+		ActiveFireEffect= UNiagaraFunctionLibrary::SpawnSystemAttached(FireEffect,
 			GetMesh(),
 			FName("Fire"),
 			FVector(0.f,0.f,0.f),
@@ -1202,11 +1225,25 @@ void AN_Graduation_projectCharacter::ApplyFire(float Duration)
 			true
 		);
 
-		if(NiagaraComp)
+		if(ActiveFireEffect)
 		{
 			// 스케일 조절
-			NiagaraComp->SetWorldScale3D(FVector(0.2f));  
+			ActiveFireEffect->SetWorldScale3D(FVector(0.25f));
 		}
+		// 일정 시간 후 자동 제거
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle,[this]()
+		{
+			if(ActiveFireEffect)
+			{
+				ActiveFireEffect->Deactivate();
+				ActiveFireEffect->DestroyComponent();
+			}
+		},Duration,false);
+	}
+	else{
+		UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ FireEffect없음"));
+
 	}
 }
 
