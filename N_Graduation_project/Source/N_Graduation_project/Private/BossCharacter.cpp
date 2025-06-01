@@ -72,11 +72,11 @@ void ABossCharacter::SetHP(int NewHP)
 	UpdateHP();
 	UE_LOG(LogTemp,Log,TEXT("CurrentHP HealHP(200) 결과: %d"),CurrentHP);
 
-		if(CurrentHP == 0)
-		{
-			OnBossDead();
-		}
-	
+	if(CurrentHP == 0)
+	{
+		OnBossDead();
+	}
+
 }
 void ABossCharacter::HealHP(int DamageAmount){
 	CurrentHP = FMath::Clamp(CurrentHP + DamageAmount,0,BossHP); // 안전하게 조정
@@ -115,10 +115,10 @@ void ABossCharacter::Pattern1()
 	//투사체
 	GetWorld()->GetTimerManager().SetTimer(SpinDelayHandle,FTimerDelegate::CreateLambda([this]()
 	{
-		BossPatternManager->StartSpinningBarrageSequence(5);
+		BossPatternManager->StartSpinningBarrageSequence(6);
 	}),16.f,false);
 	//회복
-	TimerManager.SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::HealCrystal),27.f,false);
+	TimerManager.SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::HealCrystal),30.f,false);
 
 	GetWorld()->GetTimerManager().SetTimer(
 		PatternLoopHandle,
@@ -134,7 +134,7 @@ void ABossCharacter::ExecuteBossPattern()
 {
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
-	
+
 	if(!BossPatternManager) return;
 	if(CurrentHP <= 500 && !bPhase2Started)
 	{

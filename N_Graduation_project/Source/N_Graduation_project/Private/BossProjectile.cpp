@@ -12,9 +12,9 @@ ABossProjectile::ABossProjectile(){
 	ProjectileMovement->MaxSpeed = 300;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
-	ProjectileMovement->ProjectileGravityScale = 0; 
+	ProjectileMovement->ProjectileGravityScale = 0;
 
-} 
+}
 
 // Called when the game starts or when spawned
 void ABossProjectile::BeginPlay()
@@ -46,11 +46,11 @@ void ABossProjectile::InitProjectileBySkillData(float Speed,float damage)
 		CollisionComp->OnComponentBeginOverlap.AddDynamic(this,&ABossProjectile::OnOverlap);
 	} else
 	{
-	//	UE_LOG(LogTemp,Warning,TEXT("SpinningBarrage Hitbox is null"));
+		//	UE_LOG(LogTemp,Warning,TEXT("SpinningBarrage Hitbox is null"));
 	}
 
-//	UE_LOG(LogTemp,Warning,TEXT("SpinningBarrage InitProjectileBySkillData 발동"));
-	// 발사 속도 설정
+	//	UE_LOG(LogTemp,Warning,TEXT("SpinningBarrage InitProjectileBySkillData 발동"));
+		// 발사 속도 설정
 	if(ProjectileMovement)
 	{
 		//ProjectileMovement->InitialSpeed = SkillData.ProjectileSpeed;
@@ -104,7 +104,7 @@ void ABossProjectile::FireInDirection(const FVector& ShootDirection)
 	if(ProjectileMovement && CollisionComp)
 	{
 		ProjectileMovement->StopMovementImmediately();
-		ProjectileMovement->SetUpdatedComponent(CollisionComp);  
+		ProjectileMovement->SetUpdatedComponent(CollisionComp);
 		ProjectileMovement->SetVelocityInLocalSpace(ShootDirection * ProjectileMovement->InitialSpeed);
 		ProjectileMovement->Activate(true);
 

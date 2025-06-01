@@ -23,6 +23,8 @@
 #include "GameFramework/DamageType.h"        // UDamageType
 #include "NormalAttackDamageType.h"          // 커스텀 데미지 타입
 #include "Engine/DamageEvents.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
@@ -124,6 +126,23 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 
 	bIsMoving = true;
 	bcanPie=true;
+
+	//이펙트
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> StunEffectAsset(TEXT("/Game/VFX/NG_Stun.NG_Stun"));
+	if(StunEffectAsset.Succeeded())
+	{
+		UE_LOG(LogTemp,Log,TEXT("StunEffectAsset 있음"));
+
+		StunEffect = StunEffectAsset.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> FireEffectAsset(TEXT("/Game/0525NewAsset/EffectAsset/EmpowermentAura/Niagara/NS_StylizedRootBeam7.NS_StylizedRootBeam7"));
+	if(FireEffectAsset.Succeeded())
+	{
+		UE_LOG(LogTemp,Log,TEXT("FireEffectAsset 있음"));
+
+		FireEffect = FireEffectAsset.Object;
+	}
+
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -178,6 +197,9 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	else{
 		MyGameInstance->LoadGame();
 	}
+
+	/*ApplyStun(10);
+	ApplyFire(15);*/
 }
 void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 {
@@ -1113,49 +1135,48 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 	}
 
 }
-//void AN_Graduation_projectCharacter:: LoadPreset(FString PresetID){
-//	if(PlayerSword)
-//	{
-//		PlayerSword->SetHiddenInGame(true);
-//	} else
-//	{
-//		UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
-//	}
-//	FString CleanName;
-//	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-//	if(!MyGameInstance) return;
-//	// 확장자 제거
-//	if(MyGameInstance->CurrentPlayerCharacter!="PCPreset.uasset"){ 
-//	FString FileName = FPaths::GetBaseFilename(MyGameInstance->CurrentPlayerCharacter);
-//	CleanName = FileName;
-//	CleanName.RemoveFromEnd(TEXT("Preset"));}
-//	else{
-//		CleanName="PlayerCharacter";
-//	}
-//	if(UABGameSingleton::Get().GetEntityDataByGroupID(CleanName,EntityData))
-//	{
-//		if(PlayerStatComponent->CurrentMana >= EntityData.TransManaCost) 		OkTrans = true;
-//		if(!(PlayerStatComponent->CurrentMana >= EntityData.TransManaCost))		OkTrans = false;
-//
-//		InvincibleOriginalMaterial = nullptr;
-//		//SetActorLabel(EntityData.EntityName);
-//		SetMoveSpeed(1000);
-//		NomalSkill = EntityData.NormalSkill;
-//		SpecialSkill = EntityData.SpecialSkill;
-//		UE_LOG(LogTemp,Error,TEXT("Loadgame LoadPreset Entity Name: %s, HP: %d, Move Speed: %d"),
-//			*EntityData.EntityName,EntityData.HP,EntityData.MoveSpeed);
-//		UE_LOG(LogTemp,Error,TEXT("Loadgame LoadPreset EntityData 찾기 성공: %s"),*CleanName);
-//
-//	} else{
-//			UE_LOG(LogTemp,Error,TEXT("Loadgame LoadPreset EntityData 찾기 실패: %s"),*CleanName);
-//	}
-//
-//	UE_LOG(LogTemp,Error,TEXT("Loadgame LoadPreset 실행됨"));
-//	PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID,EntityData.HP,EntityData.TransManaCost);
-//	pastPreset = MyGameInstance->CurrentPlayerCharacter;
-//	SetPreset(EntityData.PresetReference);
-//	WidgetActor->Back_CacheFinalMouseAngle = false;
-//
-//
-//	USkeletalMeshComponent* MeshComponent = GetMesh();
-//}
+
+// 이펙트
+void AN_Graduation_projectCharacter::ApplyStun(float Duration)
+{
+	if(StunEffect)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ ApplyStun"));
+
+		UNiagaraFunctionLibrary::SpawnSystemAttached(
+			StunEffect,
+			GetMesh(),
+			FName("Stun"),
+			FVector(0.f,0.f,0.f),
+			FRotator::ZeroRotator,
+			EAttachLocation::KeepRelativeOffset,
+			true
+		);
+	}
+}
+
+
+void AN_Graduation_projectCharacter::ApplyFire(float Duration)
+{
+	if(FireEffect)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ FireEffect"));
+
+		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(FireEffect,
+			GetMesh(),
+			FName("Fire"),
+			FVector(0.f,0.f,0.f),
+			FRotator(90.f,180.f,90.f),
+			EAttachLocation::KeepRelativeOffset,
+			true
+		);
+
+		if(NiagaraComp)
+		{
+			// 스케일 조절
+			NiagaraComp->SetWorldScale3D(FVector(0.2f));  
+		}
+	}
+}
+
+
