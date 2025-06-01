@@ -173,6 +173,9 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UCharacterStateComponent* CharacterStateComponent;
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void DeadEvent();
+
 	/** ü�� ������Ʈ */
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UMyPlayerStatComponent* PlayerStatComponent;
@@ -244,8 +247,9 @@ void TransformToEntity(int32 EntityID);*/
 
 	int32 currentSpeed;
 	int32 OriginalSpeed;
-	FString currentPreset= "PCPreset.uasset";
-	FString pastPreset= "PCPreset.uasset";
+	UPROPERTY(BlueprintReadOnly)
+	FString currentPreset= "PlayerCharacter";
+	FString pastPreset= "PlayerCharacter";
 
 
 	// MoveSpeed�� �����ϴ� �Լ�
@@ -271,7 +275,8 @@ void TransformToEntity(int32 EntityID);*/
 	void SpawnHitSphereAtSocket(FName SocketName);
 	UFUNCTION()
 	void OnHitboxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+	
+	bool isDead=false;
 private:
 	UPROPERTY()
 		UMaterialInterface* HitMaterial = nullptr;
@@ -285,7 +290,7 @@ private:
 	FTimerHandle FlashTimerHandle3;
 	FTimerHandle FlashTimerHandle4;
 
-	bool isDead=false;
+
 
 };
 

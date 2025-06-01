@@ -146,7 +146,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 		SkeletonSword->SetHiddenInGame(true);
 		//UE_LOG(LogTemp,Log,TEXT("스켈레톤칼 방패 있음"))}
 	}
-	
+
 	isDead=false;
 	// Dash가 수행될 때 Callback 되는 함수 DashInterpReturn 지정
 	DashCallback.BindUFunction(this,FName("DashInterpReturn"));
@@ -273,7 +273,7 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 	} else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
 }
 void AN_Graduation_projectCharacter::EndShield()
-{		
+{
 	if(currentPreset  == "SkeletonWarriorPreset.uasset"){
 		PlayerSkillComponent->OffDefenseSkill();
 		UE_LOG(LogTemp,Warning,TEXT("실드 해제됨"));
@@ -462,55 +462,56 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
-	bool bFromNormalHitBox=false;
-	if(DamageEvent.DamageTypeClass)
+	if(isDead==false)
 	{
-		UDamageType* DamageTypeCDO = DamageEvent.DamageTypeClass->GetDefaultObject<UDamageType>();
+		bool bFromNormalHitBox=false;
+		if(DamageEvent.DamageTypeClass)
+		{
+			UDamageType* DamageTypeCDO = DamageEvent.DamageTypeClass->GetDefaultObject<UDamageType>();
 
-		// 예시: NormalAttackDamageType 인지 확인
-		if(DamageTypeCDO->IsA(UNormalAttackDamageType::StaticClass()))
-		{
-			bFromNormalHitBox=true;
-			UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: NormalAttackDamageType"));
-		} else
-		{
-			bFromNormalHitBox=false;
-			UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: %s"),*DamageTypeCDO->GetClass()->GetName());
+			// 예시: NormalAttackDamageType 인지 확인
+			if(DamageTypeCDO->IsA(UNormalAttackDamageType::StaticClass()))
+			{
+				bFromNormalHitBox=true;
+				UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: NormalAttackDamageType"));
+			} else
+			{
+				bFromNormalHitBox=false;
+				UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: %s"),*DamageTypeCDO->GetClass()->GetName());
+			}
 		}
-	}
-	if(TestMode ==true){
+		if(TestMode ==true){
 
-		PlayerSkillComponent->CanUseNomalSkill = true;
-		On_invincibility_Implementation();
-		// 데미지 로그 출력	
-		float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
-		UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
-
-		return FinalDamage;
-	}
-	else {
-		//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
-		if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) {
-			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
-			//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 			PlayerSkillComponent->CanUseNomalSkill = true;
-
-				return 0.0f;//무적상태라면 리턴.
-
-		} else
-		{
-			PlayerSkillComponent->CanUseNomalSkill = true;
-			PlayerStatComponent->ApplyDamage(DamageAmount);
 			On_invincibility_Implementation();
 			// 데미지 로그 출력	
 			float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
-			UE_LOG(LogTemp,Error,TEXT("Player TakeDamage  %f"),DamageAmount);
+			UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
 
 			return FinalDamage;
+		} else {
+			//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
+			if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) {
+				UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
+				//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
+				PlayerSkillComponent->CanUseNomalSkill = true;
+
+				return 0.0f;//무적상태라면 리턴.
+
+			} else
+			{
+				PlayerSkillComponent->CanUseNomalSkill = true;
+				PlayerStatComponent->ApplyDamage(DamageAmount);
+				On_invincibility_Implementation();
+				// 데미지 로그 출력	
+				float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
+				UE_LOG(LogTemp,Error,TEXT("Player TakeDamage  %f"),DamageAmount);
+
+				return FinalDamage;
+			}
 		}
 	}
-
-
+	return 0;
 }
 void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 {
@@ -672,10 +673,11 @@ void AN_Graduation_projectCharacter::OnPlayerDead()
 	UE_LOG(LogTemp,Warning,TEXT("Player is dead"));
 	isDead=true;
 	bcanPie=false;
-	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if(!MyGameInstance) return;
-	MyGameInstance->LoadGame();
-	WidgetActor->ShowDieWidget();
+	DeadEvent();
+	//auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	//if(!MyGameInstance) return;
+	//MyGameInstance->LoadGame();
+	//WidgetActor->ShowDieWidget();
 }
 
 void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
@@ -843,8 +845,8 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			m_pMeshCom->SetSkeletalMesh(LoadedMesh);
 			GetMesh()->SetAnimInstanceClass(NewAnimBP);
 
-		//	SpawnHitBoxAtSocket("AttachHitBox");
-		//	TrySpawnHitBox("AttachHitBox2");
+			//	SpawnHitBoxAtSocket("AttachHitBox");
+			//	TrySpawnHitBox("AttachHitBox2");
 
 		}
 	} else if(currentPreset == "SkeletonArcherPreset.uasset")

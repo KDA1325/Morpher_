@@ -36,12 +36,14 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	CanUseSpecialSkill = true;
 	DamageAmount = 50;
 
-	static ConstructorHelpers::FClassFinder<APlayerProjectile> ProjectileBP(TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_ThrowRock"));
+	static ConstructorHelpers::FClassFinder<APlayerProjectile> ProjectileBP(
+		TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_ThrowRock"));
 	if(ProjectileBP.Succeeded())
 	{
 		NormalProjectileClass = ProjectileBP.Class;
 	}
-	static ConstructorHelpers::FClassFinder<APlayerProjectile> SProjectileBP(TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_FireBall"));
+	static ConstructorHelpers::FClassFinder<APlayerProjectile> SProjectileBP(
+		TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_FireBall"));
 	if(SProjectileBP.Succeeded())
 	{
 		SpecialProjectileClass = SProjectileBP.Class;
@@ -157,7 +159,7 @@ void UPlayerSkillComponent::OffDefenseSkill()
 			UE_LOG(LogTemp,Warning,TEXT("OffDefenseSkill 재생 중인 몽타주가 없습니다."));
 		}
 	}
-	
+
 	//실드 이펙트
 	if(ShieldParticleComp) {
 		ShieldParticleComp->DestroyComponent();  // 이펙트 삭제
@@ -444,7 +446,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 		if(StatComponent && StatComponent->HUDWidget)
 		{
-			StatComponent->HUDWidget->UpdateNomalSkillCooldown(SkillData.SkillCoolTime,CanUseNomalSkill,CanUseSpecialSkill);
+			StatComponent->HUDWidget->UpdateNomalSkillCooldown(SkillData.SkillCoolTime/3,CanUseNomalSkill,CanUseSpecialSkill);
 			StatComponent->HUDWidget->CanNomal = false;
 		}
 
@@ -456,7 +458,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		// 쿨타임 타이머 설정
 		FTimerDelegate NomalCooldownEnd;
 		NomalCooldownEnd.BindUObject(this,&UPlayerSkillComponent::NomalCooldown);
-		SetSkillTimer(SkillData.SkillCoolTime,NomalCooldownEnd);
+		SetSkillTimer(SkillData.SkillCoolTime/3,NomalCooldownEnd);
 	} else
 	{
 		UE_LOG(LogTemp,Warning,TEXT("kakao No CanUseNomalSkill"));
@@ -514,7 +516,7 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 		if(StatComponent && StatComponent->HUDWidget)
 		{
-			StatComponent->HUDWidget->UpdateSpecialSkillCooldown(SkillData.SkillCoolTime,CanUseNomalSkill,CanUseSpecialSkill);
+			StatComponent->HUDWidget->UpdateSpecialSkillCooldown(SkillData.SkillCoolTime/3,CanUseNomalSkill,CanUseSpecialSkill);
 			StatComponent->HUDWidget->CanSpecial = false;
 		}
 
@@ -562,7 +564,7 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 
 		FTimerDelegate SpecialCooldownEnd;
 		SpecialCooldownEnd.BindUObject(this,&UPlayerSkillComponent::SpecialCooldown);
-		SpecialSetSkillTimer(SkillData.SkillCoolTime,SpecialCooldownEnd);
+		SpecialSetSkillTimer(SkillData.SkillCoolTime/3,SpecialCooldownEnd);
 	} else
 	{
 		UE_LOG(LogTemp,Warning,TEXT("kakao No CanUseSpecialSkill"));
@@ -719,7 +721,7 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 	// 스폰할 투사체 클래스 설정 확인
 	if(!NormalProjectileClass)
 	{
-		UE_LOG(LogTemp,Error,TEXT("NomalProjectileClass not set!"));
+		//	UE_LOG(LogTemp,Error,TEXT("NomalProjectileClass not set!"));
 		return;
 	}
 
@@ -730,8 +732,8 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
 	if(!MeshComp) return;
 
-	//FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
-	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowHead"));
+	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	//FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowHead"));
 	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
 
 	// 스폰 파라미터
@@ -755,15 +757,16 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 		{
 			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
 			SpawnedProjectile->FireInDirection(Direction);
-			UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_ThrowRock"));
+			//	UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_ThrowRock"));
 		} else
 		{
-			UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_ThrowRock data!"));
+			//UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_ThrowRock data!"));
 		}
 	} else
 	{
-		UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
+		//UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
 	}
+	//	UE_LOG(LogTemp,Warning,TEXT("Projectile class is: %s"),*GetNameSafe(NormalProjectileClass));
 }
 
 void UPlayerSkillComponent::SpawnProjectile_FireBall()
@@ -771,7 +774,7 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 	// 스폰할 투사체 클래스 설정 확인
 	if(!SpecialProjectileClass)
 	{
-		UE_LOG(LogTemp,Error,TEXT("SpecialProjectileClass not set!"));
+		//UE_LOG(LogTemp,Error,TEXT("SpecialProjectileClass not set!"));
 		return;
 	}
 
@@ -782,8 +785,8 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
 	if(!MeshComp) return;
 
-	//FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
-	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowHead"));
+	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	//FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowHead"));
 	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
 
 	// 스폰 파라미터
@@ -807,15 +810,16 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 		{
 			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
 			SpawnedProjectile->FireInDirection(Direction);
-			UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_FireBall"));
+			//UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_FireBall"));
 		} else
 		{
-			UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_FireBall data!"));
+			//UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_FireBall data!"));
 		}
 	} else
 	{
-		UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
+		//UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
 	}
+	UE_LOG(LogTemp,Warning,TEXT("Projectile class is: %s"),*GetNameSafe(SpecialProjectileClass));
 }
 void UPlayerSkillComponent::PerformSkill_Arrow()
 {
@@ -1222,6 +1226,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 											AICon->BrainComponent->RestartLogic();
 										}
 									},Effect.EffectValue01,false);
+									//},10,false);
 								}
 							}
 						}
