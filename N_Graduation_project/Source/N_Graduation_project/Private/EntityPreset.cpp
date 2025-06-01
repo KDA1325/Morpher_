@@ -1233,6 +1233,8 @@ void AEntityPreset::PerformSkill_Charge()
 {
 	if(!SpecialSkillMontage) return;
 
+	TWeakObjectPtr<AEntityPreset> WeakThis = this;
+
 	// 스킬 시전 플래그 설정
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
 	bIsCastingSkill = true;
@@ -1250,13 +1252,20 @@ void AEntityPreset::PerformSkill_Charge()
 
 	// 1초 뒤 데칼 제거
 	FTimerHandle DecalTimerHandle;
-	GetWorldTimerManager().SetTimer(DecalTimerHandle,[this]()
+	GetWorldTimerManager().SetTimer(DecalTimerHandle,[WeakThis]()
 	{
-		if(ChargeDecalComponent)
+		if(!WeakThis.IsValid()) return;
+
+		if(WeakThis->ChargeDecalComponent)
+		{
+			WeakThis->ChargeDecalComponent->DestroyComponent();
+			WeakThis->ChargeDecalComponent = nullptr;
+		}
+		/*if(ChargeDecalComponent)
 		{
 			ChargeDecalComponent->DestroyComponent();
 			ChargeDecalComponent = nullptr;
-		}
+		}*/
 	},1.0f,false);
 
 	// AI 경로 추적 중지 

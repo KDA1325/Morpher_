@@ -871,15 +871,15 @@ void UPlayerSkillComponent::FireProjectile_Arrow()
 		FSkillData SkillData;
 		TArray<FSkillEffectData> EffectDataArray;
 
-		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_FireBall",SkillData) &&
-			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_FireBall",EffectDataArray))
+		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
 		{
 			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
 			SpawnedProjectile->FireInDirection(Direction);
-			UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_FireBall"));
+			UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_Arrow"));
 		} else
 		{
-			UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_FireBall data!"));
+			UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_Arrow data!"));
 		}
 	} else
 	{
