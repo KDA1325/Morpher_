@@ -127,22 +127,39 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	bIsMoving = true;
 	bcanPie=true;
 
-	////이펙트
-	//static ConstructorHelpers::FObjectFinder<UNiagaraSystem> StunEffectAsset(TEXT("/Game/VFX/NG_Stun.NG_Stun"));
-	//if(StunEffectAsset.Succeeded())
-	//{
-	//	UE_LOG(LogTemp,Log,TEXT("StunEffectAsset 있음"));
+	//이펙트
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> StunEffectAsset(TEXT("/Game/VFX/NG_Stun.NG_Stun"));
+	if(StunEffectAsset.Succeeded())
+	{
+		UE_LOG(LogTemp,Log,TEXT("StunEffectAsset 있음"));
 
-	//	StunEffect = StunEffectAsset.Object;
-	//}
-	//static ConstructorHelpers::FObjectFinder<UNiagaraSystem> FireEffectAsset(TEXT("/Game/0525NewAsset/EffectAsset/EmpowermentAura/Niagara/NS_StylizedRootBeam7.NS_StylizedRootBeam7"));
-	//if(FireEffectAsset.Succeeded())
-	//{
-	//	UE_LOG(LogTemp,Log,TEXT("FireEffectAsset 있음"));
+		StunEffect = StunEffectAsset.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> FireEffectAsset(TEXT("/Game/0525NewAsset/EffectAsset/EmpowermentAura/Niagara/NS_StylizedRootBeam7.NS_StylizedRootBeam7"));
+	if(FireEffectAsset.Succeeded())
+	{
+		UE_LOG(LogTemp,Log,TEXT("FireEffectAsset 있음"));
 
-	//	FireEffect = FireEffectAsset.Object;
-	//}
+		FireEffect = FireEffectAsset.Object;
+	}
 
+	static ConstructorHelpers::FObjectFinder<USoundBase>HitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Hit.Hit'"));
+	if(HitSoundObj.Succeeded())
+	{
+		HitSound = HitSoundObj.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>GuardHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/ShieldGuard.ShieldGuard'"));
+	if(GuardHitSoundObj.Succeeded())
+	{
+		GuardHitSound = GuardHitSoundObj.Object;
+	}
+	
+	static ConstructorHelpers::FObjectFinder<USoundBase>FireEffectSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Fire.Fire'"));
+	if(FireEffectSoundObj.Succeeded())
+	{
+		FireEffectSound = FireEffectSoundObj.Object;
+	}
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -495,36 +512,56 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 			if(DamageTypeCDO->IsA(UNormalAttackDamageType::StaticClass()))
 			{
 				bFromNormalHitBox=true;
+				
+				// 방어 중일 때 히트 사운드
+				UGameplayStatics::PlaySoundAtLocation(this,GuardHitSound,GetActorLocation(),0.75f);
+
 				UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: NormalAttackDamageType"));
-			} else
+			} 
+			else
 			{
 				bFromNormalHitBox=false;
+
+				// 히트 사운드
+				UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+
 				UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: %s"),*DamageTypeCDO->GetClass()->GetName());
 			}
 		}
-		if(TestMode ==true){
-
+		if(TestMode ==true)
+		{
 			PlayerSkillComponent->CanUseNomalSkill = true;
 			On_invincibility_Implementation();
+
+			// 히트 사운드
+			UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+			
 			// 데미지 로그 출력	
 			float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
 			UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
 
 			return FinalDamage;
-		} else {
+		} 
+		else 
+		{
 			//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
-			if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) {
+			if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) 
+			{
 				UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
 				//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 				PlayerSkillComponent->CanUseNomalSkill = true;
 
 				return 0.0f;//무적상태라면 리턴.
-
-			} else
+			} 
+			else
 			{
 				PlayerSkillComponent->CanUseNomalSkill = true;
 				PlayerStatComponent->ApplyDamage(DamageAmount);
 				On_invincibility_Implementation();
+				
+				// 히트 사운드
+				//UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+
 				// 데미지 로그 출력	
 				float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
 				UE_LOG(LogTemp,Error,TEXT("Player TakeDamage  %f"),DamageAmount);
@@ -574,43 +611,32 @@ void AN_Graduation_projectCharacter::On_invincibility_Implementation()
 // ToggleMaterial 수정
 void AN_Graduation_projectCharacter::ToggleMaterial(bool bUseHitMaterial)
 {
-	if(USkeletalMeshComponent* MeshComponent = GetMesh())
-	{
-		if(!isDead)
+	if(USkeletalMeshComponent* MeshComponent = GetMesh()){
+
+		if(isDead==false)
 		{
-			if(currentPreset == "InpermonPreset.uasset")
+			UMaterialInterface* TargetMaterial = bUseHitMaterial ? HitMaterial : InvincibleOriginalMaterial;
+
+			if(!TargetMaterial)
 			{
-				// 머터리얼 배열로부터 꺼내서 설정
-				const TArray<UMaterialInterface*>& SourceArray = bUseHitMaterial ? HitMaterials : OriginalMaterials;
-
-				for(int32 i = 0; i < SourceArray.Num(); ++i)
-				{
-					if(SourceArray[i])
-					{
-						MeshComponent->SetMaterial(i,SourceArray[i]);
-					}
-				}
-			} else
-			{
-				// 일반 캐릭터는 단일 머터리얼만 설정
-				UMaterialInterface* TargetMaterial = bUseHitMaterial ? HitMaterial : InvincibleOriginalMaterial;
-
-				if(!TargetMaterial)
-				{
-					UE_LOG(LogTemp,Warning,TEXT("TargetMaterial is null!"));
-					return;
-				}
-
-				MeshComponent->SetMaterial(0,TargetMaterial);
+				//UE_LOG(LogTemp,Error,TEXT("TargetMaterial is null! (bUseHitMaterial: %s)"),bUseHitMaterial ? TEXT("true") : TEXT("false"));
+				return;
 			}
 
-			// Tcount는 공통 처리 가능
+			MeshComponent->SetMaterial(0,TargetMaterial);
+
 			Tcount++;
 			if(Tcount > 3)
 			{
+				// 필요 없다면 아래 줄 생략 (주의: nullptr 초기화 금지)
+				// InvincibleOriginalMaterial = nullptr;
 				Tcount = 0;
 			}
+
 		}
+	} else	{
+		//	UE_LOG(LogTemp,Error,TEXT("MeshComponent is null!"));
+		return;
 	}
 }
 
@@ -799,18 +825,11 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 			MeshComponent->SetMaterial(0,Mat0);
 			MeshComponent->SetMaterial(1,Mat1);
 			MeshComponent->SetMaterial(2,Mat2);
-
 		}
+		//UMaterialInterface* InpermonMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Gamin/InferMon/standardSurface1.standardSurface1'"));
+		//InvincibleOriginalMaterial = InpermonMaterial;
+		//MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
-		OriginalMaterials.Add(Mat0);
-		OriginalMaterials.Add(Mat1);
-		OriginalMaterials.Add(Mat2);
-		UMaterialInterface* HitMat0 = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/UI/Materials/Hit.Hit'"));
-		UMaterialInterface* HitMat1 = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/UI/Materials/Hit.Hit'"));
-		UMaterialInterface* HitMat2 = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/UI/Materials/Hit.Hit'"));
-		HitMaterials.Add(HitMat0);
-		HitMaterials.Add(HitMat1);
-		HitMaterials.Add(HitMat2);
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		if(LoadedMesh && NewAnimBP)
 		{
@@ -1155,72 +1174,85 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 }
 
 // 이펙트
-//void AN_Graduation_projectCharacter::ApplyStun(float Duration)
-//{
-//	if(StunEffect)
-//	{
-//		UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ ApplyStun"));
-//
-//		UNiagaraComponent* NiagaraComp =UNiagaraFunctionLibrary::SpawnSystemAttached(
-//			StunEffect,
-//			GetMesh(),
-//			FName("Stun"),
-//			FVector(0.f,0.f,0.f),
-//			FRotator::ZeroRotator,
-//			EAttachLocation::KeepRelativeOffset,
-//			true
-//		);
-//
-//		if(NiagaraComp)
-//		{
-//			// 스케일 조절
-//			NiagaraComp->SetWorldScale3D(FVector(1.f));
-//		} 
-//		// 일정 시간 후 자동 제거
-//		FTimerHandle TimerHandle;
-//		GetWorldTimerManager().SetTimer(TimerHandle,[NiagaraComp]()
-//		{
-//			if(NiagaraComp)
-//			{
-//				NiagaraComp->Deactivate();
-//				NiagaraComp->DestroyComponent();
-//			}
-//		},Duration,false);
-//	}
-//}
+void AN_Graduation_projectCharacter::ApplyStun(float Duration)
+{
+	if(StunEffect)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ ApplyStun"));
+		// 기존 이펙트가 있으면 정리
+		if(ActiveFireEffect)
+		{
+			UE_LOG(LogTemp,Warning,TEXT("기존 FireEffect 제거 후 새로 생성"));
+			ActiveFireEffect->Deactivate();
+			ActiveFireEffect->DestroyComponent();
+			ActiveFireEffect = nullptr;
+		}
+		ActiveFireEffect =UNiagaraFunctionLibrary::SpawnSystemAttached(
+			StunEffect,
+			GetMesh(),
+			FName("Stun"),
+			FVector(0.f,0.f,0.f),
+			FRotator::ZeroRotator,
+			EAttachLocation::KeepRelativeOffset,
+			true
+		);
+
+		if(ActiveFireEffect)
+		{
+			// 스케일 조절
+			ActiveFireEffect->SetWorldScale3D(FVector(1.f));
+		} 
+		// 일정 시간 후 자동 제거
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle,[this]()
+		{
+			if(ActiveFireEffect)
+			{
+				ActiveFireEffect->Deactivate();
+				ActiveFireEffect->DestroyComponent();
+			}
+		},Duration,false);
+	}
+}
 
 
-//void AN_Graduation_projectCharacter::ApplyFire(float Duration)
-//{
-	//if(FireEffect)
-	//{
-	//	UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ FireEffect"));
+void AN_Graduation_projectCharacter::ApplyFire(float Duration)
+{
+	if(FireEffect)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ FireEffect"));
 
-	//	UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(FireEffect,
-	//		GetMesh(),
-	//		FName("Fire"),
-	//		FVector(0.f,0.f,0.f),
-	//		FRotator(90.f,180.f,90.f),
-	//		EAttachLocation::KeepRelativeOffset,
-	//		true
-	//	);
+		ActiveFireEffect= UNiagaraFunctionLibrary::SpawnSystemAttached(FireEffect,
+			GetMesh(),
+			FName("Fire"),
+			FVector(0.f,0.f,0.f),
+			FRotator(90.f,180.f,90.f),
+			EAttachLocation::KeepRelativeOffset,
+			true
+		);
 
-	//	if(NiagaraComp)
-	//	{
-	//		// 스케일 조절
-	//		NiagaraComp->SetWorldScale3D(FVector(0.25f));  
-	//	}
-	//	// 일정 시간 후 자동 제거
-	//	FTimerHandle TimerHandle;
-	//	GetWorldTimerManager().SetTimer(TimerHandle,[NiagaraComp]()
-	//	{
-	//		if(NiagaraComp)
-	//		{
-	//			NiagaraComp->Deactivate();
-	//			NiagaraComp->DestroyComponent(); // 필요 시 파괴
-	//		}
-	//	},Duration,false);
-	//}
-//}
+		if(ActiveFireEffect)
+		{
+			// 스케일 조절
+			ActiveFireEffect->SetWorldScale3D(FVector(0.25f));
+
+			UGameplayStatics::PlaySoundAtLocation(this,FireEffectSound,GetActorLocation(),0.9f);
+		}
+		// 일정 시간 후 자동 제거
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle,[this]()
+		{
+			if(ActiveFireEffect)
+			{
+				ActiveFireEffect->Deactivate();
+				ActiveFireEffect->DestroyComponent();
+			}
+		},Duration,false);
+	}
+	else{
+		UE_LOG(LogTemp,Warning,TEXT("StunEffectAsset_ FireEffect없음"));
+
+	}
+}
 
 

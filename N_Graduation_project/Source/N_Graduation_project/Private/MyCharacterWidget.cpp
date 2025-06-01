@@ -262,7 +262,7 @@ void UMyCharacterWidget::OnCollection_Implementation(const FString& DeadMonsterN
 				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr,TEXT("/Game/UI/Image/Icon/멧P.멧P"));
 				if(NewTexture)
 				{
-					CollecterIcon->SetBrushFromTexture(NewTexture);
+					CollecterIcon->SetBrushFromTexture(NewTexture, true);
 				}
 				if(UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_181"))))
 				{
@@ -272,7 +272,7 @@ void UMyCharacterWidget::OnCollection_Implementation(const FString& DeadMonsterN
 				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr,TEXT("/Game/UI/Image/Icon/원P.원P"));
 				if(NewTexture)
 				{
-					CollecterIcon->SetBrushFromTexture(NewTexture);
+					CollecterIcon->SetBrushFromTexture(NewTexture,true);
 				}
 				if(UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_181"))))
 				{
@@ -282,7 +282,7 @@ void UMyCharacterWidget::OnCollection_Implementation(const FString& DeadMonsterN
 				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr,TEXT("/Game/UI/Image/Icon/검P.검P"));
 				if(NewTexture)
 				{
-					CollecterIcon->SetBrushFromTexture(NewTexture);
+					CollecterIcon->SetBrushFromTexture(NewTexture,true);
 				}
 				if(UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_181"))))
 				{
@@ -292,7 +292,7 @@ void UMyCharacterWidget::OnCollection_Implementation(const FString& DeadMonsterN
 				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr,TEXT("/Game/UI/Image/Icon/골P.골P"));
 				if(NewTexture)
 				{
-					CollecterIcon->SetBrushFromTexture(NewTexture);
+					CollecterIcon->SetBrushFromTexture(NewTexture,true);
 				}
 				if(UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_181"))))
 				{
@@ -302,7 +302,7 @@ void UMyCharacterWidget::OnCollection_Implementation(const FString& DeadMonsterN
 				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr,TEXT("/Game/UI/Image/Icon/활P.활P"));
 				if(NewTexture)
 				{
-					CollecterIcon->SetBrushFromTexture(NewTexture);
+					CollecterIcon->SetBrushFromTexture(NewTexture,true);
 				}
 				if(UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_181"))))
 				{
@@ -312,7 +312,7 @@ void UMyCharacterWidget::OnCollection_Implementation(const FString& DeadMonsterN
 				UTexture2D* NewTexture = LoadObject<UTexture2D>(nullptr,TEXT("/Game/UI/Image/Icon/도P.도P"));
 				if(NewTexture)
 				{
-					CollecterIcon->SetBrushFromTexture(NewTexture);
+					CollecterIcon->SetBrushFromTexture(NewTexture,true);
 				}
 				if(UTextBlock* NameText = Cast<UTextBlock>(GetWidgetFromName(TEXT("TextBlock_181"))))
 				{

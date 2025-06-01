@@ -48,6 +48,20 @@ public:
 	UPROPERTY(EditAnywhere)
 	float CurrentHP;
 
+	UPROPERTY(EditAnywhere)
+	USoundBase* DeathSound;
+	
+	UPROPERTY(EditAnywhere)
+	USoundBase* HitSound;
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* GuardHitSound;
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* ShieldEndSound;
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* FireSound;
 
 	FABEntityData EntityData;
 	FSkillData NormalSkillData;
@@ -168,6 +182,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Skill")
 	void PerformSkill_Charge();
 	void PerformSkill_FireBall();
+
+	//UFUNCTION(BlueprintCallable,Category = "Sound")
+	//void PlayFireSound();
+
 	void PerformSkill_FreezeBreath();
 	void PerformSkill_EarthBreaker();
 

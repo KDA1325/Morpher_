@@ -18,6 +18,7 @@
 #include "NiagaraComponent.h"
 #include "TimerManager.h"
 #include "NormalAttackDamageType.h"
+#include "Kismet/GameplayStatics.h"
 
 AEntityPreset::AEntityPreset()
 {
@@ -54,6 +55,35 @@ AEntityPreset::AEntityPreset()
 	FireEffectComp->SetupAttachment(GetMesh());
 	FireEffectComp->SetAutoActivate(false);
 
+	static ConstructorHelpers::FObjectFinder<USoundBase>DeathSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/EntityDeath.EntityDeath'"));
+	if(DeathSoundObj.Succeeded())
+	{
+		DeathSound = DeathSoundObj.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>HitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Hit.Hit'"));
+	if(HitSoundObj.Succeeded())
+	{
+		HitSound = HitSoundObj.Object;
+	}
+	
+	static ConstructorHelpers::FObjectFinder<USoundBase>GuardHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/ShieldGuard.ShieldGuard'"));
+	if(GuardHitSoundObj.Succeeded())
+	{
+		GuardHitSound = GuardHitSoundObj.Object;
+	}
+	
+	static ConstructorHelpers::FObjectFinder<USoundBase>ShieldEndSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/ShieldGuardEnd.ShieldGuardEnd'"));
+	if(ShieldEndSoundObj.Succeeded())
+	{
+		ShieldEndSound = ShieldEndSoundObj.Object;
+	}
+	
+	/*static ConstructorHelpers::FObjectFinder<USoundBase>FireSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Fire.Fire'"));
+	if(FireSoundObj.Succeeded())
+	{
+		FireSound = FireSoundObj.Object;
+	}*/
 
 	//SkillArrowChildComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("SkillArrowChildComponent"));
 	////SkillArrowChildComponent->SetupAttachment(RootComponent); // 또는 RootComponent
@@ -249,6 +279,9 @@ void AEntityPreset::Tick(float DeltaTime)
 		if(FireEffectComp && !FireEffectComp->IsActive())
 		{
 			FireEffectComp->Activate();
+
+			//UGameplayStatics::PlaySoundAtLocation(this,FireSound,GetActorLocation(),0.9f);
+			
 			UE_LOG(LogTemp,Warning,TEXT("FireEffect 활성화"));
 		}
 	} 
@@ -324,21 +357,33 @@ float AEntityPreset::TakeDamage(float DamageAmount,FDamageEvent const& DamageEve
 				// 플레이어가 노말 스킬 공격을 했을 때
 				if(!PlayerSkillComponent->bIsSpecialAttack)
 				{
+					// 방어 중 히트 사운드
+					UGameplayStatics::PlaySoundAtLocation(this,GuardHitSound,GetActorLocation(),0.75f);
+
 					UE_LOG(LogTemp,Warning,TEXT("[Defending]: Ignore Normal Skill Damage"));
 
 					return 0.0f;
-				} else
+				} 
+				else
 				{
 					UE_LOG(LogTemp,Error,TEXT("[Defending]: Take Special Attack Damage"));
 				}
-			} else
+			} 
+			else
 			{
 				UE_LOG(LogTemp,Error,TEXT("PlayerSkillComponent is NULL"));
 			}
 		}
+		else
+		{
+			// 히트 사운드
+			UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+		}
 	}
 	else if(DamageCauser->ActorHasTag(FName("PlayerProjectile")))
 	{
+		// 히트 사운드
+		UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
 		UE_LOG(LogTemp,Warning,TEXT("TakeDamage: Hit by PlayerProjectile"));
 	}
 	else
@@ -441,6 +486,9 @@ void AEntityPreset::SetHP(float NewHP)
 				UE_LOG(LogTemp,Warning,TEXT("DeathMaterial이 설정되어 있지 않음!"));
 			}
 		}
+
+		// 사운드 재생 
+		UGameplayStatics::PlaySoundAtLocation(this,DeathSound,GetActorLocation(), 0.75f);
 
 		FTimerHandle DestroyTimerHandle;
 		GetWorldTimerManager().SetTimer(DestroyTimerHandle,this,&AEntityPreset::DelayedDestroy,0.33f,false);
@@ -1422,6 +1470,10 @@ void AEntityPreset::OnGuardEnded()
 	// 스킬 종료 처리 
 	bIsCastingSkill = false;
 	this->bIsDefending = false;
+
+	// 이펙트 해제 사운드
+	UGameplayStatics::PlaySoundAtLocation(this,ShieldEndSound,GetActorLocation(),0.9f);
+
 	UE_LOG(LogTemp,Warning,TEXT("방어 종료"));
 
 	// AI 경로 추적 활성화
@@ -1581,6 +1633,8 @@ void AEntityPreset::SpawnProjectile_FireBall()
 
 	if(SpawnedProjectile)
 	{
+		//SpawnedProjectile->Entity = this;
+
 		// Skill 데이터 테이블에서 "Skill_FireBall" 데이터 가져오기
 		FSkillData SkillData;
 		TArray<FSkillEffectData> EffectDataArray;
@@ -1601,6 +1655,7 @@ void AEntityPreset::SpawnProjectile_FireBall()
 		}
 	}
 }
+
 void AEntityPreset::PerformSkill_FireBall()
 {
 	if(!SpecialSkillMontage) return;
@@ -1642,6 +1697,13 @@ void AEntityPreset::PerformSkill_FireBall()
 		UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_FireBall: SpecialSkillMontage is not set"));
 	}
 }
+
+//void AEntityPreset::PlayFireSound()
+//{
+//	// 화상 사운드
+//	UGameplayStatics::PlaySoundAtLocation(this,FireSound,GetActorLocation(),0.9f);
+//}
+
 void AEntityPreset::PerformSkill_FreezeBreath()
 {
 	if(!SpecialSkillMontage) return;

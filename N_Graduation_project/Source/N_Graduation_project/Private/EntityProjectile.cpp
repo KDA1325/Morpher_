@@ -263,6 +263,8 @@ void AEntityProjectile::ApplyFireDOT(AActor* Target,float DamagePerSecond,float 
 			UE_LOG(LogTemp,Warning,TEXT("ApplyFireDOT: %f damage to %s (tick %d)"),DamagePerSecond,*Target->GetName(),TickNumber);
 		});
 
+		//Entity->PlayFireSound();
+
 		GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
 	}
 }
