@@ -14,6 +14,8 @@
 #include "BrainComponent.h"
 #include "MyPlayerStatComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/ActorComponent.h"
+#include "NiagaraComponent.h"
 #include "TimerManager.h"
 #include "NormalAttackDamageType.h"
 
@@ -39,6 +41,19 @@ AEntityPreset::AEntityPreset()
 
 	GetCharacterMovement()->BrakingFrictionFactor = 0.0f; // 멈출 때 마찰 없음
 	GetCharacterMovement()->GroundFriction = 0.0f;
+
+	FreezingEffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("FreezingEffect"));
+	FreezingEffectComp->SetupAttachment(GetMesh()); // 또는 RootComponent
+	FreezingEffectComp->SetAutoActivate(false);
+
+	StunEffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("StunEffect"));
+	StunEffectComp->SetupAttachment(GetMesh());
+	StunEffectComp->SetAutoActivate(false);
+
+	FireEffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("FireEffect"));
+	FireEffectComp->SetupAttachment(GetMesh());
+	FireEffectComp->SetAutoActivate(false);
+
 
 	//SkillArrowChildComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("SkillArrowChildComponent"));
 	////SkillArrowChildComponent->SetupAttachment(RootComponent); // 또는 RootComponent
@@ -168,6 +183,47 @@ void AEntityPreset::BeginPlay()
 	//}
 
 	this->bIsDefending = false;
+
+	this->bIsVisibleEffectFire = false;
+	this->bIsVisibleEffectFreezing = false;
+	this->bIsVisibleEffectStun = false;
+
+	//TArray<UActorComponent*> OutComponents;
+	//this->GetComponentsByClass(UNiagaraComponent::StaticClass(),OutComponents);
+
+
+	//for(UActorComponent* Comp : NiagaraComponents)
+	//{
+	//	if(Comp->GetName() == "FireEffect")
+	//	{
+	//		FireEffectComp = Cast<UNiagaraComponent>(Comp);
+	//		UE_LOG(LogTemp,Warning,TEXT("FireEffectComp 연결됨: %s"),*Comp->GetName());
+	//	} else if(Comp->GetName() == "FreezingEffect")
+	//	{
+	//		FreezingEffectComp = Cast<UNiagaraComponent>(Comp);
+	//		UE_LOG(LogTemp,Warning,TEXT("FreezingEffectComp 연결됨: %s"),*Comp->GetName());
+	//	} else if(Comp->GetName() == "StunEffect")
+	//	{
+	//		StunEffectComp = Cast<UNiagaraComponent>(Comp);
+	//		UE_LOG(LogTemp,Warning,TEXT("StunEffectComp 연결됨: %s"),*Comp->GetName());
+	//	}
+	//}
+
+	//if(!StunEffectComp)
+	//{
+	//	StunEffectComp = Cast<UNiagaraComponent>(GetDefaultSubobjectByName(TEXT("StunEffect")));
+	//}
+
+	//if(!FireEffectComp)
+	//{
+	//	FireEffectComp = Cast<UNiagaraComponent>(GetDefaultSubobjectByName(TEXT("FireEffect")));
+	//}
+
+	//if(!FreezingEffectComp)
+	//{
+	//	FreezingEffectComp = Cast<UNiagaraComponent>(GetDefaultSubobjectByName(TEXT("FreezingEffect")));
+	//}
+
 }
 
 // Called every frame
@@ -187,6 +243,57 @@ void AEntityPreset::Tick(float DeltaTime)
 			UE_LOG(LogTemp,Warning,TEXT("Charge Finished — Distance Reached"));
 		}
 	}
+
+	if(bIsVisibleEffectFire)
+	{
+		if(FireEffectComp && !FireEffectComp->IsActive())
+		{
+			FireEffectComp->Activate();
+			UE_LOG(LogTemp,Warning,TEXT("FireEffect 활성화"));
+		}
+	} 
+	else
+	{
+		if(FireEffectComp && FireEffectComp->IsActive())
+		{
+			FireEffectComp->Deactivate();
+			UE_LOG(LogTemp,Warning,TEXT("FireEffect 비활성화"));
+		}
+	}
+
+	if(bIsVisibleEffectFreezing)
+	{
+		if(FreezingEffectComp && !FreezingEffectComp->IsActive())
+		{
+			FreezingEffectComp->Activate();
+			UE_LOG(LogTemp,Warning,TEXT("FreezingEffect 활성화"));
+		}
+	}
+	else
+	{
+		if(FreezingEffectComp && FreezingEffectComp->IsActive())
+		{
+			FreezingEffectComp->Deactivate();
+			UE_LOG(LogTemp,Warning,TEXT("FreezingEffect 비활성화"));
+		}
+	}
+
+	if(bIsVisibleEffectStun)
+	{
+		if(StunEffectComp && !StunEffectComp->IsActive())
+		{
+			StunEffectComp->Activate();
+			UE_LOG(LogTemp,Warning,TEXT("StunEffect 활성화"));
+		}
+	}
+	else
+	{
+		if(StunEffectComp && StunEffectComp->IsActive())
+		{
+			StunEffectComp->Deactivate();
+			UE_LOG(LogTemp,Warning,TEXT("StunEffect 비활성화"));
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -197,36 +304,83 @@ void AEntityPreset::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 float AEntityPreset::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
-	// 대미지 원인이 플레이어 캐릭터 스킬인지 확인
-	AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(DamageCauser);
-	//ACharacter* PlayerCharacter = Cast<ACharacter>(DamageCauser);
-	UE_LOG(LogTemp,Warning,TEXT("DamageCauser: %s (%s)"),*GetNameSafe(DamageCauser),DamageCauser ? *DamageCauser->GetClass()->GetName() : TEXT("nullptr"));
-
-	UPlayerSkillComponent* PlayerSkillComponent = PlayerCharacter->FindComponentByClass<UPlayerSkillComponent>();
-
-	// 방어 중
-	if(this->bIsDefending)
+	// 대미지 원인이 플레이어 캐릭터 스킬일 때만 받기
+	if(DamageCauser->ActorHasTag(FName("Player")))
 	{
-		UE_LOG(LogTemp,Warning,TEXT("[TakeDamage] Monster %s (%p) is defending."),*GetName(),this);
+		AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(DamageCauser);
 
-		// 플레이어 캐릭터 스킬이 !bIsSpecialAttack = 노멀 스킬이라면
-		if(PlayerSkillComponent)
+		UE_LOG(LogTemp,Warning,TEXT("DamageCauser: %s (%s)"),*GetNameSafe(DamageCauser),DamageCauser ? *DamageCauser->GetClass()->GetName() : TEXT("nullptr"));
+
+		UPlayerSkillComponent* PlayerSkillComponent = PlayerCharacter->FindComponentByClass<UPlayerSkillComponent>();
+
+		// 방어 중
+		if(this->bIsDefending)
 		{
-			// 플레이어가 노말 스킬 공격을 했을 때
-			if(!PlayerSkillComponent->bIsSpecialAttack)
-			{
-				UE_LOG(LogTemp,Warning,TEXT("[Defending]: Ignore Normal Skill Damage"));
+			UE_LOG(LogTemp,Warning,TEXT("[TakeDamage] Monster %s (%p) is defending."),*GetName(),this);
 
-				return 0.0f;
+			// 플레이어 캐릭터 스킬이 !bIsSpecialAttack = 노멀 스킬이라면
+			if(PlayerSkillComponent)
+			{
+				// 플레이어가 노말 스킬 공격을 했을 때
+				if(!PlayerSkillComponent->bIsSpecialAttack)
+				{
+					UE_LOG(LogTemp,Warning,TEXT("[Defending]: Ignore Normal Skill Damage"));
+
+					return 0.0f;
+				} else
+				{
+					UE_LOG(LogTemp,Error,TEXT("[Defending]: Take Special Attack Damage"));
+				}
 			} else
 			{
-				UE_LOG(LogTemp,Error,TEXT("[Defending]: Take Special Attack Damage"));
+				UE_LOG(LogTemp,Error,TEXT("PlayerSkillComponent is NULL"));
 			}
-		} else
-		{
-			UE_LOG(LogTemp,Error,TEXT("PlayerSkillComponent is NULL"));
 		}
 	}
+	else if(DamageCauser->ActorHasTag(FName("PlayerProjectile")))
+	{
+		UE_LOG(LogTemp,Warning,TEXT("TakeDamage: Hit by PlayerProjectile"));
+	}
+	else
+	{
+		UE_LOG(LogTemp,Warning,TEXT("TakeDamage: Invalid DamageCauser (%s) — Damage Ignored"),*GetNameSafe(DamageCauser));
+		return 0.0f;
+	}
+
+	
+	//// 대미지 원인이 플레이어 캐릭터 스킬인지 확인
+	//if(DamageCauser->ActorHasTag(FName("Player")))
+	//{
+	//	AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(DamageCauser);
+
+	//	UE_LOG(LogTemp,Warning,TEXT("DamageCauser: %s (%s)"),*GetNameSafe(DamageCauser),DamageCauser ? *DamageCauser->GetClass()->GetName() : TEXT("nullptr"));
+
+	//	UPlayerSkillComponent* PlayerSkillComponent = PlayerCharacter->FindComponentByClass<UPlayerSkillComponent>();
+
+	//	// 방어 중
+	//	if(this->bIsDefending)
+	//	{
+	//		UE_LOG(LogTemp,Warning,TEXT("[TakeDamage] Monster %s (%p) is defending."),*GetName(),this);
+
+	//		// 플레이어 캐릭터 스킬이 !bIsSpecialAttack = 노멀 스킬이라면
+	//		if(PlayerSkillComponent)
+	//		{
+	//			// 플레이어가 노말 스킬 공격을 했을 때
+	//			if(!PlayerSkillComponent->bIsSpecialAttack)
+	//			{
+	//				UE_LOG(LogTemp,Warning,TEXT("[Defending]: Ignore Normal Skill Damage"));
+
+	//				return 0.0f;
+	//			} else
+	//			{
+	//				UE_LOG(LogTemp,Error,TEXT("[Defending]: Take Special Attack Damage"));
+	//			}
+	//		} else
+	//		{
+	//			UE_LOG(LogTemp,Error,TEXT("PlayerSkillComponent is NULL"));
+	//		}
+	//	}
+	//}
 
 	UE_LOG(LogTemp,Log,TEXT("banana Damage: %f"),DamageAmount);
 	float ActualDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser); // 부모 클래스의 TakeDamage 호출

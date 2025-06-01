@@ -1159,6 +1159,8 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 
 								MoveComp->MaxWalkSpeed = NewSpeed;
 
+								Entity->bIsVisibleEffectFreezing = true;
+
 								// 복구 타이머 설정
 								FTimerHandle RestoreHandle;
 								FTimerDelegate RestoreDelegate;
@@ -1169,6 +1171,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 									{
 										Pawn->FindComponentByClass<UCharacterMovementComponent>()->MaxWalkSpeed = OriginalSpeed;
 										UE_LOG(LogTemp,Warning,TEXT("슬로우 해제: %s → 원래 속도 %.1f 복원됨"),*Pawn->GetName(),OriginalSpeed);
+										Entity->bIsVisibleEffectFreezing = false;
 									}
 								});
 
@@ -1211,19 +1214,25 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 							{
 								if(AAIController* AICon = Cast<AAIController>(Pawn->GetController()))
 								{
+									AEntityPreset* Entity = Cast<AEntityPreset>(Pawn);
+
 									AICon->StopMovement();
 									if(AICon->BrainComponent)
 										AICon->BrainComponent->StopLogic(TEXT("Stunned"));
 
+									Entity->bIsVisibleEffectStun = true;
+
 									// 2초 후 리스타트
 									FTimerHandle TimerHandle;
-									GetWorld()->GetTimerManager().SetTimer(TimerHandle,[AICon]()
+									GetWorld()->GetTimerManager().SetTimer(TimerHandle,[AICon, Entity]()
 									{
 										if(AICon && AICon->BrainComponent)
 										{
 											UE_LOG(LogTemp,Warning,TEXT("stun 적용"));
 
 											AICon->BrainComponent->RestartLogic();
+
+											Entity->bIsVisibleEffectStun = false;
 										}
 									},Effect.EffectValue01,false);
 									//},10,false);
