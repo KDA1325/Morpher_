@@ -5,7 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
 #include "Particles/ParticleSystemComponent.h" 
-
+#include "N_Graduation_project/N_Graduation_projectCharacter.h"
 // Sets default values
 AFireFloor::AFireFloor()
 {
@@ -86,6 +86,8 @@ void AFireFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Othe
 				return;
 			}
 			UE_LOG(LogTemp,Warning,TEXT("On_Fire 범위 내 감지된 액터: %s"),*OtherActor->GetName());
+			AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(OtherActor);
+			PlayerCharacter->ApplyFire(10);
 			ApplyFireDOT(OtherActor,0.5f,10.f);
 		}
 	}
@@ -94,6 +96,7 @@ void AFireFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Othe
 void AFireFloor::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration)
 {
 	if(!Target || DamagePerSecond <= 0.f || ApplyDuration <= 0.f) return;
+
 
 	int32 TickCount = FMath::FloorToInt(ApplyDuration);
 	for(int32 i = 1; i <= TickCount; ++i)
