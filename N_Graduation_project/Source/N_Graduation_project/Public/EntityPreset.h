@@ -14,6 +14,7 @@
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimBlueprint.h"
+#include "NiagaraComponent.h"
 #include "EntityPreset.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, float, NewHealth);
@@ -227,9 +228,36 @@ public:
 	// 돌진 관련 상태 변수
 	bool bIsCharging = false;
 	// 프리징 관련 상태 변수
-	bool bIsFreezing = false;
+	bool bIsBreath = false;
 	// 스턴 관련 상태 변수 
 	bool bIsBreaking = false;
+	
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Effect")
+	bool bIsVisibleEffectFire = false;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Effect")
+	bool bIsVisibleEffectFreezing = false;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Effect")
+	bool bIsVisibleEffectStun = false;
+
+	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Effects")
+	//UNiagaraComponent* FireEffectComp;
+
+	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Effects")
+	//UNiagaraComponent* FreezingEffectComp;
+
+	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Effects")
+	//UNiagaraComponent* StunEffectComp;
+
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Effects",meta=(AllowPrivateAccess = "true"))
+		UNiagaraComponent* FreezingEffectComp;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Effects",meta=(AllowPrivateAccess = "true"))
+		UNiagaraComponent* StunEffectComp;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Effects",meta=(AllowPrivateAccess = "true"))
+		UNiagaraComponent* FireEffectComp;
+
 
 	UPROPERTY()
 	float WildBoar_ChargeFloat;
@@ -279,8 +307,11 @@ public:
 
 	// MaxHP를 설정하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Data")
-	void SetHP(float NewHP);	
-	
+	void SetHP(float NewHP);
+	void DelayedDestroy();
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Materials")
+	UMaterialInterface* DeathMaterial;
 
 	// MoveSpeed를 설정하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Data")

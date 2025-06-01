@@ -2,7 +2,7 @@
 #include "EntityPreset.h"
 #include "ABGameSingleton.h"
 #include "TimerManager.h"
-
+#include "N_Graduation_project/N_Graduation_projectCharacter.h"
 void UAnimNotify_ShowHitBox::Notify(USkeletalMeshComponent* MeshComp,UAnimSequenceBase* Animation)
 {
 	if(!MeshComp)
@@ -23,9 +23,9 @@ void UAnimNotify_ShowHitBox::Notify(USkeletalMeshComponent* MeshComp,UAnimSequen
 	} else if(Entity->bIsCharging)
 	{
 		UE_LOG(LogTemp,Error,TEXT("[NOTIFY] bIsCharging is TRUE"));
-	} else if(Entity->bIsFreezing)
+	} else if(Entity->bIsBreath)
 	{
-		UE_LOG(LogTemp,Error,TEXT("[NOTIFY] bIsFreezing is TRUE"));
+		UE_LOG(LogTemp,Error,TEXT("[NOTIFY] bIsBreath is TRUE"));
 	} else
 	{
 		UE_LOG(LogTemp,Error,TEXT("[NOTIFY] Normal Skill will show"));

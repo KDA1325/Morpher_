@@ -28,10 +28,10 @@ UActionAnimInstance::UActionAnimInstance()
 	FSoftObjectPath Special_InpermonMontagePath(TEXT("/Game/Gamin/InferMon/InferMon_FireBall_Anim_Montage.InferMon_FireBall_Anim_Montage"));
 	m_Inpermon2 = Cast<UAnimMontage>(Special_InpermonMontagePath.TryLoad());
 
-	FSoftObjectPath SkeletonSlashMontagePath(TEXT("/Game/Animation/Skeleton/Skeletion_attack_Montage.Skeletion_attack_Montage"));
+	FSoftObjectPath SkeletonSlashMontagePath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Attack_Anim_Montage.SkeletonWarrior_Attack_Anim_Montage"));
 	m_SkeletonSlash = Cast<UAnimMontage>(SkeletonSlashMontagePath.TryLoad());
 
-	FSoftObjectPath SkeletonGaurdMontagePath(TEXT("/Game/Animation/Skeleton/Retarget_Shield_Anim__Montage.Retarget_Shield_Anim__Montage"));
+	FSoftObjectPath SkeletonGaurdMontagePath(TEXT("/Game/Gamin/Skeleton_Warrior/SkeletonWarrior_Shield_Guard_Anim_Montage1.SkeletonWarrior_Shield_Guard_Anim_Montage1"));
 	m_Gaurd= Cast<UAnimMontage>(SkeletonGaurdMontagePath.TryLoad());
 	
 	FSoftObjectPath Freezard1MontagePath(TEXT("/Game/Gamin/Freezard/freezard_attack_Anim_Montage.freezard_attack_Anim_Montage"));
@@ -39,6 +39,20 @@ UActionAnimInstance::UActionAnimInstance()
 
 	FSoftObjectPath Freezard2MontagePath(TEXT("/Game/Gamin/Freezard/freezard_Breath_Anim_Montage.freezard_Breath_Anim_Montage"));
 	m_Freezard2= Cast<UAnimMontage>(Freezard2MontagePath.TryLoad());
+
+	FSoftObjectPath Stone1MontagePath(TEXT("/Game/Gamin/StoneGolem/StonGolem_Attack_Anim_Montage.StonGolem_Attack_Anim_Montage"));
+	m_Stone1= Cast<UAnimMontage>(Stone1MontagePath.TryLoad());
+
+	FSoftObjectPath Stone2MontagePath(TEXT("/Game/Gamin/StoneGolem/StonGolem_Earthbreaker_Anim_Montage.StonGolem_Earthbreaker_Anim_Montage"));
+	m_Stone2= Cast<UAnimMontage>(Stone2MontagePath.TryLoad());
+	
+	FSoftObjectPath Arrow1MontagePath(TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_attack1_Anim_Montage.SkeletonArcher_attack1_Anim_Montage"));
+	m_Arrow1= Cast<UAnimMontage>(Arrow1MontagePath.TryLoad());
+
+	FSoftObjectPath Arrow2MontagePath(TEXT("/Game/Gamin/Skeleton_Archer/SkeletonArcher_attack1_Anim_Montage2.SkeletonArcher_attack1_Anim_Montage2"));
+	m_Arrow2= Cast<UAnimMontage>(Arrow2MontagePath.TryLoad());
+
+
 	
 }
 void UActionAnimInstance::PlayAnimation(const FString& EffectID)
@@ -99,6 +113,32 @@ void UActionAnimInstance::PlayAnimation(const FString& EffectID)
 		UE_LOG(LogTemp,Warning,TEXT("amam Skill_SkeletonSlash  스킬 실행됨"));
 
 		Montage_Play(m_Freezard2);
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+
+	} else if(EffectID=="Skill_ArmSwing"){
+		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Stone1->GetName());
+
+		Montage_Play(m_Stone1);
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+
+	}
+	else if(EffectID=="Skill_EarthBreaker"){
+		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Stone2->GetName());
+
+		Montage_Play(m_Stone2);
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+
+	}
+	else if(EffectID=="Skill_Arrow"){
+		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Arrow1->GetName());
+
+		Montage_Play(m_Arrow1);
+		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
+
+	}else if(EffectID=="Skill_SplinterArrow"){
+		UE_LOG(LogTemp,Warning,TEXT("Playing Animation: %s"),*m_Arrow2->GetName());
+
+		Montage_Play(m_Arrow2);
 		OnMontageEnded.AddDynamic(this,&UActionAnimInstance::OnMontageEndCallback);
 
 	} else{

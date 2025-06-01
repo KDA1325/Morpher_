@@ -98,6 +98,8 @@ void UMyGameInstance::LoadGame()
 				SaveLocation = SaveData->SavePlayerLocation;
 				SaveLocation.Z += 100.0f; // Z축 위로 이동!
 				Player->SetActorLocation(SaveLocation);
+				Player->ChangePreset("PlayerCharacter");
+				Player->isDead=false;
 				/*UE_LOG(LogTemp,Warning,TEXT("LoadGame LoadGame SaveLocation: X=%f, Y=%f, Z=%f"),SaveLocation.X,SaveLocation.Y,SaveLocation.Z);
 				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ room name: %s"),*SaveData->RoomName.ToString());*/
 

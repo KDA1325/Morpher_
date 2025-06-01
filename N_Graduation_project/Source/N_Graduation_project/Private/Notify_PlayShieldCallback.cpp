@@ -12,7 +12,7 @@ void UNotify_PlayShieldCallback::Notify(USkeletalMeshComponent* MeshComp,UAnimSe
 		if(UAnimMontage* CurrentMontage = AnimInstance->GetCurrentActiveMontage())
 		{
 			AnimInstance->Montage_Pause(CurrentMontage);
-			UE_LOG(LogTemp,Log,TEXT("몽타주 반복: %s"),*CurrentMontage->GetName());
+			UE_LOG(LogTemp,Log,TEXT("몽타주 %s"),*CurrentMontage->GetName());
 		} 
 		else
 		{

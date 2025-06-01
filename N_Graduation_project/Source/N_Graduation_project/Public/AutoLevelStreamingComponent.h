@@ -24,13 +24,16 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Level Streaming")
-	TArray<FName> ConnectedLevels;
+	UFUNCTION(BlueprintCallable,Category="Level Streaming")
+		static TArray<FName> GetLoadedStreamingLevelNames(UObject* WorldContextObject);
 
-	UFUNCTION()
-	void OnTriggerOverlap(AActor* OverlappedActor,AActor* OtherActor);
+	//UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Level Streaming")
+	//TArray<FName> ConnectedLevels;
+
+	/*UFUNCTION()
+	void OnTriggerOverlap(AActor* OverlappedActor,AActor* OtherActor);*/
 
 private:
 	// 현재 로드된 레벨 추적용
-	TSet<FName> LoadedLevels; 
+	//TSet<FName> LoadedLevels; 
 };

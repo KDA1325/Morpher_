@@ -7,11 +7,11 @@
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "NormalAttackDamageType.h"
 // Sets default values
 AEntityProjectile::AEntityProjectile()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	// 발사체 이동 컴포넌트 설정
@@ -60,17 +60,15 @@ void AEntityProjectile::BeginPlay()
 		if(bAutoFireOnSpawn)
 		{
 			ProjectileMovement->Activate(true);
-		}
-		else
+		} else
 		{
 			//FRotator FixRotation = GetActorRotation();
 			//FixRotation = FRotator(0.f,90.f,0.f); 
 			//SetActorRotation(FixRotation);
 		}
 
-		CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AEntityProjectile::OnOverlap);
-	}
-	else
+		CollisionComp->OnComponentBeginOverlap.AddDynamic(this,&AEntityProjectile::OnOverlap);
+	} else
 	{
 		UE_LOG(LogTemp,Error,TEXT("Hitbox is null in BeginPlay! Check BP binding."));
 	}
@@ -82,7 +80,7 @@ void AEntityProjectile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AEntityProjectile::InitProjectileBySkillData(const FSkillData & InSkillData, const TArray<FSkillEffectData>& InEffectData)
+void AEntityProjectile::InitProjectileBySkillData(const FSkillData & InSkillData,const TArray<FSkillEffectData>& InEffectData)
 {
 	SkillData = InSkillData;
 	EffectDataArray = InEffectData;
@@ -159,7 +157,16 @@ void AEntityProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			switch(Effect.EffectType)
 			{
 			case EnumEffectType::Damage:
-			UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+			if(Effect.SkillNameID=="Skill_ThrowRock"||Effect.SkillNameID=="Skill_Arrow"){
+				UE_LOG(LogTemp,Error,TEXT("무적 모드 프로젝트타일"));
+
+				UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,UNormalAttackDamageType::StaticClass());
+			}
+			else{
+				UE_LOG(LogTemp,Error,TEXT("무적 모드 아님"));
+
+				UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+			}
 			break;
 			case EnumEffectType::AOEDamage:
 			// 광역 대미지 처리, 몬스터용 로직엔 추가할 필요 없을 듯(플레이어 쪽에 추가하기)
@@ -186,7 +193,7 @@ void AEntityProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			// 불 디버프 적용
 			float ApplyDuration = Effect.EffectValue01;
 			float DPS = Effect.EffectValue02;
-			ApplyFireDOT(OtherActor, DPS, ApplyDuration);
+			ApplyFireDOT(OtherActor,DPS,ApplyDuration);
 			break;
 			}
 		}
@@ -216,7 +223,7 @@ void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
 		ProjectileMovement->InitialSpeed = SkillData.ProjectileSpeed;
 		ProjectileMovement->MaxSpeed = SkillData.ProjectileSpeed;
 
-		ProjectileMovement->SetUpdatedComponent(CollisionComp);  
+		ProjectileMovement->SetUpdatedComponent(CollisionComp);
 		ProjectileMovement->SetVelocityInLocalSpace(ShootDirection * ProjectileMovement->InitialSpeed);
 		ProjectileMovement->Activate(true);
 

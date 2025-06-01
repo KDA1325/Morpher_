@@ -39,6 +39,7 @@ public:
 
     bool isAction;
     bool isDash;
+	FTimerHandle NoDamageTimerHandle;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	bool isStunned;

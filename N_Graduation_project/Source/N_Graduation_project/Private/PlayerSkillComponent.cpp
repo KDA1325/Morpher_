@@ -22,6 +22,11 @@
 #include "EntityPreset.h"
 #include "FireFloor.h"
 #include "FrozeFloor.h"
+#include "BrainComponent.h"
+#include "NiagaraFunctionLibrary.h"
+
+
+
 UPlayerSkillComponent::UPlayerSkillComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -31,19 +36,38 @@ UPlayerSkillComponent::UPlayerSkillComponent()
 	CanUseSpecialSkill = true;
 	DamageAmount = 50;
 
-	static ConstructorHelpers::FClassFinder<APlayerProjectile> ProjectileBP(TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_ThrowRock"));
+	static ConstructorHelpers::FClassFinder<APlayerProjectile> ProjectileBP(
+		TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_ThrowRock"));
 	if(ProjectileBP.Succeeded())
 	{
-		NomalProjectileClass = ProjectileBP.Class;
+		NormalProjectileClass = ProjectileBP.Class;
 	}
-	static ConstructorHelpers::FClassFinder<APlayerProjectile> SProjectileBP(TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_FireBall"));
+	static ConstructorHelpers::FClassFinder<APlayerProjectile> SProjectileBP(
+		TEXT("/Game/Entity/BP/BP_Player_Inpermon_Projectile_FireBall"));
 	if(SProjectileBP.Succeeded())
 	{
 		SpecialProjectileClass = SProjectileBP.Class;
 	}
 
+	static ConstructorHelpers::FClassFinder<APlayerProjectile> NormalProjBP(
+		TEXT("/Game/Entity/BP/BP_Player_SkeletonArcher_Projectile_Arrow")
+	);
+	if(NormalProjBP.Succeeded())
+	{
+		ArrowNormalProjectileClass = NormalProjBP.Class;
+	}
+
+	static ConstructorHelpers::FClassFinder<APlayerProjectile> SpecialProjBP(
+				TEXT("/Game/Entity/BP/BP_Player_SkeletonArcher_Projectile_Arrow")
+//		TEXT("/Game/Entity/BP/BP_Player_SkeletonArcher_Projectile_Arrow1")
+);
+	if(SpecialProjBP.Succeeded())
+	{
+		ArrowSpecialProjectileClass = SpecialProjBP.Class;
+	}
+
 	//실드 이펙트
-	ShieldParticle = TSoftObjectPtr<UParticleSystem>(FSoftObjectPath(TEXT("/Game/Asset/FXAsset/LoPoPack/Particles/Par_LoPo_Shield_01.Par_LoPo_Shield_01")));
+	ShieldParticle = TSoftObjectPtr<UParticleSystem>(FSoftObjectPath(TEXT("/Game/Asset/Par_LoPo_Shield_01111.Par_LoPo_Shield_01111")));
 	// TSoftObjectPtr에서 실제로 로드할 수 있도록 LoadSynchronous 사용
 	ShieldParticle.LoadSynchronous();
 	if(ShieldParticle.IsValid())
@@ -73,6 +97,8 @@ void UPlayerSkillComponent::BeginPlay()
 	{
 		UE_LOG(LogTemp,Warning,TEXT("Failed to create ChargeDecalComponent"));
 	}
+	ChargeDecalComponent->SetVisibility(false);
+
 }
 void UPlayerSkillComponent::SetHitBox(UBoxComponent* InHitBox)
 {
@@ -86,16 +112,21 @@ void UPlayerSkillComponent::SetHitBox2(UBoxComponent* InHitBox)
 	UE_LOG(LogTemp,Warning,TEXT("papago PlayerHitBox2 Address: %p"),PlayerHitBox2);
 
 }
+void UPlayerSkillComponent::SetHitSphere(USphereComponent* HitSphere)
+{
+	PlayerHitSphere = HitSphere;
+	UE_LOG(LogTemp,Warning,TEXT("papago PlayerHitSphere Address: %p"),PlayerHitSphere);
+
+}
 /* 스킬 관련 */
 void UPlayerSkillComponent::OnDefenseSkill()
 {
 	IsDefending = true;
-	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 
-	StatComponent->HUDWidget->SkeletonGuard=true;
+	auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 	if(StatComponent && StatComponent->HUDWidget)
 	{
-		StatComponent->HUDWidget->bHolding=true;
+		StatComponent->HUDWidget->bHolding = true;
 	}
 }
 
@@ -116,24 +147,26 @@ void UPlayerSkillComponent::OffDefenseSkill()
 	AActor* OwnerActor = GetOwner();
 	ACharacter* CharacterOwner = Cast<ACharacter>(OwnerActor);
 
-	if(ShieldParticle.IsValid()){
-		if(UAnimInstance* AnimInstance = CharacterOwner->GetMesh()->GetAnimInstance())
+	//if(ShieldParticle.IsValid()){
+	if(UAnimInstance* AnimInstance = CharacterOwner->GetMesh()->GetAnimInstance())
+	{
+		if(UAnimMontage* PausedMontage = AnimInstance->GetCurrentActiveMontage())
 		{
-			if(UAnimMontage* PausedMontage = AnimInstance->GetCurrentActiveMontage())
-			{
-				AnimInstance->Montage_Resume(PausedMontage);
-				UE_LOG(LogTemp,Warning,TEXT("방어 해제 → 몽타주 다시 재생됨: %s"),*PausedMontage->GetName());
-			} else
-			{
-				UE_LOG(LogTemp,Warning,TEXT("재생 중인 몽타주가 없습니다."));
-			}
+			AnimInstance->Montage_Resume(PausedMontage);
+			UE_LOG(LogTemp,Warning,TEXT("OffDefenseSkill 방어 해제 → 몽타주 다시 재생됨: %s"),*PausedMontage->GetName());
+		} else
+		{
+			UE_LOG(LogTemp,Warning,TEXT("OffDefenseSkill 재생 중인 몽타주가 없습니다."));
 		}
 	}
+
 	//실드 이펙트
 	if(ShieldParticleComp) {
 		ShieldParticleComp->DestroyComponent();  // 이펙트 삭제
 		ShieldParticleComp = nullptr;  // 변수 초기화
+		CanUseSpecialSkill = true;
 	}
+
 }
 void UPlayerSkillComponent::SetSkillTimer(float Count,FTimerDelegate End)
 {
@@ -205,6 +238,24 @@ void UPlayerSkillComponent::SettingHitBox2(const FSkillData& SkillData)
 		OnceHitBox = true;
 	}
 }
+void UPlayerSkillComponent::SettingHitSphere(const FSkillData& SkillData)
+{
+	if(PlayerHitSphere)
+	{
+		UE_LOG(LogTemp,Log,TEXT("SettingHitSphere"));
+
+		// Sphere 반지름 설정 (X 값을 기준으로 사용)
+		PlayerHitSphere->SetSphereRadius(SkillData.SkillTypeSizeX);
+
+		// 위치 오프셋 조정 (전방으로 밀어내는 용도)
+		FVector NewRelativeLocation = FVector::ZeroVector;
+		PlayerHitSphere->SetRelativeLocation(NewRelativeLocation);
+
+		OnceHitBox = true;
+	}
+}
+
+
 void UPlayerSkillComponent::OnHitBox(const FSkillData& SkillData)
 {
 	if(PlayerHitBox)
@@ -239,6 +290,24 @@ void UPlayerSkillComponent::OnHitBox2(const FSkillData& SkillData)
 
 	}
 }
+void UPlayerSkillComponent::OnHitSphere(const FSkillData& SkillData)
+{
+	if(PlayerHitSphere)
+	{
+		PlayerHitSphere->SetVisibility(true);
+		PlayerHitSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 충돌 키기
+
+		//UE_LOG(LogTemp,Warning,TEXT("[PlayerHitSphere] On OnHitBox"));
+		//UE_LOG(LogTemp,Warning,TEXT("[PlayerHitSphere] On PlayerHitBox  Address: %p"),PlayerHitSphere);
+
+	} else
+	{
+		//UE_LOG(LogTemp,Error,TEXT("[OnHitBox] Failed to find HitBox "));
+		//UE_LOG(LogTemp,Warning,TEXT("[OnHitBox] On Failed PlayerHitBox Address: %p"),PlayerHitBox2);
+
+	}
+}
+
 void UPlayerSkillComponent::HideHitBox()
 {
 	PlayerHitBox->SetVisibility(false);  // 자식까지 숨기기
@@ -256,6 +325,16 @@ void UPlayerSkillComponent::HideHitBox2()
 	// 스킬 컴포넌트 내부에서 소유 액터를 통해 접근
 
 	UE_LOG(LogTemp,Warning,TEXT("papago hidden PlayerHitBox2  Address: %p"),PlayerHitBox2);
+
+	// 데미지 체크 초기화
+	DamagedActors.Empty();
+}
+void UPlayerSkillComponent::HideSphere()
+{
+	PlayerHitSphere->SetVisibility(false);  // 자식까지 숨기기
+	PlayerHitSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 꺼버리기
+	// 스킬 컴포넌트 내부에서 소유 액터를 통해 접근
+	UE_LOG(LogTemp,Warning,TEXT("papago hidden PlayerHitSphere  Address: %p"),PlayerHitSphere);
 
 	// 데미지 체크 초기화
 	DamagedActors.Empty();
@@ -326,7 +405,10 @@ void UPlayerSkillComponent::VisibleShapeBox(const FString& SkillID)
 
 		} else if(SkillData.SkillTypeShape == EnumSkillTypeShape::Sphere)
 		{
-			//	 Sphere 관련 처리 추가
+			if(PlayerHitSphere){
+				SettingHitSphere(SkillData);
+				OnHitSphere(SkillData);
+			}
 		}
 	} else if(SkillData.SkillType == EnumSkillType::Projectile)
 	{
@@ -364,7 +446,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 		if(StatComponent && StatComponent->HUDWidget)
 		{
-			StatComponent->HUDWidget->UpdateNomalSkillCooldown(SkillData.SkillCoolTime,CanUseNomalSkill,CanUseSpecialSkill);
+			StatComponent->HUDWidget->UpdateNomalSkillCooldown(SkillData.SkillCoolTime/3,CanUseNomalSkill,CanUseSpecialSkill);
 			StatComponent->HUDWidget->CanNomal = false;
 		}
 
@@ -376,7 +458,7 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 		// 쿨타임 타이머 설정
 		FTimerDelegate NomalCooldownEnd;
 		NomalCooldownEnd.BindUObject(this,&UPlayerSkillComponent::NomalCooldown);
-		SetSkillTimer(SkillData.SkillCoolTime,NomalCooldownEnd);
+		SetSkillTimer(SkillData.SkillCoolTime/3,NomalCooldownEnd);
 	} else
 	{
 		UE_LOG(LogTemp,Warning,TEXT("kakao No CanUseNomalSkill"));
@@ -385,6 +467,12 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 {
+	//UWorld* World = GetWorld();
+	//if(!World)
+	//{
+	//	UE_LOG(LogTemp,Error,TEXT("GetWorld() is nullptr in SpecialSkillPlay"));
+	//	return;
+	//}
 	//UE_LOG(LogTemp, Warning, TEXT("kakao On SpecialSkillPlay"));
 	distance = MeasureDistanceToMonster();
 
@@ -428,7 +516,7 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 		if(StatComponent && StatComponent->HUDWidget)
 		{
-			StatComponent->HUDWidget->UpdateSpecialSkillCooldown(SkillData.SkillCoolTime,CanUseNomalSkill,CanUseSpecialSkill);
+			StatComponent->HUDWidget->UpdateSpecialSkillCooldown(SkillData.SkillCoolTime/3,CanUseNomalSkill,CanUseSpecialSkill);
 			StatComponent->HUDWidget->CanSpecial = false;
 		}
 
@@ -452,6 +540,22 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 
 			}
 		}
+		if(SkillData.SkillNameID == "Skill_EarthBreaker")
+		{
+			VisibleShapeBox(SkillID);
+
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(
+				TimerHandle,
+				FTimerDelegate::CreateLambda([this]()
+			{
+				SkillEffect("Skill_EarthBreaker");
+			}),
+				3.3f,
+				false
+			);
+		}
+
 		CanUseSpecialSkill = false;
 
 		// 스킬 애니메이션
@@ -460,7 +564,7 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 
 		FTimerDelegate SpecialCooldownEnd;
 		SpecialCooldownEnd.BindUObject(this,&UPlayerSkillComponent::SpecialCooldown);
-		SpecialSetSkillTimer(SkillData.SkillCoolTime,SpecialCooldownEnd);
+		SpecialSetSkillTimer(SkillData.SkillCoolTime/3,SpecialCooldownEnd);
 	} else
 	{
 		UE_LOG(LogTemp,Warning,TEXT("kakao No CanUseSpecialSkill"));
@@ -510,6 +614,8 @@ void UPlayerSkillComponent::SpawnChargeIndicator(FVector Start,FVector End)
 		ChargeDecalComponent->RegisterComponent();
 		ChargeDecalComponent->AttachToComponent(Cast<AActor>(GetOwner())->GetRootComponent(),FAttachmentTransformRules::KeepWorldTransform);
 		ChargeDecalComponent->SetDecalMaterial(ChargeDecalMaterial);
+		ChargeDecalComponent->SetVisibility(true);
+
 	}
 	FVector MidPoint = (Start + End) * 0.5f;
 	float Length = FVector::Distance(Start,End);
@@ -613,9 +719,9 @@ void UPlayerSkillComponent::ApplyKnockback(AActor* TargetActor,float Distance,fl
 void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 {
 	// 스폰할 투사체 클래스 설정 확인
-	if(!NomalProjectileClass)
+	if(!NormalProjectileClass)
 	{
-		UE_LOG(LogTemp,Error,TEXT("NomalProjectileClass not set!"));
+		//	UE_LOG(LogTemp,Error,TEXT("NomalProjectileClass not set!"));
 		return;
 	}
 
@@ -627,6 +733,7 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 	if(!MeshComp) return;
 
 	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	//FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowHead"));
 	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
 
 	// 스폰 파라미터
@@ -637,7 +744,7 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 
 	// 투사체 스폰
 	APlayerProjectile* SpawnedProjectile = GetWorld()->SpawnActor<APlayerProjectile>(
-		NomalProjectileClass,SpawnLocation,Direction.Rotation(),SpawnParams
+		NormalProjectileClass,SpawnLocation,Direction.Rotation(),SpawnParams
 	);
 
 	if(SpawnedProjectile)
@@ -650,15 +757,16 @@ void UPlayerSkillComponent::SpawnProjectile_ThrowRock()
 		{
 			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
 			SpawnedProjectile->FireInDirection(Direction);
-			UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_ThrowRock"));
+			//	UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_ThrowRock"));
 		} else
 		{
-			UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_ThrowRock data!"));
+			//UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_ThrowRock data!"));
 		}
 	} else
 	{
-		UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
+		//UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
 	}
+	//	UE_LOG(LogTemp,Warning,TEXT("Projectile class is: %s"),*GetNameSafe(NormalProjectileClass));
 }
 
 void UPlayerSkillComponent::SpawnProjectile_FireBall()
@@ -666,7 +774,7 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 	// 스폰할 투사체 클래스 설정 확인
 	if(!SpecialProjectileClass)
 	{
-		UE_LOG(LogTemp,Error,TEXT("SpecialProjectileClass not set!"));
+		//UE_LOG(LogTemp,Error,TEXT("SpecialProjectileClass not set!"));
 		return;
 	}
 
@@ -678,6 +786,7 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 	if(!MeshComp) return;
 
 	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowRockSocket"));
+	//FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ThrowHead"));
 	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
 
 	// 스폰 파라미터
@@ -701,6 +810,72 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 		{
 			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
 			SpawnedProjectile->FireInDirection(Direction);
+			//UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_FireBall"));
+		} else
+		{
+			//UE_LOG(LogTemp,Error,TEXT("amam Failed to get Skill_FireBall data!"));
+		}
+	} else
+	{
+		//UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
+	}
+	UE_LOG(LogTemp,Warning,TEXT("Projectile class is: %s"),*GetNameSafe(SpecialProjectileClass));
+}
+void UPlayerSkillComponent::PerformSkill_Arrow()
+{
+	if(!ArrowNormalProjectileClass) return;
+
+	//bIsCastingSkill = true;
+
+	// 소유 액터가 캐릭터인지 확인
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if(!OwnerCharacter) return;
+	SkillAnimation("Skill_Arrow");
+
+}
+void UPlayerSkillComponent::PerformSkill_SplinterArrow()
+{
+	if(!ArrowSpecialProjectileClass) return;
+
+	//bIsCastingSkill = true;
+
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if(!OwnerCharacter) return;
+	SkillAnimation("Skill_SplinterArrow");
+}
+
+void UPlayerSkillComponent::FireProjectile_Arrow()
+{
+	if(!ArrowNormalProjectileClass) return;
+
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if(!OwnerCharacter) return;
+
+	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
+	if(!MeshComp) return;
+
+	FVector SpawnLocation = MeshComp->GetSocketLocation(TEXT("ArrowSocket"));
+	FVector Direction = MeshComp->GetRightVector(); // 메시가 270도 회전된 상태가 X축 전방이기 때문에 Right Vector를 가져옴 
+
+	// 스폰 파라미터
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = OwnerCharacter;
+	SpawnParams.Instigator = OwnerCharacter;
+
+	APlayerProjectile* SpawnedProjectile = GetWorld()->SpawnActor<APlayerProjectile>(
+		ArrowNormalProjectileClass,SpawnLocation,Direction.Rotation(),SpawnParams
+	);
+	if(SpawnedProjectile)
+	{
+		FSkillData SkillData;
+		TArray<FSkillEffectData> EffectDataArray;
+
+		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_FireBall",SkillData) &&
+			UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_FireBall",EffectDataArray))
+		{
+			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
+			SpawnedProjectile->FireInDirection(Direction);
 			UE_LOG(LogTemp,Warning,TEXT("amam Spawned PlayerProjectile for Skill_FireBall"));
 		} else
 		{
@@ -710,8 +885,111 @@ void UPlayerSkillComponent::SpawnProjectile_FireBall()
 	{
 		UE_LOG(LogTemp,Error,TEXT("amam Failed to spawn PlayerProjectile!"));
 	}
+
+	/*FVector SpawnLocation = OwnerCharacter->GetMesh()->GetSocketLocation(TEXT("ArrowSocket"));
+	FTransform SocketTransform = OwnerCharacter->GetMesh()->GetSocketTransform(TEXT("ArrowSocket"),RTS_World);
+	FVector FireDirection = SocketTransform.GetUnitAxis(EAxis::X);
+	FRotator SpawnRotation = FireDirection.Rotation();
+
+	DrawDebugLine(GetWorld(),SpawnLocation,SpawnLocation + FireDirection * 500.0f,FColor::Red,false,2.0f,0,2.0f);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Owner = OwnerCharacter;
+	SpawnParams.Instigator = OwnerCharacter->GetInstigator();
+
+	APlayerProjectile* SpawnedProjectile = GetWorld()->SpawnActor<APlayerProjectile>(ArrowNormalProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+
+	if(SpawnedProjectile)
+	{
+		FSkillData SkillData;
+		TArray<FSkillEffectData> EffectDataArray;
+
+		if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_Arrow",SkillData) &&
+		   UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_Arrow",EffectDataArray))
+		{
+			SpawnedProjectile->InitProjectileBySkillData(SkillData,EffectDataArray);
+			SpawnedProjectile->FireInDirection(FireDirection);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
+		}
+	}*/
 }
 
+// 노티파이에서 실행 : 화살 스폰 및 모든 화살 발사  
+void UPlayerSkillComponent::Fire_AllArrows()
+{
+	if(!ArrowSpecialProjectileClass) return;
+
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if(!OwnerCharacter) return;
+
+	UE_LOG(LogTemp,Error,TEXT("Arrow Fire_AllArrows실행됨"));
+	USkeletalMeshComponent* MeshComp = OwnerCharacter->GetMesh();
+	if(!MeshComp) return;
+
+	TArray<APlayerProjectile*> ArrowList;
+
+	FSkillData SkillData;
+	TArray<FSkillEffectData> EffectDataArray;
+
+	TArray<FName> Sockets = {TEXT("ArrowSocket"),TEXT("ArrowSubSocket_1"),TEXT("ArrowSubSocket_2")};
+
+	//UWorld* World = GetWorld();
+	//if(!World) return;
+
+	for(FName SocketName : Sockets)
+	{
+		FTransform SocketTransform = OwnerCharacter->GetMesh()->GetSocketTransform(SocketName,RTS_World);
+		FVector SpawnLocation = SocketTransform.GetLocation();
+		FRotator SpawnRotation = SocketTransform.GetRotation().Rotator();
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.Owner = OwnerCharacter;
+		SpawnParams.Instigator = OwnerCharacter->GetInstigator();
+
+		Arrow = GetWorld()->SpawnActor<APlayerProjectile>(
+		   ArrowSpecialProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
+
+		if(Arrow)
+		{
+			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_SplinterArrow",SkillData) &&
+				UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_SplinterArrow",EffectDataArray))
+			{
+				Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
+				ArrowList.Add(Arrow);
+			}
+		}
+	}
+	// 모든 화살 발사
+	for(int i = 0; i < ArrowList.Num(); ++i)
+	{
+		APlayerProjectile* CurrentArrow = ArrowList[i];
+		FName SocketName ;
+		if(i == 0)
+			SocketName = TEXT("ArrowSocket");
+		else if(i == 1)
+			SocketName = TEXT("ArrowSubSocket_1");
+		else if(i == 2)
+			SocketName = TEXT("ArrowSubSocket_2");
+		if(CurrentArrow)
+		{
+			/*FVector SpawnLocation = GetMesh()->GetSocketLocation(SocketName);
+			FVector FireDirection = GetMesh()->GetSocketRotation(SocketName).Vector();*/
+			/*FVector FireDirection = GetMesh()->GetSocketRotation(SocketName).Vector();
+			CurrentArrow->FireInDirection(FireDirection);*/
+			AActor* OwnerActor = GetOwner();
+			ACharacter* CharacterOwner = Cast<ACharacter>(OwnerActor);
+			FTransform SocketTransform = OwnerCharacter->GetMesh()->GetSocketTransform(SocketName,RTS_World);
+			FVector FireDirection = SocketTransform.GetUnitAxis(EAxis::X); // <-- 전방축 정확히 추출
+
+			CurrentArrow->FireInDirection(FireDirection);
+			UE_LOG(LogTemp,Warning,TEXT("Fired arrow %d → Dir: %s"),i,*FireDirection.ToString());
+		}
+	}
+}
 void UPlayerSkillComponent::SkillAnimation(const FString& EffectID)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("On SkillAnimation"));
@@ -791,30 +1069,44 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 			if(Effect.EffectType == EnumEffectType::Damage)
 			{
 				DamageAmount = Effect.EffectValue01;
-				if(MyChar->TestMode == false) {
+				if(MyChar->TestMode2 == false) {
 					// 데미지
-					UGameplayStatics::ApplyDamage(TargetActor,DamageAmount,MyChar->GetController(),MyChar,nullptr);
-					UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
-					if(TargetActor->ActorHasTag(FName("Barrel")))
-					{
-						UE_LOG(LogTemp,Warning,TEXT("Barrel이여 작동하거라"));
+					if(SkillNameID=="Skill_ArmSwing"){
+						float LocalDamage = DamageAmount;
+						FTimerHandle TimerHandle;
+						GetWorld()->GetTimerManager().SetTimer(
+							TimerHandle,
+							FTimerDelegate::CreateLambda([this,TargetActor,LocalDamage,MyChar]() {
+							UGameplayStatics::ApplyDamage(TargetActor,DamageAmount,MyChar->GetController(),MyChar,nullptr);
+							UE_LOG(LogTemp,Warning,TEXT("3초 후 데미지 적용됨: %s, Damage: %f"),*TargetActor->GetName(),DamageAmount);
+						}),
+							1.2f,
+							false
+						);
+					} else{
+						UGameplayStatics::ApplyDamage(TargetActor,DamageAmount,MyChar->GetController(),MyChar,nullptr);
+						UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
 						if(TargetActor->ActorHasTag(FName("Barrel")))
 						{
-							if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(TargetActor))
+							UE_LOG(LogTemp,Warning,TEXT("Barrel이여 작동하거라"));
+							if(TargetActor->ActorHasTag(FName("Barrel")))
 							{
-								StunBarrel->WorkBarrel(DamageAmount); // AStunBarrel 고유 로직
-							} else if(ABarrel* NormalBarrel = Cast<ABarrel>(TargetActor))
-							{
-								NormalBarrel->WorkBarrel(DamageAmount); // ABarrel 로직
-							} else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(TargetActor)){
-								FireBarrel->WorkBarrel(DamageAmount); // FireBarrel 로직
+								if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(TargetActor))
+								{
+									StunBarrel->WorkBarrel(DamageAmount); // AStunBarrel 고유 로직
+								} else if(ABarrel* NormalBarrel = Cast<ABarrel>(TargetActor))
+								{
+									NormalBarrel->WorkBarrel(DamageAmount); // ABarrel 로직
+								} else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(TargetActor)){
+									FireBarrel->WorkBarrel(DamageAmount); // FireBarrel 로직
 
+								}
 							}
 						}
 					}
 					//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
 				} else {
-					UGameplayStatics::ApplyDamage(TargetActor,10000,MyChar->GetController(),MyChar,nullptr);
+					UGameplayStatics::ApplyDamage(TargetActor,200,MyChar->GetController(),MyChar,nullptr);
 					UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
 					if(TargetActor->ActorHasTag(FName("Barrel")))
 					{
@@ -839,6 +1131,10 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 				float KnockbackDuration = Effect.EffectValue02;
 
 				ApplyKnockback(TargetActor,KnockbackDistance,KnockbackDuration);
+				if(TargetActor->ActorHasTag("BlackCrystal"))
+				{
+					TargetActor->Destroy();
+				}
 				UE_LOG(LogTemp,Warning,TEXT("넉백 TargetActor: %s KnockbackDistance: %f KnockbackDuration: %f"),
 					   *TargetActor->GetName(),KnockbackDistance,KnockbackDuration);
 
@@ -863,6 +1159,8 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 
 								MoveComp->MaxWalkSpeed = NewSpeed;
 
+								Entity->bIsVisibleEffectFreezing = true;
+
 								// 복구 타이머 설정
 								FTimerHandle RestoreHandle;
 								FTimerDelegate RestoreDelegate;
@@ -873,6 +1171,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 									{
 										Pawn->FindComponentByClass<UCharacterMovementComponent>()->MaxWalkSpeed = OriginalSpeed;
 										UE_LOG(LogTemp,Warning,TEXT("슬로우 해제: %s → 원래 속도 %.1f 복원됨"),*Pawn->GetName(),OriginalSpeed);
+										Entity->bIsVisibleEffectFreezing = false;
 									}
 								});
 
@@ -889,19 +1188,62 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 					if(AFireFloor* FireFloor = Cast<AFireFloor>(TargetActor))
 					{
 						FireFloor->Off_Fire(); //화염 끔 코드
-					} 
+					}
 				}
 				if(TargetActor->ActorHasTag(FName("FrozeFloor")))
 				{
 					if(AFrozeFloor* FrozeFloor = Cast<AFrozeFloor>(TargetActor))
 					{
 						FrozeFloor->On_Froze(); //빙결 킴 코드
-					} 
+					}
+				}
+				if(TargetActor->ActorHasTag(FName("BlueCrystal")))
+				{
+					TargetActor->Destroy();
 				}
 
+			}
+			if(Effect.EffectType == EnumEffectType::Stun){
+				for(AActor* Target : DamagedActors)
+				{
+					if(IsValid(Target)){
+						if(Target)
+						{
+							// Target이 Pawn이면 AI 컨트롤러 접근 시도
+							if(APawn* Pawn = Cast<APawn>(Target))
+							{
+								if(AAIController* AICon = Cast<AAIController>(Pawn->GetController()))
+								{
+									AEntityPreset* Entity = Cast<AEntityPreset>(Pawn);
 
+									AICon->StopMovement();
+									if(AICon->BrainComponent)
+										AICon->BrainComponent->StopLogic(TEXT("Stunned"));
+
+									Entity->bIsVisibleEffectStun = true;
+
+									// 2초 후 리스타트
+									FTimerHandle TimerHandle;
+									GetWorld()->GetTimerManager().SetTimer(TimerHandle,[AICon, Entity]()
+									{
+										if(AICon && AICon->BrainComponent)
+										{
+											UE_LOG(LogTemp,Warning,TEXT("stun 적용"));
+
+											AICon->BrainComponent->RestartLogic();
+
+											Entity->bIsVisibleEffectStun = false;
+										}
+									},Effect.EffectValue01,false);
+									//},10,false);
+								}
+							}
+						}
+					}
+				}
 			}
 		}
+
 		// 그 후 데미지 적용
 		UE_LOG(LogTemp,Warning,TEXT("SkillEffect 실행됨! DamageAmount: %f"),DamageAmount);
 

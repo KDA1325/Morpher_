@@ -12,8 +12,12 @@
 #include "WidgetActor.h"
 #include "CharacterStateComponent.h"
 #include "BrainComponent.h"
+#include "MyPlayerStatComponent.h"
 #include "Components/SphereComponent.h"
-
+#include "Components/ActorComponent.h"
+#include "NiagaraComponent.h"
+#include "TimerManager.h"
+#include "NormalAttackDamageType.h"
 
 AEntityPreset::AEntityPreset()
 {
@@ -37,6 +41,19 @@ AEntityPreset::AEntityPreset()
 
 	GetCharacterMovement()->BrakingFrictionFactor = 0.0f; // 멈출 때 마찰 없음
 	GetCharacterMovement()->GroundFriction = 0.0f;
+
+	FreezingEffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("FreezingEffect"));
+	FreezingEffectComp->SetupAttachment(GetMesh()); // 또는 RootComponent
+	FreezingEffectComp->SetAutoActivate(false);
+
+	StunEffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("StunEffect"));
+	StunEffectComp->SetupAttachment(GetMesh());
+	StunEffectComp->SetAutoActivate(false);
+
+	FireEffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("FireEffect"));
+	FireEffectComp->SetupAttachment(GetMesh());
+	FireEffectComp->SetAutoActivate(false);
+
 
 	//SkillArrowChildComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("SkillArrowChildComponent"));
 	////SkillArrowChildComponent->SetupAttachment(RootComponent); // 또는 RootComponent
@@ -166,6 +183,47 @@ void AEntityPreset::BeginPlay()
 	//}
 
 	this->bIsDefending = false;
+
+	this->bIsVisibleEffectFire = false;
+	this->bIsVisibleEffectFreezing = false;
+	this->bIsVisibleEffectStun = false;
+
+	//TArray<UActorComponent*> OutComponents;
+	//this->GetComponentsByClass(UNiagaraComponent::StaticClass(),OutComponents);
+
+
+	//for(UActorComponent* Comp : NiagaraComponents)
+	//{
+	//	if(Comp->GetName() == "FireEffect")
+	//	{
+	//		FireEffectComp = Cast<UNiagaraComponent>(Comp);
+	//		UE_LOG(LogTemp,Warning,TEXT("FireEffectComp 연결됨: %s"),*Comp->GetName());
+	//	} else if(Comp->GetName() == "FreezingEffect")
+	//	{
+	//		FreezingEffectComp = Cast<UNiagaraComponent>(Comp);
+	//		UE_LOG(LogTemp,Warning,TEXT("FreezingEffectComp 연결됨: %s"),*Comp->GetName());
+	//	} else if(Comp->GetName() == "StunEffect")
+	//	{
+	//		StunEffectComp = Cast<UNiagaraComponent>(Comp);
+	//		UE_LOG(LogTemp,Warning,TEXT("StunEffectComp 연결됨: %s"),*Comp->GetName());
+	//	}
+	//}
+
+	//if(!StunEffectComp)
+	//{
+	//	StunEffectComp = Cast<UNiagaraComponent>(GetDefaultSubobjectByName(TEXT("StunEffect")));
+	//}
+
+	//if(!FireEffectComp)
+	//{
+	//	FireEffectComp = Cast<UNiagaraComponent>(GetDefaultSubobjectByName(TEXT("FireEffect")));
+	//}
+
+	//if(!FreezingEffectComp)
+	//{
+	//	FreezingEffectComp = Cast<UNiagaraComponent>(GetDefaultSubobjectByName(TEXT("FreezingEffect")));
+	//}
+
 }
 
 // Called every frame
@@ -185,6 +243,57 @@ void AEntityPreset::Tick(float DeltaTime)
 			UE_LOG(LogTemp,Warning,TEXT("Charge Finished — Distance Reached"));
 		}
 	}
+
+	if(bIsVisibleEffectFire)
+	{
+		if(FireEffectComp && !FireEffectComp->IsActive())
+		{
+			FireEffectComp->Activate();
+			UE_LOG(LogTemp,Warning,TEXT("FireEffect 활성화"));
+		}
+	} 
+	else
+	{
+		if(FireEffectComp && FireEffectComp->IsActive())
+		{
+			FireEffectComp->Deactivate();
+			UE_LOG(LogTemp,Warning,TEXT("FireEffect 비활성화"));
+		}
+	}
+
+	if(bIsVisibleEffectFreezing)
+	{
+		if(FreezingEffectComp && !FreezingEffectComp->IsActive())
+		{
+			FreezingEffectComp->Activate();
+			UE_LOG(LogTemp,Warning,TEXT("FreezingEffect 활성화"));
+		}
+	}
+	else
+	{
+		if(FreezingEffectComp && FreezingEffectComp->IsActive())
+		{
+			FreezingEffectComp->Deactivate();
+			UE_LOG(LogTemp,Warning,TEXT("FreezingEffect 비활성화"));
+		}
+	}
+
+	if(bIsVisibleEffectStun)
+	{
+		if(StunEffectComp && !StunEffectComp->IsActive())
+		{
+			StunEffectComp->Activate();
+			UE_LOG(LogTemp,Warning,TEXT("StunEffect 활성화"));
+		}
+	}
+	else
+	{
+		if(StunEffectComp && StunEffectComp->IsActive())
+		{
+			StunEffectComp->Deactivate();
+			UE_LOG(LogTemp,Warning,TEXT("StunEffect 비활성화"));
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -195,36 +304,83 @@ void AEntityPreset::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 float AEntityPreset::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
-	// 방어 중
-	if(this->bIsDefending)
+	// 대미지 원인이 플레이어 캐릭터 스킬일 때만 받기
+	if(DamageCauser->ActorHasTag(FName("Player")))
 	{
-		UE_LOG(LogTemp,Warning,TEXT("[TakeDamage] Monster %s (%p) is defending."),*GetName(),this);
-
-		// 대미지 원인이 플레이어 캐릭터 스킬인지 확인
 		AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(DamageCauser);
-		//ACharacter* PlayerCharacter = Cast<ACharacter>(DamageCauser);
+
 		UE_LOG(LogTemp,Warning,TEXT("DamageCauser: %s (%s)"),*GetNameSafe(DamageCauser),DamageCauser ? *DamageCauser->GetClass()->GetName() : TEXT("nullptr"));
 
 		UPlayerSkillComponent* PlayerSkillComponent = PlayerCharacter->FindComponentByClass<UPlayerSkillComponent>();
 
-		// 플레이어 캐릭터 스킬이 !bIsSpecialAttack = 노멀 스킬이라면
-		if(PlayerSkillComponent)
+		// 방어 중
+		if(this->bIsDefending)
 		{
-			// 플레이어가 노말 스킬 공격을 했을 때
-			if(!PlayerSkillComponent->bIsSpecialAttack)
-			{
-				UE_LOG(LogTemp,Warning,TEXT("[Defending]: Ignore Normal Skill Damage"));
+			UE_LOG(LogTemp,Warning,TEXT("[TakeDamage] Monster %s (%p) is defending."),*GetName(),this);
 
-				return 0.0f;
+			// 플레이어 캐릭터 스킬이 !bIsSpecialAttack = 노멀 스킬이라면
+			if(PlayerSkillComponent)
+			{
+				// 플레이어가 노말 스킬 공격을 했을 때
+				if(!PlayerSkillComponent->bIsSpecialAttack)
+				{
+					UE_LOG(LogTemp,Warning,TEXT("[Defending]: Ignore Normal Skill Damage"));
+
+					return 0.0f;
+				} else
+				{
+					UE_LOG(LogTemp,Error,TEXT("[Defending]: Take Special Attack Damage"));
+				}
 			} else
 			{
-				UE_LOG(LogTemp,Error,TEXT("[Defending]: Take Special Attack Damage"));
+				UE_LOG(LogTemp,Error,TEXT("PlayerSkillComponent is NULL"));
 			}
-		} else
-		{
-			UE_LOG(LogTemp,Error,TEXT("PlayerSkillComponent is NULL"));
 		}
 	}
+	else if(DamageCauser->ActorHasTag(FName("PlayerProjectile")))
+	{
+		UE_LOG(LogTemp,Warning,TEXT("TakeDamage: Hit by PlayerProjectile"));
+	}
+	else
+	{
+		UE_LOG(LogTemp,Warning,TEXT("TakeDamage: Invalid DamageCauser (%s) — Damage Ignored"),*GetNameSafe(DamageCauser));
+		return 0.0f;
+	}
+
+	
+	//// 대미지 원인이 플레이어 캐릭터 스킬인지 확인
+	//if(DamageCauser->ActorHasTag(FName("Player")))
+	//{
+	//	AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(DamageCauser);
+
+	//	UE_LOG(LogTemp,Warning,TEXT("DamageCauser: %s (%s)"),*GetNameSafe(DamageCauser),DamageCauser ? *DamageCauser->GetClass()->GetName() : TEXT("nullptr"));
+
+	//	UPlayerSkillComponent* PlayerSkillComponent = PlayerCharacter->FindComponentByClass<UPlayerSkillComponent>();
+
+	//	// 방어 중
+	//	if(this->bIsDefending)
+	//	{
+	//		UE_LOG(LogTemp,Warning,TEXT("[TakeDamage] Monster %s (%p) is defending."),*GetName(),this);
+
+	//		// 플레이어 캐릭터 스킬이 !bIsSpecialAttack = 노멀 스킬이라면
+	//		if(PlayerSkillComponent)
+	//		{
+	//			// 플레이어가 노말 스킬 공격을 했을 때
+	//			if(!PlayerSkillComponent->bIsSpecialAttack)
+	//			{
+	//				UE_LOG(LogTemp,Warning,TEXT("[Defending]: Ignore Normal Skill Damage"));
+
+	//				return 0.0f;
+	//			} else
+	//			{
+	//				UE_LOG(LogTemp,Error,TEXT("[Defending]: Take Special Attack Damage"));
+	//			}
+	//		} else
+	//		{
+	//			UE_LOG(LogTemp,Error,TEXT("PlayerSkillComponent is NULL"));
+	//		}
+	//	}
+	//}
 
 	UE_LOG(LogTemp,Log,TEXT("banana Damage: %f"),DamageAmount);
 	float ActualDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser); // 부모 클래스의 TakeDamage 호출
@@ -272,10 +428,32 @@ void AEntityPreset::SetHP(float NewHP)
 
 			}
 		}
-		UE_LOG(LogTemp,Warning,TEXT("banana Entity Die"));
-		Destroy();
+		//UE_LOG(LogTemp,Warning,TEXT("banana Entity Die"));
+
+		if(GetMesh())
+		{
+			if(DeathMaterial)
+			{
+				GetMesh()->SetMaterial(0, DeathMaterial);
+				UE_LOG(LogTemp,Warning,TEXT("banana DeathMaterial 적용됨: %s"),*DeathMaterial->GetName());
+			} else
+			{
+				UE_LOG(LogTemp,Warning,TEXT("DeathMaterial이 설정되어 있지 않음!"));
+			}
+		}
+
+		FTimerHandle DestroyTimerHandle;
+		GetWorldTimerManager().SetTimer(DestroyTimerHandle,this,&AEntityPreset::DelayedDestroy,0.33f,false);
+
+		UE_LOG(LogTemp,Warning,TEXT("banana Entity Die)"));
+		//Destroy();
 	}
 
+}
+
+void AEntityPreset::DelayedDestroy()
+{
+	Destroy();
 }
 
 void AEntityPreset::ApplyDamage(float DamageAmount)
@@ -437,6 +615,7 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 			SpecialSkillHitBox->SetBoxExtent(HalfExtent);
 
 			// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
+			// -> 확장 후 앞으로 밀기
 			// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
 			// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
 			FVector NewRelativeLocation = FVector(0.0f,0.0f,HalfExtent.X);
@@ -444,7 +623,71 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 
 			UE_LOG(LogTemp,Warning,TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
 				*HalfExtent.ToString(),*NewRelativeLocation.ToString());
-		} else if(SkillData.SkillNameID == "Skill_FreezeBreath")
+		} 
+		else if(SkillData.SkillNameID == "Skill_TailSwing")
+		{
+			// Normal 히트박스 생성
+			if(!NormalSkillHitBox)
+			{
+				NormalSkillHitBox = NewObject<UBoxComponent>(this,TEXT("NormalSkillHitBox"));
+				if(NormalSkillHitBox)
+				{
+					NormalSkillHitBox->RegisterComponent();
+					NormalSkillHitBox->AttachToComponent(Container,FAttachmentTransformRules::KeepRelativeTransform);
+					HideNormalHitBox();
+
+					ConfigureHitBox(NormalSkillHitBox);
+					NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this,&AEntityPreset::OnNormalHitBoxOverlap);
+				}
+			}
+
+			// TailSwing의 타격 범위 설정
+			FVector HalfExtent = FVector(SkillData.SkillTypeSizeX / 2.0f,50.0f,SkillData.SkillTypeSizeY / 2.0f);
+			NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+			// 항상 동일한 회전으로 고정
+			//FRotator FixedRotation = FRotator(0.0f,90.0f,0.0f);  // TailSocket 기준 +Y방향 회전
+			//NormalSkillHitBox->SetRelativeRotation(FixedRotation);
+
+			// 소켓 기준 +Y 방향으로 한 쪽만 퍼지도록 위치 조정
+			FVector NewRelativeLocation = FVector(-HalfExtent.X, 0.0f,0.0f);
+			NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			UE_LOG(LogTemp,Warning,TEXT("[TailSwing] HalfExtent=%s, RelLocation=%s"),
+		*HalfExtent.ToString(),*NewRelativeLocation.ToString());
+
+			/*UE_LOG(LogTemp,Warning,TEXT("[TailSwing] HalfExtent=%s, RelLocation=%s, Rotation=%s"),
+				*HalfExtent.ToString(),*NewRelativeLocation.ToString(),*FixedRotation.ToString());*/
+
+			//// 부채꼴 히트박스처럼 보이도록 범위 설정
+			//FVector HalfExtent = FVector(SkillData.SkillTypeSizeX/2.0f, 50.0f, SkillData.SkillTypeSizeY / 2.0f);
+			//NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+			//// TailSocket의 +Y 방향으로 히트박스를 옮김
+
+			//// 기본 UBoxComponent는 자신의 중심을 기준으로 확장
+			//// -> 확장 후 앞으로 밀기
+			//// 기획서에 따라 소켓(HitBoxContainer)의 원점에서부터 전방(X축)으로만 확장되도록 하기
+			//// UBoxComponent를 HitBoxContainer의 자식으로 두고, 상대 위치를 Z축(+X 방향)으로 half extent만큼 이동
+			//FVector NewRelativeLocation = FVector(0.0f,HalfExtent.Y,0.0f);
+			////FVector NewRelativeLocation = FVector(0.0f,HalfExtent.Y,0.0f);
+			//NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			//UE_LOG(LogTemp,Warning,TEXT("[TailSwing] HalfExtent=%s, RelLocation=%s"),
+			//	*HalfExtent.ToString(),*NewRelativeLocation.ToString());
+
+			////// 범위 설정 
+			////FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f, 50.0f, SkillData.SkillTypeSizeX / 2.0f);
+			////NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+			////// 히트박스 오프셋 적용 
+			////FVector NewRelativeLocation = FVector(0.0f, 0.0f,HalfExtent.Y);
+			////NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			////UE_LOG(LogTemp,Warning,TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+			////	*HalfExtent.ToString(),*NewRelativeLocation.ToString());
+		}
+		else if(SkillData.SkillNameID == "Skill_FreezeBreath")
 		{
 			// Special 히트박스 생성
 			if(!SpecialSkillHitBox)
@@ -477,7 +720,8 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 
 			UE_LOG(LogTemp,Warning,TEXT("SetupSpecialHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
 				*HalfExtent.ToString(),*NewRelativeLocation.ToString());
-		} else
+		} 
+		else
 		{
 			// Normal 히트박스 생성
 			if(!NormalSkillHitBox)
@@ -733,7 +977,9 @@ void AEntityPreset::HideSpecialSphereHitBox()
 
 void AEntityPreset::ShowHitBox()
 {
-	if(bIsCharging || bIsFreezing)
+	// 여기가 문제 
+	//if(bIsCharging || bIsFreezing)
+	if(bIsCharging || bIsBreath)
 	{
 		ShowSpecialHitBox();
 	} else if(bIsBreaking)
@@ -762,9 +1008,19 @@ void AEntityPreset::OnNormalHitBoxOverlap(UPrimitiveComponent* OverlappedCompone
 				case EnumEffectType::Damage:
 				{
 					float DamageToApply = Effect.EffectValue01;
-					UGameplayStatics::ApplyDamage(OtherActor,DamageToApply,GetController(),this,nullptr);
-					UE_LOG(LogTemp,Warning,TEXT("Normal HitBox Overlap: Applied Damage %f to %s"),
-						DamageToApply,*OtherActor->GetName());
+					if(Effect.SkillNameID=="Skill_SkeletonSlash"||Effect.SkillNameID=="Skill_Bite"
+						||Effect.SkillNameID=="Skill_ArmSwing"||Effect.SkillNameID=="Skill_TailSwing"){
+						UE_LOG(LogTemp,Error,TEXT("무적 모드 데미지"));
+
+						UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,UNormalAttackDamageType::StaticClass());
+					}
+					else{
+						UE_LOG(LogTemp,Error,TEXT("무적 모드 아님"));
+
+						UGameplayStatics::ApplyDamage(OtherActor,DamageToApply,GetController(),this,nullptr);
+						UE_LOG(LogTemp,Warning,TEXT("Normal HitBox Overlap: Applied Damage %f to %s"),
+							DamageToApply,*OtherActor->GetName());
+					}
 					break;
 				}
 				case EnumEffectType::KnockBack:
@@ -839,30 +1095,69 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 				if(Duration > 0.f && SlowFactor > 0.f)
 				{
 					UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
+					UMyPlayerStatComponent* StateComp = PlayerCharacter->FindComponentByClass<UMyPlayerStatComponent>();
+					//UMyPlayerStatComponent* StateComp = PlayerCharacter->CharacterStateComponent;
+
 					if(MoveComp)
 					{
 						float OriginalSpeed = MoveComp->MaxWalkSpeed;
-						float NewSpeed = OriginalSpeed / SlowFactor;
 
-						MoveComp->MaxWalkSpeed = NewSpeed;
+						if(!StateComp->bIsFreezing)
+						{
+							float NewSpeed = OriginalSpeed / SlowFactor;
+							StateComp->bIsFreezing = true;
 
-						UE_LOG(LogTemp,Warning,TEXT("Freezing applied to %s → NewSpeed: %.1f for %.1f seconds"),*PlayerCharacter->GetName(),NewSpeed,Duration);
+							MoveComp->MaxWalkSpeed = NewSpeed;
+						
+							UE_LOG(LogTemp,Warning,TEXT("Freezing applied to %s → NewSpeed: %.1f for %.1f seconds"),*PlayerCharacter->GetName(),NewSpeed,Duration);
+						}
+						else
+						{
+							UE_LOG(LogTemp,Warning,TEXT("[Freeze] 이미 적용됨 → 지속시간만 연장"));
+						}
 
-						// 일정 시간 뒤에 원래 속도로 복원
-						FTimerHandle RestoreHandle;
-						FTimerDelegate RestoreDelegate;
+						// 기존 남은 시간 가져오기
+						float RemainingTime = GetWorld()->GetTimerManager().GetTimerRemaining(StateComp->FreezeTimerHandle);
 
-						// 캡처값 반드시 복사
-						RestoreDelegate.BindLambda([=]() {
-							if(PlayerCharacter && PlayerCharacter->GetCharacterMovement())
+						// 기존 타이머 클리어
+						GetWorld()->GetTimerManager().ClearTimer(StateComp->FreezeTimerHandle);
+
+						// 새로 설정: 남은 시간 + 추가 시간
+						float TotalDuration = FMath::Max(0.0f,RemainingTime) + Duration;
+
+						FTimerDelegate FreezeEndDelegate = FTimerDelegate::CreateLambda([=]()
+						{
+							if(PlayerCharacter && PlayerCharacter->GetCharacterMovement() && StateComp)
 							{
 								PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = OriginalSpeed;
-								UE_LOG(LogTemp,Warning,TEXT("Freezing ended: Restored speed %.1f to %s"),OriginalSpeed,*PlayerCharacter->GetName());
+								StateComp->bIsFreezing = false;
+
+								UE_LOG(LogTemp,Warning,TEXT("[Freeze] 해제됨 → Speed 복구: %.1f"), OriginalSpeed);
 							}
 						});
 
-						GetWorld()->GetTimerManager().SetTimer(RestoreHandle,RestoreDelegate,Duration,false);
+						GetWorld()->GetTimerManager().SetTimer(StateComp->FreezeTimerHandle,FreezeEndDelegate,TotalDuration,false);
 					}
+						//// 남은 시간만 연장
+						//FTimerManager& TimerMgr = GetWorld()->GetTimerManager();
+						//FTimerHandle& FreezeTimerHandle = PlayerCharacter->CharacterStateComponent->FreezeTimerHandle;
+
+						//// 일정 시간 뒤에 원래 속도로 복원
+						//FTimerHandle RestoreHandle;
+						//FTimerDelegate RestoreDelegate;
+
+						//// 캡처값 반드시 복사
+						//RestoreDelegate.BindLambda([=]() {
+						//	if(PlayerCharacter && PlayerCharacter->CharacterStateComponent)
+						//	{
+						//		PlayerCharacter->CharacterStateComponent->bIsFreezing = false;
+						//		PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = OriginalSpeed;
+
+						//		UE_LOG(LogTemp,Warning,TEXT("Freezing ended: Restored speed %.1f to %s"),OriginalSpeed,*PlayerCharacter->GetName());
+						//	}
+						//});
+
+						//GetWorld()->GetTimerManager().SetTimer(RestoreHandle,RestoreDelegate,Duration,false);
 				}
 			}
 
@@ -1078,15 +1373,17 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage,bool bInterrupted)
 	if(bIsBreaking)
 	{
 		bIsBreaking = false;
-	}/*
+	}
+	else if(bIsBreath)
+	{
+		bIsBreath = false;
+	}
+	/*
 	else if(bIsCharging)
 	{
 		bIsCharging = false;
 	}
-	else if(bIsFreezing)
-	{
-		bIsFreezing = false;
-	}*/
+	*/
 
 	// AI 경로 추적 활성화
 	if(AAIController* AIController = Cast<AAIController>(GetController()))
@@ -1343,7 +1640,7 @@ void AEntityPreset::PerformSkill_FreezeBreath()
 	// 스킬 시전 플래그 설정
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
 	bIsCastingSkill = true;
-	bIsFreezing = true;
+	bIsBreath = true;
 
 	// AI 경로 추적 중지 
 	if(AAIController* AIController = Cast<AAIController>(GetController()))
@@ -1667,7 +1964,7 @@ void AEntityPreset::Fire_AllArrows()
 				// 초기화
 				Arrow->InitProjectileBySkillData(SkillData,EffectDataArray);
 
-				UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_SplinterArrow sub data!"));
+				//UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_SplinterArrow sub data!"));
 
 				ArrowList.Add(Arrow);
 			}
