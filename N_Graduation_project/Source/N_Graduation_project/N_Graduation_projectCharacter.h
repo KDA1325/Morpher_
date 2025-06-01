@@ -276,16 +276,29 @@ private:
 	FTimerHandle FlashTimerHandle2;
 	FTimerHandle FlashTimerHandle3;
 	FTimerHandle FlashTimerHandle4;
-public:
-	UPROPERTY(EditDefaultsOnly,Category = "Effects")
-		UNiagaraSystem* StunEffect;
 
+	FTimerHandle FireEffectTimerHandle;
+public:
+	UPROPERTY(BlueprintReadOnly)
+		bool isStun=false;
+	UPROPERTY(BlueprintReadOnly)
+		bool isFire=false;
+	//UPROPERTY(EditDefaultsOnly,Category = "Effects")
+	//	UNiagaraSystem* StunEffect;
+	UFUNCTION(BlueprintImplementableEvent)
 	void ApplyStun(float Duration);
 
-	UPROPERTY(EditDefaultsOnly,Category = "Effects")
-		UNiagaraSystem* FireEffect;
-	UNiagaraComponent* ActiveFireEffect;
+	//UPROPERTY(EditDefaultsOnly,Category = "Effects")
+//		UNiagaraSystem* FireEffect;
+//	UNiagaraComponent* ActiveFireEffect;
+	//UNiagaraComponent* ActivesStunEffect;
+	UFUNCTION(BlueprintImplementableEvent)
 	void ApplyFire(float Duration);
+	//bool IsPendingKill=true;
+	UPROPERTY()
+		TArray<UMaterialInterface*> OriginalMaterials;
+	UPROPERTY()
+		TArray<UMaterialInterface*> HitMaterials;
 };
 
 /*
