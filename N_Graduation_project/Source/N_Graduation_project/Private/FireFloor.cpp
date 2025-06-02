@@ -87,8 +87,16 @@ void AFireFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Othe
 			}
 			UE_LOG(LogTemp,Warning,TEXT("On_Fire 범위 내 감지된 액터: %s"),*OtherActor->GetName());
 			AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(OtherActor);
-			PlayerCharacter->ApplyFire(10);
-			ApplyFireDOT(OtherActor,0.5f,10.f);
+			
+			if(PlayerCharacter)
+			{
+				PlayerCharacter->ApplyFire(4);
+			} else
+			{
+				UE_LOG(LogTemp,Error,TEXT("On_Fire: Cast 실패 - 액터 이름: %s"),*OtherActor->GetName());
+			}
+			ApplyFireDOT(OtherActor,10.f,4.f);
+
 		}
 	}
 }
