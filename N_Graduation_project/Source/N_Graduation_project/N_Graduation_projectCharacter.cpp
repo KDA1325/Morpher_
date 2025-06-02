@@ -820,6 +820,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		InvincibleOriginalMaterial = PlayerMaterial;
 		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
+		
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		GetMesh()->SetSkeletalMesh(LoadedMesh);
 		//PlayerSword->SetHiddenInGame(true);  
@@ -990,6 +991,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 
 		}
 	}
+	InitFootstepSounds();
 
 }
 //히트박스 동적 생성
@@ -1328,4 +1330,55 @@ void AN_Graduation_projectCharacter::ApplyFire(float Duration)
 	},Duration,false);
 
 	UE_LOG(LogTemp,Warning,TEXT("FireEffect Applied, Duration: %f"),Duration);
+}
+void AN_Graduation_projectCharacter::InitFootstepSounds()
+{UE_LOG(LogTemp, Warning, TEXT("PlayFootstepSound called"));
+
+	CommonFootstepSounds.Empty();
+	StoneGolemFootstepSound = nullptr;
+	EntityFootstep1 = nullptr;
+	EntityFootstep2 = nullptr;
+
+	USoundBase* Walk1 = LoadObject<USoundBase>(nullptr,TEXT("/Game/Sounds/Battle/EntityWalking01.EntityWalking01"));
+	if(!Walk1) UE_LOG(LogTemp,Warning,TEXT("EntityWalking01 사운드 로드 실패!"));
+
+	USoundBase* Walk2 = LoadObject<USoundBase>(nullptr,TEXT("/Game/Sounds/Battle/EntityWalking02.EntityWalking02"));
+	if(!Walk2) UE_LOG(LogTemp,Warning,TEXT("EntityWalking02 사운드 로드 실패!"));
+
+	if(Walk1)
+	{
+		CommonFootstepSounds.Add(Walk1);
+		EntityFootstep1 = Walk1; // 초기화
+	}
+	if(Walk2)
+	{
+		CommonFootstepSounds.Add(Walk2);
+		EntityFootstep2 = Walk2; // 초기화
+	}
+
+	if(currentPreset == "StoneGolemPreset.uasset")
+	{
+		StoneGolemFootstepSound = LoadObject<USoundBase>(nullptr,TEXT("/Game/Sounds/Battle/StoneGolemWalking.StoneGolemWalking"));
+	}
+}
+
+void AN_Graduation_projectCharacter::PlayFootstepSound()
+{
+	USoundBase* FootstepToPlay = nullptr;
+	UE_LOG(LogTemp,Warning,TEXT("PlayFootstepSound called"));
+
+	if(currentPreset == "StoneGolemPreset.uasset")
+	{
+		FootstepToPlay = StoneGolemFootstepSound;
+	} else
+	{
+		// 번갈아가며 재생
+		FootstepToPlay = bUseFirstFootstep ? EntityFootstep1 : EntityFootstep2;
+		bUseFirstFootstep = !bUseFirstFootstep;
+	}
+
+	if(FootstepToPlay)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this,FootstepToPlay,GetActorLocation());
+	}
 }

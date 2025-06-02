@@ -104,7 +104,7 @@ void UMyGameInstance::OnLevelLoaded()
 	AN_Graduation_projectCharacter* Player = Cast<AN_Graduation_projectCharacter>(UGameplayStatics::GetPlayerCharacter(this,0));
 	if(!Player) return;
 
-	FVector LoadLoc = SaveLocation + FVector(0,0,300);
+	FVector LoadLoc = SaveLocation + FVector(0,0,100);
 	UE_LOG(LogTemp,Warning,TEXT("Teleporting player to: %s"),*LoadLoc.ToString());
 	Player->SetActorLocation(LoadLoc);
 
