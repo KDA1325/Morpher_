@@ -1083,27 +1083,30 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 							1.2f,
 							false
 						);
-					} else{
+					} 
+					
+					else{
 						UGameplayStatics::ApplyDamage(TargetActor,DamageAmount,MyChar->GetController(),MyChar,nullptr);
 						UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
+					}
+					if(TargetActor->ActorHasTag(FName("Barrel")))
+					{
+						UE_LOG(LogTemp,Warning,TEXT("Barrel이여 작동하거라"));
 						if(TargetActor->ActorHasTag(FName("Barrel")))
 						{
-							UE_LOG(LogTemp,Warning,TEXT("Barrel이여 작동하거라"));
-							if(TargetActor->ActorHasTag(FName("Barrel")))
+							if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(TargetActor))
 							{
-								if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(TargetActor))
-								{
-									StunBarrel->WorkBarrel(DamageAmount); // AStunBarrel 고유 로직
-								} else if(ABarrel* NormalBarrel = Cast<ABarrel>(TargetActor))
-								{
-									NormalBarrel->WorkBarrel(DamageAmount); // ABarrel 로직
-								} else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(TargetActor)){
-									FireBarrel->WorkBarrel(DamageAmount); // FireBarrel 로직
+								StunBarrel->WorkBarrel(DamageAmount); // AStunBarrel 고유 로직
+							} else if(ABarrel* NormalBarrel = Cast<ABarrel>(TargetActor))
+							{
+								NormalBarrel->WorkBarrel(DamageAmount); // ABarrel 로직
+							} else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(TargetActor)){
+								FireBarrel->WorkBarrel(DamageAmount); // FireBarrel 로직
 
-								}
 							}
 						}
 					}
+
 					//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
 				} else {
 					UGameplayStatics::ApplyDamage(TargetActor,200,MyChar->GetController(),MyChar,nullptr);
@@ -1224,7 +1227,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 
 									// 2초 후 리스타트
 									FTimerHandle TimerHandle;
-									GetWorld()->GetTimerManager().SetTimer(TimerHandle,[AICon, Entity]()
+									GetWorld()->GetTimerManager().SetTimer(TimerHandle,[AICon,Entity]()
 									{
 										if(AICon && AICon->BrainComponent)
 										{

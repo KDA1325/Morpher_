@@ -7,6 +7,10 @@
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "FireFloor.h"
 #include "FrozeFloor.h"
+#include "Barrel.h"
+#include "StunBarrel.h"
+#include "FireBarrel.h"
+
 APlayerProjectile::APlayerProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -14,6 +18,9 @@ APlayerProjectile::APlayerProjectile()
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->SetCollisionProfileName("Projectile");
+	CollisionComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CollisionComp->SetCollisionResponseToChannel(ECC_Pawn,ECR_Block); // 캐릭터는 막음
+	CollisionComp->SetCollisionResponseToChannel(ECC_WorldStatic,ECR_Block); // 타일, 벽, 바닥 등
 
 	RootComponent = CollisionComp;
 	// 발사체 이동 컴포넌트 설정
@@ -90,12 +97,12 @@ void APlayerProjectile::FireInDirection(const FVector& ShootDirection)
 {
 	if(ProjectileMovement && CollisionComp)
 	{
-		ProjectileMovement->StopMovementImmediately(); // ❗ 먼저 멈추고
+		ProjectileMovement->StopMovementImmediately(); //먼저 멈추고
 
 		ProjectileMovement->InitialSpeed = SkillData.ProjectileSpeed;
 		ProjectileMovement->MaxSpeed = SkillData.ProjectileSpeed;
 
-		ProjectileMovement->Velocity = ShootDirection * ProjectileMovement->InitialSpeed; // ❗ 먼저 Velocity 지정
+		ProjectileMovement->Velocity = ShootDirection * ProjectileMovement->InitialSpeed;
 		UE_LOG(LogTemp,Warning,TEXT(">>> Projectile Velocity: %s"),*ProjectileMovement->Velocity.ToString());
 		ProjectileMovement->SetUpdatedComponent(CollisionComp);
 		ProjectileMovement->Activate(true);
@@ -126,7 +133,7 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 		OtherActor->Destroy();
 	}
 	// 몬스터만 처리
-	if(OtherActor->ActorHasTag("Monster")|| OtherActor->ActorHasTag("FireFloor")||OtherActor->ActorHasTag("FrozeFloor")||OtherActor->ActorHasTag("FireCrystal"))
+	if(OtherActor->ActorHasTag("Monster")||OtherActor->ActorHasTag("Object")|| OtherActor->ActorHasTag("FireFloor")||OtherActor->ActorHasTag("FrozeFloor")||OtherActor->ActorHasTag("FireCrystal"))
 	{
 		UE_LOG(LogTemp,Warning,TEXT("OtherActor->ActorHasTag(Floor"));
 
@@ -136,7 +143,22 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			{
 			case EnumEffectType::Damage:
 			UE_LOG(LogTemp,Warning,TEXT("데미지 실행됨"));
+
 			UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+			if(OtherActor->ActorHasTag(FName("Barrel")))
+			{
+
+				if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(OtherActor))
+				{
+					StunBarrel->WorkBarrel(0); // AStunBarrel 고유 로직
+				} else if(ABarrel* NormalBarrel = Cast<ABarrel>(OtherActor))
+				{
+					NormalBarrel->WorkBarrel(0); // ABarrel 로직
+				} else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(OtherActor)){
+					FireBarrel->WorkBarrel(0); // FireBarrel 로직
+
+				}
+			}
 			break;
 			case EnumEffectType::AOEDamage:
 			{
@@ -149,17 +171,17 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 				TArray<AActor*> OverlappingActors;
 				UGameplayStatics::GetAllActorsOfClass(GetWorld(),AN_Graduation_projectCharacter::StaticClass(),OverlappingActors);
 
-				for(AActor* Actor : OverlappingActors)
+				if(OtherActor->ActorHasTag(FName("Barrel")))
 				{
-					if(Actor->ActorHasTag("Monster"))
-					{//
-						//float Distance = FVector::Dist(Actor->GetActorLocation(),Origin);
-						//if(Distance <= Radius)
-						//{
+					if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(OtherActor))
+					{
+						StunBarrel->WorkBarrel(0); // AStunBarrel 고유 로직
+					} else if(ABarrel* NormalBarrel = Cast<ABarrel>(OtherActor))
+					{
+						NormalBarrel->WorkBarrel(0); // ABarrel 로직
+					} else if(AFireBarrel* FireBarrel = Cast<AFireBarrel>(OtherActor)){
+						FireBarrel->WorkBarrel(0); // FireBarrel 로직
 
-							//UGameplayStatics::ApplyDamage(Actor,Damage,GetInstigatorController(),this,nullptr);
-						UE_LOG(LogTemp,Warning,TEXT("AOE Damage applied to %s"),*Actor->GetName());
-						//}
 					}
 				}
 				break;

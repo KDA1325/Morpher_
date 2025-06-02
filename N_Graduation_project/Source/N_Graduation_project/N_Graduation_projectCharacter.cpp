@@ -671,7 +671,6 @@ void AN_Graduation_projectCharacter::UpdateEntityData()
 	}
 	// currentPreset!=클릭한 버튼의 캐릭터이름 이면..
 	if(pastPreset != currentPreset) {
-		PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID,EntityData.HP,EntityData.TransManaCost);
 		pastPreset = currentPreset;
 		//	UE_LOG(LogTemp,Error,TEXT("ChangePreset = pastPreset %s != currentPreset %s"),*pastPreset,currentPreset);
 	}
@@ -1178,6 +1177,7 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 		}		UpdateEntityData();
 		if(OkTrans) {
 			//UE_LOG(LogTemp,Warning,TEXT("ChangePreset 변신완 "));
+			PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID,EntityData.HP,EntityData.TransManaCost);
 
 			SetPreset(EntityData.PresetReference);
 			WidgetActor->Back_CacheFinalMouseAngle = false;
