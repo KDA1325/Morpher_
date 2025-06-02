@@ -77,7 +77,8 @@ void ATotem_Projectile::InitProjectileBySkillData(float Speed, float damage)
 
 	if(ProjectileMovement->InitialSpeed > 0.f)
 	{
-		float LifeTime = 700/600;//SkillData.SkillRange / SkillData.ProjectileSpeed;
+		//float LifeTime = 700/600;//SkillData.SkillRange / SkillData.ProjectileSpeed;
+		float LifeTime = (600*5.f)/600;//SkillData.SkillRange / SkillData.ProjectileSpeed;
 		GetWorld()->GetTimerManager().SetTimer(
 			DestroyTimerHandle,
 			this,
@@ -115,8 +116,8 @@ void ATotem_Projectile::FireInDirection(const FVector& ShootDirection)
 	if(ProjectileMovement && CollisionComp)
 	{
 		ProjectileMovement->StopMovementImmediately();
-		ProjectileMovement->SetUpdatedComponent(CollisionComp);  // <-- 여기에 명시
-		ProjectileMovement->SetVelocityInLocalSpace(ShootDirection * ProjectileMovement->InitialSpeed);
+		ProjectileMovement->SetUpdatedComponent(CollisionComp);  
+		ProjectileMovement->Velocity = ShootDirection * ProjectileMovement->InitialSpeed;
 		ProjectileMovement->Activate(true);
 
 		UE_LOG(LogTemp,Warning,TEXT("ATotem_Projectile FireInDirection ~ called! Velocity = %s"),*ProjectileMovement->Velocity.ToString());

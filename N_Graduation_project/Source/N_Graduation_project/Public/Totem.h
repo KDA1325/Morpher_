@@ -43,7 +43,8 @@ protected:
 	// 발사 위치 기준이 될 얼굴 컴포넌트
 	UPROPERTY(VisibleAnywhere,Category = "Components")
 		UArrowComponent* FaceComponent;
-
+	UPROPERTY(VisibleAnywhere)
+		class USceneComponent* Root;
 	// 투사체 스폰 타이머
 	FTimerHandle AttackTimerHandle;
 
