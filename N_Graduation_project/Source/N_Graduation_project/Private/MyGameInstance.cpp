@@ -56,7 +56,7 @@ void UMyGameInstance::SaveGame()
 
 void UMyGameInstance::LoadGame()
 {
-	//UE_LOG(LogTemp,Warning,TEXT("LoadGame실행."));
+	UE_LOG(LogTemp,Warning,TEXT("LoadGame실행."));
 	const FString SlotName = TEXT("MySaveSlot");
 	const int32 UserIndex = 0;
 	if(UGameplayStatics::DoesSaveGameExist(SlotName,UserIndex))
@@ -84,7 +84,7 @@ void UMyGameInstance::LoadGame()
 		//	UE_LOG(LogTemp,Warning,TEXT("LoadGame Player실행."));
 
 			//UE_LOG(LogTemp,Error,TEXT("LoadGamePreset, CurrentPlayerCharacter: %s"),*CurrentPlayerCharacter);
-
+			
 			if(UMyPlayerStatComponent* Stat = Player->FindComponentByClass<UMyPlayerStatComponent>())
 			{
 				Stat->SetHP(PlayerFullHP);
@@ -98,12 +98,12 @@ void UMyGameInstance::LoadGame()
 				SaveLocation = SaveData->SavePlayerLocation;
 				SaveLocation.Z += 100.0f; // Z축 위로 이동!
 				Player->SetActorLocation(SaveLocation);
-				//Player->ChangePreset("PlayerCharacter");
-				Player->ChangePreset("PCPreset.uasset");
+				Player->ChangePreset("PlayerCharacter");
 				Player->isDead=false;
-				/*UE_LOG(LogTemp,Warning,TEXT("LoadGame LoadGame SaveLocation: X=%f, Y=%f, Z=%f"),SaveLocation.X,SaveLocation.Y,SaveLocation.Z);
-				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ room name: %s"),*SaveData->RoomName.ToString());*/
-
+				//Player->LoadChangePreset();
+				//UE_LOG(LogTemp,Warning,TEXT("LoadGame LoadGame SaveLocation: X=%f, Y=%f, Z=%f"),SaveLocation.X,SaveLocation.Y,SaveLocation.Z);
+				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ room name: %s"),*SaveData->RoomName.ToString());
+				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ ChangePreset PlayerCharacter"));
 			}
 			//레[벨 스트리밍
 			AActor* CallbackTarget = UGameplayStatics::GetPlayerCharacter(this,0); 
@@ -112,10 +112,11 @@ void UMyGameInstance::LoadGame()
 			LatentInfo.ExecutionFunction = FName("OnLevelLoaded");
 			LatentInfo.Linkage = 0;
 			LatentInfo.UUID = __LINE__;
-
+			
 			UGameplayStatics::LoadStreamLevel(this,FName(*SaveData->RoomName.ToString()),true,false,LatentInfo);
 		
 		}
+
 	}
 }
 

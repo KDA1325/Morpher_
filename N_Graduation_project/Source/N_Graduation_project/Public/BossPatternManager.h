@@ -6,8 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "BossProjectile.h"
-
-
+#include "Sound/SoundWave.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
 #include "BossPatternManager.generated.h"
 
 UENUM(BlueprintType)
@@ -153,4 +154,11 @@ void StartPhase2();
 
 private:
 	int NextPatternIndex = 0;
+
+
+	//tkdnse
+	USoundWave* LazerBeamSound ;
+	USoundWave* SpinProjectileSound ;
+	USoundWave* PlaySpinProjectileSound ;
+
 };

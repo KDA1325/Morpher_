@@ -1204,7 +1204,6 @@ void AN_Graduation_projectCharacter::OnHitboxOverlap(UPrimitiveComponent* Overla
 //변신
 void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 {
-
 	currentPreset = Name;
 	if(currentPreset  != pastPreset) {
 
@@ -1215,15 +1214,12 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 			PlayerSword->SetHiddenInGame(true);
 			SkeletonShield ->SetHiddenInGame(true);
 			SkeletonSword->SetHiddenInGame(true);
-		} else
-		{
-			//UE_LOG(LogTemp,Error,TEXT("PlayerSword is nullptr in ChangePreset"));
-		}		UpdateEntityData();
+		} 	
+		UpdateEntityData();
 		if(OkTrans) {
-			//UE_LOG(LogTemp,Warning,TEXT("ChangePreset 변신완 "));
-			PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID,EntityData.HP,EntityData.TransManaCost);
-
+			UE_LOG(LogTemp,Warning,TEXT("ChangePreset 변신완 ,%s"),*currentPreset);
 			SetPreset(EntityData.PresetReference);
+			PlayerStatComponent->TransformToEntity(EntityData.EntityGroupID,EntityData.HP,EntityData.TransManaCost);
 			WidgetActor->Back_CacheFinalMouseAngle = false;
 			//UE_LOG(LogTemp,Warning,TEXT("OkTrans true"));
 		} else {
@@ -1231,6 +1227,13 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 		}
 	}
 
+}
+void AN_Graduation_projectCharacter::LoadChangePreset(){
+	SetPreset("PlayerCharacter");
+	PlayerStatComponent->TransformToEntity("PlayerCharacter",150,10);
+	WidgetActor->Back_CacheFinalMouseAngle = false;
+	UpdateEntityData();
+	UE_LOG(LogTemp,Warning,TEXT("LoadChangePreset"));
 }
 
 // 이펙트

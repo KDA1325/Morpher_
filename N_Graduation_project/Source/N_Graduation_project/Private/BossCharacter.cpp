@@ -67,14 +67,30 @@ float ABossCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEv
 
 void ABossCharacter::SetHP(int NewHP)
 {
+	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
 	//	PastCurrentHP = CurrentHP;
 	CurrentHP = NewHP;
 	UpdateHP();
 	UE_LOG(LogTemp,Log,TEXT("CurrentHP HealHP(200) 결과: %d"),CurrentHP);
 
-	if(CurrentHP == 0)
+	if(CurrentHP <= 0)
 	{
-		OnBossDead();
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+		if(BossPatternManager)
+		{
+			GetWorld()->GetTimerManager().ClearAllTimersForObject(BossPatternManager);
+		}
+
+		// 위젯 제거
+		if(BossWidget)
+		{
+			BossWidget->RemoveFromParent();
+			BossWidget = nullptr;
+		}
+		MyGameInstance->BossClear=true;
+		// 보스 액터 파괴
+		Destroy();
 	}
 
 }
@@ -95,11 +111,9 @@ void ABossCharacter::HealHP(int DamageAmount){
 	}
 }
 void ABossCharacter::UpdateHP(){
-	BossWidget->UpdateHPBar(CurrentHP);
-}
-
-void ABossCharacter::OnBossDead(){
-	Destroy();
+	if(BossWidget){
+		BossWidget->UpdateHPBar(CurrentHP);
+	}
 }
 
 //페이즈
@@ -108,6 +122,7 @@ void ABossCharacter::Pattern1()
 	if(!BossPatternManager) return;
 	//번개
 	BossPatternManager->Thunder();
+	//BossPatternManager->Meteor();
 
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	//레이저
