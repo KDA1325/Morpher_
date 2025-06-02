@@ -1223,11 +1223,10 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 
 					if(MoveComp)
 					{
-						float OriginalSpeed = MoveComp->MaxWalkSpeed;
-
 						if(!StateComp->bIsFreezing)
 						{
-							float NewSpeed = OriginalSpeed / SlowFactor;
+							StateComp->OriginalSpeed = MoveComp->MaxWalkSpeed;
+							float NewSpeed = StateComp->OriginalSpeed / SlowFactor;
 							StateComp->bIsFreezing = true;
 
 							MoveComp->MaxWalkSpeed = NewSpeed;
@@ -1252,10 +1251,11 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 						{
 							if(PlayerCharacter && PlayerCharacter->GetCharacterMovement() && StateComp)
 							{
-								PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = OriginalSpeed;
+								PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = StateComp->OriginalSpeed;
 								StateComp->bIsFreezing = false;
+								StateComp->OriginalSpeed = 0.f;
 
-								UE_LOG(LogTemp,Warning,TEXT("[Freeze] 해제됨 → Speed 복구: %.1f"), OriginalSpeed);
+								UE_LOG(LogTemp,Warning,TEXT("[Freeze] 해제됨 → Speed 복구: %.1f"),MoveComp->MaxWalkSpeed);
 							}
 						});
 
