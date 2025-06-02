@@ -317,6 +317,7 @@ public:
 		TArray<UMaterialInterface*> OriginalMaterials;
 	UPROPERTY()
 		TArray<UMaterialInterface*> HitMaterials;
+	void LoadChangePreset();
 };
 
 /*
