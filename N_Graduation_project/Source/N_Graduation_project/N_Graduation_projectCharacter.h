@@ -147,6 +147,9 @@ public:
 		USoundBase* HitSound;
 
 	UPROPERTY(EditAnywhere)
+		USoundBase* DashSound;
+
+	UPROPERTY(EditAnywhere)
 		USoundBase* GuardHitSound;
 
 	UPROPERTY(EditAnywhere)

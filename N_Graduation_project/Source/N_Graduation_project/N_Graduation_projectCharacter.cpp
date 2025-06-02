@@ -179,6 +179,12 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	{
 		ArmSwingEffectHitSound = ArmSwingEffectHitSoundObj.Object;
 	}
+	
+	static ConstructorHelpers::FObjectFinder<USoundBase>DashSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Dash.Dash'"));
+	if(DashSoundObj.Succeeded())
+	{
+		DashSound = DashSoundObj.Object;
+	}
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -462,6 +468,7 @@ void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	StateComp->ChangeState(ECharacterState::Dash);
 	CharacterStateComponent->ApplyActionRestrictions();
+	UGameplayStatics::PlaySoundAtLocation(this,DashSound,GetActorLocation(),0.9f);
 
 
 	// 마지막 입력이 ZeroVector(중립)가 아니면 실행 -> 캐릭터가 정지 중엔 실행되지 않음(반드시 대시로 이동하고 싶은 방향쪽 방향키를 눌러야 대시 발동(기획서대로 수정 필요))
