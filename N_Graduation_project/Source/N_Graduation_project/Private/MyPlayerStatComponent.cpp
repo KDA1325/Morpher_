@@ -16,6 +16,7 @@ UMyPlayerStatComponent::UMyPlayerStatComponent()
 	MonsterName = "PlayerCharacter";
 	Change = true;
 	bIsFreezing = false;
+	OriginalSpeed = 0.f;
 }
 
 UMyCharacterWidget* UMyPlayerStatComponent::GetHUD() const

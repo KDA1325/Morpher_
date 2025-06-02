@@ -434,6 +434,12 @@ void UPlayerSkillComponent::NomalSkillPlay(const FString& SkillID)
 
 		CurrentSkillID = SkillID;
 
+		if(CurrentSkillID == "Skill_ArmSwing")
+		{
+			SoundSkillID = "Skill_ArmSwing";
+			UE_LOG(LogTemp,Warning,TEXT("플레이어가 Skill_ArmSwing 공격"));
+		}
+
 		UE_LOG(LogTemp,Warning,TEXT("KKakao Distance to Monster: %f"),distance);
 
 		UE_LOG(LogTemp,Warning,TEXT("%f Kkakao Yes distance"),SkillData.SkillRange);
@@ -488,6 +494,8 @@ void UPlayerSkillComponent::SpecialSkillPlay(const FString& SkillID)
 		CurrentSkillID = SkillID;
 		if(SkillID == "Skill_Charge")
 		{
+			SoundSkillID = "Skill_Charge";
+			UE_LOG(LogTemp,Warning,TEXT("플레이어가 Skill_Charge 공격"));
 			auto StatComponent = GetOwner()->FindComponentByClass<UWidgetActor>();
 
 			StatComponent->HUDWidget->SkeletonGuard=true;
@@ -1017,6 +1025,7 @@ void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage,bool bInterr
 {
 	if(Montage)
 	{
+		SoundSkillID = nullptr;
 		UE_LOG(LogTemp,Warning,TEXT("Skill Animation Ended: %s"),*Montage->GetName());
 		HideHitBox();
 		HideHitBox2();

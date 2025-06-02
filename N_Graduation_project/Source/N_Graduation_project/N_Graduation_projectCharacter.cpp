@@ -23,6 +23,7 @@
 #include "GameFramework/DamageType.h"        // UDamageType
 #include "NormalAttackDamageType.h"          // 커스텀 데미지 타입
 #include "Engine/DamageEvents.h"
+#include "EntityProjectile.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -159,6 +160,24 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	if(FireEffectSoundObj.Succeeded())
 	{
 		FireEffectSound = FireEffectSoundObj.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>FireEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/FireBall.FireBall'"));
+	if(FireEffectHitSoundObj.Succeeded())
+	{
+		FireEffectHitSound = FireEffectHitSoundObj.Object;
+	}
+	
+	static ConstructorHelpers::FObjectFinder<USoundBase>ChargeEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Charge.Charge'"));
+	if(ChargeEffectHitSoundObj.Succeeded())
+	{
+		ChargeEffectHitSound = ChargeEffectHitSoundObj.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>ArmSwingEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/ArmSwingHit.ArmSwingHit'"));
+	if(ArmSwingEffectHitSoundObj.Succeeded())
+	{
+		ArmSwingEffectHitSound = ArmSwingEffectHitSoundObj.Object;
 	}
 }
 
@@ -520,8 +539,33 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 			{
 				bFromNormalHitBox=false;
 
-				// 히트 사운드
-				UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+				// 대미지 주는 쪽이 entityProjectile일 때, 스킬이 FireBall이라면 전용 사운드 재생 
+				if(AEntityProjectile* entityProjectile = Cast<AEntityProjectile>(DamageCauser))
+				{
+					if(entityProjectile->SoundSkillID == "Skill_FireBall")
+					{
+						UGameplayStatics::PlaySoundAtLocation(this,FireEffectHitSound,GetActorLocation(),0.9f);
+					}
+				}
+				// 대미지 주는 쪽이 entity일 때
+				else if(AEntityPreset* entity = Cast<AEntityPreset>(DamageCauser))
+				{
+					// 스킬이 Charge라면 전용 사운드 재생 
+					if(entity->SoundSkillID == "Skill_Charge")
+					{
+						UGameplayStatics::PlaySoundAtLocation(this,ChargeEffectHitSound,GetActorLocation(),0.9f);
+					}
+					// 스킬이 ArmSwing이라면 전용 사운드 재생 
+					else if(entity->SoundSkillID == "Skill_ArmSwing")
+					{
+						UGameplayStatics::PlaySoundAtLocation(this,ArmSwingEffectHitSound,GetActorLocation(),0.9f);
+					}
+				}
+				else
+				{
+					// 히트 사운드
+					UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+				}
 
 				UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: %s"),*DamageTypeCDO->GetClass()->GetName());
 			}

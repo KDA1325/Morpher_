@@ -63,6 +63,18 @@ public:
 	UPROPERTY(EditAnywhere)
 	USoundBase* FireSound;
 
+	UPROPERTY(EditAnywhere)
+		USoundBase* FireEffectHitSound;
+
+	UPROPERTY(EditAnywhere)
+		USoundBase* ChargeEffectHitSound;
+
+	UPROPERTY(EditAnywhere)
+		USoundBase* ArmSwingEffectHitSound;
+
+	UPROPERTY(EditAnywhere)
+	FString SoundSkillID;
+
 	FABEntityData EntityData;
 	FSkillData NormalSkillData;
 	FSkillData SpecialSkillData;
@@ -200,8 +212,8 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")
 	FVector ArrowDirection;
 
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void ExecuteChargeDash();
+	//UFUNCTION(BlueprintCallable, Category = "Skill")
+	//void ExecuteChargeDash();
 
 	UFUNCTION(BlueprintCallable,Category = "Skill")
 	void SpawnProjectile_ThrowRock();
@@ -230,8 +242,8 @@ public:
 	UFUNCTION()
 	void Timeline_ChargeProgress(float Value);
 
-	UFUNCTION()
-	void Timeline_ChargeFinished();
+	//UFUNCTION()
+	//void Timeline_ChargeFinished();
 
 	UFUNCTION()
 	void SpawnChargeIndicator(FVector ChargeStartLocation, FVector ChargeTargetLocation);

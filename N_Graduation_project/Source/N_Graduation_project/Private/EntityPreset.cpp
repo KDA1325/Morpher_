@@ -17,6 +17,7 @@
 #include "Components/ActorComponent.h"
 #include "NiagaraComponent.h"
 #include "TimerManager.h"
+#include "PlayerProjectile.h"
 #include "NormalAttackDamageType.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -33,6 +34,8 @@ AEntityPreset::AEntityPreset()
 	CurrentHP = 0;
 	currentSpeed = 0;
 	MaxHp = 100.0f;
+
+	SoundSkillID = nullptr;
 
 	NormalSkillHitBox = nullptr;
 	SpecialSkillHitBox = nullptr;
@@ -79,11 +82,23 @@ AEntityPreset::AEntityPreset()
 		ShieldEndSound = ShieldEndSoundObj.Object;
 	}
 	
-	/*static ConstructorHelpers::FObjectFinder<USoundBase>FireSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Fire.Fire'"));
-	if(FireSoundObj.Succeeded())
+	static ConstructorHelpers::FObjectFinder<USoundBase>FireEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/FireBall.FireBall'"));
+	if(FireEffectHitSoundObj.Succeeded())
 	{
-		FireSound = FireSoundObj.Object;
-	}*/
+		FireEffectHitSound = FireEffectHitSoundObj.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>ChargeEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Charge.Charge'"));
+	if(ChargeEffectHitSoundObj.Succeeded())
+	{
+		ChargeEffectHitSound = ChargeEffectHitSoundObj.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>ArmSwingEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/ArmSwingHit.ArmSwingHit'"));
+	if(ArmSwingEffectHitSoundObj.Succeeded())
+	{
+		ArmSwingEffectHitSound = ArmSwingEffectHitSoundObj.Object;
+	}
 
 	//SkillArrowChildComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("SkillArrowChildComponent"));
 	////SkillArrowChildComponent->SetupAttachment(RootComponent); // 또는 RootComponent
@@ -217,6 +232,8 @@ void AEntityPreset::BeginPlay()
 	this->bIsVisibleEffectFire = false;
 	this->bIsVisibleEffectFreezing = false;
 	this->bIsVisibleEffectStun = false;
+	
+	bUseControllerRotationYaw = true;
 
 	//TArray<UActorComponent*> OutComponents;
 	//this->GetComponentsByClass(UNiagaraComponent::StaticClass(),OutComponents);
@@ -376,15 +393,42 @@ float AEntityPreset::TakeDamage(float DamageAmount,FDamageEvent const& DamageEve
 		}
 		else
 		{
-			// 히트 사운드
-			UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+			if(PlayerSkillComponent->SoundSkillID == "Skill_Charge")
+			{
+				// Skill_Charge 히트 사운드
+				UE_LOG(LogTemp,Error,TEXT("몬스터 ChargeEffectHitSound 재생"));
+				UGameplayStatics::PlaySoundAtLocation(this,ChargeEffectHitSound,GetActorLocation(),0.90f);
+			}
+			else if(PlayerSkillComponent->SoundSkillID == "Skill_ArmSwing")
+			{
+				// Skill_ArmSwing 히트 사운드
+				UE_LOG(LogTemp,Error,TEXT("몬스터 ArmSwingEffectHitSound 재생"));
+				UGameplayStatics::PlaySoundAtLocation(this,ArmSwingEffectHitSound,GetActorLocation(),0.90f);
+			}
+			
 		}
 	}
 	else if(DamageCauser->ActorHasTag(FName("PlayerProjectile")))
 	{
+		APlayerProjectile* PlayerProjectile = Cast<APlayerProjectile>(DamageCauser);
+		if(PlayerProjectile->SoundSkillID == "Skill_FireBall")
+		{
+			// FireBall 피격 사운드 
+			UE_LOG(LogTemp,Error,TEXT("몬스터 FireEffectHitSound 재생"));
+			UGameplayStatics::PlaySoundAtLocation(this,FireEffectHitSound,GetActorLocation(),0.9f);
+		}
+		else
+		{
+			// 히트 사운드
+			UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
+			UE_LOG(LogTemp,Warning,TEXT("TakeDamage: Hit by PlayerProjectile"));
+		}
+	}
+	else if(DamageCauser->ActorHasTag(FName("Object")))
+	{
 		// 히트 사운드
 		UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
-		UE_LOG(LogTemp,Warning,TEXT("TakeDamage: Hit by PlayerProjectile"));
+		UE_LOG(LogTemp,Warning,TEXT("TakeDamage: Hit by Object"));
 	}
 	else
 	{
@@ -734,6 +778,37 @@ void AEntityPreset::SetupHitBoxComponent(FSkillData& SkillData)
 
 			////UE_LOG(LogTemp,Warning,TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
 			////	*HalfExtent.ToString(),*NewRelativeLocation.ToString());
+		}
+		else if(SkillData.SkillNameID == "Skill_ArmSwing")
+		{
+			SoundSkillID = "Skill_ArmSwing";
+
+			// Normal 히트박스 생성
+			if(!NormalSkillHitBox)
+			{
+				NormalSkillHitBox = NewObject<UBoxComponent>(this,TEXT("NormalSkillHitBox"));
+				if(NormalSkillHitBox)
+				{
+					NormalSkillHitBox->RegisterComponent();
+					NormalSkillHitBox->AttachToComponent(NormalHitBoxContainer,FAttachmentTransformRules::KeepRelativeTransform);
+
+					HideNormalHitBox();
+
+					ConfigureHitBox(NormalSkillHitBox);
+
+					// Overlap 이벤트 바인딩 
+					NormalSkillHitBox->OnComponentBeginOverlap.AddDynamic(this,&AEntityPreset::OnNormalHitBoxOverlap);
+				}
+			}
+
+			FVector HalfExtent = FVector(SkillData.SkillTypeSizeY / 2.0f,50.0f,SkillData.SkillTypeSizeX / 2.0f);
+			NormalSkillHitBox->SetBoxExtent(HalfExtent);
+
+			FVector NewRelativeLocation = FVector(0.0f,0.0f,HalfExtent.X);
+			NormalSkillHitBox->SetRelativeLocation(NewRelativeLocation);
+
+			UE_LOG(LogTemp,Warning,TEXT("SetupNormalHitBoxComponent: HalfExtent=%s, NewRelativeLocation=%s"),
+				*HalfExtent.ToString(),*NewRelativeLocation.ToString());
 		}
 		else if(SkillData.SkillNameID == "Skill_FreezeBreath")
 		{
@@ -1122,7 +1197,7 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 				float KnockbackDuration = Effect.EffectValue02;
 
 				ApplyKnockbackEffect(PlayerCharacter,KnockbackDistance,KnockbackDuration);
-
+				UE_LOG(LogTemp,Warning,TEXT("넉백 적용"));
 				/*UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
 				if (MoveComp)
 				{
@@ -1148,11 +1223,10 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 
 					if(MoveComp)
 					{
-						float OriginalSpeed = MoveComp->MaxWalkSpeed;
-
 						if(!StateComp->bIsFreezing)
 						{
-							float NewSpeed = OriginalSpeed / SlowFactor;
+							StateComp->OriginalSpeed = MoveComp->MaxWalkSpeed;
+							float NewSpeed = StateComp->OriginalSpeed / SlowFactor;
 							StateComp->bIsFreezing = true;
 
 							MoveComp->MaxWalkSpeed = NewSpeed;
@@ -1177,10 +1251,11 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 						{
 							if(PlayerCharacter && PlayerCharacter->GetCharacterMovement() && StateComp)
 							{
-								PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = OriginalSpeed;
+								PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed = StateComp->OriginalSpeed;
 								StateComp->bIsFreezing = false;
+								StateComp->OriginalSpeed = 0.f;
 
-								UE_LOG(LogTemp,Warning,TEXT("[Freeze] 해제됨 → Speed 복구: %.1f"), OriginalSpeed);
+								UE_LOG(LogTemp,Warning,TEXT("[Freeze] 해제됨 → Speed 복구: %.1f"),MoveComp->MaxWalkSpeed);
 							}
 						});
 
@@ -1286,6 +1361,9 @@ void AEntityPreset::PerformSkill_Charge()
 	// 스킬 시전 플래그 설정
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
 	bIsCastingSkill = true;
+	bIsCharging = true;
+
+	SoundSkillID = "Skill_Charge";
 
 	ChargeDirection = GetActorForwardVector().GetSafeNormal();
 	ChargeStartLocation = GetActorLocation();
@@ -1323,6 +1401,8 @@ void AEntityPreset::PerformSkill_Charge()
 		{
 			// 경로 추적 중단
 			PathComp->Deactivate();
+			// 포커스 해제 
+			AIController->ClearFocus(EAIFocusPriority::Gameplay);
 
 			AIController->StopMovement();
 			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before LaunchCharacter"));
@@ -1340,15 +1420,16 @@ void AEntityPreset::PerformSkill_Charge()
 			// 경로 시각화 (기획 확인용)
 			//DrawDebugLine(GetWorld(), ChargeStartLocation, ChargeTargetLocation, FColor::Red, false, 2.0f, 0, 3.0f);
 
-			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
-			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
-			AnimInst->Montage_SetEndDelegate(EndDelegate,SpecialSkillMontage);
 
 			// 준비 시간 후 돌진 실행
 			float PrepTime = 1.0f;
 			FTimerHandle TimerHandle;
 			GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::StartChargeMovement,PrepTime,false);
+			
+			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate,SpecialSkillMontage);
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_Charge: AnimInstance not found"));
@@ -1359,16 +1440,16 @@ void AEntityPreset::PerformSkill_Charge()
 	}
 }
 
-void AEntityPreset::ExecuteChargeDash()
-{
-	float LaunchSpeed = 2000.0f;
-
-	// 실제 돌진
-	LaunchCharacter(ChargeDirection * LaunchSpeed,true,true);
-	bIsCharging = true;
-
-	UE_LOG(LogTemp,Warning,TEXT("ExecuteChargeDash: Launch Started"));
-}
+//void AEntityPreset::ExecuteChargeDash()
+//{
+//	float LaunchSpeed = 2000.0f;
+//
+//	// 실제 돌진
+//	LaunchCharacter(ChargeDirection * LaunchSpeed,true,true);
+//	
+//
+//	UE_LOG(LogTemp,Warning,TEXT("ExecuteChargeDash: Launch Started"));
+//}
 
 void AEntityPreset::SpawnChargeIndicator(FVector Start,FVector End)
 {
@@ -1410,11 +1491,11 @@ void AEntityPreset::Timeline_ChargeProgress(float Value)
 	SetActorLocation(NewLocation);
 }
 
-void AEntityPreset::Timeline_ChargeFinished()
-{
-	bIsCastingSkill = false;
-	HideSpecialHitBox();
-}
+//void AEntityPreset::Timeline_ChargeFinished()
+//{
+//	bIsCastingSkill = false;
+//	HideSpecialHitBox();
+//}
 
 void AEntityPreset::ClearCastingSkill()
 {
@@ -1441,6 +1522,7 @@ void AEntityPreset::OnSkillMontageEnded(UAnimMontage* Montage,bool bInterrupted)
 		bIsCharging = false;
 	}
 	*/
+	SoundSkillID = nullptr;
 
 	// AI 경로 추적 활성화
 	if(AAIController* AIController = Cast<AAIController>(GetController()))
@@ -1479,12 +1561,21 @@ void AEntityPreset::OnGuardEnded()
 	// AI 경로 추적 활성화
 	if(AAIController* AIController = Cast<AAIController>(GetController()))
 	{
-		APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(),0);
+		if(UBlackboardComponent* BBComp = AIController->GetBlackboardComponent())
+		{
+			BBComp->SetValueAsBool(BBKEY_BASKILLCONDITION,false);
+			BBComp->SetValueAsBool(BBKEY_BBSKILLCONDITION,false);
+			BBComp->ClearValue(BBKEY_CASTSKILLID); // string이라면 clear
+		}
+
 		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
 		{
+			APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(),0);
+
 			// 경로 추적 활성화 
 			PathComp->Activate();
 			AIController->SetFocus(PlayerPawn);
+
 		}
 
 		// AI 로직 재시작
@@ -1494,6 +1585,25 @@ void AEntityPreset::OnGuardEnded()
 			UE_LOG(LogTemp,Warning,TEXT("OnGuardEnded → AI BrainComponent Restarted"));
 		}
 	}
+
+	//// AI 경로 추적 활성화
+	//if(AAIController* AIController = Cast<AAIController>(GetController()))
+	//{
+	//	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(),0);
+	//	if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+	//	{
+	//		// 경로 추적 활성화 
+	//		PathComp->Activate();
+	//		AIController->SetFocus(PlayerPawn);
+	//	}
+
+	//	// AI 로직 재시작
+	//	if(AIController->BrainComponent)
+	//	{
+	//		AIController->BrainComponent->RestartLogic();
+	//		UE_LOG(LogTemp,Warning,TEXT("OnGuardEnded → AI BrainComponent Restarted"));
+	//	}
+	//}
 	UE_LOG(LogTemp,Error,TEXT("OnGuardEnded"));
 
 }
@@ -1522,6 +1632,10 @@ void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target,float Distance,float
 	FVector KnockbackDir = Target->GetActorLocation() - GetActorLocation();
 	KnockbackDir.Normalize();
 
+	// 위로 살짝 뜨게 
+	KnockbackDir.Z = 0.3f; 
+	KnockbackDir = KnockbackDir.GetSafeNormal();
+
 	// 최소 보정
 	if(Distance <= 0.01f)
 	{
@@ -1536,6 +1650,8 @@ void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target,float Distance,float
 	UCharacterMovementComponent* MoveComp = Target->GetCharacterMovement();
 	if(MoveComp)
 	{
+		MoveComp->SetMovementMode(MOVE_Falling);
+
 		// 기존 모멘텀 무시하고 새로운 속도로 밀기
 		Target->LaunchCharacter(KnockbackVelocity,true,true);
 
@@ -1825,7 +1941,7 @@ void AEntityPreset::PerformSkill_Arrow()
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
 			AnimInst->Montage_SetEndDelegate(EndDelegate,NormalSkillMontage);
-			bUseControllerRotationYaw = true;
+			//bUseControllerRotationYaw = true;
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("PerformSkill_Arrow: AnimInstance not found"));
@@ -1925,7 +2041,7 @@ void AEntityPreset::FireProjectile_Arrow()
 			// 발사
 			//FVector Direction = GetMesh()->GetForwardVector();
 			SpawnedProjectile->FireInDirection(Direction);
-			bUseControllerRotationYaw = true;
+			//bUseControllerRotationYaw = true;
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
@@ -2071,7 +2187,7 @@ void AEntityPreset::Fire_AllArrows()
 			FVector FireDirection = SocketTransform.GetRotation().GetForwardVector();
 
 			CurrentArrow->FireInDirection(FireDirection);
-			bUseControllerRotationYaw = true;
+			//bUseControllerRotationYaw = true;
 			UE_LOG(LogTemp,Warning,TEXT("Fired arrow %d → Dir: %s"),i,*FireDirection.ToString());
 		}
 	}

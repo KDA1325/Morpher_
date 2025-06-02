@@ -42,6 +42,14 @@ EBTNodeResult::Type UBTTask_CastSkill::ExecuteTask(UBehaviorTreeComponent& Owner
 	if(SkillID.IsEmpty())
 		return EBTNodeResult::Failed;
 
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(Entity->GetWorld(),0);
+	if(PlayerPawn)
+	{
+		FVector ToPlayer = (PlayerPawn->GetActorLocation() - Entity->GetActorLocation()).GetSafeNormal2D();
+		FRotator LookAtRotation = ToPlayer.Rotation();
+		Entity->SetActorRotation(LookAtRotation);
+	}
+
 	Entity->EntitySkillComponent->ExecuteSkill(SkillID);
 
 	return EBTNodeResult::InProgress;

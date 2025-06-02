@@ -37,6 +37,8 @@ public:
 
 	FTimerHandle DestroyTimerHandle;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	FString SoundSkillID;
 protected:
 	UPROPERTY(VisibleAnywhere)
 		USphereComponent* CollisionComp;

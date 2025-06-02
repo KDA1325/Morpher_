@@ -61,6 +61,9 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Stat")
 	bool bIsFreezing;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Stat")
+	float OriginalSpeed;
+
 	UPROPERTY()
 	FTimerHandle FreezeTimerHandle;
 };
