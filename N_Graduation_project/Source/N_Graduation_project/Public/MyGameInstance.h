@@ -15,6 +15,8 @@ class N_GRADUATION_PROJECT_API UMyGameInstance: public UGameInstance
 {
 	GENERATED_BODY()
 public:
+	//UMyGameInstance();
+
 	UPROPERTY(BlueprintReadOnly)
 		bool GetKey = false;
 	UPROPERTY(BlueprintReadOnly)
@@ -25,6 +27,10 @@ public:
 		FName SaveRoomName;
 	UPROPERTY(BlueprintReadWrite)
 		FVector SaveLocation;
+
+	//UPROPERTY(BlueprintReadWrite)
+	//	bool bHasSeenSplash = false;
+
 	UFUNCTION()
 	void OnLevelLoaded();
 

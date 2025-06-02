@@ -84,6 +84,11 @@ void UMyGameInstance::LoadGame()
 	}
 }
 
+//UMyGameInstance::UMyGameInstance()
+//{
+//	bHasSeenSplash = false;
+//}
+
 // 레벨 스트리밍 완료 콜백
 void UMyGameInstance::OnLevelLoaded()
 {
