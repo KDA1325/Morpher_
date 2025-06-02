@@ -1559,12 +1559,21 @@ void AEntityPreset::OnGuardEnded()
 	// AI 경로 추적 활성화
 	if(AAIController* AIController = Cast<AAIController>(GetController()))
 	{
-		APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(),0);
+		if(UBlackboardComponent* BBComp = AIController->GetBlackboardComponent())
+		{
+			BBComp->SetValueAsBool(BBKEY_BASKILLCONDITION,false);
+			BBComp->SetValueAsBool(BBKEY_BBSKILLCONDITION,false);
+			BBComp->ClearValue(BBKEY_CASTSKILLID); // string이라면 clear
+		}
+
 		if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
 		{
+			APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(),0);
+
 			// 경로 추적 활성화 
 			PathComp->Activate();
 			AIController->SetFocus(PlayerPawn);
+
 		}
 
 		// AI 로직 재시작
@@ -1574,6 +1583,25 @@ void AEntityPreset::OnGuardEnded()
 			UE_LOG(LogTemp,Warning,TEXT("OnGuardEnded → AI BrainComponent Restarted"));
 		}
 	}
+
+	//// AI 경로 추적 활성화
+	//if(AAIController* AIController = Cast<AAIController>(GetController()))
+	//{
+	//	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(),0);
+	//	if(UPathFollowingComponent* PathComp = AIController->GetPathFollowingComponent())
+	//	{
+	//		// 경로 추적 활성화 
+	//		PathComp->Activate();
+	//		AIController->SetFocus(PlayerPawn);
+	//	}
+
+	//	// AI 로직 재시작
+	//	if(AIController->BrainComponent)
+	//	{
+	//		AIController->BrainComponent->RestartLogic();
+	//		UE_LOG(LogTemp,Warning,TEXT("OnGuardEnded → AI BrainComponent Restarted"));
+	//	}
+	//}
 	UE_LOG(LogTemp,Error,TEXT("OnGuardEnded"));
 
 }
