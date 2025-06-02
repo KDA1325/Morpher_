@@ -147,6 +147,9 @@ public:
 		USoundBase* HitSound;
 
 	UPROPERTY(EditAnywhere)
+		USoundBase* DashSound;
+
+	UPROPERTY(EditAnywhere)
 		USoundBase* GuardHitSound;
 
 	UPROPERTY(EditAnywhere)
@@ -318,6 +321,17 @@ public:
 	UPROPERTY()
 		TArray<UMaterialInterface*> HitMaterials;
 	void LoadChangePreset();
+
+	TArray<USoundBase*> CommonFootstepSounds;
+	// 스톤골렘 전용 발소리
+	USoundBase* StoneGolemFootstepSound = nullptr;
+	USoundBase* 	EntityFootstep1 = nullptr;
+	USoundBase* EntityFootstep2 = nullptr;
+	void InitFootstepSounds();
+	void PlayFootstepSound();
+
+		bool bUseFirstFootstep = true;
+
 };
 
 /*

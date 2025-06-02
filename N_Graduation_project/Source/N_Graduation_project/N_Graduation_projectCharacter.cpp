@@ -179,6 +179,12 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	{
 		ArmSwingEffectHitSound = ArmSwingEffectHitSoundObj.Object;
 	}
+	
+	static ConstructorHelpers::FObjectFinder<USoundBase>DashSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Dash.Dash'"));
+	if(DashSoundObj.Succeeded())
+	{
+		DashSound = DashSoundObj.Object;
+	}
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -253,7 +259,8 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 	//PlayerSkillComponent->MeasureDistanceToMonster();
 	// Speed가 일정 임계값보다 크면 이동 중
 	if(Speed > 0.1f)
-	{
+	{//발소리 구현 여기서 어ㄸ?
+
 		if(StateComp->GetCurrentState() != ECharacterState::Move)
 		{
 			StateComp->ChangeState(ECharacterState::Move);  // Move 상태로 변경
@@ -461,6 +468,7 @@ void AN_Graduation_projectCharacter::DashCheck(const FInputActionValue& Value)
 	UCharacterStateComponent* StateComp = FindComponentByClass<UCharacterStateComponent>();
 	StateComp->ChangeState(ECharacterState::Dash);
 	CharacterStateComponent->ApplyActionRestrictions();
+	UGameplayStatics::PlaySoundAtLocation(this,DashSound,GetActorLocation(),0.9f);
 
 
 	// 마지막 입력이 ZeroVector(중립)가 아니면 실행 -> 캐릭터가 정지 중엔 실행되지 않음(반드시 대시로 이동하고 싶은 방향쪽 방향키를 눌러야 대시 발동(기획서대로 수정 필요))
@@ -819,6 +827,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		InvincibleOriginalMaterial = PlayerMaterial;
 		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
+		
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		GetMesh()->SetSkeletalMesh(LoadedMesh);
 		//PlayerSword->SetHiddenInGame(true);  
@@ -989,6 +998,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 
 		}
 	}
+	InitFootstepSounds();
 
 }
 //히트박스 동적 생성
@@ -1327,4 +1337,55 @@ void AN_Graduation_projectCharacter::ApplyFire(float Duration)
 	},Duration,false);
 
 	UE_LOG(LogTemp,Warning,TEXT("FireEffect Applied, Duration: %f"),Duration);
+}
+void AN_Graduation_projectCharacter::InitFootstepSounds()
+{UE_LOG(LogTemp, Warning, TEXT("PlayFootstepSound called"));
+
+	CommonFootstepSounds.Empty();
+	StoneGolemFootstepSound = nullptr;
+	EntityFootstep1 = nullptr;
+	EntityFootstep2 = nullptr;
+
+	USoundBase* Walk1 = LoadObject<USoundBase>(nullptr,TEXT("/Game/Sounds/Battle/EntityWalking01.EntityWalking01"));
+	if(!Walk1) UE_LOG(LogTemp,Warning,TEXT("EntityWalking01 사운드 로드 실패!"));
+
+	USoundBase* Walk2 = LoadObject<USoundBase>(nullptr,TEXT("/Game/Sounds/Battle/EntityWalking02.EntityWalking02"));
+	if(!Walk2) UE_LOG(LogTemp,Warning,TEXT("EntityWalking02 사운드 로드 실패!"));
+
+	if(Walk1)
+	{
+		CommonFootstepSounds.Add(Walk1);
+		EntityFootstep1 = Walk1; // 초기화
+	}
+	if(Walk2)
+	{
+		CommonFootstepSounds.Add(Walk2);
+		EntityFootstep2 = Walk2; // 초기화
+	}
+
+	if(currentPreset == "StoneGolemPreset.uasset")
+	{
+		StoneGolemFootstepSound = LoadObject<USoundBase>(nullptr,TEXT("/Game/Sounds/Battle/StoneGolemWalking.StoneGolemWalking"));
+	}
+}
+
+void AN_Graduation_projectCharacter::PlayFootstepSound()
+{
+	USoundBase* FootstepToPlay = nullptr;
+	UE_LOG(LogTemp,Warning,TEXT("PlayFootstepSound called"));
+
+	if(currentPreset == "StoneGolemPreset.uasset")
+	{
+		FootstepToPlay = StoneGolemFootstepSound;
+	} else
+	{
+		// 번갈아가며 재생
+		FootstepToPlay = bUseFirstFootstep ? EntityFootstep1 : EntityFootstep2;
+		bUseFirstFootstep = !bUseFirstFootstep;
+	}
+
+	if(FootstepToPlay)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this,FootstepToPlay,GetActorLocation());
+	}
 }

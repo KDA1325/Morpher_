@@ -39,6 +39,7 @@ void UMyGameInstance::SaveToSaveData(UMySaveGame* SaveData)
 	SaveData->SaveFinalAngle=PlayerFinalAngle;
 	SaveData->SavePlayerLocation = SaveLocation;
 //	UE_LOG(LogTemp,Warning,TEXT("LoadGame SaveToSaveData SaveLocation: X=%f, Y=%f, Z=%f"),SaveData->SavePlayerLocation.X,SaveData->SavePlayerLocation.Y,SaveData->SavePlayerLocation.Z);
+	UE_LOG(LogTemp,Warning,TEXT("SaveGame SaveRoomName: %s"),*SaveData->RoomName.ToString());
 
 }
 
@@ -56,67 +57,62 @@ void UMyGameInstance::SaveGame()
 
 void UMyGameInstance::LoadGame()
 {
-	UE_LOG(LogTemp,Warning,TEXT("LoadGame실행."));
 	const FString SlotName = TEXT("MySaveSlot");
 	const int32 UserIndex = 0;
+
 	if(UGameplayStatics::DoesSaveGameExist(SlotName,UserIndex))
 	{
-		//UE_LOG(LogTemp,Warning,TEXT("LoadGame DoesSaveGameExist실행."));
 		USaveGame* LoadedGame = UGameplayStatics::LoadGameFromSlot(SlotName,UserIndex);
 		UMySaveGame* SaveData = Cast<UMySaveGame>(LoadedGame);
-
-		if(!SaveData)
-		{
-			//UE_LOG(LogTemp,Warning,TEXT("LoadGame: SaveGame 파일이 현재 SaveGame 클래스와 호환되지 않음(삭제하겟단뜻)"));
-
-			// 경로 수동 구성 및 삭제
-			FString SaveDir = FPaths::ProjectSavedDir() + TEXT("SaveGames/");
-			FString FullPath = SaveDir + SlotName + TEXT(".sav");
-			IFileManager::Get().Delete(*FullPath);
-
-			return;
-		}
+		if(!SaveData) return;
 
 		InitFromSaveData(SaveData);
-		AN_Graduation_projectCharacter* Player = Cast<AN_Graduation_projectCharacter>(UGameplayStatics::GetPlayerCharacter(this,0));
-		if(Player)
-		{
-		//	UE_LOG(LogTemp,Warning,TEXT("LoadGame Player실행."));
 
-			//UE_LOG(LogTemp,Error,TEXT("LoadGamePreset, CurrentPlayerCharacter: %s"),*CurrentPlayerCharacter);
-			
-			if(UMyPlayerStatComponent* Stat = Player->FindComponentByClass<UMyPlayerStatComponent>())
-			{
-				Stat->SetHP(PlayerFullHP);
-			}
-			if(SaveData)
-			{
-				SaveRoomName=SaveData->RoomName;
-				//UE_LOG(LogTemp,Warning,TEXT("LoadGame_ Boar Opened: %s"),SaveData->Open_Boar ? TEXT("Yes") : TEXT("No"));
-				//UE_LOG(LogTemp,Warning,TEXT("LoadGame_ PlayerFullHP: %f"),SaveData->FullHP);
-				//UE_LOG(LogTemp,Warning,TEXT("LoadGame_ SaveFinalAngle: %f"),SaveData->SaveFinalAngle);
-				SaveLocation = SaveData->SavePlayerLocation;
-				SaveLocation.Z += 100.0f; // Z축 위로 이동!
-				Player->SetActorLocation(SaveLocation);
-				Player->ChangePreset("PlayerCharacter");
-				Player->isDead=false;
-				//Player->LoadChangePreset();
-				//UE_LOG(LogTemp,Warning,TEXT("LoadGame LoadGame SaveLocation: X=%f, Y=%f, Z=%f"),SaveLocation.X,SaveLocation.Y,SaveLocation.Z);
-				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ room name: %s"),*SaveData->RoomName.ToString());
-				UE_LOG(LogTemp,Warning,TEXT("LoadGame_ ChangePreset PlayerCharacter"));
-			}
-			//레[벨 스트리밍
-			AActor* CallbackTarget = UGameplayStatics::GetPlayerCharacter(this,0); 
-			FLatentActionInfo LatentInfo;
-			LatentInfo.CallbackTarget = CallbackTarget;
-			LatentInfo.ExecutionFunction = FName("OnLevelLoaded");
-			LatentInfo.Linkage = 0;
-			LatentInfo.UUID = __LINE__;
-			
-			UGameplayStatics::LoadStreamLevel(this,FName(*SaveData->RoomName.ToString()),true,false,LatentInfo);
+		// 레벨 스트리밍으로 저장된 방 로드
+		FLatentActionInfo LatentInfo;
+		LatentInfo.CallbackTarget = this;
+		LatentInfo.ExecutionFunction = FName("OnLevelLoaded");
+		LatentInfo.Linkage = 0;
+		LatentInfo.UUID = 1;
 		
-		}
+		UGameplayStatics::LoadStreamLevel(this,SaveData->RoomName,true,false,LatentInfo);
 
+		// 플레이어 위치 세팅은 OnLevelLoaded에서 처리
+		SaveRoomName = SaveData->RoomName;
+		SaveLocation = SaveData->SavePlayerLocation;
+		PlayerFullHP = SaveData->FullHP;
 	}
 }
 
+// 레벨 스트리밍 완료 콜백
+void UMyGameInstance::OnLevelLoaded()
+{
+	UE_LOG(LogTemp,Warning,TEXT("OnLevelLoaded called!"));
+
+	ULevelStreaming* Level = UGameplayStatics::GetStreamingLevel(this,SaveRoomName);
+	if(Level)
+	{
+		//UE_LOG(LogTemp,Warning,TEXT("Streaming Level Found - IsLoaded: %d, IsVisible: %d"),
+		//	Level->IsLevelLoaded(),Level->GetShouldBeVisible());
+
+		Level->SetShouldBeVisible(true); // 강제 표시
+	} else
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Streaming Level NOT Found for %s"),*SaveRoomName.ToString());
+	}
+
+	AN_Graduation_projectCharacter* Player = Cast<AN_Graduation_projectCharacter>(UGameplayStatics::GetPlayerCharacter(this,0));
+	if(!Player) return;
+
+	FVector LoadLoc = SaveLocation + FVector(0,0,100);
+	UE_LOG(LogTemp,Warning,TEXT("Teleporting player to: %s"),*LoadLoc.ToString());
+	Player->SetActorLocation(LoadLoc);
+
+	if(UMyPlayerStatComponent* Stat = Player->FindComponentByClass<UMyPlayerStatComponent>())
+	{
+		Stat->SetHP(PlayerFullHP);
+	}
+
+	Player->ChangePreset("PlayerCharacter");
+	Player->isDead = false;
+}
