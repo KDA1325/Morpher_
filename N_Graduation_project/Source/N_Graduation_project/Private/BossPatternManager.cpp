@@ -8,7 +8,7 @@
 #include "BossProjectile.h"
 #include "HealCrystal.h"
 #include "BossProjectile2.h"
-
+#include "Components/AudioComponent.h"
 ABossPatternManager::ABossPatternManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -46,7 +46,10 @@ ABossPatternManager::ABossPatternManager()
 	{
 		BlueCryBPClass = BlueClassFinder.Class;
 	}
-
+	LazerBeamSound = LoadObject<USoundWave>(nullptr,TEXT("SoundWave'/Game/Sounds/Battle/LazerBeam.LazerBeam'"));
+	SpinProjectileSound =  LoadObject<USoundWave>(nullptr,TEXT("SoundWave'/Game/Sounds/Battle/BossProjectileSpawn.BossProjectileSpawn'"));
+	PlaySpinProjectileSound =  LoadObject<USoundWave>(nullptr,TEXT("SoundWave'/Game/Sounds/Battle/SpinProjectile.SpinProjectile'"));
+	
 }
 
 void ABossPatternManager::BeginPlay()
@@ -157,6 +160,7 @@ void ABossPatternManager::ApplyThunderDamage()
 	}
 
 }
+
 void ABossPatternManager::SpawnAndAttachLasers()
 {
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
@@ -182,6 +186,15 @@ void ABossPatternManager::SpawnAndAttachLasers()
 		if(!Laser) continue;
 		Laser->AttachToComponent(BossChar->GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale,SocketName);
 		UE_LOG(LogTemp,Warning,TEXT("SpawnAndAttachLasers AttachToComponent"));
+
+		UAudioComponent* LaserAudioComp = UGameplayStatics::SpawnSoundAttached(
+		LazerBeamSound, //  SoundWave 직접 사용
+		Laser->GetRootComponent(),
+		NAME_None,
+		FVector::ZeroVector,
+		EAttachLocation::KeepRelativeOffset,
+		true  // 
+		);
 
 		FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle,[this,Laser,SocketName]()
@@ -232,6 +245,14 @@ void ABossPatternManager::SpinningBarrage()
 
 			UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
 		}
+		UAudioComponent* SpinAudioComp = UGameplayStatics::SpawnSoundAttached(
+			SpinProjectileSound,
+			SpawnedProjectile->GetRootComponent(), //  여기에 붙이기
+			NAME_None,
+			FVector::ZeroVector,
+			EAttachLocation::KeepRelativeOffset,
+			true // 투사체가 파괴되면 사운드도 같이 꺼짐
+		);	
 	}
 	for(const FName& SocketName : Spinning2SocketNames)
 	{
@@ -247,7 +268,6 @@ void ABossPatternManager::SpinningBarrage()
 		{
 			FSkillData SkillData;
 			TArray<FSkillEffectData> EffectDataArray;
-
 			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_ThrowRock",SkillData) &&
 				UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_ThrowRock",EffectDataArray))
 			{
@@ -259,13 +279,30 @@ void ABossPatternManager::SpinningBarrage()
 			{
 				UE_LOG(LogTemp,Error,TEXT("SpinningBarrage Failed to load Skill_ThrowRock data!"));
 			}
+			//UAudioComponent* SpinAudioComp = UGameplayStatics::SpawnSoundAttached(
+			//SpinProjectileSound,
+			//SpawnedProjectile->GetRootComponent(), 
+			//NAME_None,
+			//FVector::ZeroVector,
+			//EAttachLocation::KeepRelativeOffset,
+			//true // 투사체가 파괴되면 사운드도 같이 꺼짐
+			//);
+
 		}
+
 	}
 }
 void ABossPatternManager::StartSpinningBarrageSequence(int num)
 {
-	SpinningBarrageCount = num;
-
+	SpinningBarrageCount = num; 
+	UAudioComponent* SpinAudioComp = UGameplayStatics::SpawnSoundAttached(
+			PlaySpinProjectileSound,
+			this->GetRootComponent(), //  여기에 붙이기
+			NAME_None,
+			FVector::ZeroVector,
+			EAttachLocation::KeepRelativeOffset,
+			true // 투사체가 파괴되면 사운드도 같이 꺼짐
+	);
 	GetWorld()->GetTimerManager().SetTimer(
 		SpinningBarrageTimerHandle,
 		this,
@@ -279,7 +316,7 @@ void ABossPatternManager::SpinningBarrageTick()
 {
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
-	if(SpinningBarrageCount >= 30) //
+	if(SpinningBarrageCount >= 20) //
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpinningBarrageTimerHandle);
 		MyGameInstance->Spin=false;
@@ -308,7 +345,7 @@ void ABossPatternManager::SpinningBarrageTick2()
 {
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
-	if(SpinningBarrageCount >= 30) //
+	if(SpinningBarrageCount >= 25) //
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpinningBarrageTimerHandle2);
 		MyGameInstance->Spin=false;
@@ -355,6 +392,14 @@ void ABossPatternManager::SpinningBarrage2()
 			SpawnedProjectile->FireInDirection(FireDirection);
 
 			UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
+			UAudioComponent* SpinAudioComp = UGameplayStatics::SpawnSoundAttached(
+				SpinProjectileSound,
+				SpawnedProjectile->GetRootComponent(), // ← 여기에 붙이기
+				NAME_None,
+				FVector::ZeroVector,
+				EAttachLocation::KeepRelativeOffset,
+				true // 투사체가 파괴되면 사운드도 같이 꺼짐
+			);
 		}
 	}
 	for(const FName& SocketName : Spinning2SocketNames)
@@ -379,7 +424,15 @@ void ABossPatternManager::SpinningBarrage2()
 				SpawnedProjectile2->FireInDirection(FireDirection);
 				//SpawnedProjectile2->FireInDirection(FireDirection);
 
-				UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
+				//UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
+				//UAudioComponent* SpinAudioComp = UGameplayStatics::SpawnSoundAttached(
+				//SpinProjectileSound,
+				//SpawnedProjectile2->GetRootComponent(),
+				//NAME_None,
+				//FVector::ZeroVector,
+				//EAttachLocation::KeepRelativeOffset,
+				//true // 투사체가 파괴되면 사운드도 같이 꺼짐
+				//);
 			} else
 			{
 				UE_LOG(LogTemp,Error,TEXT("SpinningBarrage Failed to load Skill_ThrowRock data!"));

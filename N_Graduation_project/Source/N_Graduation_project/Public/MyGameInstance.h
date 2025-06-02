@@ -17,6 +17,10 @@ class N_GRADUATION_PROJECT_API UMyGameInstance: public UGameInstance
 public:
 	UPROPERTY(BlueprintReadOnly)
 		bool GetKey = false;
+	UPROPERTY(BlueprintReadOnly)
+		bool GetKey2 = false;
+	UPROPERTY(BlueprintReadWrite)
+		bool BossClear = false;
 	UPROPERTY(BlueprintReadWrite)
 		FName SaveRoomName;
 	UPROPERTY(BlueprintReadWrite)

@@ -59,4 +59,8 @@ public:
 	
 	void SetHP(int NewHP);
 	float currentHP = 120;
+
+	USoundWave* BossHealSound ;
+	USoundWave* BossBreakSound ;
+	USoundWave* BossOverTimeSound ;
 };

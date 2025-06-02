@@ -6,11 +6,15 @@
 #include "Kismet/GameplayStatics.h"
 // Called when the game starts or when spawned
 AHealCrystal::AHealCrystal(){
+	BossHealSound =  LoadObject<USoundWave>(nullptr,TEXT("SoundWave'/Game/Sounds/Battle/BossHeal.BossHeal'"));
+	BossBreakSound =  LoadObject<USoundWave>(nullptr,TEXT("SoundWave'/Game/Sounds/Battle/BreakObject.BreakObject'"));
+	BossOverTimeSound =  LoadObject<USoundWave>(nullptr,TEXT("SoundWave'/Game/Sounds/Battle/HealOverTime.HealOverTime'"));
 
 }
 void AHealCrystal::BeginPlay()
 {
 	Super::BeginPlay();
+
 }
 
 void AHealCrystal::Tick(float DeltaTime)
@@ -37,16 +41,31 @@ void AHealCrystal::OnCrystalTimeExpired()
 	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor);
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
-	if(BossChar)
+
+	if(BossChar && !bIsDestroyed)
 	{
-		if(bIsDestroyed==false)
+		BossChar->HealHP(200);
+
+		if(BossHealSound)
 		{
-			BossChar->HealHP(200);
-		} 
+			UE_LOG(LogTemp,Warning,TEXT("BossHealSound 로드 성공"));
+
+			UGameplayStatics::SpawnSoundAtLocation(this,BossHealSound,GetActorLocation());
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("BossHealSound == nullptr"));
+		}
+		Destroy();
+
+	} else
+	{
+		// 파괴된 경우 즉시 삭제
+		UGameplayStatics::SpawnSoundAtLocation(this,BossBreakSound,GetActorLocation());
+		Destroy();
 	}
+
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-	Destroy(); // 크리스탈 제거
-	MyGameInstance->BossHeal=false;
+	MyGameInstance->BossHeal = false;
 }
 float AHealCrystal::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
@@ -62,6 +81,7 @@ void AHealCrystal::SetHP(int NewHP)
 	currentHP = NewHP;
 	if(currentHP <= 0)
 	{
+		UGameplayStatics::SpawnSoundAtLocation(this,BossBreakSound,GetActorLocation());
 		bIsDestroyed=true;
 		SetActorHiddenInGame(true);
 		SetActorEnableCollision(false);
@@ -78,9 +98,12 @@ void AHealCrystal::NomalHeal(){
 		{
 			BossChar->HealHP(HealAmountPerSecond);
 			UE_LOG(LogTemp,Log,TEXT("NomalHeal: +%d"),HealAmountPerSecond);
+
+			UGameplayStatics::SpawnSoundAtLocation(this,BossOverTimeSound,GetActorLocation());
+
 			GetWorld()->GetTimerManager().SetTimer(
 			HealLoopTimerHandle,
-			this,
+			this, 
 			&AHealCrystal::NomalHeal,
 			HealInterval,
 			false  // false = 단발성 타이머로 매 호출 시 재설정
