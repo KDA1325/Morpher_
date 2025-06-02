@@ -253,7 +253,8 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 	//PlayerSkillComponent->MeasureDistanceToMonster();
 	// Speed가 일정 임계값보다 크면 이동 중
 	if(Speed > 0.1f)
-	{
+	{//발소리 구현 여기서 어ㄸ?
+
 		if(StateComp->GetCurrentState() != ECharacterState::Move)
 		{
 			StateComp->ChangeState(ECharacterState::Move);  // Move 상태로 변경

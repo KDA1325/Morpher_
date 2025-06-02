@@ -20,6 +20,12 @@ ATotem::ATotem()
 	AttackDelay = 2.f;
 	ProjectileSpeed = 1500.f;
 	ApplyDamageAmount = 20.f;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase>BreakObjectObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/BreakObject.BreakObject'"));
+if(BreakObjectObj.Succeeded())
+{
+	BreakObjectSound = BreakObjectObj.Object;
+}
 }
 
 void ATotem::BeginPlay()
@@ -77,6 +83,7 @@ float ATotem::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,ACon
 
 	if(TotemHP <= 0.0f)
 	{
+		UGameplayStatics::SpawnSoundAtLocation(this,BreakObjectSound,GetOwner()->GetActorLocation());
 		Destroy();
 	}
 

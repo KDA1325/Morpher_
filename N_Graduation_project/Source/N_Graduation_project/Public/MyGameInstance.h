@@ -25,7 +25,8 @@ public:
 		FName SaveRoomName;
 	UPROPERTY(BlueprintReadWrite)
 		FVector SaveLocation;
-
+	UFUNCTION()
+	void OnLevelLoaded();
 	//bool Player_Ok = true;
 	//bool WildBoar_Ok = false;
 	//bool Inpermon_OK = false;
