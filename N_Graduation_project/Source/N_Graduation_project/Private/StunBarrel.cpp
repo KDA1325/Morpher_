@@ -93,7 +93,7 @@ void AStunBarrel::EndtExplosion()
 
 			AEntityPreset* Entity = Cast<AEntityPreset>(Actor);
 			if(Entity)
-			{			
+			{
 
 				APawn* Pawn = Cast<APawn>(Entity);
 				if(Pawn)
@@ -101,6 +101,7 @@ void AStunBarrel::EndtExplosion()
 					AAIController* AICon = Cast<AAIController>(Pawn->GetController());
 					if(AICon)
 					{
+						Entity->bIsVisibleEffectStun = true;
 						UE_LOG(LogTemp,Warning,TEXT("폭발 Monster"));
 						AICon->StopMovement();
 						UE_LOG(LogTemp,Warning,TEXT("폭몬 StopMovement 호출됨: %s"),*Pawn->GetName());
@@ -118,21 +119,35 @@ void AStunBarrel::EndtExplosion()
 						{
 							if(AICon && AICon->BrainComponent)
 							{
+								AEntityPreset* Entity = Cast<AEntityPreset>(AICon);
+								
 								AICon->BrainComponent->RestartLogic();
 							}
 						}, 
 							2.0f,false
 						);
+						
 					}
 				}
+				FTimerHandle StunEndHandle;
+				FTimerDelegate StunEndDelegate = FTimerDelegate::CreateLambda([=]()
+				{
+					if(Entity)
+					{
+						Entity->bIsVisibleEffectStun= false;
+						UE_LOG(LogTemp,Warning,TEXT("Fire effect ended on %s"),*Actor->GetName());
+					}
+				});
+				GetWorld()->GetTimerManager().SetTimer(StunEndHandle,StunEndDelegate,1.f,false);
 			}
+			
 		}
 		if(Actor->ActorHasTag(FName("Player"))){
 			AN_Graduation_projectCharacter* MyChar = Cast<AN_Graduation_projectCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
 			MyChar->StartAction();
 			MyChar->ApplyStun(2);
 			UE_LOG(LogTemp,Warning,TEXT("폭발 Player"));
-
+			
 			FTimerHandle TimerHandle;
 
 			// 타이머 세팅 (람다 함수로 직접 C++ 함수 호출)

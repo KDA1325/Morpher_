@@ -96,17 +96,14 @@ void ATotem_Projectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 	UE_LOG(LogTemp,Warning,TEXT("ATotem_Projectile 오버랩 발동"));
 
 	// 플레이어만 적용
-	if(OtherActor->ActorHasTag("Player"))
+	if(OtherActor->ActorHasTag("Player")||OtherActor->ActorHasTag("Monster"))
 	{
 		UGameplayStatics::ApplyDamage(OtherActor,DamageAmount,GetInstigatorController(),this,nullptr);
 		Destroy(); // 플레이어에 닿았으면 투사체 제거
 	} 
-	else
-	{
-		// 인페르몽이나 다른 Pawn과는 무시
-		return;
-	}
+
 }
+
 void ATotem_Projectile::OnLifetimeExpired()
 {
 	Destroy(); // 또는 ReturnToPool();

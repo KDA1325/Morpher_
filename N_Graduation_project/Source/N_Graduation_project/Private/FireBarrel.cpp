@@ -6,6 +6,9 @@
 #include "StunBarrel.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
+#include "N_Graduation_project/N_Graduation_projectCharacter.h"
+#include "EntityPreset.h"
+
 // Sets default values
 AFireBarrel::AFireBarrel()
 {
@@ -85,24 +88,52 @@ void AFireBarrel::EndtExplosion()
 		// 데미지 처리
 		AController* InstigatorController = GetInstigatorController();
 		UGameplayStatics::ApplyDamage(Actor,DamageAmount,InstigatorController,this,nullptr);
-
-		ApplyFireDOT(Actor,DPS,Duration);
+		AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(Actor);
+		if(PlayerCharacter)
+		{
+			PlayerCharacter->ApplyFire(4);
+			ApplyFireDOT(Actor,DPS,Duration);
+		} else
+		{
+			UE_LOG(LogTemp,Error,TEXT("On_Fire: Cast 실패 - 액터 이름: %s"),*Actor->GetName());
+		}
+		AEntityPreset* Entity = Cast<AEntityPreset>(Actor);
+		if(Entity){
+			Entity->bIsVisibleEffectFire = true;
+			ApplyFireDOT(Actor,DPS,Duration);
+		}
 	}
 }
 void AFireBarrel::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration)
 {
 	if(!Target || DamagePerSecond <= 0.f || ApplyDuration <= 0.f) return;
-	if(Target){
-		int32 TickCount = FMath::FloorToInt(ApplyDuration);
-		for(int32 i = 1; i <= TickCount; ++i)
+	int32 TickCount = FMath::FloorToInt(ApplyDuration);
+	for(int32 i = 1; i <= TickCount; ++i)
+	{
+		int32 CurrentTick = i;
+
+		FTimerHandle FireTickHandle;
+		FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]() // CurrentTick이 값으로 캡처됨
 		{
-			FTimerHandle FireTickHandle;
-			FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]()
+			if(IsValid(Target))
 			{
 				UGameplayStatics::ApplyDamage(Target,DamagePerSecond,GetInstigatorController(),this,nullptr);
-				UE_LOG(LogTemp,Warning,TEXT("화상 횟수 %d"),i);
-			});
-			GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
-		}
+				UE_LOG(LogTemp,Warning,TEXT("화상 횟수 %d"),CurrentTick);
+			}
+
+		});
+		GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false); // i초 후 실행
+
 	}
+	FTimerHandle FireEndHandle;
+	FTimerDelegate FireEndDelegate = FTimerDelegate::CreateLambda([=]()
+	{
+		if(AEntityPreset* Entity = Cast<AEntityPreset>(Target))
+		{
+			Entity->bIsVisibleEffectFire = false;
+			UE_LOG(LogTemp,Warning,TEXT("Fire effect ended on %s"),*Target->GetName());
+		}
+	});
+	GetWorld()->GetTimerManager().SetTimer(FireEndHandle,FireEndDelegate,ApplyDuration,false);
+
 }
