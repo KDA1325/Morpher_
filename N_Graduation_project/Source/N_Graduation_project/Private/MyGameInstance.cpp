@@ -107,12 +107,12 @@ void UMyGameInstance::OnLevelLoaded()
 	FVector LoadLoc = SaveLocation + FVector(0,0,100);
 	UE_LOG(LogTemp,Warning,TEXT("Teleporting player to: %s"),*LoadLoc.ToString());
 	Player->SetActorLocation(LoadLoc);
-
+	Player->LoadChangePreset();
 	if(UMyPlayerStatComponent* Stat = Player->FindComponentByClass<UMyPlayerStatComponent>())
 	{
 		Stat->SetHP(PlayerFullHP);
 	}
 
 	Player->ChangePreset("PlayerCharacter");
-	Player->isDead = false;
+	//Player->isDead = false;
 }
