@@ -2,6 +2,7 @@
 
 
 #include "FireFloor.h"
+#include "EntityPreset.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
 #include "Particles/ParticleSystemComponent.h" 
@@ -87,13 +88,17 @@ void AFireFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Othe
 			}
 			UE_LOG(LogTemp,Warning,TEXT("On_Fire 범위 내 감지된 액터: %s"),*OtherActor->GetName());
 			AN_Graduation_projectCharacter* PlayerCharacter = Cast<AN_Graduation_projectCharacter>(OtherActor);
-			
+
 			if(PlayerCharacter)
 			{
 				PlayerCharacter->ApplyFire(4);
 			} else
 			{
 				UE_LOG(LogTemp,Error,TEXT("On_Fire: Cast 실패 - 액터 이름: %s"),*OtherActor->GetName());
+			}
+			AEntityPreset* Entity = Cast<AEntityPreset>(OtherActor);
+			if(Entity){
+				Entity->bIsVisibleEffectFire = true;
 			}
 			ApplyFireDOT(OtherActor,10.f,4.f);
 
@@ -109,7 +114,7 @@ void AFireFloor::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDu
 	int32 TickCount = FMath::FloorToInt(ApplyDuration);
 	for(int32 i = 1; i <= TickCount; ++i)
 	{
-		int32 CurrentTick = i; 
+		int32 CurrentTick = i;
 
 		FTimerHandle FireTickHandle;
 		FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]() // CurrentTick이 값으로 캡처됨
@@ -117,10 +122,20 @@ void AFireFloor::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDu
 			if(IsValid(Target))
 			{
 				UGameplayStatics::ApplyDamage(Target,DamagePerSecond,GetInstigatorController(),this,nullptr);
-				UE_LOG(LogTemp,Warning,TEXT("화상 횟수 %d"),CurrentTick); 
+				UE_LOG(LogTemp,Warning,TEXT("화상 횟수 %d"),CurrentTick);
 			}
 		});
 
-		GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
 	}
+	FTimerHandle FireEndHandle;
+	FTimerDelegate FireEndDelegate = FTimerDelegate::CreateLambda([=]()
+	{
+		if(AEntityPreset* Entity = Cast<AEntityPreset>(Target))
+		{
+			Entity->bIsVisibleEffectFire = false;
+			UE_LOG(LogTemp,Warning,TEXT("Fire effect ended on %s"),*Target->GetName());
+		}
+	});
+	GetWorld()->GetTimerManager().SetTimer(FireEndHandle,FireEndDelegate,ApplyDuration,false);
+
 }

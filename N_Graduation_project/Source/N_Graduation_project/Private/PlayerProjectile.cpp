@@ -10,7 +10,7 @@
 #include "Barrel.h"
 #include "StunBarrel.h"
 #include "FireBarrel.h"
-
+#include "EntityPreset.h"
 APlayerProjectile::APlayerProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -18,9 +18,6 @@ APlayerProjectile::APlayerProjectile()
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->SetCollisionProfileName("Projectile");
-	CollisionComp->SetCollisionResponseToAllChannels(ECR_Ignore);
-	CollisionComp->SetCollisionResponseToChannel(ECC_Pawn,ECR_Block); // 캐릭터는 막음
-	CollisionComp->SetCollisionResponseToChannel(ECC_WorldStatic,ECR_Block); // 타일, 벽, 바닥 등
 
 	RootComponent = CollisionComp;
 	// 발사체 이동 컴포넌트 설정
@@ -116,6 +113,8 @@ void APlayerProjectile::FireInDirection(const FVector& ShootDirection)
 
 void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp,Warning,TEXT("FireBall Overlapped with: %s"),*OtherActor->GetName());
+
 	if(!OtherActor) return;
 	if(OtherActor)
 	{
@@ -143,11 +142,9 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			{
 			case EnumEffectType::Damage:
 			UE_LOG(LogTemp,Warning,TEXT("데미지 실행됨"));
-
 			UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
 			if(OtherActor->ActorHasTag(FName("Barrel")))
 			{
-
 				if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(OtherActor))
 				{
 					StunBarrel->WorkBarrel(0); // AStunBarrel 고유 로직
@@ -192,6 +189,9 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 				ApplyFireDOT(OtherActor,DPS,ApplyDuration);
 				UE_LOG(LogTemp,Warning,TEXT("FireFloor EnumEffectType::Fire!"));
 
+				AEntityPreset* Entity = Cast<AEntityPreset>(OtherActor);
+				Entity->bIsVisibleEffectFire = true;
+
 				if(OtherActor->ActorHasTag(FName("FireFloor")))
 				{
 					if(AFireFloor* FireFloor = Cast<AFireFloor>(OtherActor))
@@ -218,9 +218,8 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			}
 
 			}
-
-			Destroy(); // 충돌 후 제거
 		}
+		Destroy(); // 충돌 후 제거
 
 	}
 }
@@ -240,6 +239,16 @@ void APlayerProjectile::ApplyFireDOT(AActor* Target,float DamagePerSecond,float 
 			});
 			GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
 		}
+		FTimerHandle FireEndHandle;
+		FTimerDelegate FireEndDelegate = FTimerDelegate::CreateLambda([=]()
+		{
+			if(AEntityPreset* Entity = Cast<AEntityPreset>(Target))
+			{
+				Entity->bIsVisibleEffectFire = false;
+				UE_LOG(LogTemp,Warning,TEXT("Fire effect ended on %s"),*Target->GetName());
+			}
+		});
+		GetWorld()->GetTimerManager().SetTimer(FireEndHandle,FireEndDelegate,ApplyDuration,false);
 	}
 }
 
