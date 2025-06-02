@@ -92,6 +92,7 @@ void AFireFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Othe
 			if(PlayerCharacter)
 			{
 				PlayerCharacter->ApplyFire(4);
+				ApplyFireDOT(OtherActor,10.f,4.f);
 			} else
 			{
 				UE_LOG(LogTemp,Error,TEXT("On_Fire: Cast 실패 - 액터 이름: %s"),*OtherActor->GetName());
@@ -99,8 +100,9 @@ void AFireFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Othe
 			AEntityPreset* Entity = Cast<AEntityPreset>(OtherActor);
 			if(Entity){
 				Entity->bIsVisibleEffectFire = true;
+				ApplyFireDOT(OtherActor,10.f,4.f);
 			}
-			ApplyFireDOT(OtherActor,10.f,4.f);
+			
 
 		}
 	}
@@ -124,8 +126,10 @@ void AFireFloor::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDu
 				UGameplayStatics::ApplyDamage(Target,DamagePerSecond,GetInstigatorController(),this,nullptr);
 				UE_LOG(LogTemp,Warning,TEXT("화상 횟수 %d"),CurrentTick);
 			}
-		});
 
+		});
+		GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false); // i초 후 실행
+	
 	}
 	FTimerHandle FireEndHandle;
 	FTimerDelegate FireEndDelegate = FTimerDelegate::CreateLambda([=]()
