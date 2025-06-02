@@ -45,6 +45,15 @@ EBTNodeResult::Type UBTTask_MoveToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
         return EBTNodeResult::Failed;
     }
 
+	//if(Entity && Entity->bIsCastingSkill)
+	//{
+	//	if(playerPawn && OwnerComp.GetAIOwner())
+	//	{
+	//		OwnerComp.GetAIOwner()->SetFocus(playerPawn);
+	//	}
+	//	return EBTNodeResult::Failed;
+	//}
+
     float DistanceToPlayer = BlackboardComp->GetValueAsFloat(BBKEY_DISTANCE);
     float MinDistance = BlackboardComp->GetValueAsFloat(BBKEY_FOLLOWMINDISTANCE);
     float MonsterCapsuleRadius = BlackboardComp->GetValueAsFloat(BBKEY_MONSTERRADIUS);
@@ -53,7 +62,7 @@ EBTNodeResult::Type UBTTask_MoveToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
     // 실제 최소 거리 계산
     float CalculatedMinDistance = MinDistance + PlayerCapsuleRadius + MonsterCapsuleRadius;
 
-    if (DistanceToPlayer >= CalculatedMinDistance)
+    if (DistanceToPlayer > CalculatedMinDistance)
     {
         FVector PlayerLocation = BlackboardComp->GetValueAsVector(BBKEY_PLAYERLOCATION);
         OwnerComp.GetAIOwner()->SetFocus(playerPawn);
@@ -62,6 +71,7 @@ EBTNodeResult::Type UBTTask_MoveToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
     }
     else
     {
+		OwnerComp.GetAIOwner()->SetFocus(playerPawn);
         OwnerComp.GetAIOwner()->StopMovement();
     }
 

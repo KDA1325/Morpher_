@@ -232,6 +232,8 @@ void AEntityPreset::BeginPlay()
 	this->bIsVisibleEffectFire = false;
 	this->bIsVisibleEffectFreezing = false;
 	this->bIsVisibleEffectStun = false;
+	
+	bUseControllerRotationYaw = true;
 
 	//TArray<UActorComponent*> OutComponents;
 	//this->GetComponentsByClass(UNiagaraComponent::StaticClass(),OutComponents);
@@ -1397,6 +1399,8 @@ void AEntityPreset::PerformSkill_Charge()
 		{
 			// 경로 추적 중단
 			PathComp->Deactivate();
+			// 포커스 해제 
+			AIController->ClearFocus(EAIFocusPriority::Gameplay);
 
 			AIController->StopMovement();
 			UE_LOG(LogTemp,Warning,TEXT("AI movement forcibly stopped before LaunchCharacter"));
@@ -1414,15 +1418,16 @@ void AEntityPreset::PerformSkill_Charge()
 			// 경로 시각화 (기획 확인용)
 			//DrawDebugLine(GetWorld(), ChargeStartLocation, ChargeTargetLocation, FColor::Red, false, 2.0f, 0, 3.0f);
 
-			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
-			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
-			AnimInst->Montage_SetEndDelegate(EndDelegate,SpecialSkillMontage);
 
 			// 준비 시간 후 돌진 실행
 			float PrepTime = 1.0f;
 			FTimerHandle TimerHandle;
 			GetWorldTimerManager().SetTimer(TimerHandle,this,&AEntityPreset::StartChargeMovement,PrepTime,false);
+			
+			// 몽타주 종료 델리게이트 바인딩 (몽타주 종료 = 스킬 종료)
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
+			AnimInst->Montage_SetEndDelegate(EndDelegate,SpecialSkillMontage);
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("PerformSpecialSkill_Charge: AnimInstance not found"));
@@ -1484,11 +1489,11 @@ void AEntityPreset::Timeline_ChargeProgress(float Value)
 	SetActorLocation(NewLocation);
 }
 
-void AEntityPreset::Timeline_ChargeFinished()
-{
-	bIsCastingSkill = false;
-	HideSpecialHitBox();
-}
+//void AEntityPreset::Timeline_ChargeFinished()
+//{
+//	bIsCastingSkill = false;
+//	HideSpecialHitBox();
+//}
 
 void AEntityPreset::ClearCastingSkill()
 {
@@ -1900,7 +1905,7 @@ void AEntityPreset::PerformSkill_Arrow()
 			FOnMontageEnded EndDelegate;
 			EndDelegate.BindUObject(this,&AEntityPreset::OnSkillMontageEnded);
 			AnimInst->Montage_SetEndDelegate(EndDelegate,NormalSkillMontage);
-			bUseControllerRotationYaw = true;
+			//bUseControllerRotationYaw = true;
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("PerformSkill_Arrow: AnimInstance not found"));
@@ -2000,7 +2005,7 @@ void AEntityPreset::FireProjectile_Arrow()
 			// 발사
 			//FVector Direction = GetMesh()->GetForwardVector();
 			SpawnedProjectile->FireInDirection(Direction);
-			bUseControllerRotationYaw = true;
+			//bUseControllerRotationYaw = true;
 		} else
 		{
 			UE_LOG(LogTemp,Error,TEXT("Failed to load Skill_Arrow data!"));
@@ -2146,7 +2151,7 @@ void AEntityPreset::Fire_AllArrows()
 			FVector FireDirection = SocketTransform.GetRotation().GetForwardVector();
 
 			CurrentArrow->FireInDirection(FireDirection);
-			bUseControllerRotationYaw = true;
+			//bUseControllerRotationYaw = true;
 			UE_LOG(LogTemp,Warning,TEXT("Fired arrow %d → Dir: %s"),i,*FireDirection.ToString());
 		}
 	}

@@ -242,8 +242,8 @@ public:
 	UFUNCTION()
 	void Timeline_ChargeProgress(float Value);
 
-	UFUNCTION()
-	void Timeline_ChargeFinished();
+	//UFUNCTION()
+	//void Timeline_ChargeFinished();
 
 	UFUNCTION()
 	void SpawnChargeIndicator(FVector ChargeStartLocation, FVector ChargeTargetLocation);
