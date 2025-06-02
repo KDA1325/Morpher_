@@ -212,8 +212,8 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category = "Skill")
 	FVector ArrowDirection;
 
-	UFUNCTION(BlueprintCallable, Category = "Skill")
-	void ExecuteChargeDash();
+	//UFUNCTION(BlueprintCallable, Category = "Skill")
+	//void ExecuteChargeDash();
 
 	UFUNCTION(BlueprintCallable,Category = "Skill")
 	void SpawnProjectile_ThrowRock();

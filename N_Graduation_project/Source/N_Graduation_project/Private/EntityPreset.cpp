@@ -1197,7 +1197,7 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 				float KnockbackDuration = Effect.EffectValue02;
 
 				ApplyKnockbackEffect(PlayerCharacter,KnockbackDistance,KnockbackDuration);
-
+				UE_LOG(LogTemp,Warning,TEXT("넉백 적용"));
 				/*UCharacterMovementComponent* MoveComp = PlayerCharacter->GetCharacterMovement();
 				if (MoveComp)
 				{
@@ -1361,6 +1361,8 @@ void AEntityPreset::PerformSkill_Charge()
 	// 스킬 시전 플래그 설정
 	// 해당 변수가 true일 동안엔 다른 스킬 시전 불가능
 	bIsCastingSkill = true;
+	bIsCharging = true;
+
 	SoundSkillID = "Skill_Charge";
 
 	ChargeDirection = GetActorForwardVector().GetSafeNormal();
@@ -1438,16 +1440,16 @@ void AEntityPreset::PerformSkill_Charge()
 	}
 }
 
-void AEntityPreset::ExecuteChargeDash()
-{
-	float LaunchSpeed = 2000.0f;
-
-	// 실제 돌진
-	LaunchCharacter(ChargeDirection * LaunchSpeed,true,true);
-	bIsCharging = true;
-
-	UE_LOG(LogTemp,Warning,TEXT("ExecuteChargeDash: Launch Started"));
-}
+//void AEntityPreset::ExecuteChargeDash()
+//{
+//	float LaunchSpeed = 2000.0f;
+//
+//	// 실제 돌진
+//	LaunchCharacter(ChargeDirection * LaunchSpeed,true,true);
+//	
+//
+//	UE_LOG(LogTemp,Warning,TEXT("ExecuteChargeDash: Launch Started"));
+//}
 
 void AEntityPreset::SpawnChargeIndicator(FVector Start,FVector End)
 {
@@ -1630,6 +1632,10 @@ void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target,float Distance,float
 	FVector KnockbackDir = Target->GetActorLocation() - GetActorLocation();
 	KnockbackDir.Normalize();
 
+	// 위로 살짝 뜨게 
+	KnockbackDir.Z = 0.3f; 
+	KnockbackDir = KnockbackDir.GetSafeNormal();
+
 	// 최소 보정
 	if(Distance <= 0.01f)
 	{
@@ -1644,6 +1650,8 @@ void AEntityPreset::ApplyKnockbackEffect(ACharacter* Target,float Distance,float
 	UCharacterMovementComponent* MoveComp = Target->GetCharacterMovement();
 	if(MoveComp)
 	{
+		MoveComp->SetMovementMode(MOVE_Falling);
+
 		// 기존 모멘텀 무시하고 새로운 속도로 밀기
 		Target->LaunchCharacter(KnockbackVelocity,true,true);
 
