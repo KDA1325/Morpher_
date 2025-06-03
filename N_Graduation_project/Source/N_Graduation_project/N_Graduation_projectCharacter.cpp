@@ -236,7 +236,13 @@ void AN_Graduation_projectCharacter::BeginPlay()
 
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
-	else{
+
+	const FString SlotName = TEXT("MySaveSlot");
+	const int32 UserIndex = 0;
+
+	// 세이브가 존재할 때만 실행
+	if(UGameplayStatics::DoesSaveGameExist(SlotName,UserIndex))
+	{
 		MyGameInstance->OnLevelLoaded();
 	}
 
