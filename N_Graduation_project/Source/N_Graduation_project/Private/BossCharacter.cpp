@@ -81,6 +81,8 @@ void ABossCharacter::SetHP(int NewHP)
 		{
 			GetWorld()->GetTimerManager().ClearAllTimersForObject(BossPatternManager);
 		}
+		
+		DestroyAllAttachedLasers();
 
 		// 위젯 제거
 		if(BossWidget)
@@ -113,6 +115,21 @@ void ABossCharacter::HealHP(int DamageAmount){
 void ABossCharacter::UpdateHP(){
 	if(BossWidget){
 		BossWidget->UpdateHPBar(CurrentHP);
+	}
+}
+
+void ABossCharacter::DestroyAllAttachedLasers()
+{
+	TArray<AActor*> AttachedActors;
+	GetAttachedActors(AttachedActors); // 자신(Boss)에 붙은 액터들 순회
+
+	for(AActor* Actor : AttachedActors)
+	{
+		if(Actor && Actor->IsA(ABoss_Laser::StaticClass())) // 레이저 클래스인지 확인
+		{
+			Actor->Destroy();
+			UE_LOG(LogTemp,Warning,TEXT("Attached Laser Destroyed"));
+		}
 	}
 }
 

@@ -40,6 +40,8 @@ protected:
 	void SetHP(int NewHP);
 	void UpdateHP();
 
+	void DestroyAllAttachedLasers();
+
 	void OnBossDead();
 	UBossWidget* GetHUD() const;
 

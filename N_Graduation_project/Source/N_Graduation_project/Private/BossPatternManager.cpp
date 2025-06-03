@@ -196,20 +196,45 @@ void ABossPatternManager::SpawnAndAttachLasers()
 		true  // 
 		);
 
-		FTimerHandle TimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle,[this,Laser,SocketName]()
-		{
-			if(!Laser) return;
+		//FTimerHandle TimerHandle;
+		//GetWorld()->GetTimerManager().SetTimer(TimerHandle,[this,Laser,SocketName]()
+		//{
+		//	if(!Laser) return;
 
-			// 디태치
-			Laser->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-			if(!MyGameInstance) return;
-			MyGameInstance->Laser=false;
-			Laser->Destroy();
+		//	// 디태치
+		//	Laser->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		//	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+		//	if(!MyGameInstance) return;
+		//	MyGameInstance->Laser=false;
+		//	Laser->Destroy();
+		//},6.0f,false);
+
+		FTimerHandle TimerHandle;
+		TWeakObjectPtr<AActor> WeakLaser = Laser;
+		TWeakObjectPtr<ABossPatternManager> WeakThis = this;
+
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle,[WeakLaser,WeakThis]()
+		{
+			if(!WeakThis.IsValid()) return; // this가 삭제된 상태면 무시
+			if(!WeakLaser.IsValid()) return; // 레이저가 이미 삭제됨
+
+			AActor* LaserActor = WeakLaser.Get();
+			LaserActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+			if(UWorld* World = LaserActor->GetWorld())
+			{
+				if(UMyGameInstance* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(World)))
+				{
+					MyGameInstance->Laser = false;
+				}
+			}
+
+			LaserActor->Destroy();
+
 		},6.0f,false);
 	}
 }
+
 void ABossPatternManager::SpinningBarrage()
 {
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
