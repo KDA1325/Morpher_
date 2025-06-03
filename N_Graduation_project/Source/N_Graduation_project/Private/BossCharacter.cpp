@@ -147,6 +147,8 @@ void ABossCharacter::Pattern1()
 
 void ABossCharacter::ExecuteBossPattern()
 {
+	if(CurrentHP <= 0 || !IsValid(this) || !IsValid(BossPatternManager)) return;
+
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
 
@@ -215,6 +217,8 @@ void ABossCharacter::Pattern2(){
 }
 void ABossCharacter::ExecuteBossPattern2()
 {
+	if(CurrentHP <= 0 || !IsValid(this) || !IsValid(BossPatternManager)) return;
+
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
 
