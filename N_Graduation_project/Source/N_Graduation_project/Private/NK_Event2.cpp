@@ -29,7 +29,7 @@ void ANK_Event2::BeginPlay()
 	{
 		BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&ANK_Event2::OnBoxBeginOverlap);
 	}
-	WallBPClass = StaticLoadClass(AActor::StaticClass(),nullptr,TEXT("/Game/Object/BP_StoneGate.BP_StoneGate_C"));
+	WallBPClass = StaticLoadClass(AActor::StaticClass(),nullptr,TEXT("/Game/Object/BP_StoneGate1.BP_StoneGate1_C"));
 	if(WallBPClass)
 	{
 		UE_LOG(LogTemp,Log,TEXT("WallBPClass 로딩 성공"));
@@ -52,7 +52,7 @@ void ANK_Event2::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent,AAct
 	UE_LOG(LogTemp,Log,TEXT("NK_Event: Overlap 감지"));
 
 	if(OtherActor && OtherActor->ActorHasTag(TEXT("Player")))
-	{
+	{ 
 		UE_LOG(LogTemp,Log,TEXT("NK_Event: Monster 태그 감지"));
 
 		// BP_NK_Wall 클래스를 찾아서 맵에서 인스턴스를 가져옴
