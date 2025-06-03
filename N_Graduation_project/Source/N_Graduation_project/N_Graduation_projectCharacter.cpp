@@ -242,8 +242,10 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	const int32 UserIndex = 0;
 
 	// 세이브가 존재할 때만 실행
-	if(UGameplayStatics::DoesSaveGameExist(SlotName,UserIndex))
+	if(MyGameInstance->isSave==true)
 	{
+		UE_LOG(LogTemp,Error,TEXT("세이브 존재함"));
+
 		MyGameInstance->OnLevelLoaded();
 	}
 

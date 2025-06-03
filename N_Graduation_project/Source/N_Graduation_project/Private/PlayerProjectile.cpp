@@ -125,7 +125,7 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			UE_LOG(LogTemp,Warning,TEXT("Tag: %s"),*Tag.ToString());
 		}
 	}
-	
+
 	if(OtherActor->ActorHasTag("FireCrystal"))
 	{
 		UE_LOG(LogTemp,Warning,TEXT("FireCrystal activated!"));
@@ -149,8 +149,7 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			{
 				UGameplayStatics::ApplyDamage(OtherActor,200,GetInstigatorController(),this,nullptr);
 
-			} 
-			else{
+			} else{
 				UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
 
 			}
@@ -173,9 +172,18 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 				// 광역 대미지 처리, 몬스터용 로직엔 추가할 필요 없을 듯(플레이어 쪽에 추가하기)
 				FVector Origin = GetActorLocation(); // AOE 중심
 				float Radius = Effect.EffectValue02;
-				Damage = Effect.EffectValue01;
-				UGameplayStatics::ApplyDamage(OtherActor,Damage,GetInstigatorController(),this,nullptr);
+				if(CollisionComp)
+				{
+					CollisionComp->SetSphereRadius(Radius);
+					UE_LOG(LogTemp,Warning,TEXT("AOE Collision radius set to 300"));
+				}
+				if(Player->TestMode2==true){
+					UGameplayStatics::ApplyDamage(OtherActor,200,GetInstigatorController(),this,nullptr);
 
+				} else{
+					Damage = Effect.EffectValue01;
+					UGameplayStatics::ApplyDamage(OtherActor,Damage,GetInstigatorController(),this,nullptr);
+				}
 				TArray<AActor*> OverlappingActors;
 				UGameplayStatics::GetAllActorsOfClass(GetWorld(),AN_Graduation_projectCharacter::StaticClass(),OverlappingActors);
 

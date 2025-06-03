@@ -42,7 +42,7 @@ void UMyGameInstance::SaveGame()
 {
 	UMySaveGame* SaveData = Cast<UMySaveGame>(UGameplayStatics::CreateSaveGameObject(UMySaveGame::StaticClass()));
 	if(!SaveData) return;
-
+	isSave=true;
 	SaveToSaveData(SaveData);
 	UGameplayStatics::SaveGameToSlot(SaveData,TEXT("MySaveSlot"),0);
 }
