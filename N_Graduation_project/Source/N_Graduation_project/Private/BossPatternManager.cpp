@@ -49,7 +49,7 @@ ABossPatternManager::ABossPatternManager()
 	LazerBeamSound = LoadObject<USoundWave>(nullptr,TEXT("SoundWave'/Game/Sounds/Battle/LazerBeam.LazerBeam'"));
 	SpinProjectileSound =  LoadObject<USoundWave>(nullptr,TEXT("SoundWave'/Game/Sounds/Battle/BossProjectileSpawn.BossProjectileSpawn'"));
 	PlaySpinProjectileSound =  LoadObject<USoundWave>(nullptr,TEXT("SoundWave'/Game/Sounds/Battle/SpinProjectile.SpinProjectile'"));
-	
+
 }
 
 void ABossPatternManager::BeginPlay()
@@ -241,9 +241,15 @@ void ABossPatternManager::SpinningBarrage()
 	if(!MyGameInstance) return;
 
 	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor);
+	if(!BossChar)
+	{
+		UE_LOG(LogTemp,Error,TEXT("SpinningBarrage: BossActor is not valid!"));
+		return;
+	}
 
-	if(!BossChar->ProjectileClass || !BossChar) {
-		UE_LOG(LogTemp,Error,TEXT("SpinningBarrage ProjectileClass or BossMesh not set!"));
+	if(!BossChar->ProjectileClass)
+	{
+		UE_LOG(LogTemp,Error,TEXT("SpinningBarrage: ProjectileClass is not set!"));
 		return;
 	}
 
@@ -252,74 +258,29 @@ void ABossPatternManager::SpinningBarrage()
 	SpawnParams.Owner = this;
 	SpawnParams.Instigator = GetInstigator();
 
+	MyGameInstance->Spin = true;
+
+	// Spinning1 소켓에서 일반 회전 투사체 발사
 	for(const FName& SocketName : Spinning1SocketNames)
 	{
-		MyGameInstance->Spin=true;
-		FTransform SocketTransform =BossChar-> GetMesh()->GetSocketTransform(SocketName);
-		FVector SpawnLocation = SocketTransform.GetLocation();
-		FVector FireDirection = SocketTransform.GetRotation().GetForwardVector(); // 소켓의 전방 방향
-		FRotator SpawnRotation = FireDirection.Rotation();
-
-		ABossProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABossProjectile>(
-			BossChar->ProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
-
-		if(SpawnedProjectile)
-		{
-			SpawnedProjectile->InitProjectileBySkillData(ProjectileSpeed,ApplyDamageAmount);
-			SpawnedProjectile->FireInDirection(FireDirection);
-
-			UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
-		}
-		UAudioComponent* SpinAudioComp = UGameplayStatics::SpawnSoundAttached(
-			SpinProjectileSound,
-			SpawnedProjectile->GetRootComponent(), //  여기에 붙이기
-			NAME_None,
-			FVector::ZeroVector,
-			EAttachLocation::KeepRelativeOffset,
-			true // 투사체가 파괴되면 사운드도 같이 꺼짐
-		);	
+		FireProjectileAtSocket(SocketName,false);
 	}
+
+	// Spinning2 소켓에서 반대 방향 또는 다른 투사체 발사
 	for(const FName& SocketName : Spinning2SocketNames)
 	{
-		FTransform SocketTransform =BossChar-> GetMesh()->GetSocketTransform(SocketName);
-		FVector SpawnLocation = SocketTransform.GetLocation();
-		FVector FireDirection = SocketTransform.GetRotation().GetForwardVector(); // 소켓의 전방 방향
-		FRotator SpawnRotation = FireDirection.Rotation();
-
-		ABossProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABossProjectile>(
-			BossChar->ProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
-
-		if(SpawnedProjectile)
-		{
-			FSkillData SkillData;
-			TArray<FSkillEffectData> EffectDataArray;
-			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_ThrowRock",SkillData) &&
-				UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_ThrowRock",EffectDataArray))
-			{
-				SpawnedProjectile->InitProjectileBySkillData(ProjectileSpeed,ApplyDamageAmount);
-				SpawnedProjectile->FireInDirection(FireDirection);
-
-				UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
-			} else
-			{
-				UE_LOG(LogTemp,Error,TEXT("SpinningBarrage Failed to load Skill_ThrowRock data!"));
-			}
-			//UAudioComponent* SpinAudioComp = UGameplayStatics::SpawnSoundAttached(
-			//SpinProjectileSound,
-			//SpawnedProjectile->GetRootComponent(), 
-			//NAME_None,
-			//FVector::ZeroVector,
-			//EAttachLocation::KeepRelativeOffset,
-			//true // 투사체가 파괴되면 사운드도 같이 꺼짐
-			//);
-
-		}
-
+		FireProjectileAtSocket(SocketName,true);
 	}
 }
 void ABossPatternManager::StartSpinningBarrageSequence(int num)
 {
-	SpinningBarrageCount = num; 
+	if(!IsValid(this))
+	{
+		UE_LOG(LogTemp,Error,TEXT("ABossPatternManager is invalid"));
+		return;
+	}
+
+	SpinningBarrageCount = num;
 	UAudioComponent* SpinAudioComp = UGameplayStatics::SpawnSoundAttached(
 			PlaySpinProjectileSound,
 			this->GetRootComponent(), //  여기에 붙이기
@@ -355,6 +316,12 @@ void ABossPatternManager::SpinningBarrageTick()
 
 void ABossPatternManager::StartSpinningBarrageSequence2(int num)
 {
+	if(!IsValid(this))
+	{
+		UE_LOG(LogTemp,Error,TEXT("ABossPatternManager is invalid"));
+		return;
+	}
+
 	SpinningBarrageCount = num;
 
 	GetWorld()->GetTimerManager().SetTimer(
@@ -388,9 +355,15 @@ void ABossPatternManager::SpinningBarrage2()
 	if(!MyGameInstance) return;
 
 	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor);
+	if(!BossChar)
+	{
+		UE_LOG(LogTemp,Error,TEXT("SpinningBarrage: BossActor is not valid!"));
+		return;
+	}
 
-	if(!BossChar->ProjectileClass || !BossChar) {
-		UE_LOG(LogTemp,Error,TEXT("SpinningBarrage ProjectileClass or BossMesh not set!"));
+	if(!BossChar->ProjectileClass)
+	{
+		UE_LOG(LogTemp,Error,TEXT("SpinningBarrage: ProjectileClass is not set!"));
 		return;
 	}
 
@@ -399,72 +372,21 @@ void ABossPatternManager::SpinningBarrage2()
 	SpawnParams.Owner = this;
 	SpawnParams.Instigator = GetInstigator();
 
+	MyGameInstance->Spin = true;
+
+	// Spinning1 소켓에서 일반 회전 투사체 발사
 	for(const FName& SocketName : Spinning1SocketNames)
 	{
-		MyGameInstance->Spin=true;
-		FTransform SocketTransform =BossChar-> GetMesh()->GetSocketTransform(SocketName);
-		FVector SpawnLocation = SocketTransform.GetLocation();
-		FVector FireDirection = SocketTransform.GetRotation().GetForwardVector(); // 소켓의 전방 방향
-		FRotator SpawnRotation = FireDirection.Rotation();
-
-		ABossProjectile2* SpawnedProjectile = GetWorld()->SpawnActor<ABossProjectile2>(
-			BossChar->SpinningBP2Class,SpawnLocation,SpawnRotation,SpawnParams);
-
-		if(SpawnedProjectile)
-		{
-
-			SpawnedProjectile->InitProjectileBySkillData(450,25);
-			SpawnedProjectile->FireInDirection(FireDirection);
-
-			UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
-			UAudioComponent* SpinAudioComp = UGameplayStatics::SpawnSoundAttached(
-				SpinProjectileSound,
-				SpawnedProjectile->GetRootComponent(), // ← 여기에 붙이기
-				NAME_None,
-				FVector::ZeroVector,
-				EAttachLocation::KeepRelativeOffset,
-				true // 투사체가 파괴되면 사운드도 같이 꺼짐
-			);
-		}
+		FireProjectileAtSocket(SocketName,false);
 	}
+
+	// Spinning2 소켓에서 반대 방향 또는 다른 투사체 발사
 	for(const FName& SocketName : Spinning2SocketNames)
 	{
-		FTransform SocketTransform =BossChar-> GetMesh()->GetSocketTransform(SocketName);
-		FVector SpawnLocation = SocketTransform.GetLocation();
-		FVector FireDirection = SocketTransform.GetRotation().GetForwardVector(); // 소켓의 전방 방향
-		FRotator SpawnRotation = FireDirection.Rotation();
-
-		ABossProjectile2* SpawnedProjectile2 = GetWorld()->SpawnActor<ABossProjectile2>(
-			BossChar->SpinningBP2_2Class,SpawnLocation,SpawnRotation,SpawnParams);
-
-		if(SpawnedProjectile2)
-		{
-			FSkillData SkillData;
-			TArray<FSkillEffectData> EffectDataArray;
-
-			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_ThrowRock",SkillData) &&
-				UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_ThrowRock",EffectDataArray))
-			{
-				SpawnedProjectile2->InitProjectileBySkillData(500,25);
-				SpawnedProjectile2->FireInDirection(FireDirection);
-				//SpawnedProjectile2->FireInDirection(FireDirection);
-
-				//UE_LOG(LogTemp,Log,TEXT("SpinningBarrage Fired projectile from socket %s"),*SocketName.ToString());
-				//UAudioComponent* SpinAudioComp = UGameplayStatics::SpawnSoundAttached(
-				//SpinProjectileSound,
-				//SpawnedProjectile2->GetRootComponent(),
-				//NAME_None,
-				//FVector::ZeroVector,
-				//EAttachLocation::KeepRelativeOffset,
-				//true // 투사체가 파괴되면 사운드도 같이 꺼짐
-				//);
-			} else
-			{
-				UE_LOG(LogTemp,Error,TEXT("SpinningBarrage Failed to load Skill_ThrowRock data!"));
-			}
-		}
+		FireProjectileAtSocket(SocketName,true);
 	}
 }
+
 
 
 
@@ -618,26 +540,40 @@ void ABossPatternManager::ApplyMeteorDamage(){
 	}
 }
 
-void ABossPatternManager::StartPhase1()
+void ABossPatternManager::FireProjectileAtSocket(const FName& SocketName,bool bUseSkillData)
 {
-	//	Thunder();
+	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor);
+	if(!BossChar || !BossChar->ProjectileClass) return;
 
-		//FTimerHandle LaserDelayHandle;
-		//GetWorld()->GetTimerManager().SetTimer(LaserDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::SpawnAndAttachLasers),7.f,false);
+	FTransform SocketTransform = BossChar->GetMesh()->GetSocketTransform(SocketName);
+	FVector SpawnLocation = SocketTransform.GetLocation();
+	FVector FireDirection = SocketTransform.GetRotation().GetForwardVector();
+	FRotator SpawnRotation = FireDirection.Rotation();
 
-		//FTimerHandle SpinDelayHandle;
-		//GetWorld()->GetTimerManager().SetTimer(SpinDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::SpinningBarrage),12.f,false);
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
 
-		//FTimerHandle HealDelayHandle;
-		//GetWorld()->GetTimerManager().SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::HealCrystal),146.f,false);
+	ABossProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABossProjectile>(
+		BossChar->ProjectileClass,SpawnLocation,SpawnRotation,SpawnParams);
 
-		//FTimerHandle MDelayHandle;
-		//GetWorld()->GetTimerManager().SetTimer(MDelayHandle,FTimerDelegate::CreateUObject(this,&ABossPatternManager::Meteor),34.f,false);
+	if(SpawnedProjectile)
+	{
+		if(bUseSkillData)
+		{
+			FSkillData SkillData;
+			TArray<FSkillEffectData> EffectDataArray;
+			if(UABGameSingleton::Get().GetSkillDataBySkillID("Skill_ThrowRock",SkillData) &&
+				UABGameSingleton::Get().GetSkillEffectDataBySkillID("Skill_ThrowRock",EffectDataArray))
+			{
+				SpawnedProjectile->InitProjectileBySkillData(ProjectileSpeed,ApplyDamageAmount);
+			}
+		} else
+		{
+			SpawnedProjectile->InitProjectileBySkillData(ProjectileSpeed,ApplyDamageAmount);
+		}
 
+		SpawnedProjectile->FireInDirection(FireDirection);
+	}
 }
 
-void ABossPatternManager::StartPhase2()
-{
-
-
-}

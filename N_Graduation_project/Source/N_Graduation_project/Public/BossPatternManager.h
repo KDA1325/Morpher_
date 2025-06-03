@@ -148,14 +148,11 @@ public:
 	TSubclassOf<AActor> MeteorBPClass;
 	FVector GetRandomMeteorLocation(); // 랜덤 생성 함수
 
-	//ㅠㅔ이즈
-void StartPhase1();
-void StartPhase2();
 
 private:
 	int NextPatternIndex = 0;
 
-
+	void FireProjectileAtSocket(const FName& SocketName,bool bUseSkillData);
 	//tkdnse
 	USoundWave* LazerBeamSound ;
 	USoundWave* SpinProjectileSound ;
