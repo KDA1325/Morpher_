@@ -125,12 +125,14 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			UE_LOG(LogTemp,Warning,TEXT("Tag: %s"),*Tag.ToString());
 		}
 	}
-
+	
 	if(OtherActor->ActorHasTag("FireCrystal"))
 	{
 		UE_LOG(LogTemp,Warning,TEXT("FireCrystal activated!"));
 		OtherActor->Destroy();
 	}
+	AN_Graduation_projectCharacter* Player = GetOwner<AN_Graduation_projectCharacter>();
+
 	// 몬스터만 처리
 	if(OtherActor->ActorHasTag("Monster")||OtherActor->ActorHasTag("Object")|| OtherActor->ActorHasTag("FireFloor")||OtherActor->ActorHasTag("FrozeFloor")||OtherActor->ActorHasTag("FireCrystal"))
 	{
@@ -142,7 +144,16 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			{
 			case EnumEffectType::Damage:
 			UE_LOG(LogTemp,Warning,TEXT("데미지 실행됨"));
-			UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+
+			if(Player->TestMode2==true)
+			{
+				UGameplayStatics::ApplyDamage(OtherActor,200,GetInstigatorController(),this,nullptr);
+
+			} 
+			else{
+				UGameplayStatics::ApplyDamage(OtherActor,Effect.EffectValue01,GetInstigatorController(),this,nullptr);
+
+			}
 			if(OtherActor->ActorHasTag(FName("Barrel")))
 			{
 				if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(OtherActor))
