@@ -1,17 +1,16 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "MySaveGame.h"
+#include "Tickable.h"
 #include "MyGameInstance.generated.h"
 
 /**
  *
  */
 UCLASS()
-class N_GRADUATION_PROJECT_API UMyGameInstance: public UGameInstance
+class N_GRADUATION_PROJECT_API UMyGameInstance: public UGameInstance,public FTickableGameObject
 {
 	GENERATED_BODY()
 public:
@@ -26,7 +25,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		FVector SaveLocation;
 	UFUNCTION()
-	void OnLevelLoaded();
+		void OnLevelLoaded();
 
 	bool Player_Ok = true;
 	bool WildBoar_Ok = false;
@@ -36,18 +35,11 @@ public:
 	bool SkeletonArcher_OK = false;
 	bool Freezard_OK = false;
 
-	/*bool Player_Ok = true;
-	bool WildBoar_Ok = true;
-	bool Inpermon_OK = true;
-	bool SkeletonWarrior_OK = true;
-	bool StoneGolem_OK = true;
-	bool SkeletonArcher_OK = true;
-	bool Freezard_OK = true;*/
+	float PlayerFullHP = 150;
+	float PlayerFinalAngle = 102.f;
 
-	float PlayerFullHP=150;
-	float PlayerFinalAngle=102.f;
-	//게임 시작 시 자동 로드
-	void Init();
+	// 게임 시작 시 자동 로드
+	void Init() override;
 
 	// 세이브 / 로드 함수
 	UFUNCTION(BlueprintCallable)
@@ -58,16 +50,28 @@ public:
 	// 내부 사용 함수
 	void InitFromSaveData(UMySaveGame* SaveData);
 	void SaveToSaveData(UMySaveGame* SaveData);
-	//void OnStreamLevelLoaded();
 
+	// Tick 관련 함수
+	virtual void Tick(float DeltaTime) override;
+	virtual TStatId GetStatId() const override {
+		RETURN_QUICK_DECLARE_CYCLE_STAT(UMyGameInstance,STATGROUP_Tickables);
+	}
+	virtual bool IsTickable() const override {
+		return bWaitingLevelLoad;
+	}
+
+	// 보스 관련 플래그
 	UPROPERTY(BlueprintReadWrite)
-		bool Thunder=false;
+		bool Thunder = false;
 	UPROPERTY(BlueprintReadWrite)
-		bool Laser=false;
+		bool Laser = false;
 	UPROPERTY(BlueprintReadWrite)
-		bool Spin=false;
+		bool Spin = false;
 	UPROPERTY(BlueprintReadWrite)
-		bool BossHeal=false;
+		bool BossHeal = false;
 	UPROPERTY(BlueprintReadWrite)
-		bool part2=false;
+		bool part2 = false;
+
+private:
+	bool bWaitingLevelLoad = false;
 };

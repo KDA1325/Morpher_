@@ -237,7 +237,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
 	else{
-		MyGameInstance->LoadGame();
+		MyGameInstance->OnLevelLoaded();
 	}
 
 }
@@ -547,14 +547,17 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 			{
 				bFromNormalHitBox=false;
 
-				// 대미지 주는 쪽이 entityProjectile일 때, 스킬이 FireBall이라면 전용 사운드 재생 
-				if(AEntityProjectile* entityProjectile = Cast<AEntityProjectile>(DamageCauser))
+				if(DamageCauser)
 				{
-					if(entityProjectile->SoundSkillID == "Skill_FireBall")
+					if(AEntityProjectile* entityProjectile = Cast<AEntityProjectile>(DamageCauser))
 					{
-						UGameplayStatics::PlaySoundAtLocation(this,FireEffectHitSound,GetActorLocation(),0.9f);
+						if(entityProjectile->SoundSkillID == "Skill_FireBall")
+						{
+							UGameplayStatics::PlaySoundAtLocation(this,FireEffectHitSound,GetActorLocation(),0.9f);
+						}
 					}
 				}
+
 				// 대미지 주는 쪽이 entity일 때
 				else if(AEntityPreset* entity = Cast<AEntityPreset>(DamageCauser))
 				{
