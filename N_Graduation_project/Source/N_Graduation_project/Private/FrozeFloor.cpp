@@ -3,7 +3,8 @@
 #include "EntityPreset.h"
 #include "N_Graduation_project/N_Graduation_projectCharacter.h"
 #include "Particles/ParticleSystemComponent.h" 
-
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 // Sets default values
 AFrozeFloor::AFrozeFloor()
 {
@@ -34,7 +35,7 @@ void AFrozeFloor::BeginPlay()
 		UE_LOG(LogTemp,Error,TEXT("BoxComponent가 NULL"));
 	}
 
-	FreezeParticle = Cast<UParticleSystemComponent>(GetDefaultSubobjectByName(TEXT("P_Freeze")));
+	/*FreezeParticle = Cast<UParticleSystemComponent>(GetDefaultSubobjectByName(TEXT("P_Freeze")));
 
 	if(FreezeParticle)
 	{
@@ -42,6 +43,15 @@ void AFrozeFloor::BeginPlay()
 	} else
 	{
 		UE_LOG(LogTemp,Error,TEXT("FreezeParticle 못 찾음"));
+	}*/
+	FreezeNiagaraComponent = Cast<UNiagaraComponent>(GetDefaultSubobjectByName(TEXT("P_Freeze1")));
+
+	if(FreezeNiagaraComponent)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("FreezeNiagaraComponent 연결됨"));
+	} else
+	{
+		UE_LOG(LogTemp,Error,TEXT("FreezeNiagaraComponent 못 찾음"));
 	}
 
 }
@@ -57,18 +67,27 @@ void AFrozeFloor::Off_Froze()
 {
 	ActiveFroze=false;
 
-	if(FreezeParticle){
-		FreezeParticle->DeactivateSystem(); // 파티클 끄기
+	//if(FreezeParticle){
+	//	FreezeParticle->DeactivateSystem(); // 파티클 끄기
+	//}
+UE_LOG(LogTemp,Warning,TEXT("Off_Froze"));
+
+	if(FreezeNiagaraComponent){
+		FreezeNiagaraComponent->Deactivate();  // 나이아가라 끄기
 	}
 }
 
 void AFrozeFloor::On_Froze()
 {
+	//ActiveFroze=true;
+	//if(FreezeParticle){
+	//	FreezeParticle->ActivateSystem(); // 파티클 켜기
+	//}
 	ActiveFroze=true;
-	if(FreezeParticle){
-		FreezeParticle->ActivateSystem(); // 파티클 켜기
+	if(FreezeNiagaraComponent){
+		FreezeNiagaraComponent->Activate(); // 나이아가라 켜기
 	}
-	UE_LOG(LogTemp,Warning,TEXT("On_Froze, ActiveFroze %d"),ActiveFroze);
+	//UE_LOG(LogTemp,Warning,TEXT("On_Froze, ActiveFroze %d"),ActiveFroze);
 }
 
 void AFrozeFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* OtherActor,

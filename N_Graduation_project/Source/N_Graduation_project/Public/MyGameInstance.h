@@ -35,7 +35,7 @@ public:
 
 	bool Player_Ok = true;
 	bool WildBoar_Ok = false;
-	bool Inpermon_OK = false;
+	bool Inpermon_OK = true;
 	bool SkeletonWarrior_OK = false;
 	bool StoneGolem_OK = false;
 	bool SkeletonArcher_OK = false;

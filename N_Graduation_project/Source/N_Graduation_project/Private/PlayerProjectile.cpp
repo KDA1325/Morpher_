@@ -201,8 +201,9 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 				UE_LOG(LogTemp,Warning,TEXT("FireFloor EnumEffectType::Fire!"));
 
 				AEntityPreset* Entity = Cast<AEntityPreset>(OtherActor);
-				Entity->bIsVisibleEffectFire = true;
-
+				if(Entity){
+					Entity->bIsVisibleEffectFire = true;
+				}
 				if(OtherActor->ActorHasTag(FName("FireFloor")))
 				{
 					if(AFireFloor* FireFloor = Cast<AFireFloor>(OtherActor))
