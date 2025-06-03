@@ -519,16 +519,31 @@ void AEntityPreset::SetHP(float NewHP)
 		}
 		//UE_LOG(LogTemp,Warning,TEXT("banana Entity Die"));
 
-		if(GetMesh())
+		// 머티리얼 하나만 변경 
+		//if(GetMesh())
+		//{
+		//	if(DeathMaterial)
+		//	{
+		//		GetMesh()->SetMaterial(0, DeathMaterial);
+		//		UE_LOG(LogTemp,Warning,TEXT("banana DeathMaterial 적용됨: %s"),*DeathMaterial->GetName());
+		//	} else
+		//	{
+		//		UE_LOG(LogTemp,Warning,TEXT("DeathMaterial이 설정되어 있지 않음!"));
+		//	}
+		//}
+
+		if(GetMesh() && DeathMaterial)
 		{
-			if(DeathMaterial)
+			int32 MaterialCount = GetMesh()->GetNumMaterials();
+			for(int32 i = 0; i < MaterialCount; ++i)
 			{
-				GetMesh()->SetMaterial(0, DeathMaterial);
-				UE_LOG(LogTemp,Warning,TEXT("banana DeathMaterial 적용됨: %s"),*DeathMaterial->GetName());
-			} else
-			{
-				UE_LOG(LogTemp,Warning,TEXT("DeathMaterial이 설정되어 있지 않음!"));
+				GetMesh()->SetMaterial(i,DeathMaterial);
 			}
+
+			UE_LOG(LogTemp,Warning,TEXT("DeathMaterial %s 을 %d개의 슬롯에 적용함"),*DeathMaterial->GetName(),MaterialCount);
+		} else
+		{
+			UE_LOG(LogTemp,Warning,TEXT("메시 또는 DeathMaterial이 설정되지 않음"));
 		}
 
 		// 사운드 재생 

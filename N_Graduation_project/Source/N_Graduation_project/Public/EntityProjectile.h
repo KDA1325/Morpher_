@@ -7,6 +7,7 @@
 #include "EntityPreset.h"
 #include "SkillData.h"
 #include "SkillEffectData.h"
+#include "NiagaraComponent.h"
 #include "GameFramework/Actor.h"
 #include "EntityProjectile.generated.h"
 
@@ -67,6 +68,9 @@ public:
 
 	//UPROPERTY(EditAnywhere)
 	//USoundBase* FireEffectHitSound;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Effects")
+	UNiagaraSystem* ProjectileHitEffect;
 
 	// 스킬 데이터 기반 발사체 설정 
 	void InitProjectileBySkillData(const FSkillData& InSkillData,const TArray<FSkillEffectData>& InEffectData);
