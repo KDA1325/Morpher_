@@ -192,10 +192,10 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	// Call the base class    
 	Super::BeginPlay();
 	m_pMeshCom = GetMesh();
-
+	PlayFootstepSound();
 	FOnTimelineFloat DashCallback;
 	SpawnHitBoxAtSocket("AttachHitBox");
-
+	LoadChangePreset();
 	//UE_LOG(LogTemp,Log,TEXT("캐릭터 BeginPlay실시, player: %s"),*currentPreset);
 	PlayerSword = Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Player_sword")));
 	SkeletonBow =  Cast<UStaticMeshComponent>(GetDefaultSubobjectByName(TEXT("Bow")));
@@ -237,7 +237,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
 	else{
-		MyGameInstance->LoadGame();
+		MyGameInstance->OnLevelLoaded();
 	}
 
 }
@@ -547,14 +547,17 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 			{
 				bFromNormalHitBox=false;
 
-				// 대미지 주는 쪽이 entityProjectile일 때, 스킬이 FireBall이라면 전용 사운드 재생 
-				if(AEntityProjectile* entityProjectile = Cast<AEntityProjectile>(DamageCauser))
+				if(DamageCauser)
 				{
-					if(entityProjectile->SoundSkillID == "Skill_FireBall")
+					if(AEntityProjectile* entityProjectile = Cast<AEntityProjectile>(DamageCauser))
 					{
-						UGameplayStatics::PlaySoundAtLocation(this,FireEffectHitSound,GetActorLocation(),0.9f);
+						if(entityProjectile->SoundSkillID == "Skill_FireBall")
+						{
+							UGameplayStatics::PlaySoundAtLocation(this,FireEffectHitSound,GetActorLocation(),0.9f);
+						}
 					}
 				}
+
 				// 대미지 주는 쪽이 entity일 때
 				else if(AEntityPreset* entity = Cast<AEntityPreset>(DamageCauser))
 				{
@@ -1238,12 +1241,64 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 	}
 
 }
-void AN_Graduation_projectCharacter::LoadChangePreset(){
-	SetPreset("PlayerCharacter");
-	PlayerStatComponent->TransformToEntity("PlayerCharacter",150,10);
-	WidgetActor->Back_CacheFinalMouseAngle = false;
+void AN_Graduation_projectCharacter::LoadChangePreset()
+{
 	UpdateEntityData();
-	UE_LOG(LogTemp,Warning,TEXT("LoadChangePreset"));
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+
+	USkeletalMeshComponent* MeshComponent = GetMesh();
+	if(!MeshComponent)
+	{
+		UE_LOG(LogTemp,Error,TEXT("MeshComponent is nullptr"));
+		return;
+	}
+
+	FSoftObjectPath MeshPath(TEXT("/Game/Gamin/Player/Player_Attack/Player_Attack_UVW.Player_Attack_UVW"));
+	USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
+	if(!LoadedMesh)
+	{
+		UE_LOG(LogTemp,Error,TEXT("LoadedMesh is nullptr. 경로 확인: %s"),*MeshPath.ToString());
+		return;
+	}
+
+	TSubclassOf<UAnimInstance> NewAnimBP = LoadClass<UAnimInstance>(nullptr,TEXT("/Game/Characters/MyGameCharacter/MyPlayerAnimBlueprint.MyPlayerAnimBlueprint_C"));
+	if(!NewAnimBP)
+	{
+		UE_LOG(LogTemp,Error,TEXT("NewAnimBP is nullptr"));
+		return;
+	}
+
+	UMaterialInterface* PlayerMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/Gamin/Player/Player_Attack/phong2.phong2'"));
+	if(PlayerMaterial)
+	{
+		InvincibleOriginalMaterial = PlayerMaterial;
+		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
+	}
+
+	MeshComponent->SetSkeletalMesh(LoadedMesh);
+	MeshComponent->SetAnimInstanceClass(NewAnimBP);
+	MeshComponent->SetRelativeScale3D(FVector(1.0f,1.0f,1.0f));
+
+	if(PlayerSword)
+		PlayerSword->SetHiddenInGame(false);
+
+	SpawnHitBoxAtSocket("AttachHitBox");
+	TrySpawnHitBox("AttachHitBox2");
+
+	if(PlayerStatComponent)
+	{
+		PlayerStatComponent->TransformToEntity("PlayerCharacter",150,10);
+		PlayerStatComponent->SetHP(150);
+		PlayerStatComponent->SetMana(10);
+	}
+
+	if(WidgetActor)
+	{
+		WidgetActor->Back_CacheFinalMouseAngle = false;
+	}
+
+	isDead = false;
+	UE_LOG(LogTemp,Warning,TEXT("LoadChangePreset 완료"));
 }
 
 // 이펙트

@@ -102,16 +102,16 @@ void AFireFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Othe
 				Entity->bIsVisibleEffectFire = true;
 				ApplyFireDOT(OtherActor,10.f,4.f);
 			}
-			
-
 		}
 	}
 }
-
 void AFireFloor::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration)
 {
 	if(!Target || DamagePerSecond <= 0.f || ApplyDuration <= 0.f) return;
 
+	// 약한 참조로 캡처
+	TWeakObjectPtr<AActor> WeakTarget = Target;
+	TWeakObjectPtr<AFireFloor> WeakThis(this);
 
 	int32 TickCount = FMath::FloorToInt(ApplyDuration);
 	for(int32 i = 1; i <= TickCount; ++i)
@@ -119,27 +119,32 @@ void AFireFloor::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDu
 		int32 CurrentTick = i;
 
 		FTimerHandle FireTickHandle;
-		FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]() // CurrentTick이 값으로 캡처됨
+		FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([WeakTarget,WeakThis,CurrentTick,DamagePerSecond]()
 		{
-			if(IsValid(Target))
-			{
-				UGameplayStatics::ApplyDamage(Target,DamagePerSecond,GetInstigatorController(),this,nullptr);
-				UE_LOG(LogTemp,Warning,TEXT("화상 횟수 %d"),CurrentTick);
-			}
+			if(!WeakTarget.IsValid() || !WeakThis.IsValid()) return;
 
+			AActor* ValidTarget = WeakTarget.Get();
+			AFireFloor* ValidThis = WeakThis.Get();
+
+			UGameplayStatics::ApplyDamage(ValidTarget,DamagePerSecond,ValidThis->GetInstigatorController(),ValidThis,nullptr);
+			UE_LOG(LogTemp,Warning,TEXT("화상 횟수 %d"),CurrentTick);
 		});
-		GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false); // i초 후 실행
-	
+
+		GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
 	}
+
+	// 종료 처리 타이머
 	FTimerHandle FireEndHandle;
-	FTimerDelegate FireEndDelegate = FTimerDelegate::CreateLambda([=]()
+	FTimerDelegate FireEndDelegate = FTimerDelegate::CreateLambda([WeakTarget]()
 	{
-		if(AEntityPreset* Entity = Cast<AEntityPreset>(Target))
+		if(!WeakTarget.IsValid()) return;
+
+		AActor* ValidTarget = WeakTarget.Get();
+		if(AEntityPreset* Entity = Cast<AEntityPreset>(ValidTarget))
 		{
 			Entity->bIsVisibleEffectFire = false;
-			UE_LOG(LogTemp,Warning,TEXT("Fire effect ended on %s"),*Target->GetName());
+			UE_LOG(LogTemp,Warning,TEXT("Fire effect ended on %s"),*ValidTarget->GetName());
 		}
 	});
 	GetWorld()->GetTimerManager().SetTimer(FireEndHandle,FireEndDelegate,ApplyDuration,false);
-
 }
