@@ -1316,6 +1316,7 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 
 						// 이동 불가능 
 						PlayerCharacter->bCanMove = false;
+						PlayerCharacter->ApplyStun(Effect.EffectValue01);
 
 						UE_LOG(LogTemp,Warning,TEXT("Stun applied to %s for %.1f seconds"),*PlayerCharacter->GetName(),Duration);
 
@@ -1326,10 +1327,9 @@ void AEntityPreset::OnSpecialHitBoxOverlap(UPrimitiveComponent* OverlappedCompon
 						// 캡처값 복사
 						RestoreDelegate.BindLambda([=]() {
 							if(PlayerCharacter && PlayerCharacter->CharacterStateComponent)
-							{
+							{								
 								PlayerCharacter->CharacterStateComponent->isStunned = false;
 								PlayerCharacter->bCanMove = true;
-								PlayerCharacter->ApplyStun(Effect.EffectValue01);
 								UE_LOG(LogTemp,Warning,TEXT("Stun ended for %s"),*PlayerCharacter->GetName());
 							}
 						});

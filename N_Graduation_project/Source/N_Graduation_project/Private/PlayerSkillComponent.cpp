@@ -1095,6 +1095,7 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 					} 
 					
 					else{
+
 						UGameplayStatics::ApplyDamage(TargetActor,DamageAmount,MyChar->GetController(),MyChar,nullptr);
 						UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
 					}
@@ -1118,8 +1119,24 @@ void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 
 					//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Damage 실행됨"));
 				} else {
-					UGameplayStatics::ApplyDamage(TargetActor,200,MyChar->GetController(),MyChar,nullptr);
-					UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
+					if(SkillNameID=="Skill_ArmSwing"){
+						float LocalDamage = DamageAmount;
+						FTimerHandle TimerHandle;
+						GetWorld()->GetTimerManager().SetTimer(
+							TimerHandle,
+							FTimerDelegate::CreateLambda([this,TargetActor,LocalDamage,MyChar]() {
+							UGameplayStatics::ApplyDamage(TargetActor,200,MyChar->GetController(),MyChar,nullptr);
+							UE_LOG(LogTemp,Warning,TEXT("3초 후 데미지 적용됨: %s, Damage: %f"),*TargetActor->GetName(),DamageAmount);
+						}),
+							1.2f,
+							false
+						);
+					}
+
+					else{
+						UGameplayStatics::ApplyDamage(TargetActor,200,MyChar->GetController(),MyChar,nullptr);
+						UE_LOG(LogTemp,Warning,TEXT("ㅊㅊㅊ %s Damage: %f"),*TargetActor->GetName(),DamageAmount);
+					}
 					if(TargetActor->ActorHasTag(FName("Barrel")))
 					{
 						if(AStunBarrel* StunBarrel = Cast<AStunBarrel>(TargetActor))
