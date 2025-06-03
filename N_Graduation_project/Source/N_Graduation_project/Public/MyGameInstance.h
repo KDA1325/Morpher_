@@ -40,6 +40,7 @@ public:
 	bool StoneGolem_OK = false;
 	bool SkeletonArcher_OK = false;
 	bool Freezard_OK = false;
+	bool isSave = false;
 
 	float PlayerFullHP = 150;
 	float PlayerFinalAngle = 102.f;
