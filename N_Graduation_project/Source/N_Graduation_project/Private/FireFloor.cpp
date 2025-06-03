@@ -102,8 +102,6 @@ void AFireFloor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,AActor* Othe
 				Entity->bIsVisibleEffectFire = true;
 				ApplyFireDOT(OtherActor,10.f,4.f);
 			}
-			
-
 		}
 	}
 }

@@ -218,6 +218,11 @@ void APlayerProjectile::OnOverlap(UPrimitiveComponent* OverlappedComp,AActor* Ot
 			}
 
 			}
+			if(ProjectileHitEffect)
+			{
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),ProjectileHitEffect,SweepResult.ImpactPoint,SweepResult.ImpactNormal.Rotation());
+				//ProjectileHitEffect->SetWorldScale3D(FVector(1.0f));
+			}
 		}
 		Destroy(); // 충돌 후 제거
 

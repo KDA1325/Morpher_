@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "SkillData.h"
 #include "SkillEffectData.h"
+#include "NiagaraComponent.h"
 #include "PlayerProjectile.generated.h"
 
 class UProjectileMovementComponent;
@@ -26,6 +27,8 @@ public:
 	void InitProjectileBySkillData(const FSkillData& InSkillData,const TArray<FSkillEffectData>& InEffectData);
 	void FireInDirection(const FVector& ShootDirection);
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Effects")
+		UNiagaraSystem* ProjectileHitEffect;
 	// Settings
 	float Damage;
 	float AOERadius;
