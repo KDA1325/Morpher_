@@ -49,6 +49,9 @@ void UMyGameInstance::SaveGame()
 
 void UMyGameInstance::LoadGame()
 {
+	AN_Graduation_projectCharacter* Player = Cast<AN_Graduation_projectCharacter>(UGameplayStatics::GetPlayerCharacter(this,0));
+	if(!Player) return;
+
 	const FString SlotName = TEXT("MySaveSlot");
 	const int32 UserIndex = 0;
 
@@ -68,6 +71,7 @@ void UMyGameInstance::LoadGame()
 		LatentInfo.UUID = 1;
 
 		UGameplayStatics::LoadStreamLevel(this,SaveData->RoomName,true,false,LatentInfo);
+		Player->LoadChangePreset();
 
 		SaveRoomName = SaveData->RoomName;
 		SaveLocation = SaveData->SavePlayerLocation;
@@ -96,11 +100,6 @@ void UMyGameInstance::OnLevelLoaded()
 	FVector LoadLoc = SaveLocation + FVector(0,0,100);
 	UE_LOG(LogTemp,Warning,TEXT("Teleporting player to: %s"),*LoadLoc.ToString());
 	Player->SetActorLocation(LoadLoc);
-	// 방어 코드 추가
-	if(Player->IsValidLowLevelFast())
-	{
-		Player->LoadChangePreset();
-	}
 	if(UMyPlayerStatComponent* Stat = Player->FindComponentByClass<UMyPlayerStatComponent>())
 	{
 		Stat->SetHP(PlayerFullHP);

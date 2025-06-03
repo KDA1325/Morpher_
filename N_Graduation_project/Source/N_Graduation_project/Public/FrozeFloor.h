@@ -6,7 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
 #include "Particles/ParticleSystemComponent.h" 
-
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "FrozeFloor.generated.h"
 
 UCLASS()
@@ -33,6 +34,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 		UParticleSystemComponent* FreezeParticle;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+		UNiagaraComponent* FreezeNiagaraComponent;
+
 	UPROPERTY(BlueprintReadWrite)
 	float Duration ;
 

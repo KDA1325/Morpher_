@@ -155,7 +155,7 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	{
 		GuardHitSound = GuardHitSoundObj.Object;
 	}
-	
+
 	static ConstructorHelpers::FObjectFinder<USoundBase>FireEffectSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Fire.Fire'"));
 	if(FireEffectSoundObj.Succeeded())
 	{
@@ -167,7 +167,7 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	{
 		FireEffectHitSound = FireEffectHitSoundObj.Object;
 	}
-	
+
 	static ConstructorHelpers::FObjectFinder<USoundBase>ChargeEffectHitSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Charge.Charge'"));
 	if(ChargeEffectHitSoundObj.Succeeded())
 	{
@@ -179,7 +179,7 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	{
 		ArmSwingEffectHitSound = ArmSwingEffectHitSoundObj.Object;
 	}
-	
+
 	static ConstructorHelpers::FObjectFinder<USoundBase>DashSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/Dash.Dash'"));
 	if(DashSoundObj.Succeeded())
 	{
@@ -192,6 +192,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	// Call the base class    
 	Super::BeginPlay();
 	m_pMeshCom = GetMesh();
+	InitFootstepSounds();
 	PlayFootstepSound();
 	FOnTimelineFloat DashCallback;
 	SpawnHitBoxAtSocket("AttachHitBox");
@@ -236,7 +237,13 @@ void AN_Graduation_projectCharacter::BeginPlay()
 
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
-	else{
+
+	const FString SlotName = TEXT("MySaveSlot");
+	const int32 UserIndex = 0;
+
+	// 세이브가 존재할 때만 실행
+	if(UGameplayStatics::DoesSaveGameExist(SlotName,UserIndex))
+	{
 		MyGameInstance->OnLevelLoaded();
 	}
 
@@ -259,8 +266,7 @@ void AN_Graduation_projectCharacter::Tick(float DeltaTime)
 	//PlayerSkillComponent->MeasureDistanceToMonster();
 	// Speed가 일정 임계값보다 크면 이동 중
 	if(Speed > 0.1f)
-	{//발소리 구현 여기서 어ㄸ?
-
+	{
 		if(StateComp->GetCurrentState() != ECharacterState::Move)
 		{
 			StateComp->ChangeState(ECharacterState::Move);  // Move 상태로 변경
@@ -537,13 +543,12 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 			if(DamageTypeCDO->IsA(UNormalAttackDamageType::StaticClass()))
 			{
 				bFromNormalHitBox=true;
-				
+
 				// 방어 중일 때 히트 사운드
 				UGameplayStatics::PlaySoundAtLocation(this,GuardHitSound,GetActorLocation(),0.75f);
 
 				UE_LOG(LogTemp,Warning,TEXT(">>> 받은 데미지 타입: NormalAttackDamageType"));
-			} 
-			else
+			} else
 			{
 				bFromNormalHitBox=false;
 
@@ -571,8 +576,7 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 					{
 						UGameplayStatics::PlaySoundAtLocation(this,ArmSwingEffectHitSound,GetActorLocation(),0.9f);
 					}
-				}
-				else
+				} else
 				{
 					// 히트 사운드
 					UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
@@ -588,30 +592,28 @@ float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent
 
 			// 히트 사운드
 			UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
-			
+
 			// 데미지 로그 출력	
 			float FinalDamage = Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
 			UE_LOG(LogTemp,Error,TEXT("무적 모드 Player TakeDamage  %f"),DamageAmount);
 
 			return FinalDamage;
-		} 
-		else 
+		} else
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("IsDefending: %s"), PlayerSkillComponent->IsDefending ? TEXT("true") : TEXT("false"));
-			if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true)) 
+			if(IsInvincible||(PlayerSkillComponent->IsDefending==true && bFromNormalHitBox==true))
 			{
 				UE_LOG(LogTemp,Error,TEXT("Player TakeDamage 데미지 받지 않음"));
 				//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, TEXT("Damage Blocked by Defense Skill"));
 				PlayerSkillComponent->CanUseNomalSkill = true;
 
 				return 0.0f;//무적상태라면 리턴.
-			} 
-			else
+			} else
 			{
 				PlayerSkillComponent->CanUseNomalSkill = true;
 				PlayerStatComponent->ApplyDamage(DamageAmount);
 				On_invincibility_Implementation();
-				
+
 				// 히트 사운드
 				//UGameplayStatics::PlaySoundAtLocation(this,HitSound,GetActorLocation(),0.75f);
 
@@ -830,7 +832,7 @@ void AN_Graduation_projectCharacter::SetPreset(FString PresetReference)
 		InvincibleOriginalMaterial = PlayerMaterial;
 		MeshComponent->SetMaterial(0,InvincibleOriginalMaterial);
 
-		
+
 		USkeletalMesh* LoadedMesh = Cast<USkeletalMesh>(MeshPath.TryLoad());
 		GetMesh()->SetSkeletalMesh(LoadedMesh);
 		//PlayerSword->SetHiddenInGame(true);  
@@ -1227,7 +1229,7 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 			PlayerSword->SetHiddenInGame(true);
 			SkeletonShield ->SetHiddenInGame(true);
 			SkeletonSword->SetHiddenInGame(true);
-		} 	
+		}
 		UpdateEntityData();
 		if(OkTrans) {
 			UE_LOG(LogTemp,Warning,TEXT("ChangePreset 변신완 ,%s"),*currentPreset);
@@ -1243,6 +1245,8 @@ void AN_Graduation_projectCharacter::ChangePreset(FString Name)
 }
 void AN_Graduation_projectCharacter::LoadChangePreset()
 {
+	UE_LOG(LogTemp,Error,TEXT("LoadChangePreset실행됨"));
+
 	UpdateEntityData();
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 
@@ -1285,12 +1289,12 @@ void AN_Graduation_projectCharacter::LoadChangePreset()
 	SpawnHitBoxAtSocket("AttachHitBox");
 	TrySpawnHitBox("AttachHitBox2");
 
-	if(PlayerStatComponent)
-	{
-		PlayerStatComponent->TransformToEntity("PlayerCharacter",150,10);
-		PlayerStatComponent->SetHP(150);
-		PlayerStatComponent->SetMana(10);
-	}
+
+	PlayerStatComponent->TransformToEntity("PlayerCharacter",150,10);
+	PlayerStatComponent->SetHP(150);
+	PlayerStatComponent->CurrentHP=150;
+	PlayerStatComponent->SetMana(10);
+
 
 	if(WidgetActor)
 	{
@@ -1394,7 +1398,8 @@ void AN_Graduation_projectCharacter::ApplyFire(float Duration)
 	UE_LOG(LogTemp,Warning,TEXT("FireEffect Applied, Duration: %f"),Duration);
 }
 void AN_Graduation_projectCharacter::InitFootstepSounds()
-{UE_LOG(LogTemp, Warning, TEXT("PlayFootstepSound called"));
+{
+	UE_LOG(LogTemp,Warning,TEXT("PlayFootstepSound called"));
 
 	CommonFootstepSounds.Empty();
 	StoneGolemFootstepSound = nullptr;
