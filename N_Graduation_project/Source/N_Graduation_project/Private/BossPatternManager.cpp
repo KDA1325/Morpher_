@@ -86,12 +86,7 @@ void ABossPatternManager::SpawnThunder()
 
 	GetWorld()->SpawnActor<AActor>(ThunderBPClass,PlayerLocation,SpawnRotation,SpawnParams);
 	UE_LOG(LogTemp,Warning,TEXT("Thunder %d번째 소환"),ThunderSpawnCount + 1);
-	//if(BossActor)
-	//{
-	//	FVector BossHeadLocation = BossActor->GetActorLocation() + FVector(0,0,BossHeadHeightOffset); // 머리 위 위치 조절
-	//	GetWorld()->SpawnActor<AActor>(ThunderBPClass,BossHeadLocation,SpawnRotation,SpawnParams);
-	//	UE_LOG(LogTemp,Warning,TEXT("보스 머리 위 번개 생성"));
-	//}
+	
 	ThunderSpawnCount++;
 
 	if(ThunderSpawnCount >= ThunderCount)
@@ -108,26 +103,26 @@ void ABossPatternManager::SpawnThunder()
 }
 
 void ABossPatternManager::Thunder(){
-	UE_LOG(LogTemp,Warning,TEXT(" 성공"));
+	//UE_LOG(LogTemp,Warning,TEXT(" 성공"));
 
-	if(thunderOnce==false){
-		thunderOnce=true;
-		auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-		if(!MyGameInstance) return;
-		UClass* LoadedClass = LoadObject<UClass>(nullptr,TEXT("/Game/Entity/Boss/Boss_Thunder.Boss_Thunder_C"));
-		if(LoadedClass)
-		{
-			ThunderBPClass = LoadedClass;
-			UE_LOG(LogTemp,Warning,TEXT("ThunderBPClass 동적 로드 성공"));
+	//if(thunderOnce==false){
+	//	thunderOnce=true;
+	//	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	//	if(!MyGameInstance) return;
+	//	UClass* LoadedClass = LoadObject<UClass>(nullptr,TEXT("/Game/Entity/Boss/Boss_Thunder.Boss_Thunder_C"));
+	//	if(LoadedClass)
+	//	{
+	//		ThunderBPClass = LoadedClass;
+	//		UE_LOG(LogTemp,Warning,TEXT("ThunderBPClass 동적 로드 성공"));
 
-		} else
-		{
-			UE_LOG(LogTemp,Warning,TEXT("ThunderBPClass 로드 실패"));
-		}
+	//	} else
+	//	{
+	//		UE_LOG(LogTemp,Warning,TEXT("ThunderBPClass 로드 실패"));
+	//	}
 
-		GetWorldTimerManager().SetTimer(ThunderTimerHandle,this,&ABossPatternManager::SpawnThunder,1.0f,true);
-		MyGameInstance->Thunder = true;
-	}
+	//	GetWorldTimerManager().SetTimer(ThunderTimerHandle,this,&ABossPatternManager::SpawnThunder,1.0f,true);
+	//	MyGameInstance->Thunder = true;
+	//}
 }
 void ABossPatternManager::ApplyThunderDamage()
 {
