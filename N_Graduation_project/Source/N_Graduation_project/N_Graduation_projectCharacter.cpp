@@ -1451,3 +1451,12 @@ void AN_Graduation_projectCharacter::PlayFootstepSound()
 		UGameplayStatics::PlaySoundAtLocation(this,FootstepToPlay,GetActorLocation());
 	}
 }
+
+void AN_Graduation_projectCharacter::ClearState()
+{
+	/*FireEffect=false;
+	StunEffect=false;*/
+	GetWorldTimerManager().ClearTimer(StunEffectTimerHandle);
+	GetWorldTimerManager().ClearTimer(FireEffectTimerHandle);
+
+}

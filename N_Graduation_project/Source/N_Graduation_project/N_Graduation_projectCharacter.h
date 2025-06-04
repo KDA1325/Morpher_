@@ -187,9 +187,6 @@ private:
 	FVector DashVelocity;
 
 
-
-
-
 public:
 	UPROPERTY(BlueprintReadOnly,meta = (AllowPrivateAccess = "true"))
 		UPlayerSkillComponent* PlayerSkillComponent;
@@ -199,6 +196,8 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void DeadEvent();
+	UFUNCTION(BlueprintCallable)
+		void ClearState();
 
 	/** ü�� ������Ʈ */
 	UPROPERTY(BlueprintReadOnly,meta = (AllowPrivateAccess = "true"))

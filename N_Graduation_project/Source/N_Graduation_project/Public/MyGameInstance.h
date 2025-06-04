@@ -34,6 +34,8 @@ public:
 
 	UFUNCTION()
 		void OnLevelLoaded();
+		UFUNCTION()
+		void OnNextLevelLoaded();
 
 	bool Player_Ok = true;
 	bool WildBoar_Ok = false;
