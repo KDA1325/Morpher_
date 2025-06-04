@@ -132,14 +132,14 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> StunEffectAsset(TEXT("/Game/VFX/NG_Stun.NG_Stun"));
 	if(StunEffectAsset.Succeeded())
 	{
-		UE_LOG(LogTemp,Log,TEXT("StunEffectAsset 있음"));
+		//UE_LOG(LogTemp,Log,TEXT("StunEffectAsset 있음"));
 
 		StunEffect = StunEffectAsset.Object;
 	}
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> FireEffectAsset(TEXT("/Game/0525NewAsset/EffectAsset/EmpowermentAura/Niagara/NS_StylizedRootBeam7.NS_StylizedRootBeam7"));
 	if(FireEffectAsset.Succeeded())
 	{
-		UE_LOG(LogTemp,Log,TEXT("FireEffectAsset 있음"));
+	//	UE_LOG(LogTemp,Log,TEXT("FireEffectAsset 있음"));
 
 		FireEffect = FireEffectAsset.Object;
 	}
@@ -229,7 +229,7 @@ void AN_Graduation_projectCharacter::BeginPlay()
 	HitMaterial = LoadObject<UMaterialInterface>(nullptr,TEXT("MaterialInterface'/Game/UI/Materials/Hit.Hit'"));
 	if(!HitMaterial)
 	{
-		UE_LOG(LogTemp,Error,TEXT("Failed to load HitMaterial!"));
+	//	UE_LOG(LogTemp,Error,TEXT("Failed to load HitMaterial!"));
 	}
 
 	UE_LOG(LogTemp,Error,TEXT("ChangePreset 캐릭터 BeginPlay"));
@@ -330,7 +330,7 @@ void AN_Graduation_projectCharacter::SetupPlayerInputComponent(UInputComponent* 
 }
 void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 우클릭"));
+	//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 우클릭"));
 	FVector Location = GetOwner()->GetActorLocation();
 	//UE_LOG(LogTemp,Warning,TEXT("캐릭터 위치: X=%.2f, Y=%.2f, Z=%.2f"),Location.X,Location.Y,Location.Z);
 	if(CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
@@ -341,7 +341,7 @@ void AN_Graduation_projectCharacter::SpecialSkillAction(const FInputActionValue&
 		//PlaySpecial = true;			
 		UE_LOG(LogTemp,Warning,TEXT("실드 우클릭"));
 
-	} else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
+	} //else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
 }
 void AN_Graduation_projectCharacter::EndShield()
 {
@@ -352,7 +352,7 @@ void AN_Graduation_projectCharacter::EndShield()
 }
 void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Green,TEXT("마우스 좌클릭"));
+//	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Green,TEXT("마우스 //"));
 
 	if(CharacterStateComponent->CurrentState == ECharacterState::Action || CharacterStateComponent->CurrentState == ECharacterState::Dash) {
 		return;
@@ -362,7 +362,7 @@ void AN_Graduation_projectCharacter::NomalSkillAction(const FInputActionValue& V
 		//UE_LOG(LogTemp,Warning,TEXT("CanUseNomalSkill: %s"),PlayerSkillComponent->CanUseNomalSkill ? TEXT("true") : TEXT("false"));
 
 		//	PlayNomal = true;
-	} else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
+	}// else GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,TEXT("마우스 클릭 실패"));
 	//	UE_LOG(LogTemp, Warning, TEXT("CanUseNomalSkill: %s"), PlayerSkillComponent->CanUseNomalSkill ? TEXT("true") : TEXT("false"));
 
 }

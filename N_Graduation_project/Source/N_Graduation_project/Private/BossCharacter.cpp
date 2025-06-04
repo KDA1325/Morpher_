@@ -138,44 +138,28 @@ void ABossCharacter::Pattern1()
 {
 	if(!BossPatternManager) return;
 	//번개
-	//BossPatternManager->Thunder();
+	BossPatternManager->Thunder();
 	//BossPatternManager->Meteor();
 
-	//FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	////레이저
-	//TimerManager.SetTimer(LaserDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::SpawnAndAttachLasers),7.f,false);
-	////투사체
-	//GetWorld()->GetTimerManager().SetTimer(SpinDelayHandle,FTimerDelegate::CreateLambda([this]()
-	//{
-	//	BossPatternManager->StartSpinningBarrageSequence(6);
-	//}),16.f,false);
-	////회복
-	//TimerManager.SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::HealCrystal),30.f,false);
-
-	//GetWorld()->GetTimerManager().SetTimer(
-	//	PatternLoopHandle,
-	//	this,
-	//	&ABossCharacter::ExecuteBossPattern,
-	//	47.f,false
-	//);
-
-		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	//레이저
-	TimerManager.SetTimer(LaserDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::SpawnAndAttachLasers),2.f,false);
+	TimerManager.SetTimer(LaserDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::SpawnAndAttachLasers),7.f,false);
 	//투사체
 	GetWorld()->GetTimerManager().SetTimer(SpinDelayHandle,FTimerDelegate::CreateLambda([this]()
 	{
 		BossPatternManager->StartSpinningBarrageSequence(6);
-	}),8.f,false);
+	}),16.f,false);
 	//회복
-	TimerManager.SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::HealCrystal),15.f,false);
+	TimerManager.SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::HealCrystal),30.f,false);
 
 	GetWorld()->GetTimerManager().SetTimer(
 		PatternLoopHandle,
 		this,
 		&ABossCharacter::ExecuteBossPattern,
-		32.f,false
+		47.f,false
 	);
+
+
 }
 
 void ABossCharacter::ExecuteBossPattern()
@@ -198,10 +182,9 @@ void ABossCharacter::ExecuteBossPattern()
 	switch(PatternIndex)
 	{
 	case 0:
-	//BossPatternManager->Thunder();
-	//MyGameInstance->Laser=false;
-	//Delay = 7.f;
-	Delay = 0.f;
+	BossPatternManager->Thunder();
+	MyGameInstance->Laser=false;
+	Delay = 7.f;
 	break;
 	case 1:
 	BossPatternManager->SpawnAndAttachLasers();
@@ -264,12 +247,11 @@ void ABossCharacter::ExecuteBossPattern2()
 	switch(PatternIndex)
 	{
 	case 0:
-	//MyGameInstance->Laser=false;
-	//BossPatternManager->ThunderCount=9;
-	//BossPatternManager->Delay=0.8f;
-	//BossPatternManager->Thunder();
-	//Delay = 10.f;
-	Delay = 0.f; 
+	MyGameInstance->Laser=false;
+	BossPatternManager->ThunderCount=9;
+	BossPatternManager->Delay=0.8f;
+	BossPatternManager->Thunder();
+	Delay = 10.f;
 	break;
 	case 1:
 	BossPatternManager->SpawnAndAttachLasers();
