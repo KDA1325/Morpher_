@@ -81,14 +81,14 @@ bWaitingLevelLoad = true; // Tick 시작
 		Player->LoadChangePreset();
 
 		// 레벨 스트리밍으로 저장된 방 로드
-		FLatentActionInfo LatentInfo1;
-		LatentInfo1.CallbackTarget = this;
-		LatentInfo1.ExecutionFunction = FName("OnNextLevelLoaded");
-		LatentInfo1.Linkage = 0;
-		LatentInfo1.UUID = 1;
-		bWaitingLevelLoad = true; // Tick 시작
-		UGameplayStatics::LoadStreamLevel(this,SaveData->RoomName,true,false,LatentInfo1);
-		//Player->LoadChangePreset();
+		//FLatentActionInfo LatentInfo1;
+		//LatentInfo1.CallbackTarget = this;
+		//LatentInfo1.ExecutionFunction = FName("OnNextLevelLoaded");
+		//LatentInfo1.Linkage = 0;
+		//LatentInfo1.UUID = 1;
+		//bWaitingLevelLoad = true; // Tick 시작
+		//UGameplayStatics::LoadStreamLevel(this,SaveData->RoomName,true,false,LatentInfo1);
+		////Player->LoadChangePreset();
 	}
 }
 

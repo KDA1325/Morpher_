@@ -138,7 +138,7 @@ void ABossCharacter::Pattern1()
 {
 	if(!BossPatternManager) return;
 	//번개
-	BossPatternManager->Thunder();
+	//BossPatternManager->Thunder();
 	//BossPatternManager->Meteor();
 
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
@@ -182,9 +182,10 @@ void ABossCharacter::ExecuteBossPattern()
 	switch(PatternIndex)
 	{
 	case 0:
-	BossPatternManager->Thunder();
-	MyGameInstance->Laser=false;
-	Delay = 7.f;
+	//BossPatternManager->Thunder();
+	//MyGameInstance->Laser=false;
+	//Delay = 7.f;
+	Delay = 0.f;
 	break;
 	case 1:
 	BossPatternManager->SpawnAndAttachLasers();
@@ -247,11 +248,12 @@ void ABossCharacter::ExecuteBossPattern2()
 	switch(PatternIndex)
 	{
 	case 0:
-	MyGameInstance->Laser=false;
-	BossPatternManager->ThunderCount=9;
-	BossPatternManager->Delay=0.8f;
-	BossPatternManager->Thunder();
-	Delay = 10.f;
+	//MyGameInstance->Laser=false;
+	//BossPatternManager->ThunderCount=9;
+	//BossPatternManager->Delay=0.8f;
+	//BossPatternManager->Thunder();
+	//Delay = 10.f;
+	Delay = 0.f;
 	break;
 	case 1:
 	BossPatternManager->SpawnAndAttachLasers();
