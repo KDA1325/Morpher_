@@ -25,6 +25,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		FName SaveRoomName;
 	UPROPERTY(BlueprintReadWrite)
+		FName SaveNextRoomName;
+	UPROPERTY(BlueprintReadWrite)
 		FVector SaveLocation;
 
 	//UPROPERTY(BlueprintReadWrite)

@@ -27,6 +27,8 @@ public:
 
 	UPROPERTY()
 		FName RoomName;
+	UPROPERTY()
+		FName NextRoomName;
 
 	UPROPERTY()
 		TArray<FName> DiscoveredEntities;
