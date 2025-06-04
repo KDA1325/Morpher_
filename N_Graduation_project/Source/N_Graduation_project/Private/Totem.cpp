@@ -22,10 +22,10 @@ ATotem::ATotem()
 	ApplyDamageAmount = 20.f;
 
 	static ConstructorHelpers::FObjectFinder<USoundBase>BreakObjectObj(TEXT("/Script/Engine.SoundWave'/Game/Sounds/Battle/BreakObject.BreakObject'"));
-if(BreakObjectObj.Succeeded())
-{
-	BreakObjectSound = BreakObjectObj.Object;
-}
+	if(BreakObjectObj.Succeeded())
+	{
+		BreakObjectSound = BreakObjectObj.Object;
+	}
 }
 
 void ATotem::BeginPlay()

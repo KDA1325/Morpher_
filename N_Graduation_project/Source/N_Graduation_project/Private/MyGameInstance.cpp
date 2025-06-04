@@ -42,7 +42,10 @@ void UMyGameInstance::SaveGame()
 {
 	UMySaveGame* SaveData = Cast<UMySaveGame>(UGameplayStatics::CreateSaveGameObject(UMySaveGame::StaticClass()));
 	if(!SaveData) return;
-	isSave=true;
+	if(isSave==false){ 
+		UE_LOG(LogTemp,Warning,TEXT("OnLevelLoaded isSave!"));
+
+	isSave=true;}
 	SaveToSaveData(SaveData);
 	UGameplayStatics::SaveGameToSlot(SaveData,TEXT("MySaveSlot"),0);
 }
@@ -57,11 +60,14 @@ void UMyGameInstance::LoadGame()
 
 	if(UGameplayStatics::DoesSaveGameExist(SlotName,UserIndex))
 	{
-		USaveGame* LoadedGame = UGameplayStatics::LoadGameFromSlot(SlotName,UserIndex);
+		USaveGame* LoadedGame = UGameplayStatics::LoadGameFromSlot(SlotName,0);
 		UMySaveGame* SaveData = Cast<UMySaveGame>(LoadedGame);
 		if(!SaveData) return;
 
 		InitFromSaveData(SaveData);
+		SaveRoomName = SaveData->RoomName;
+		SaveLocation = SaveData->SavePlayerLocation;
+		PlayerFullHP = SaveData->FullHP;
 
 		// 레벨 스트리밍으로 저장된 방 로드
 		FLatentActionInfo LatentInfo;
@@ -69,56 +75,54 @@ void UMyGameInstance::LoadGame()
 		LatentInfo.ExecutionFunction = FName("OnLevelLoaded");
 		LatentInfo.Linkage = 0;
 		LatentInfo.UUID = 1;
-
+bWaitingLevelLoad = true; // Tick 시작
 		UGameplayStatics::LoadStreamLevel(this,SaveData->RoomName,true,false,LatentInfo);
 		Player->LoadChangePreset();
 
-		SaveRoomName = SaveData->RoomName;
-		SaveLocation = SaveData->SavePlayerLocation;
-		PlayerFullHP = SaveData->FullHP;
-
-		bWaitingLevelLoad = true; // Tick 시작
+		
 	}
 }
 
 void UMyGameInstance::OnLevelLoaded()
 {
+	if(!bWaitingLevelLoad) return;
+	bWaitingLevelLoad = false;
+
 	UE_LOG(LogTemp,Warning,TEXT("OnLevelLoaded called!"));
 
 	ULevelStreaming* Level = UGameplayStatics::GetStreamingLevel(this,SaveRoomName);
-	if(Level)
+	if(!Level)
 	{
-		Level->SetShouldBeVisible(true);
-	} else
-	{
-		UE_LOG(LogTemp,Warning,TEXT("Streaming Level NOT Found for %s"),*SaveRoomName.ToString());
+		UE_LOG(LogTemp,Error,TEXT("Streaming Level NOT Found: %s"),*SaveRoomName.ToString());
+		return;
 	}
 
-	AN_Graduation_projectCharacter* Player = Cast<AN_Graduation_projectCharacter>(UGameplayStatics::GetPlayerCharacter(this,0));
+	Level->SetShouldBeVisible(true);
+
+	auto* Player = Cast<AN_Graduation_projectCharacter>(UGameplayStatics::GetPlayerCharacter(this,0));
 	if(!Player) return;
 
-	FVector LoadLoc = SaveLocation + FVector(0,0,100);
-	UE_LOG(LogTemp,Warning,TEXT("Teleporting player to: %s"),*LoadLoc.ToString());
-	Player->SetActorLocation(LoadLoc);
-	if(UMyPlayerStatComponent* Stat = Player->FindComponentByClass<UMyPlayerStatComponent>())
+	Player->SetActorLocation(SaveLocation + FVector(0,0,100));
+
+	if(auto* Stat = Player->FindComponentByClass<UMyPlayerStatComponent>())
 	{
 		Stat->SetHP(PlayerFullHP);
 	}
 
 	Player->ChangePreset("PlayerCharacter");
-	bWaitingLevelLoad = false; // Tick 중단
-}
 
+	UE_LOG(LogTemp,Warning,TEXT("Teleported player to %s in level %s"),*SaveLocation.ToString(),*SaveRoomName.ToString());
+}
 void UMyGameInstance::Tick(float DeltaTime)
 {
-	ULevelStreaming* Level = UGameplayStatics::GetStreamingLevel(this,SaveRoomName);
-	if(Level && Level->IsLevelLoaded())
-	{
-		// Player가 유효할 때만 OnLevelLoaded 실행
-		ACharacter* Player = UGameplayStatics::GetPlayerCharacter(this,0);
-		if(Player && Player->IsValidLowLevel())
-		{
-			OnLevelLoaded();
-		}
-	}
+	//ULevelStreaming* Level = UGameplayStatics::GetStreamingLevel(this,SaveRoomName);
+	//if(Level && Level->IsLevelLoaded())
+	//{
+	//	// Player가 유효할 때만 OnLevelLoaded 실행
+	//	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(this,0);
+	//	if(Player && Player->IsValidLowLevel())
+	//	{
+	//		OnLevelLoaded();
+	//	}
+	//}
 }
