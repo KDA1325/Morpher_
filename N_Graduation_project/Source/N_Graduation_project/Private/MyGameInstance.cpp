@@ -33,6 +33,7 @@ void UMyGameInstance::SaveToSaveData(UMySaveGame* SaveData)
 	SaveData->Open_Golem = Freezard_OK;
 	SaveData->FullHP = PlayerFullHP;
 	SaveData->RoomName = SaveRoomName;
+	SaveData->NextRoomName = SaveNextRoomName;
 	SaveData->SaveFinalAngle = PlayerFinalAngle;
 	SaveData->SavePlayerLocation = SaveLocation;
 	UE_LOG(LogTemp,Warning,TEXT("SaveGame SaveRoomName: %s"),*SaveData->RoomName.ToString());
