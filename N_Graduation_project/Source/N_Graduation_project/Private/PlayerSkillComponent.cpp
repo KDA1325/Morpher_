@@ -1046,7 +1046,7 @@ void UPlayerSkillComponent::EndSkillAnimation(UAnimMontage* Montage,bool bInterr
 
 void UPlayerSkillComponent::SkillEffect(const FString& SkillNameID)
 {
-	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("SkillEffect 실행됨"));
+//	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("SkillEffect 실행됨"));
 
 	TArray<FSkillEffectData> EffectData;
 	if(!UABGameSingleton::Get().GetSkillEffectDataBySkillID(SkillNameID,EffectData))

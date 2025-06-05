@@ -23,6 +23,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		bool BossClear = false;
 	UPROPERTY(BlueprintReadWrite)
+		bool BossStart = false;
+	UPROPERTY(BlueprintReadWrite)
 		FName SaveRoomName;
 	UPROPERTY(BlueprintReadWrite)
 		FName SaveNextRoomName;
