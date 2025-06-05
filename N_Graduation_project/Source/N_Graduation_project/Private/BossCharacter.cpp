@@ -11,7 +11,7 @@ ABossCharacter::ABossCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	static ConstructorHelpers::FClassFinder<UUserWidget> Boss(TEXT("WidgetBlueprint'/Game/Entity/Boss/BP_BossHPWidget.BP_BossHPWidget_C'"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> Boss(TEXT("WidgetBlueprint'/Game/GUI/HUD_BossHP.HUD_BossHP_C'"));
 	if(Boss.Succeeded())
 	{
 		BossClass = Boss.Class;
@@ -41,21 +41,43 @@ UBossWidget* ABossCharacter::GetHUD() const
 void ABossCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	if(!BossWidget && BossClass)
-	{
-		BossWidget = Cast<UBossWidget>(CreateWidget(GetWorld()->GetFirstPlayerController(),BossClass));
-		if(BossWidget)
+	/*auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MyGameInstance) return;
+		if(!BossWidget && BossClass)
 		{
-			BossWidget->AddToViewport();
+			BossWidget = Cast<UBossWidget>(CreateWidget(GetWorld()->GetFirstPlayerController(),BossClass));
+			if(BossWidget)
+			{
+				BossWidget->AddToViewport();
+			}
 		}
-	}
-	BossPatternManager = GetWorld()->SpawnActor<ABossPatternManager>(ABossPatternManager::StaticClass(),FVector::ZeroVector,FRotator::ZeroRotator);
-	UpdateHP();
+		BossPatternManager = GetWorld()->SpawnActor<ABossPatternManager>(ABossPatternManager::StaticClass(),FVector::ZeroVector,FRotator::ZeroRotator);
+		UpdateHP();
+
+		MyGameInstance->part2=false;
+		Pattern1();
+	*/
+}
+void ABossCharacter:: StartBoss(){
 	auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if(!MyGameInstance) return;
-	MyGameInstance->part2=false;
-	Pattern1();
+	if(MyGameInstance->BossStart==true){
+		if(!BossWidget && BossClass)
+		{
+			BossWidget = Cast<UBossWidget>(CreateWidget(GetWorld()->GetFirstPlayerController(),BossClass));
+			if(BossWidget)
+			{
+				BossWidget->AddToViewport();
+			}
+		}
+		BossPatternManager = GetWorld()->SpawnActor<ABossPatternManager>(ABossPatternManager::StaticClass(),FVector::ZeroVector,FRotator::ZeroRotator);
+		UpdateHP();
+
+		MyGameInstance->part2=false;
+		Pattern1();
+	}
 }
+
 float ABossCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
 	// 데미지 로그 출력	
@@ -81,7 +103,7 @@ void ABossCharacter::SetHP(int NewHP)
 		{
 			GetWorld()->GetTimerManager().ClearAllTimersForObject(BossPatternManager);
 		}
-		
+
 		DestroyAllAttachedLasers();
 
 		// 위젯 제거
@@ -94,7 +116,6 @@ void ABossCharacter::SetHP(int NewHP)
 		// 보스 액터 파괴
 		Destroy();
 	}
-
 }
 void ABossCharacter::HealHP(int DamageAmount){
 	CurrentHP = FMath::Clamp(CurrentHP + DamageAmount,0,BossHP); // 안전하게 조정
@@ -150,15 +171,14 @@ void ABossCharacter::Pattern1()
 		BossPatternManager->StartSpinningBarrageSequence(6);
 	}),16.f,false);
 	//회복
-	TimerManager.SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::HealCrystal),30.f,false);
+	TimerManager.SetTimer(HealDelayHandle,FTimerDelegate::CreateUObject(BossPatternManager,&ABossPatternManager::HealCrystal),29.f,false);
 
 	GetWorld()->GetTimerManager().SetTimer(
 		PatternLoopHandle,
 		this,
 		&ABossCharacter::ExecuteBossPattern,
-		47.f,false
+		45.f,false
 	);
-
 
 }
 

@@ -86,6 +86,9 @@ void ABossPatternManager::SpawnThunder()
 
 	GetWorld()->SpawnActor<AActor>(ThunderBPClass,PlayerLocation,SpawnRotation,SpawnParams);
 	UE_LOG(LogTemp,Warning,TEXT("Thunder %d번째 소환"),ThunderSpawnCount + 1);
+	//FString DebugMessage = FString::Printf(TEXT("썬더 좌표: %f %f %f"),PlayerLocation.X,PlayerLocation.Y,PlayerLocation.Z);
+	//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,DebugMessage);
+
 	//if(BossActor)
 	//{
 	//	FVector BossHeadLocation = BossActor->GetActorLocation() + FVector(0,0,BossHeadHeightOffset); // 머리 위 위치 조절
@@ -472,33 +475,65 @@ void ABossPatternManager::Meteor()
 
 void ABossPatternManager::SpawnMeteorBatch()
 {
-	if(!MeteorBPClass) return;
+    if (!MeteorBPClass) return;
 
-	for(int i = 0; i < MeteorsPerSecond; ++i)
-	{
-		if(MeteorSpawnCount >= MeteorTotalCount)
-			break;
+	ABossCharacter* BossChar = Cast<ABossCharacter>(BossActor);
+	if(!BossChar || !BossChar->GetMesh()) return;
 
-		FVector SpawnLocation = GetRandomMeteorLocation();
+    FVector BossLocation = BossActor->GetActorLocation();
+    float Radius = 3000.f;
+
+    for (int i = 0; i < MeteorsPerSecond; ++i)
+    {
+        if (MeteorSpawnCount >= MeteorTotalCount)
+            break;
+
+        float Angle = FMath::RandRange(0.f, 2 * PI);
+        float Distance = FMath::RandRange(0.f, Radius);
+
+        float XOffset = FMath::Cos(Angle) * Distance;
+        float YOffset = FMath::Sin(Angle) * Distance;
+
+		FVector SpawnLocation = BossLocation + FVector(XOffset,YOffset,0.f);		//FVector SpawnLocation = GetRandomMeteorLocation();
+		SpawnLocation.Z = BossLocation.Z; 
 		FRotator SpawnRotation = FRotator::ZeroRotator;
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.Instigator = GetInstigator();
 
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		SpawnParams.Instigator = GetInstigator();
+        GetWorld()->SpawnActor<AActor>(MeteorBPClass, SpawnLocation, SpawnRotation, SpawnParams);
 
-		GetWorld()->SpawnActor<AActor>(MeteorBPClass,SpawnLocation,SpawnRotation,SpawnParams);
-		UE_LOG(LogTemp,Warning,TEXT("Meteor %d번째 소환"),MeteorSpawnCount + 1);
+        //FString DebugMessage = FString::Printf(TEXT("메테오 좌표: %f %f %f"), SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z);
+       //GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, DebugMessage);
 
-		MeteorSpawnCount++;
-	}
+        MeteorSpawnCount++;
+    }
 
-	if(MeteorSpawnCount >= MeteorTotalCount)
-	{
-		GetWorldTimerManager().ClearTimer(MeteorTimerHandle);
-		MeteorSpawnCount = 0;
-	}
+    if (MeteorSpawnCount >= MeteorTotalCount)
+    {
+        GetWorldTimerManager().ClearTimer(MeteorTimerHandle);
+        MeteorSpawnCount = 0;
+    }
+
+	//auto* MyGameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	//if(!MyGameInstance) return;
+	//AN_Graduation_projectCharacter* Player = Cast<AN_Graduation_projectCharacter>(UGameplayStatics::GetPlayerCharacter(this,0));
+	//if(!Player) return;
+
+	//FVector PlayerLocation = Player->GetActorLocation();
+
+	//FRotator SpawnRotation = FRotator::ZeroRotator;
+	//FActorSpawnParameters SpawnParams;
+	//SpawnParams.Owner = this;
+	//SpawnParams.Instigator = GetInstigator();
+
+
+	//GetWorld()->SpawnActor<AActor>(MeteorBPClass,PlayerLocation,SpawnRotation,SpawnParams);
+	////UE_LOG(LogTemp,Warning,TEXT("Thunder %d번째 소환"),ThunderSpawnCount + 1);
+	//FString DebugMessage = FString::Printf(TEXT("썬더 좌표: %f %f %f"),PlayerLocation.X,PlayerLocation.Y,PlayerLocation.Z);
+	//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Blue,DebugMessage);
+
 }
-
 FVector ABossPatternManager::GetRandomMeteorLocation()
 {
 	// 맵 또는 보스 기준 랜덤 위치 설정 (원하는 범위 조정 가능)
