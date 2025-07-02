@@ -62,6 +62,7 @@ void AFireFloor::Off_Fire()
 
 	if(FireParticle){
 		FireParticle->DeactivateSystem(); // 파티클 끄기
+		//OFF();
 	}
 }
 

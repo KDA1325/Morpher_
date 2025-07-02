@@ -32,7 +32,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 		UParticleSystemComponent* FireParticle;
-
+	//UFUNCTION(BlueprintImplementableEvent)
+		//void OFF();
 
 public:	
 	// Called every frame
