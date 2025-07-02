@@ -154,7 +154,7 @@ void UMyPlayerStatComponent::TransformToEntity(FString Name, int HP, int Mana)
 	else
 	{
 		Change = false;
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("마나가 부족합니다")));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue, FString::Printf(TEXT("//마나가 부족합니다")));
 	}
 }
 
