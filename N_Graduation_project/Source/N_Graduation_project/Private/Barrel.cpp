@@ -24,10 +24,10 @@ void ABarrel::BeginPlay()
 	if(SphereComponent)
 	{
 		SphereComponent->SetGenerateOverlapEvents(true);
-		UE_LOG(LogTemp,Log,TEXT("Barrel: SphereComponent 세팅 완료"));
+		//UE_LOG(LogTemp,Log,TEXT("Barrel: SphereComponent 세팅 완료"));
 	} else
 	{
-		UE_LOG(LogTemp,Error,TEXT("Barrel: SphereComponent가 NULL입니다! BP에서 설정되었는지 확인하세요"));
+		//UE_LOG(LogTemp,Error,TEXT("Barrel: SphereComponent가 NULL입니다! BP에서 설정되었는지 확인하세요"));
 	}
 }
 
@@ -40,7 +40,7 @@ void ABarrel::Tick(float DeltaTime)
 // 외부에서 데미지 유입 시 호출
 void ABarrel::WorkBarrel(float DA)
 {
-	GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Barrel: 응답받음"));
+	//GEngine->AddOnScreenDebugMessage(-1,3.0f,FColor::Red,TEXT("Barrel: 응답받음"));
 	DamageAmount = 50;
 
 	StartExplosion();

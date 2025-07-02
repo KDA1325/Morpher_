@@ -272,19 +272,33 @@ void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
 void AEntityProjectile::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration)
 {
 	if(!Target || DamagePerSecond <= 0.f || ApplyDuration <= 0.f) return;
+	// 미리 캐시된 유효한 InstigatorController 확보
+	AController* CachedInstigatorController = nullptr;
+	if(IsValid(GetInstigator()))
+	{
+		CachedInstigatorController = GetInstigatorController();
+	}
+
+	if(!CachedInstigatorController)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("ApplyFireDOT: InstigatorController is null, skipping DOT."));
+		return;
+	}
 
 	int32 TickCount = FMath::FloorToInt(ApplyDuration);
 	for(int32 i = 1; i <= TickCount; ++i)
 	{
-		int32 TickNumber = i;
 		FTimerHandle FireTickHandle;
+		int32 TickNumber = i;
 
-		FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]() {
-			UGameplayStatics::ApplyDamage(Target,DamagePerSecond,GetInstigatorController(),this,nullptr);
-			UE_LOG(LogTemp,Warning,TEXT("ApplyFireDOT: %f damage to %s (tick %d)"),DamagePerSecond,*Target->GetName(),TickNumber);
+		FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]()
+		{
+			if(IsValid(Target))
+			{
+				UGameplayStatics::ApplyDamage(Target,DamagePerSecond,CachedInstigatorController,this,nullptr);
+				UE_LOG(LogTemp,Warning,TEXT("ApplyFireDOT: %f damage to %s (tick %d)"),DamagePerSecond,*Target->GetName(),TickNumber);
+			}
 		});
-
-		//Entity->PlayFireSound();
 
 		GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
 	}

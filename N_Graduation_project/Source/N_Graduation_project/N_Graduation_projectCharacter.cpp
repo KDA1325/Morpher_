@@ -185,6 +185,24 @@ AN_Graduation_projectCharacter::AN_Graduation_projectCharacter()
 	{
 		DashSound = DashSoundObj.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> Walk1Obj(TEXT("/Game/Sounds/Battle/EntityWalking01.EntityWalking01"));
+	if(Walk1Obj.Succeeded())
+	{
+		EntityFootstep1 = Walk1Obj.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> Walk2Obj(TEXT("/Game/Sounds/Battle/EntityWalking02.EntityWalking02"));
+	if(Walk2Obj.Succeeded())
+	{
+		EntityFootstep2 = Walk2Obj.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> GolemWalkObj(TEXT("/Game/Sounds/Battle/StoneGolemWalking.StoneGolemWalking"));
+	if(GolemWalkObj.Succeeded())
+	{
+		StoneGolemFootstepSound = GolemWalkObj.Object;
+	}
 }
 
 void AN_Graduation_projectCharacter::BeginPlay()
@@ -1397,38 +1415,45 @@ void AN_Graduation_projectCharacter::ApplyFire(float Duration)
 		}
 	},Duration,false);
 
-	UE_LOG(LogTemp,Warning,TEXT("FireEffect Applied, Duration: %f"),Duration);
+	//UE_LOG(LogTemp,Warning,TEXT("FireEffect Applied, Duration: %f"),Duration);
 }
 void AN_Graduation_projectCharacter::InitFootstepSounds()
 {
-	UE_LOG(LogTemp,Warning,TEXT("PlayFootstepSound called"));
+	//UE_LOG(LogTemp,Warning,TEXT("PlayFootstepSound called"));
 
-	CommonFootstepSounds.Empty();
-	StoneGolemFootstepSound = nullptr;
-	EntityFootstep1 = nullptr;
-	EntityFootstep2 = nullptr;
+	//CommonFootstepSounds.Empty();
+	//StoneGolemFootstepSound = nullptr;
+	//EntityFootstep1 = nullptr;
+	//EntityFootstep2 = nullptr;
 
-	USoundBase* Walk1 = LoadObject<USoundBase>(nullptr,TEXT("/Game/Sounds/Battle/EntityWalking01.EntityWalking01"));
-	if(!Walk1) UE_LOG(LogTemp,Warning,TEXT("EntityWalking01 사운드 로드 실패!"));
+	//USoundBase* Walk1 = LoadObject<USoundBase>(nullptr,TEXT("/Game/Sounds/Battle/EntityWalking01.EntityWalking01"));
+	//if(!Walk1)
+	//{
+	//	UE_LOG(LogTemp,Warning,TEXT("EntityWalking01 사운드 로드 실패!"));
+	//} else
+	//{
+	//	CommonFootstepSounds.Add(Walk1);
+	//	EntityFootstep1 = Walk1;
+	//}
 
-	USoundBase* Walk2 = LoadObject<USoundBase>(nullptr,TEXT("/Game/Sounds/Battle/EntityWalking02.EntityWalking02"));
-	if(!Walk2) UE_LOG(LogTemp,Warning,TEXT("EntityWalking02 사운드 로드 실패!"));
+	//USoundBase* Walk2 = LoadObject<USoundBase>(nullptr,TEXT("/Game/Sounds/Battle/EntityWalking02.EntityWalking02"));
+	//if(!Walk2)
+	//{
+	//	UE_LOG(LogTemp,Warning,TEXT("EntityWalking02 사운드 로드 실패!"));
+	//} else
+	//{
+	//	CommonFootstepSounds.Add(Walk2);
+	//	EntityFootstep2 = Walk2;
+	//}
 
-	if(Walk1)
-	{
-		CommonFootstepSounds.Add(Walk1);
-		EntityFootstep1 = Walk1; // 초기화
-	}
-	if(Walk2)
-	{
-		CommonFootstepSounds.Add(Walk2);
-		EntityFootstep2 = Walk2; // 초기화
-	}
-
-	if(currentPreset == "StoneGolemPreset.uasset")
-	{
-		StoneGolemFootstepSound = LoadObject<USoundBase>(nullptr,TEXT("/Game/Sounds/Battle/StoneGolemWalking.StoneGolemWalking"));
-	}
+	//if(currentPreset == "StoneGolemPreset.uasset")
+	//{
+	//	StoneGolemFootstepSound = LoadObject<USoundBase>(nullptr,TEXT("/Game/Sounds/Battle/StoneGolemWalking.StoneGolemWalking"));
+	//	if(!StoneGolemFootstepSound)
+	//	{
+	//		UE_LOG(LogTemp,Warning,TEXT("StoneGolemWalking 사운드 로드 실패!"));
+	//	}
+	//}
 }
 
 void AN_Graduation_projectCharacter::PlayFootstepSound()
@@ -1438,18 +1463,37 @@ void AN_Graduation_projectCharacter::PlayFootstepSound()
 
 	if(currentPreset == "StoneGolemPreset.uasset")
 	{
+		if(!IsValid(StoneGolemFootstepSound))
+		{
+			UE_LOG(LogTemp,Error,TEXT("StoneGolemFootstepSound is invalid!"));
+			return;
+		}
 		FootstepToPlay = StoneGolemFootstepSound;
 	} else
 	{
 		// 번갈아가며 재생
+		if(!IsValid(EntityFootstep1) || !IsValid(EntityFootstep2))
+		{
+			UE_LOG(LogTemp,Error,TEXT("One of EntityFootstep sounds is invalid!"));
+			return;
+		}
 		FootstepToPlay = bUseFirstFootstep ? EntityFootstep1 : EntityFootstep2;
 		bUseFirstFootstep = !bUseFirstFootstep;
 	}
 
-	if(FootstepToPlay)
+	if(!IsValid(FootstepToPlay))
 	{
-		UGameplayStatics::PlaySoundAtLocation(this,FootstepToPlay,GetActorLocation());
+		UE_LOG(LogTemp,Error,TEXT("FootstepToPlay is not valid (possibly corrupted pointer)."));
+		return;
 	}
+	UWorld* World = GetWorld();
+	if(!World)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("World is null! Cannot play sound."));
+		return;
+	}
+
+	UGameplayStatics::PlaySoundAtLocation(World,FootstepToPlay,GetActorLocation());
 }
 
 void AN_Graduation_projectCharacter::ClearState()
