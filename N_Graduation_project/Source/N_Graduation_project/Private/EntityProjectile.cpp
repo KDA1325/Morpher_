@@ -271,7 +271,7 @@ void AEntityProjectile::FireInDirection(const FVector& ShootDirection)
 
 void AEntityProjectile::ApplyFireDOT(AActor* Target,float DamagePerSecond,float ApplyDuration)
 {
-	if(!Target || DamagePerSecond <= 0.f || ApplyDuration <= 0.f) return;
+	if(!IsValid(Target) || DamagePerSecond <= 0.f || ApplyDuration <= 0.f) return;
 	// 미리 캐시된 유효한 InstigatorController 확보
 	AController* CachedInstigatorController = nullptr;
 	if(IsValid(GetInstigator()))
@@ -291,15 +291,26 @@ void AEntityProjectile::ApplyFireDOT(AActor* Target,float DamagePerSecond,float 
 		FTimerHandle FireTickHandle;
 		int32 TickNumber = i;
 
-		FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([=,this]()
+		TWeakObjectPtr<AActor> WeakTarget = Target;
+		TWeakObjectPtr<AEntityProjectile> WeakThis = this;
+
+		FTimerDelegate FireTickDelegate = FTimerDelegate::CreateLambda([WeakTarget,WeakThis,CachedInstigatorController,DamagePerSecond,TickNumber]()
 		{
-			if(IsValid(Target))
+			if(!WeakTarget.IsValid() || !WeakThis.IsValid()) return;
+
+			AActor* TargetActor = WeakTarget.Get();
+			AEntityProjectile* Projectile = WeakThis.Get();
+
+			AN_Graduation_projectCharacter* TargetCharacter = Cast<AN_Graduation_projectCharacter>(TargetActor);
+			if(TargetCharacter && !TargetCharacter->isDead)
 			{
-				UGameplayStatics::ApplyDamage(Target,DamagePerSecond,CachedInstigatorController,this,nullptr);
-				UE_LOG(LogTemp,Warning,TEXT("ApplyFireDOT: %f damage to %s (tick %d)"),DamagePerSecond,*Target->GetName(),TickNumber);
+				if(IsValid(CachedInstigatorController))
+				{
+					UGameplayStatics::ApplyDamage(TargetActor,DamagePerSecond,CachedInstigatorController,Projectile,nullptr);
+					UE_LOG(LogTemp,Warning,TEXT("ApplyFireDOT: %f damage to %s (tick %d)"),DamagePerSecond,*TargetActor->GetName(),TickNumber);
+				}
 			}
 		});
-
 		GetWorld()->GetTimerManager().SetTimer(FireTickHandle,FireTickDelegate,i,false);
 	}
 }

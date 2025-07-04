@@ -552,6 +552,8 @@ void AN_Graduation_projectCharacter::DashInterpReturn(float value)
 // 데미지를 받았을 때 호출하는 함수
 float AN_Graduation_projectCharacter::TakeDamage(float DamageAmount,FDamageEvent const& DamageEvent,AController* EventInstigator,AActor* DamageCauser)
 {
+	if(!IsValid(this) || isDead) return 0.f;
+
 	if(isDead==false)
 	{
 		bool bFromNormalHitBox=false;
